@@ -1,0 +1,99 @@
+Airborne Aviation Web Ecosystem & Automation Stack - PRD
+1. Executive Summary & Strategic Objectives
+The objective of this project is to transform Airborne Aviation’s digital presence from a single-page architecture into a hyper-performant, SEO/GEO-first web ecosystem built on Next.js. The platform will serve as a high-conversion lead acquisition system designed to scale monthly inquiries across 10 core aviation training disciplines while matching the academy's offline authority in Delhi NCR.
+Core Goals:
+Performance: Achieve green Core Web Vitals with a Largest Contentful Paint (LCP) target of 1.2 to 1.5 seconds.
+Lead Capture: Support zero lead friction through native API integrations with automated follow-ups, a persistent WhatsApp CTA, and 24/7 AI-triage systems.
+Ownership: Ensure 100% client ownership of the full GitHub codebase, deployment repositories, and analytics properties with zero platform lock-in.
+2. Brand Guidelines & UI Framework (The 60/30/10 Rule)
+The frontend layout framework must strictly implement the visual rules established in the Airborne Brand Book 2026 to reinforce absolute consistency across viewport sizes.
+2.1 Color Architecture Matrix
+The user interface must comply with the following proportional real-estate mapping:
+Color Usage
+Hex Code
+Description
+ 
+60% Layout Real Estate
+Stark White (#FFFFFF)
+Primary canvas layer used for text containers, content blocks, and study material interfaces to enforce academic precision.
+30% Structural Real Estate
+Captain's Navy (#00274C)
+Used for global navigation headers, footer containers, primary heading elements, and structural component containers.
+10% Interactive Accent
+Ascend Red (#DB241E)
+Reserved exclusively for high-urgency UI conversion highlights, primary action buttons (CTAs), forms, and active logo states.
+Excellence Markers
+Aviation Gold (#D8A027)
+Restricted to structural validation accents including star ratings, the "100% Success Rate" badge, and Captain stripe highlights.
+Body Copy Text
+Obsidian Black (#212121)
+Applied to left-aligned body text on light backgrounds to maximize readability.
+Prohibited Elements: The use of Cobalt Blue (#0000FF), Cherry Red, or Skyline Blue (#2F65A7) is strictly decommissioned.
+2.2 Typography Hierarchy
+Headings (H1, H2, H3): Montserrat (or Inter as verified fallback).
+H1 Hero Headings: All-caps, 48–64pt, +3pt tracking.
+H2 Section Titles: Title case, 28–36pt.
+H3 Subsections: Sentence case, 18–22pt.
+Body Copy & Captions: Roboto.
+Body Copy: Regular weight, 10–13pt, left-aligned, structured with 1.5× line spacing for dense educational texts.
+Captions / Labels: Light or Italic, 8–9pt (reserved for student names and score sheets).
+3. Site Architecture & Core Web Modules
+3.1 Programmatic Course Pages
+The frontend app routers will generate isolated, highly optimized funnels for the 10 core aviation training verticals:
+CPL Ground Classes (Priority vertical, ₹2,70,000 package)
+Cadet Pilot Program (₹50,000 package)
+Group Discussion & Personal Interview (GD & PI) (₹30,000 package)
+CASS / COMPASS / ADAPT Pre-screening (₹30,000 package)
+Airline Preparation (₹1,00,000 package)
+Airbus A320 SIM Training (₹10,000/hour in-house simulator)
+CPL Flying Training (₹50L+ complete path)
+Private Pilot Licence (PPL) (₹25,00,000 complete path)
+ATPL Ground Classes (₹1,50,000 package including viva support)
+Cabin Crew Training (Upcoming tactical expansion vertical)
+Technical Requirements for Course Layouts:
+Batch Visibility Constraints: Every course layout must explicitly declare current batch availability parameters (e.g., "Max 25/Batch" or "Few seats left for 1st June, 2026 batch") to natively support transparency and market urgency.
+Lead Capturing Form Blocks: Every course funnel requires individual embedded action forms connected via active API endpoints directly routing inputs to the tracking backend.
+3.2 No-Code Pilot Job Portal (/jobs)
+A specialized structural sub-routing path built to list active commercial airline recruitment paths, airline cadet qualifications, and vacancy trends.
+Filtering Architecture: Visitors must be able to parse listings instantly across three core parameters: Airline Entity, Role/Position Type, and Experience Baseline Level.
+Admin Console Control: System engineers will build a secure, no-code administrative interface utilizing Markdown or content fields to allow team members to seamlessly append, alter, or remove rows with zero coding experience.
+Conversion Trigger: Each job page must house a specialized callback CTA mapping to the lead ecosystem.
+3.3 Gated Resource & E-Book Library (/resources)
+A content hub housing the initial 5 downloadable publication files defined at project launch:
+Target Inventory Matrix: DGCA Preparation Handbook, Complete CPL Guide, Cabin Crew Blueprint, and Career FAQs Guide.
+Gating Enforcement Logic: The web app will prevent raw asset extraction or direct PDF downloads until customer data fields—specifically Full Name, Active Telephone Number, Targeted Course Selection, and UTM Lead Source Tracking—are parsed, verified, and logged by the data layers.
+3.4 Authority & About Modules
+Founder Profiles: Highlighting biographical summaries, operational credentials, and programmatic timelines for Capt. Navrang Singh (Chief Instructor), Deepak Sir (Business Head), and Piyush Sir (Student Relations).
+Testimonial Database Layouts: Dynamic evaluation blocks dedicated to verified success paths mapping to active flight roles (e.g., Ruzal Dhral - IndiGo Cadet, Capt. Nipun Singh - Air India, Capt. Himanish Sagwal - Emirates).
+4. Third-Party Integrations & Automation Layers
+4.1 Intelligent Student Chatbot Engine
+Runtime Framework: Embedded, persistent chat asset running 24/7, powered natively via Claude / GPT-4o API connectors.
+Knowledge Context Boundaries: Model training bounds will explicitly ingest internal curriculum data, complete fee structures, DGCA syllabus requirements, and student enrollment paths.
+Rate & Usage Controls: Implements an internal session ceiling threshold restricting AI runtime connections to a maximum of 30 minutes of live query evaluation per individual student per day.
+Human Handover Escalation: Built-in intent maps will immediately surface human handover triggers when students flag complex financing inquiries or express intent regarding direct flight school enrollment deposits, prompting immediate transition to active WhatsApp or voice lines.
+4.2 Centralized Data Core (CRM Backend)
+Database Infrastructure: Powered via a custom Supabase-backed structural deployment to guarantee relational logging efficiency.
+Required Payload Fields: Name, Verified Mobile Sequence, Electronic Mail Address, Course Parameter Match, Ad Campaign Target Source, and Entry Timestamp.
+Pipeline State Validation: Data mapping statuses are partitioned into standard tracking steps: New Lead -> Contacted -> Warm Prospect -> Enrolled Student -> Dropped.
+Notification Automation: Configured to push automated summaries directly to management channels on daily or weekly tracking loops.
+4.3 Omnichannel Communication Ecosystem
+WhatsApp CTA & Automation Interactivity: Floating responsive WhatsApp interface elements fixed site-wide. All web-captured lead events will execute webhooks triggering a self-hosted n8n engine connected to the official WhatsApp Business Profile API. This initiates an automated 21-day nurture communication sequence, which halts immediately when a user reply is registered.
+Voice Telephony Automation: Outbound programmatic system configurations (via Bland.ai or Vapi) will trigger voice qualification loops within 120 seconds of lead capture, capturing Hindi/English linguistic routing variables and urgency scoring indices to filter hot prospects directly to sales agents.
+5. Technical SEO, GEO, & Search Engine Optimization
+5.1 Architecture Requirements
+The application must generate standard SEO-first technical objects natively:
+Dynamic script components to generate an active sitemap.xml layer.
+Proper system integration for automated asset generation across robots.txt configuration vectors.
+System-wide programmatic slug patterns and self-referencing canonical layout tags.
+5.2 Generative Engine Schema Real-Estate Blueprint
+Comprehensive JSON-LD semantic markup structures must be correctly generated across all live page headers to secure prominent ranking indices within AI Search Overviews (ChatGPT, Google AI Overviews, Perplexity).
+Required Schema Architectures: EducationalOrganization, Course (configured uniquely per vertical), FAQPage (applied to all resource elements), BreadcrumbList, and LocalBusiness featuring GeoCoordinates mapping directly to the GMB property at Ramphal Chowk.
+6. Content Integrity Guardrails & Performance Auditing
+6.1 Visual Media Validation Rule
+Absolute Authenticity Constraint: The development environment strictly blocks the ingestion or rendering of non-authentic, heavily stylized, fake, or artificial stock imagery assets.
+Verified Assets Only: Production builds are restricted to rendering original, high-resolution media matching physical academy locations, professional portraits of founding leadership, actual student flight uniform captures, or verified, named historical DGCA Exam Score sheets to maximize brand authority.
+6.2 Pre-Launch Testing & Tracking Checks
+Prior to full production routing and deployment, the development pipeline must verify the following tracking tags:
+Complete integration validation for Google Analytics 4 (GA4) alongside Google Search Console verification records.
+Functional test patterns executing across custom tracking scripts (e.g., heatmaps, form conversion metrics).
+Zero errors or parsing breaks returned across the Google Rich Results Test environment.
