@@ -12,6 +12,7 @@ const PUBLIC_PATHS = [
   "/api/v1/auth",
   "/api/v1/users/invite/accept",
   "/api/inngest",
+  "/api/public",
   "/_next",
   "/favicon.ico",
 ];

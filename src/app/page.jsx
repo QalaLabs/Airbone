@@ -59,80 +59,226 @@ function FloatingNav({ onBook }) {
   ]
 
   return (
-    <motion.header
-      initial={{ y: -40, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-      style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}
-    >
-      <motion.nav
-        animate={{
-          marginTop: scrolled ? 12 : 20,
-          maxWidth: scrolled ? '960px' : '1240px',
-        }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="glass-nav"
-        style={{
-          pointerEvents: 'auto', borderRadius: '999px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem',
-          paddingLeft: '1.25rem', paddingRight: '0.5rem', paddingTop: '0.5rem', paddingBottom: '0.5rem',
-          width: '92vw',
-        }}
+    <>
+      <motion.header
+        initial={{ y: -40, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}
       >
-        {/* Logo */}
-        <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ position: 'relative', display: 'inline-flex', height: '2.25rem', width: '2.25rem', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'var(--navy)', color: '#fff' }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" style={{ transform: 'rotate(-45deg)', transition: 'transform 0.3s' }} aria-hidden>
-              <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
-            </svg>
-          </span>
-          <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.9375rem', fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--navy)' }}>
-            AIRB<span style={{ color: 'var(--red)' }}>O</span>RNE
-          </span>
-        </Link>
-
-        {/* Desktop nav links */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-          {links.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              style={{
-                padding: '0.5rem 0.75rem', fontSize: '0.8125rem', fontWeight: 500,
-                color: 'rgba(0,39,76,0.8)', textDecoration: 'none', borderRadius: '999px',
-                transition: 'background 0.2s, color 0.2s',
-                fontFamily: 'var(--font-h)',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,39,76,0.05)'; e.currentTarget.style.color = 'var(--navy)' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(0,39,76,0.8)' }}
-            >
-              {l.label}
-            </Link>
-          ))}
-        </div>
-
-        {/* CTA */}
-        <button
-          onClick={onBook}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: '0.375rem',
-            borderRadius: '999px', background: 'var(--navy)', color: '#fff',
-            fontSize: '0.8125rem', fontWeight: 500, fontFamily: 'var(--font-h)',
-            paddingLeft: '1rem', paddingRight: '0.5rem', paddingTop: '0.5rem', paddingBottom: '0.5rem',
-            border: 'none', cursor: 'pointer', transition: 'background 0.2s', whiteSpace: 'nowrap',
+        <motion.nav
+          animate={{
+            marginTop: scrolled ? 12 : 20,
+            maxWidth: scrolled ? '960px' : '1240px',
           }}
-          onMouseEnter={e => e.currentTarget.style.background = 'var(--red)'}
-          onMouseLeave={e => e.currentTarget.style.background = 'var(--navy)'}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="glass-nav"
+          style={{
+            pointerEvents: 'auto', borderRadius: '999px',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem',
+            paddingLeft: '1.25rem', paddingRight: '0.5rem', paddingTop: '0.5rem', paddingBottom: '0.5rem',
+            width: '92vw',
+          }}
         >
-          Book a class
-          <span style={{ display: 'inline-flex', height: '1.5rem', width: '1.5rem', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'rgba(255,255,255,0.15)' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M7 17L17 7M17 7H7M17 7v10"/>
+          {/* Logo */}
+          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ position: 'relative', display: 'inline-flex', height: '2.25rem', width: '2.25rem', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'var(--navy)', color: '#fff' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" style={{ transform: 'rotate(-45deg)', transition: 'transform 0.3s' }} aria-hidden>
+                <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+              </svg>
+            </span>
+            <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.9375rem', fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--navy)' }}>
+              AIRB<span style={{ color: 'var(--red)' }}>O</span>RNE
+            </span>
+          </Link>
+
+          {/* Desktop nav links */}
+          <div className="desktop-only-flex" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            {links.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                style={{
+                  padding: '0.5rem 0.75rem', fontSize: '0.8125rem', fontWeight: 500,
+                  color: 'rgba(0,39,76,0.8)', textDecoration: 'none', borderRadius: '999px',
+                  transition: 'background 0.2s, color 0.2s',
+                  fontFamily: 'var(--font-h)',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,39,76,0.05)'; e.currentTarget.style.color = 'var(--navy)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(0,39,76,0.8)' }}
+              >
+                {l.label}
+              </Link>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <button
+            onClick={onBook}
+            className="desktop-only-inline-flex"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '0.375rem',
+              borderRadius: '999px', background: 'var(--navy)', color: '#fff',
+              fontSize: '0.8125rem', fontWeight: 500, fontFamily: 'var(--font-h)',
+              paddingLeft: '1rem', paddingRight: '0.5rem', paddingTop: '0.5rem', paddingBottom: '0.5rem',
+              border: 'none', cursor: 'pointer', transition: 'background 0.2s', whiteSpace: 'nowrap',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--red)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'var(--navy)'}
+          >
+            Book a class
+            <span style={{ display: 'inline-flex', height: '1.5rem', width: '1.5rem', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'rgba(255,255,255,0.15)' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M7 17L17 7M17 7H7M17 7v10"/>
+              </svg>
+            </span>
+          </button>
+
+          {/* Hamburger Trigger */}
+          <button
+            className="hamburger-btn"
+            onClick={() => setMobileOpen(true)}
+            aria-label="Open navigation menu"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="4" y1="12" x2="20" y2="12"></line>
+              <line x1="4" y1="6" x2="20" y2="6"></line>
+              <line x1="4" y1="18" x2="20" y2="18"></line>
             </svg>
-          </span>
-        </button>
-      </motion.nav>
-    </motion.header>
+          </button>
+        </motion.nav>
+      </motion.header>
+
+      {/* Full-screen Mobile Navigation Drawer */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 100,
+              background: 'rgba(0,8,22,0.99)', backdropFilter: 'blur(30px)',
+              display: 'flex', flexDirection: 'column', padding: '2rem 1.5rem',
+              overflow: 'hidden',
+            }}
+          >
+            {/* Watermark arc background */}
+            <div style={{ position: 'absolute', right: '-15%', bottom: '15%', opacity: 0.03, color: '#fff', pointerEvents: 'none', zIndex: 1 }} aria-hidden="true">
+              <svg width="360" height="360" viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1">
+                <circle cx="20" cy="20" r="19" />
+                <path d="M8 32 Q18 20 30 10" />
+              </svg>
+            </div>
+
+            {/* Drawer Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '3rem', position: 'relative', zIndex: 10 }}>
+              {/* Logo */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ display: 'inline-flex', height: '2.25rem', width: '2.25rem', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'var(--navy)', color: '#fff' }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" style={{ transform: 'rotate(-45deg)' }} aria-hidden>
+                    <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+                  </svg>
+                </span>
+                <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.9375rem', fontWeight: 900, letterSpacing: '-0.02em', color: '#fff' }}>
+                  AIRB<span style={{ color: 'var(--red)' }}>O</span>RNE
+                </span>
+              </div>
+
+              {/* Close Button */}
+              <button
+                onClick={() => setMobileOpen(false)}
+                aria-label="Close navigation menu"
+                style={{
+                  background: 'none', border: 'none', color: '#fff', cursor: 'pointer',
+                  width: '3rem', height: '3rem', borderRadius: '50%', background: 'rgba(255,255,255,0.08)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Menu Links with Stagger animation */}
+            <motion.div
+              initial="hidden"
+              animate="show"
+              variants={{
+                hidden: { opacity: 0 },
+                show: {
+                  opacity: 1,
+                  transition: { staggerChildren: 0.08, delayChildren: 0.1 }
+                }
+              }}
+              style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', paddingLeft: '0.5rem', position: 'relative', zIndex: 10 }}
+            >
+              {[
+                { label: 'Courses', sub: 'Ground school & ratings', href: '/courses', prefix: '01' },
+                { label: 'Journey', sub: 'From classroom to cockpit', href: '#dream', prefix: '02' },
+                { label: 'Mentor', sub: 'Capt. Navrang Singh', href: '#founder', prefix: '03' },
+                { label: 'Stories', sub: 'Our success roster', href: '#stories', prefix: '04' },
+                { label: 'About', sub: 'Dwarka Centre details', href: '/about', prefix: '05' },
+              ].map((l) => (
+                <motion.div
+                  key={l.href}
+                  variants={{
+                    hidden: { opacity: 0, x: -30 },
+                    show: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 120, damping: 18 } }
+                  }}
+                >
+                  <Link
+                    href={l.href}
+                    onClick={() => setMobileOpen(false)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '1.25rem', textDecoration: 'none',
+                      padding: '0.625rem 0', cursor: 'pointer',
+                    }}
+                  >
+                    <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--red)', letterSpacing: '0.1em' }}>
+                      {l.prefix}
+                    </span>
+                    <div>
+                      <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.625rem', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.15 }}>
+                        {l.label}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.25rem', fontFamily: 'var(--font-b)' }}>
+                        {l.sub}
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            {/* Drawer CTA at bottom */}
+            <div style={{ marginTop: 'auto', paddingBottom: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', position: 'relative', zIndex: 10 }}>
+              <button
+                onClick={() => {
+                  setMobileOpen(false)
+                  onBook()
+                }}
+                style={{
+                  width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                  borderRadius: '999px', background: 'var(--red)', color: '#fff',
+                  fontSize: '1rem', fontWeight: 600, fontFamily: 'var(--font-h)',
+                  height: '3.25rem', border: 'none', cursor: 'pointer',
+                }}
+              >
+                Book a class
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M7 17L17 7M17 7H7M17 7v10"/>
+                </svg>
+              </button>
+
+              <div style={{ textAlign: 'center', fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.5rem' }}>
+                Ramphal Chowk, Dwarka, New Delhi · <a href="tel:+919953777320" style={{ color: 'inherit', textDecoration: 'underline' }}>+91 9953-777-320</a>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   )
 }
 
@@ -178,7 +324,8 @@ function HeroChapter({ onBook, on3D }) {
       </motion.div>
 
       <motion.div
-        style={{ y: textY, opacity: fade, position: 'relative', zIndex: 10, margin: '0 auto', display: 'flex', height: '100%', maxWidth: '1280px', flexDirection: 'column', justifyContent: 'flex-end', padding: '0 clamp(1.5rem,5vw,4rem) clamp(4rem,8vw,7rem)' }}
+        className="hero-content-container"
+        style={{ y: textY, opacity: fade, position: 'relative', zIndex: 10, margin: '0 auto', display: 'flex', height: '100%', maxWidth: '1280px', flexDirection: 'column', justifyContent: 'flex-end' }}
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -190,7 +337,7 @@ function HeroChapter({ onBook, on3D }) {
           Dwarka, Delhi · Est. 2010
         </motion.div>
 
-        <h1 style={{ fontFamily: 'var(--font-h)', fontWeight: 800, letterSpacing: '-0.045em', lineHeight: 0.92, fontSize: 'clamp(2.6rem,8.5vw,7.5rem)', color: '#fff', maxWidth: '14ch' }}>
+        <h1 style={{ fontFamily: 'var(--font-h)', fontWeight: 800, letterSpacing: '-0.045em', lineHeight: 0.92, fontSize: 'clamp(2.2rem,8.5vw,7.5rem)', color: '#fff', maxWidth: '14ch' }}>
           <RevealLine delay={0.2}>From classroom</RevealLine>
           <RevealLine delay={0.4}>
             to <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>cockpit.</span>
@@ -201,6 +348,7 @@ function HeroChapter({ onBook, on3D }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9, duration: 0.8 }}
+          className="hero-footer-wrapper"
           style={{ marginTop: '2.5rem', display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem', maxWidth: '1100px' }}
         >
           <p style={{ color: 'rgba(255,255,255,0.8)', maxWidth: '28rem', fontSize: '0.9375rem', lineHeight: 1.7, fontFamily: 'var(--font-b)' }}>
@@ -208,7 +356,7 @@ function HeroChapter({ onBook, on3D }) {
             Capt. Navrang Singh — clearing 5 papers, building careers, restarting dreams.
           </p>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div className="hero-btn-container" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <Magnetic>
               <button
                 onClick={onBook}
@@ -230,6 +378,7 @@ function HeroChapter({ onBook, on3D }) {
             </Magnetic>
             <button
               onClick={on3D}
+              className="desktop-only-inline-flex"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
                 borderRadius: '999px', background: 'rgba(255,255,255,0.1)', color: '#fff',
@@ -276,26 +425,21 @@ function BoardingStrip() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-        className="glass-nav"
+        className="glass-nav boarding-strip-grid"
         style={{
           margin: '0 auto', maxWidth: '1100px', borderRadius: '1.75rem',
           boxShadow: 'var(--shadow-float)',
-          display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)',
         }}
       >
         {stats.map((s, idx) => (
-          <StatReveal
-            key={idx}
-            value={s.value}
-            label={s.label}
-            prefix={s.prefix || ''}
-            suffix={s.suffix || ''}
-            style={{
-              padding: 'clamp(1.5rem,3vw,2rem)',
-              borderRight: idx % 2 === 0 ? '1px solid rgba(0,39,76,0.1)' : 'none',
-              borderBottom: idx < 2 ? '1px solid rgba(0,39,76,0.1)' : 'none',
-            }}
-          />
+          <div key={idx} className="boarding-strip-stat">
+            <StatReveal
+              value={s.value}
+              label={s.label}
+              prefix={s.prefix || ''}
+              suffix={s.suffix || ''}
+            />
+          </div>
         ))}
       </motion.div>
     </section>
@@ -318,17 +462,26 @@ function ChapterShell({ id, num, kicker, title, body, image, alt, reverse = fals
   const kickerColor = dark ? 'rgba(255,255,255,0.6)' : 'rgba(0,39,76,0.6)'
   const lineColor = dark ? 'rgba(255,255,255,0.3)' : 'rgba(0,39,76,0.3)'
 
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile, { passive: true })
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
   return (
     <section
       id={id}
       ref={ref}
-      style={{ position: 'relative', padding: 'clamp(6rem,10vw,10rem) clamp(1.5rem,5vw,4rem)', background: bg, color: textColor }}
+      style={{ position: 'relative', padding: 'clamp(3.5rem,8vw,10rem) clamp(1.5rem,5vw,4rem)', background: bg, color: textColor }}
     >
-      <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'clamp(2.5rem,5vw,6rem)', alignItems: 'center' }}>
+      <div className="responsive-grid-chapters" style={{ maxWidth: '1280px', margin: '0 auto' }}>
 
         {/* Image side */}
         <motion.div
-          style={{ y, position: 'relative', aspectRatio: '4/5', overflow: 'hidden', borderRadius: '1.5rem', boxShadow: 'var(--shadow-float)', order: reverse ? 2 : 1 }}
+          className="chapter-img-side"
+          style={{ y: isMobile ? 0 : y, position: 'relative', aspectRatio: '4/5', overflow: 'hidden', borderRadius: '1.5rem', boxShadow: 'var(--shadow-float)', order: reverse ? 2 : 1 }}
         >
           <motion.img
             style={{ scale: imgScale, position: 'absolute', inset: 0, height: '100%', width: '100%', objectFit: 'cover' }}
@@ -342,7 +495,7 @@ function ChapterShell({ id, num, kicker, title, body, image, alt, reverse = fals
         </motion.div>
 
         {/* Text side */}
-        <div style={{ order: reverse ? 1 : 2 }}>
+        <div className="chapter-text-side" style={{ order: reverse ? 1 : 2 }}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -493,7 +646,7 @@ function HiredChapter() {
 ───────────────────────────────────── */
 function FounderSection() {
   return (
-    <section id="founder" style={{ position: 'relative', padding: 'clamp(7rem,10vw,10rem) clamp(1.5rem,5vw,4rem)', background: 'var(--navy-deep)', color: '#fff', overflow: 'hidden' }}>
+    <section id="founder" style={{ position: 'relative', padding: 'clamp(3.5rem,8vw,10rem) clamp(1.5rem,5vw,4rem)', background: 'var(--navy-deep)', color: '#fff', overflow: 'hidden' }}>
       {/* Ambient background glow */}
       <div
         className="animate-drift"
@@ -505,7 +658,7 @@ function FounderSection() {
         }}
       />
 
-      <div style={{ position: 'relative', maxWidth: '1100px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'clamp(3rem,6vw,7rem)', alignItems: 'center' }}>
+      <div className="responsive-grid-founder" style={{ position: 'relative', maxWidth: '1100px', margin: '0 auto' }}>
         {/* Left: Text content */}
         <div>
           <div className="chapter-num" style={{ color: 'var(--gold)', marginBottom: '1.5rem' }}>The Mentor</div>
@@ -516,7 +669,7 @@ function FounderSection() {
             Fifteen years in the classroom. Thousands of hours simplifying the hardest DGCA papers into the language pilots actually need. No gimmicks. No empty promises. Just the cleanest path from your first concept to your four stripes.
           </p>
 
-          <div style={{ marginTop: '2.5rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'rgba(255,255,255,0.1)', maxWidth: '28rem' }}>
+          <div style={{ marginTop: '2.5rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'rgba(255,255,255,0.1)', maxWidth: '28rem', width: '100%' }}>
             {[
               ['15+', 'Years teaching'],
               ['1000+', 'Students mentored'],
@@ -559,28 +712,45 @@ function FounderSection() {
 /* ─────────────────────────────────────
    COURSES — 3-col tilt grid
 ───────────────────────────────────── */
-const COURSES = [
-  { name: 'CPL Ground Classes',      price: '₹2,70,000',    tag: 'Flagship',   lede: 'Full DGCA paper coverage with weekly evaluations.',                    seats: 'Max 25 / batch',   href: '/courses/cpl-ground-classes' },
-  { name: 'Cadet Pilot Program',     price: '₹50,000',      tag: 'Cadet',      lede: 'Airline cadet aptitude, screening and interview prep.',               seats: 'Rolling intake',   href: '/courses/cadet-pilot-program' },
-  { name: 'GD & PI Mastery',         price: '₹30,000',      tag: 'Interview',  lede: 'Mock panels run by serving line captains.',                           seats: '8 / cohort',       href: '/courses/gd-pi-mastery' },
-  { name: 'CASS · COMPASS · ADAPT',  price: '₹30,000',      tag: 'Screening',  lede: 'Pre-screening battery practice on real test patterns.',               seats: 'Live + on-demand', href: '/courses/screening-prep' },
-  { name: 'Airline Preparation',     price: '₹1,00,000',    tag: 'Career',     lede: 'End-to-end placement readiness for type-rating slots.',               seats: 'By assessment',    href: '/courses/airline-preparation' },
-  { name: 'Airbus A320 SIM',         price: '₹10,000 / hr', tag: 'Simulator',  lede: 'In-house full-procedure simulator sessions.',                         seats: 'Bookable',         href: '/courses/a320-simulator' },
-  { name: 'CPL Flying Training',     price: '₹50L+ path',   tag: 'Flying',     lede: 'Logged-hours pathway with partner flight schools.',                   seats: 'Counselling first', href: '/courses/cpl-flying' },
-  { name: 'Private Pilot Licence',   price: '₹25,00,000',   tag: 'PPL',        lede: 'Recreational and stepping-stone pilot certification.',                seats: 'Year-round',       href: '/courses/ppl' },
-  { name: 'ATPL Ground Classes',     price: '₹1,50,000',    tag: 'ATPL',       lede: 'Captain-track ground school with viva support.',                      seats: 'Quarterly',        href: '/courses/atpl-ground' },
-]
+function mapCourseToCard(c) {
+  const meta = c.metadata ?? {}
+  const fmt = (fee) => fee
+    ? new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(fee)
+    : null
+  return {
+    name: c.title,
+    price: meta.priceLabel ?? fmt(c.fee) ?? 'Contact us',
+    tag: meta.tag ?? c.category ?? 'Program',
+    lede: c.subtitle ?? c.description?.slice(0, 120) ?? '',
+    seats: meta.seats ?? '',
+    href: `/courses/${c.slug}`,
+  }
+}
 
 function CoursesSection() {
+  const [courses, setCourses] = useState([])
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/public-proxy/courses?limit=9')
+      .then((r) => r.json())
+      .then((d) => { setCourses((d.data ?? []).map(mapCourseToCard)); setLoaded(true) })
+      .catch(() => setLoaded(true))
+  }, [])
+
+  const count = courses.length
+  const headline = count > 0
+    ? <>{count} program{count !== 1 ? 's' : ''}. <span style={{ fontStyle: 'italic', fontWeight: 300 }}>One cockpit.</span></>
+    : <>Our programs. <span style={{ fontStyle: 'italic', fontWeight: 300 }}>One cockpit.</span></>
+
   return (
-    <section id="courses" style={{ position: 'relative', padding: 'clamp(7rem,10vw,10rem) clamp(1.5rem,5vw,4rem)', background: 'var(--paper)' }}>
+    <section id="courses" style={{ position: 'relative', padding: 'clamp(3.5rem,8vw,10rem) clamp(1.5rem,5vw,4rem)', background: 'var(--paper)' }}>
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-        {/* Header */}
-        <div style={{ display: 'grid', gridTemplateColumns: '5fr 7fr', gap: '2rem', marginBottom: '4rem', alignItems: 'flex-end' }}>
+        <div className="courses-header-grid">
           <div>
             <div className="chapter-num" style={{ color: 'var(--red)', marginBottom: '1rem' }}>The Manifest</div>
             <h2 className="display-xl" style={{ fontSize: 'clamp(2.2rem,5vw,4.5rem)', color: 'var(--navy)' }}>
-              Nine programs. <span style={{ fontStyle: 'italic', fontWeight: 300 }}>One cockpit.</span>
+              {headline}
             </h2>
           </div>
           <p style={{ color: 'rgba(33,33,33,0.7)', fontSize: '0.9375rem', lineHeight: 1.7, maxWidth: '28rem', alignSelf: 'flex-end', fontFamily: 'var(--font-b)' }}>
@@ -588,12 +758,29 @@ function CoursesSection() {
           </p>
         </div>
 
-        {/* Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px', background: 'rgba(0,39,76,0.1)', borderRadius: '1.5rem', overflow: 'hidden', border: '1px solid rgba(0,39,76,0.1)' }}>
-          {COURSES.map((c, i) => (
-            <CourseCard key={c.name} c={c} index={i} />
-          ))}
-        </div>
+        {!loaded && (
+          <div className="responsive-grid-courses" style={{ background: 'rgba(0,39,76,0.1)', borderRadius: '1.5rem', overflow: 'hidden', border: '1px solid rgba(0,39,76,0.1)' }}>
+            {[...Array(9)].map((_, i) => (
+              <div key={i} style={{ padding: 'clamp(1.5rem,3vw,2rem)', minHeight: '160px', background: '#fff', opacity: 0.4 }} />
+            ))}
+          </div>
+        )}
+
+        {loaded && courses.length === 0 && (
+          <div style={{ padding: '4rem 2rem', textAlign: 'center', background: 'rgba(0,39,76,0.04)', borderRadius: '1.5rem', border: '1px solid rgba(0,39,76,0.1)' }}>
+            <p style={{ color: 'rgba(0,39,76,0.5)', fontSize: '0.9375rem' }}>
+              Course catalog is being updated. <a href="/contact" style={{ color: 'var(--red)' }}>Contact us</a> for current offerings.
+            </p>
+          </div>
+        )}
+
+        {loaded && courses.length > 0 && (
+          <div className="responsive-grid-courses" style={{ background: 'rgba(0,39,76,0.1)', borderRadius: '1.5rem', overflow: 'hidden', border: '1px solid rgba(0,39,76,0.1)' }}>
+            {courses.map((c, i) => (
+              <CourseCard key={c.href} c={c} index={i} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   )
@@ -607,6 +794,14 @@ function CourseCard({ c, index }) {
   const sx = useSpring(rx, { stiffness: 200, damping: 20 })
   const sy = useSpring(ry, { stiffness: 200, damping: 20 })
   const [hovered, setHovered] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile, { passive: true })
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   return (
     <motion.div
@@ -615,12 +810,13 @@ function CourseCard({ c, index }) {
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.7, delay: (index % 3) * 0.08, ease: [0.16, 1, 0.3, 1] }}
       onMouseMove={(e) => {
+        if (isMobile) return
         const r = e.currentTarget.getBoundingClientRect()
         ry.set(((e.clientX - r.left) / r.width - 0.5) * 6)
         rx.set(-((e.clientY - r.top) / r.height - 0.5) * 6)
       }}
-      onMouseLeave={() => { rx.set(0); ry.set(0); setHovered(false) }}
-      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => { if (isMobile) return; rx.set(0); ry.set(0); setHovered(false) }}
+      onMouseEnter={() => { if (isMobile) return; setHovered(true) }}
       style={{
         rotateX: sx, rotateY: sy, transformPerspective: 1000,
         background: hovered ? 'var(--navy)' : '#fff',
@@ -664,27 +860,49 @@ function CourseCard({ c, index }) {
 /* ─────────────────────────────────────
    TESTIMONIALS — White cards, gold quotes
 ───────────────────────────────────── */
-const STORIES = [
-  {
-    name: 'Ruzal Dhral',
-    role: 'IndiGo · Cadet Pilot',
-    quote: 'Cleared all five DGCA papers in three months — first attempt. The system here is the difference.',
-  },
-  {
-    name: 'Capt. Nipun Singh',
-    role: 'Air India',
-    quote: 'Restarted my pilot journey at 36. Capt. Navrang treated the dream as seriously as I did.',
-  },
-  {
-    name: 'Capt. Himanish Sagwal',
-    role: 'Emirates',
-    quote: 'Honest counselling, disciplined classes. Everything you wish an aviation academy actually was.',
-  },
-]
-
 function TestimonialsSection() {
+  const [stories, setStories] = useState([])
+  const [activeIndex, setActiveIndex] = useState(0)
+  const carouselRef = useRef(null)
+
+  useEffect(() => {
+    fetch('/api/public-proxy/testimonials')
+      .then((r) => r.json())
+      .then((d) => {
+        const mapped = (d.data ?? []).map((t) => ({
+          name: t.authorName,
+          role: t.authorTitle ?? '',
+          quote: t.content,
+        }))
+        setStories(mapped)
+      })
+      .catch(() => {})
+  }, [])
+
+  const handleScroll = () => {
+    if (!carouselRef.current) return
+    const container = carouselRef.current
+    const scrollLeft = container.scrollLeft
+    const width = container.clientWidth
+    if (width > 0) {
+      const index = Math.round(scrollLeft / width)
+      setActiveIndex(index)
+    }
+  }
+
+  const scrollTo = (index) => {
+    if (!carouselRef.current) return
+    const container = carouselRef.current
+    const width = container.clientWidth
+    container.scrollTo({
+      left: index * width,
+      behavior: 'smooth'
+    })
+    setActiveIndex(index)
+  }
+
   return (
-    <section id="stories" style={{ position: 'relative', padding: 'clamp(7rem,10vw,10rem) clamp(1.5rem,5vw,4rem)', background: 'var(--paper)' }}>
+    <section id="stories" style={{ position: 'relative', padding: 'clamp(3.5rem,8vw,10rem) clamp(1.5rem,5vw,4rem)', background: 'var(--paper)' }}>
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem', marginBottom: '3.5rem', flexWrap: 'wrap' }}>
           <div>
@@ -695,34 +913,57 @@ function TestimonialsSection() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
-          {STORIES.map((s, i) => (
-            <motion.figure
-              key={s.name}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.7, delay: i * 0.1 }}
-              style={{
-                position: 'relative', borderRadius: '1.5rem', border: '1px solid rgba(0,39,76,0.1)',
-                background: '#fff', padding: '2rem',
-                display: 'flex', flexDirection: 'column', gap: '2rem',
-                margin: 0,
-                transition: 'box-shadow 0.3s',
-              }}
-              onMouseEnter={e => e.currentTarget.style.boxShadow = 'var(--shadow-float)'}
-              onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
-            >
-              <div style={{ fontFamily: 'var(--font-h)', fontSize: '3.75rem', lineHeight: 1, color: 'var(--gold)', marginBottom: '-1rem' }}>"</div>
-              <blockquote style={{ fontSize: '1rem', lineHeight: 1.65, color: 'rgba(33,33,33,0.85)', fontFamily: 'var(--font-h)', fontWeight: 500, margin: 0 }}>
-                {s.quote}
-              </blockquote>
-              <figcaption style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid rgba(0,39,76,0.1)' }}>
-                <div style={{ fontFamily: 'var(--font-h)', fontWeight: 700, color: 'var(--navy)' }}>{s.name}</div>
-                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--red)', marginTop: '0.25rem' }}>{s.role}</div>
-              </figcaption>
-            </motion.figure>
-          ))}
+        <div className="testimonials-carousel-container">
+          {stories.length === 0 && (
+            <p style={{ color: 'rgba(0,39,76,0.4)', fontSize: '0.9375rem', textAlign: 'center', padding: '3rem 0' }}>
+              Student stories coming soon.
+            </p>
+          )}
+          <div
+            ref={carouselRef}
+            onScroll={handleScroll}
+            className="testimonials-carousel"
+          >
+            {stories.map((s, i) => (
+              <motion.figure
+                key={`${s.name}-${i}`}
+                className="testimonial-card-slide"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 0.7, delay: i * 0.1 }}
+                style={{
+                  position: 'relative', borderRadius: '1.5rem', border: '1px solid rgba(0,39,76,0.1)',
+                  background: '#fff', padding: '2rem',
+                  display: 'flex', flexDirection: 'column', gap: '2rem',
+                  margin: 0,
+                  transition: 'box-shadow 0.3s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.boxShadow = 'var(--shadow-float)'}
+                onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
+              >
+                <div style={{ fontFamily: 'var(--font-h)', fontSize: '3.75rem', lineHeight: 1, color: 'var(--gold)', marginBottom: '-1rem' }}>"</div>
+                <blockquote style={{ fontSize: '1rem', lineHeight: 1.65, color: 'rgba(33,33,33,0.85)', fontFamily: 'var(--font-h)', fontWeight: 500, margin: 0 }}>
+                  {s.quote}
+                </blockquote>
+                <figcaption style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid rgba(0,39,76,0.1)' }}>
+                  <div style={{ fontFamily: 'var(--font-h)', fontWeight: 700, color: 'var(--navy)' }}>{s.name}</div>
+                  <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--red)', marginTop: '0.25rem' }}>{s.role}</div>
+                </figcaption>
+              </motion.figure>
+            ))}
+          </div>
+
+          <div className="carousel-dots">
+            {stories.map((_, i) => (
+              <button
+                key={i}
+                aria-label={`Go to slide ${i + 1}`}
+                className={`carousel-dot ${activeIndex === i ? 'active' : ''}`}
+                onClick={() => scrollTo(i)}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -767,7 +1008,7 @@ function FinalCTA() {
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,8,22,0.7) 0%, rgba(0,8,22,0.4) 50%, var(--navy-deep) 100%)' }} />
       </motion.div>
 
-      <div style={{ position: 'relative', maxWidth: '1100px', margin: '0 auto', padding: 'clamp(8rem,12vw,12rem) clamp(1.5rem,5vw,4rem)' }}>
+      <div className="cta-content-wrapper" style={{ position: 'relative', maxWidth: '1100px', margin: '0 auto', padding: 'clamp(8rem,12vw,12rem) clamp(1.5rem,5vw,4rem)' }}>
         <motion.div style={{ y, opacity }}>
           <div className="chapter-num" style={{ color: 'var(--gold)', marginBottom: '2rem' }}>Final boarding</div>
 
@@ -794,39 +1035,29 @@ function FinalCTA() {
           ) : (
             <form
               onSubmit={handleSubmit}
-              className="glass-dark"
-              style={{ marginTop: '3rem', maxWidth: '720px', borderRadius: '1rem', padding: '0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}
+              className="glass-dark cta-form"
             >
               <input
                 id="cta-name"
                 type="text"
                 placeholder="Full name"
                 required
-                style={{ flex: '1 1 180px', background: 'transparent', border: 'none', outline: 'none', padding: '0.875rem 1rem', fontSize: '0.875rem', color: '#fff', fontFamily: 'var(--font-b) ' }}
               />
               <input
                 id="cta-phone"
                 type="tel"
                 placeholder="Mobile number"
                 required
-                style={{ flex: '1 1 180px', background: 'transparent', border: 'none', outline: 'none', padding: '0.875rem 1rem', fontSize: '0.875rem', color: '#fff', fontFamily: 'var(--font-b)', borderLeft: '1px solid rgba(255,255,255,0.1)' }}
               />
               <input
                 id="cta-email"
                 type="email"
                 placeholder="Email address"
                 required
-                style={{ flex: '1 1 180px', background: 'transparent', border: 'none', outline: 'none', padding: '0.875rem 1rem', fontSize: '0.875rem', color: '#fff', fontFamily: 'var(--font-b)', borderLeft: '1px solid rgba(255,255,255,0.1)' }}
               />
               <button
                 type="submit"
                 disabled={loading}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-                  borderRadius: '0.75rem', background: 'var(--red)', color: '#fff',
-                  padding: '0.875rem 1.5rem', fontSize: '0.875rem', fontWeight: 500, fontFamily: 'var(--font-h)',
-                  border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'background 0.2s',
-                }}
                 onMouseEnter={e => e.currentTarget.style.background = 'var(--red-dark)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'var(--red)'}
               >
@@ -878,7 +1109,7 @@ function SiteFooter() {
     <footer style={{ position: 'relative', background: 'var(--navy-deep)', color: '#fff', paddingTop: '6rem', paddingBottom: '2.5rem', paddingLeft: 'clamp(1.5rem,5vw,4rem)', paddingRight: 'clamp(1.5rem,5vw,4rem)', overflow: 'hidden' }}>
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
         {/* Top grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '5fr 7fr', gap: '3rem', paddingBottom: '5rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+        <div className="responsive-grid-footer" style={{ paddingBottom: '5rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
           <div>
             <h3 className="display-xl" style={{ fontSize: 'clamp(2rem,5vw,4rem)', color: '#fff' }}>
               Built for the <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>serious</span> aspirant.
@@ -889,7 +1120,7 @@ function SiteFooter() {
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem' }}>
+          <div className="responsive-grid-footer-links">
             {cols.map((col) => (
               <div key={col.title}>
                 <div style={{ fontSize: '0.6875rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: '1.25rem' }}>{col.title}</div>
@@ -914,7 +1145,7 @@ function SiteFooter() {
 
         {/* Mega wordmark */}
         <div style={{ paddingTop: '4rem', paddingBottom: '4rem', textAlign: 'center' }}>
-          <div style={{ fontFamily: 'var(--font-h)', fontWeight: 900, letterSpacing: '-0.05em', fontSize: 'clamp(4rem,18vw,16rem)', lineHeight: 1, color: 'rgba(255,255,255,0.95)' }}>
+          <div style={{ fontFamily: 'var(--font-h)', fontWeight: 900, letterSpacing: '-0.05em', fontSize: 'clamp(2.2rem,18vw,16rem)', lineHeight: 1, color: 'rgba(255,255,255,0.95)' }}>
             AIRB<span style={{ color: 'var(--red)' }}>O</span>RNE
           </div>
         </div>
@@ -937,24 +1168,45 @@ function SiteFooter() {
    WHATSAPP FLOAT — Green pill
 ───────────────────────────────────── */
 function WhatsAppFloat() {
+  const [visible, setVisible] = useState(true)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const footer = document.querySelector('footer')
+      const cta = document.querySelector('#cta')
+      const testimonials = document.querySelector('#stories')
+      
+      const elementsToAvoid = [footer, cta, testimonials].filter(Boolean)
+      let shouldHide = false
+      const viewportHeight = window.innerHeight
+
+      for (const el of elementsToAvoid) {
+        const rect = el.getBoundingClientRect()
+        if (rect.top < viewportHeight - 80) {
+          shouldHide = true
+          break
+        }
+      }
+      setVisible(!shouldHide)
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll()
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   return (
-    <div style={{ position: 'fixed', bottom: '1.25rem', right: '1.25rem', zIndex: 40, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+    <div className={`whatsapp-float ${!visible ? 'whatsapp-hide' : ''}`}>
       <a
         href="https://wa.me/919953777320"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat on WhatsApp"
-        style={{
-          display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-          borderRadius: '999px', background: '#25D366', color: '#fff',
-          padding: '0.75rem 1rem', boxShadow: 'var(--shadow-float)',
-          textDecoration: 'none', fontFamily: 'var(--font-h)', fontSize: '0.8125rem', fontWeight: 500,
-          transition: 'transform 0.2s, box-shadow 0.2s',
-        }}
+        className="whatsapp-btn"
         onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 20px 40px -10px rgba(37,211,102,0.5)' }}
         onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'var(--shadow-float)' }}
       >
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+        <svg viewBox="0 0 24 24" fill="currentColor" style={{ display: 'block' }}>
           <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
         </svg>
         <span>Chat on WhatsApp</span>
@@ -1004,18 +1256,14 @@ function BookingModal({ open, onClose }) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={(e) => e.target === e.currentTarget && onClose()}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 9999,
-            background: 'rgba(0,8,22,0.9)', backdropFilter: 'blur(16px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem',
-          }}
+          className="booking-modal-overlay"
         >
           <motion.div
             initial={{ y: 30, opacity: 0, scale: 0.97 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 30, opacity: 0, scale: 0.97 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            style={{ background: '#000f1e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '3rem', maxWidth: '460px', width: '100%', position: 'relative' }}
+            className="booking-modal-card"
           >
             <button onClick={onClose} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1 }}>×</button>
 
