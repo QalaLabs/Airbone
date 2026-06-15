@@ -39,7 +39,13 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ data: resources });
+    // Strip fileUrl for gated resources — clients must use /api/public/resource-download
+    const sanitized = resources.map((r) => ({
+      ...r,
+      fileUrl: r.isGated ? null : r.fileUrl,
+    }));
+
+    return NextResponse.json({ data: sanitized });
   } catch (err) {
     console.error("[Public Resources API Error]:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

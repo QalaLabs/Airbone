@@ -25,13 +25,14 @@ export default function ResourcesPage() {
   const [error, setError] = useState(false)
 
   const [unlocked, setUnlocked] = useState(false)
+  const [gateToken, setGateToken] = useState(null)
   const [showGateModal, setShowGateModal] = useState(false)
   const [targetResource, setTargetResource] = useState(null)
   const [formStatus, setFormStatus] = useState('idle') // idle, loading, success
 
   useEffect(() => {
-    const isUnlocked = sessionStorage.getItem('resources_unlocked')
-    if (isUnlocked === 'true') setUnlocked(true)
+    const token = sessionStorage.getItem('resource_gate_token')
+    if (token) { setGateToken(token); setUnlocked(true) }
   }, [])
 
   useEffect(() => {
@@ -41,23 +42,41 @@ export default function ResourcesPage() {
       .catch(() => { setError(true); setLoading(false) })
   }, [])
 
-  const handleDownloadClick = (resource) => {
-    if (unlocked || !resource.isGated) {
-      triggerFileDownload(resource)
-    } else {
-      setTargetResource(resource)
-      setShowGateModal(true)
-    }
-  }
-
-  const triggerFileDownload = (resource) => {
-    const url = resource.fileUrl ?? `/documents/${resource.fileName}`
+  const triggerFileDownload = (url, fileName) => {
     const link = document.createElement('a')
     link.href = url
-    link.download = resource.fileName
+    link.download = fileName
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
+  }
+
+  const fetchGatedUrl = async (resourceId, token) => {
+    try {
+      const res = await fetch('/api/public-proxy/resource-download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, resourceId }),
+      })
+      if (!res.ok) return null
+      const json = await res.json()
+      return json.url ?? null
+    } catch { return null }
+  }
+
+  const handleDownloadClick = async (resource) => {
+    if (!resource.isGated) {
+      if (resource.fileUrl) triggerFileDownload(resource.fileUrl, resource.fileName)
+      return
+    }
+    const token = gateToken ?? sessionStorage.getItem('resource_gate_token')
+    if (!unlocked || !token) {
+      setTargetResource(resource)
+      setShowGateModal(true)
+      return
+    }
+    const url = await fetchGatedUrl(resource.id, token)
+    if (url) triggerFileDownload(url, resource.fileName)
   }
 
   const handleGateSubmit = async (e) => {
@@ -69,8 +88,9 @@ export default function ResourcesPage() {
     const email = e.target.elements['gate-email'].value
     const course = e.target.elements['gate-course'].value
 
+    let token = null
     try {
-      await fetch('/api/lead', {
+      const res = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -81,17 +101,25 @@ export default function ResourcesPage() {
           source: `Resource Gate: ${targetResource?.title || 'Unknown'}`
         })
       })
+      const json = await res.json().catch(() => ({}))
+      token = json.gateToken ?? null
+      if (token) {
+        sessionStorage.setItem('resource_gate_token', token)
+        setGateToken(token)
+      }
     } catch {
       // Suppress network errors — unlock regardless
     }
 
-    sessionStorage.setItem('resources_unlocked', 'true')
     setUnlocked(true)
     setFormStatus('success')
 
-    setTimeout(() => {
+    setTimeout(async () => {
       setShowGateModal(false)
-      if (targetResource) triggerFileDownload(targetResource)
+      if (targetResource && token) {
+        const url = await fetchGatedUrl(targetResource.id, token)
+        if (url) triggerFileDownload(url, targetResource.fileName)
+      }
     }, 1500)
   }
 

@@ -54,6 +54,9 @@ export async function POST(req) {
     }
 
     // Fire optional webhooks (non-blocking)
+    const json = await res.json().catch(() => ({}))
+    const gateToken = json.gateToken ?? null
+
     const leadData = { name, phone, email, course, source }
 
     if (process.env.N8N_WHATSAPP_WEBHOOK) {
@@ -73,7 +76,7 @@ export async function POST(req) {
     }
 
     return NextResponse.json(
-      { success: true, message: 'Lead captured successfully.' },
+      { success: true, message: 'Lead captured successfully.', gateToken },
       { status: 200 }
     )
   } catch (err) {

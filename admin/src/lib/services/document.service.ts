@@ -24,10 +24,15 @@ export class DocumentService {
     fileName: string,
     contentType: string,
   ): Promise<{ uploadUrl: string; fileKey: string; fileUrl: string }> {
-    const { R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET, R2_PUBLIC_URL } = process.env;
+    const { R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_PUBLIC_URL } = process.env;
 
-    if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !R2_BUCKET) {
-      // In dev without R2 configured, return a mock response
+    if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !R2_BUCKET_NAME) {
+      if (process.env.NODE_ENV === "production") {
+        throw new Error(
+          "R2 storage is not configured. Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, and R2_BUCKET_NAME.",
+        );
+      }
+      // Dev-only mock response
       const fileKey = `documents/${Date.now()}-${fileName.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
       return {
         uploadUrl: `http://localhost:3001/api/v1/upload-mock?key=${encodeURIComponent(fileKey)}`,
@@ -47,7 +52,7 @@ export class DocumentService {
     });
 
     const fileKey = `documents/${Date.now()}-${fileName.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-    const command = new PutObjectCommand({ Bucket: R2_BUCKET, Key: fileKey, ContentType: contentType });
+    const command = new PutObjectCommand({ Bucket: R2_BUCKET_NAME, Key: fileKey, ContentType: contentType });
     const uploadUrl = await getSignedUrl(client, command, { expiresIn: 300 });
 
     return {

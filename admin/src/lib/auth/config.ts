@@ -17,6 +17,31 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(prisma),
 
+  callbacks: {
+    // Override jwt to add isActive validation on token refresh (Node.js only — Prisma safe here).
+    // The edge middleware still uses auth.config.ts which checks JWT signature only.
+    async jwt({ token, user }) {
+      if (user) {
+        const u = user as unknown as SessionUser;
+        token.id = u.id;
+        token.orgId = u.orgId;
+        token.campusId = u.campusId;
+        token.role = u.role as UserRole;
+        token.avatarUrl = u.avatarUrl;
+        return token;
+      }
+      // On token refresh, verify the user still exists and is active
+      const active = await prisma.user.findFirst({
+        where: { id: token.id, isActive: true, deletedAt: null },
+        select: { id: true },
+      });
+      if (!active) return null; // Revoke session — user deactivated or deleted
+      return token;
+    },
+
+    session: authConfig.callbacks!.session!,
+  },
+
   providers: [
     Credentials({
       name: "credentials",

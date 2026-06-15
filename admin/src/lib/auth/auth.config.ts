@@ -4,7 +4,7 @@ import type { SessionUser } from "@/types";
 
 // Edge-safe auth config — no Node.js-only modules (no argon2, no prisma adapter)
 export const authConfig: NextAuthConfig = {
-  session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
+  session: { strategy: "jwt", maxAge: 8 * 60 * 60 }, // 8 hours
 
   pages: {
     signIn: "/login",
