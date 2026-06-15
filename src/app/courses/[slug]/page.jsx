@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
-import { fetchPublic, formatFee } from '@/lib/adminApi'
+import { fetchPublic, fetchPublicWithStatus, formatFee } from '@/lib/adminApi'
 import { getCourseSchema, getBreadcrumbSchema } from '@/utils/seo'
 
 export const revalidate = 60
@@ -20,7 +20,30 @@ export async function generateMetadata({ params }) {
 
 export default async function CourseDetailPage({ params }) {
   const { slug } = await params
-  const course = await fetchPublic('/courses', { slug })
+  const { data: course, status } = await fetchPublicWithStatus('/courses', { slug })
+
+  // status 0 = network error, 5xx = admin down — show service error, not 404
+  if (!course && (status === 0 || status >= 500)) {
+    return (
+      <>
+        <Header />
+        <main style={{ minHeight: '80vh', background: '#000810', padding: '4rem var(--margin) 6rem var(--margin)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center', maxWidth: '480px' }}>
+            <p style={{ fontSize: '0.72rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#DB241E', fontWeight: 700, marginBottom: '1rem' }}>Service Unavailable</p>
+            <h1 style={{ fontFamily: 'var(--font-h)', fontSize: '1.8rem', fontWeight: 900, color: '#FFFFFF', textTransform: 'uppercase', marginBottom: '1rem' }}>Course Temporarily Unavailable</h1>
+            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '2rem' }}>
+              We are having trouble reaching our servers. Please try again in a moment or contact us directly.
+            </p>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <Link href="/courses" className="btn btn-ghost" style={{ textDecoration: 'none' }}>← All Courses</Link>
+              <a href="tel:+919953777320" className="btn btn-primary">Call +91 9953-777-320</a>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </>
+    )
+  }
 
   if (!course) notFound()
 

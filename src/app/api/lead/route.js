@@ -8,12 +8,14 @@ const SOURCE_SLUG = {
   'homepage modal': 'homepage_cta',
   'homepage final cta': 'homepage_cta',
   'contact form': 'contact_form',
+  'contact page': 'contact_form',
+  'flagship featured banner': 'course_page',
 }
 
 function resolveSource(raw = '') {
   const key = raw.toLowerCase()
   if (key.startsWith('resource gate')) return 'brochure_download'
-  if (key.startsWith('course page')) return 'course_page'
+  if (key.startsWith('course')) return 'course_page'
   return SOURCE_SLUG[key] ?? 'homepage_cta'
 }
 

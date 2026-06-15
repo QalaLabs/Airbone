@@ -730,12 +730,13 @@ function mapCourseToCard(c) {
 function CoursesSection() {
   const [courses, setCourses] = useState([])
   const [loaded, setLoaded] = useState(false)
+  const [fetchError, setFetchError] = useState(false)
 
   useEffect(() => {
     fetch('/api/public-proxy/courses?limit=9')
       .then((r) => r.json())
       .then((d) => { setCourses((d.data ?? []).map(mapCourseToCard)); setLoaded(true) })
-      .catch(() => setLoaded(true))
+      .catch(() => { setFetchError(true); setLoaded(true) })
   }, [])
 
   const count = courses.length
@@ -766,7 +767,15 @@ function CoursesSection() {
           </div>
         )}
 
-        {loaded && courses.length === 0 && (
+        {loaded && fetchError && (
+          <div style={{ padding: '4rem 2rem', textAlign: 'center', background: 'rgba(0,39,76,0.04)', borderRadius: '1.5rem', border: '1px solid rgba(0,39,76,0.1)' }}>
+            <p style={{ color: 'rgba(0,39,76,0.5)', fontSize: '0.9375rem' }}>
+              Could not load courses right now. <a href="/courses" style={{ color: 'var(--red)' }}>View full catalog →</a>
+            </p>
+          </div>
+        )}
+
+        {loaded && !fetchError && courses.length === 0 && (
           <div style={{ padding: '4rem 2rem', textAlign: 'center', background: 'rgba(0,39,76,0.04)', borderRadius: '1.5rem', border: '1px solid rgba(0,39,76,0.1)' }}>
             <p style={{ color: 'rgba(0,39,76,0.5)', fontSize: '0.9375rem' }}>
               Course catalog is being updated. <a href="/contact" style={{ color: 'var(--red)' }}>Contact us</a> for current offerings.
@@ -774,7 +783,7 @@ function CoursesSection() {
           </div>
         )}
 
-        {loaded && courses.length > 0 && (
+        {loaded && !fetchError && courses.length > 0 && (
           <div className="responsive-grid-courses" style={{ background: 'rgba(0,39,76,0.1)', borderRadius: '1.5rem', overflow: 'hidden', border: '1px solid rgba(0,39,76,0.1)' }}>
             {courses.map((c, i) => (
               <CourseCard key={c.href} c={c} index={i} />
@@ -862,6 +871,7 @@ function CourseCard({ c, index }) {
 ───────────────────────────────────── */
 function TestimonialsSection() {
   const [stories, setStories] = useState([])
+  const [storiesLoaded, setStoriesLoaded] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
   const carouselRef = useRef(null)
 
@@ -875,8 +885,9 @@ function TestimonialsSection() {
           quote: t.content,
         }))
         setStories(mapped)
+        setStoriesLoaded(true)
       })
-      .catch(() => {})
+      .catch(() => setStoriesLoaded(true))
   }, [])
 
   const handleScroll = () => {
@@ -914,7 +925,14 @@ function TestimonialsSection() {
         </div>
 
         <div className="testimonials-carousel-container">
-          {stories.length === 0 && (
+          {!storiesLoaded && (
+            <div style={{ display: 'flex', gap: '1.5rem', overflow: 'hidden', padding: '0.5rem 0' }}>
+              {[1, 2, 3].map((i) => (
+                <div key={i} style={{ flex: '0 0 calc(33.33% - 1rem)', minWidth: '280px', background: 'rgba(0,39,76,0.06)', borderRadius: '1.5rem', height: '220px', opacity: 0.5 }} />
+              ))}
+            </div>
+          )}
+          {storiesLoaded && stories.length === 0 && (
             <p style={{ color: 'rgba(0,39,76,0.4)', fontSize: '0.9375rem', textAlign: 'center', padding: '3rem 0' }}>
               Student stories coming soon.
             </p>

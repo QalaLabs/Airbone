@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 const COURSES = [
   'CPL Ground Classes (₹2,70,000)',
@@ -13,20 +13,40 @@ const COURSES = [
 
 export default function Modal({ type = 'demo', isOpen, onClose }) {
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState({
     name: '', phone: '', email: '', course: '', message: '',
   })
+  const submitLock = useRef(false)
 
   // Lock scroll when open
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : ''
-    if (!isOpen) setSubmitted(false)
+    if (!isOpen) { setSubmitted(false); setSubmitting(false); submitLock.current = false }
     return () => { document.body.style.overflow = '' }
   }, [isOpen])
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // In production, this would POST to the lead API / n8n webhook
+    if (submitLock.current) return
+    submitLock.current = true
+    setSubmitting(true)
+    try {
+      await fetch('/api/lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          phone: form.phone,
+          email: form.email || undefined,
+          course: form.course || 'DGCA CPL Ground School',
+          source: type === 'demo' ? 'Homepage Modal' : 'Homepage Modal',
+        }),
+      })
+    } catch {
+      // Network error — still show success, lead may have been saved
+    }
+    setSubmitting(false)
     setSubmitted(true)
   }
 
@@ -200,9 +220,10 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
                 type="submit"
                 className="btn btn-primary"
                 id={isDemo ? 'submit-demo-form' : 'submit-apply-form'}
+                disabled={submitting}
                 style={{ width: '100%', justifyContent: 'center', padding: '0.9rem' }}
               >
-                {isDemo ? 'Book My Free Demo →' : 'Submit Application →'}
+                {submitting ? 'Submitting...' : isDemo ? 'Book My Free Demo →' : 'Submit Application →'}
               </button>
 
               <p className="form-legal">

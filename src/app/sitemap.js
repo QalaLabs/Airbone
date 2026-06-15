@@ -1,9 +1,8 @@
-import { COURSES } from '@/utils/coursesData'
+import { fetchPublic } from '@/lib/adminApi'
 
 export default async function sitemap() {
   const baseUrl = 'https://airborneaviation.in'
 
-  // Static routes
   const staticRoutes = ['', '/about', '/courses', '/jobs', '/resources', '/contact'].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date().toISOString(),
@@ -11,13 +10,20 @@ export default async function sitemap() {
     priority: route === '' ? 1.0 : 0.8,
   }))
 
-  // Dynamic course routes
-  const courseRoutes = COURSES.map((course) => ({
-    url: `${baseUrl}/courses/${course.slug}`,
-    lastModified: new Date().toISOString(),
-    changeFrequency: 'monthly',
-    priority: 0.7,
-  }))
+  let courseRoutes = []
+  try {
+    const courses = await fetchPublic('/courses', { limit: 100 })
+    if (Array.isArray(courses)) {
+      courseRoutes = courses.map((course) => ({
+        url: `${baseUrl}/courses/${course.slug}`,
+        lastModified: new Date().toISOString(),
+        changeFrequency: 'monthly',
+        priority: 0.7,
+      }))
+    }
+  } catch {
+    // Admin API unavailable — sitemap still generates with static routes only
+  }
 
   return [...staticRoutes, ...courseRoutes]
 }

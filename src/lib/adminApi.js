@@ -1,5 +1,23 @@
 const BASE = process.env.ADMIN_API_URL ?? 'http://localhost:3001'
 
+// Returns { data, status } — status 0 means network error, non-zero is HTTP status
+export async function fetchPublicWithStatus(path, params = {}) {
+  const url = new URL(`${BASE}/api/public${path}`)
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== null) url.searchParams.set(k, String(v))
+  })
+  try {
+    const res = await fetch(url.toString(), { next: { revalidate: 60 } })
+    if (res.ok) {
+      const json = await res.json()
+      return { data: json.data ?? null, status: res.status }
+    }
+    return { data: null, status: res.status }
+  } catch {
+    return { data: null, status: 0 }
+  }
+}
+
 export async function fetchPublic(path, params = {}) {
   const url = new URL(`${BASE}/api/public${path}`)
   Object.entries(params).forEach(([k, v]) => {
