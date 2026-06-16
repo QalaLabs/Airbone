@@ -37,6 +37,7 @@ export function RouteProgress() {
 
   return (
     <div
+      className="route-progress-bar"
       aria-hidden
       style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 60, pointerEvents: 'none', height: '3px' }}
     >
@@ -164,6 +165,9 @@ export function AmbientRadial() {
   )
 
   useEffect(() => {
+    const isTouch = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768
+    if (isTouch) return
+
     const onMove = (e) => {
       mx.set((e.clientX / window.innerWidth) * 100)
       my.set((e.clientY / window.innerHeight) * 100)
@@ -357,8 +361,8 @@ export function JourneyMap() {
         }}
       />
 
-      <div style={{ position: 'relative', maxWidth: '1280px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '3rem', alignItems: 'center' }}>
-        <div style={{ gridColumn: 'span 4' }}>
+      <div className="journey-map-grid" style={{ position: 'relative', maxWidth: '1280px', margin: '0 auto' }}>
+        <div className="journey-map-text">
           <div className="chapter-num" style={{ color: 'var(--gold)', marginBottom: '1rem' }}>Flight Plan</div>
           <h2 className="display-xl" style={{ fontSize: 'clamp(2rem,4.5vw,3.8rem)', color: '#fff' }}>
             Five careers.{' '}
@@ -389,7 +393,7 @@ export function JourneyMap() {
           </ul>
         </div>
 
-        <div style={{ gridColumn: 'span 8' }}>
+        <div className="journey-map-visual">
           <svg ref={svgRef} viewBox="0 0 100 80" style={{ width: '100%', height: 'auto' }} preserveAspectRatio="xMidYMid meet">
             <defs>
               <radialGradient id="hub-glow" cx="50%" cy="50%" r="50%">
@@ -455,26 +459,38 @@ const PILOTS = [
 ]
 
 export function SuccessMosaic({ image }) {
+  const [isMobile, setIsMobile] = useState(false)
+  const [expanded, setExpanded] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile, { passive: true })
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  const displayedPilots = isMobile && !expanded ? PILOTS.slice(0, 3) : PILOTS
+
   return (
-    <section style={{ position: 'relative', padding: 'clamp(6rem,8vw,10rem) clamp(1.5rem,5vw,4rem)', background: 'var(--paper)' }}>
+    <section style={{ position: 'relative', padding: 'clamp(3.5rem,8vw,10rem) clamp(1.5rem,5vw,4rem)', background: 'var(--paper)' }}>
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '2rem', marginBottom: '3rem' }}>
-          <div style={{ gridColumn: 'span 5' }}>
+        <div className="mosaic-header-grid">
+          <div className="mosaic-header-title">
             <div className="chapter-num" style={{ color: 'var(--red)', marginBottom: '1rem' }}>The Wall</div>
             <h2 className="display-xl" style={{ fontSize: 'clamp(2rem,4.5vw,4rem)', color: 'var(--navy)' }}>
               Faces on the{' '}
               <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--red)' }}>flight line.</span>
             </h2>
           </div>
-          <div style={{ gridColumn: '7 / span 6', alignSelf: 'flex-end' }}>
+          <div className="mosaic-header-desc">
             <p style={{ color: 'rgba(33,33,33,0.7)', fontSize: '0.9375rem', lineHeight: 1.7, maxWidth: '28rem' }}>
               Eight years. Hundreds of cockpits. A few of the captains, first officers and cadets who walked our corridors before they walked a jet bridge.
             </p>
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem', gridAutoRows: '220px' }}>
-          {PILOTS.map((p, i) => {
+        <div className="responsive-grid-mosaic" style={{ gap: '0.75rem' }}>
+          {displayedPilots.map((p, i) => {
             const tall = i === 0 || i === 5
             const wide = i === 3
             return (
@@ -487,8 +503,8 @@ export function SuccessMosaic({ image }) {
                 style={{
                   position: 'relative', overflow: 'hidden', borderRadius: '1rem',
                   background: 'var(--navy)',
-                  gridRow: tall ? 'span 2' : 'span 1',
-                  gridColumn: wide ? 'span 2' : 'span 1',
+                  gridRow: tall && (!isMobile || expanded) ? 'span 2' : 'span 1',
+                  gridColumn: wide && (!isMobile || expanded) ? 'span 2' : 'span 1',
                   margin: 0,
                 }}
                 className="mosaic-figure"
@@ -516,6 +532,28 @@ export function SuccessMosaic({ image }) {
             )
           })}
         </div>
+
+        {isMobile && (
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2.5rem' }}>
+            <button
+              onClick={() => setExpanded(!expanded)}
+              style={{
+                borderRadius: '999px',
+                background: 'rgba(0,39,76,0.05)',
+                border: '1px solid rgba(0,39,76,0.1)',
+                color: 'var(--navy)',
+                padding: '0.75rem 1.5rem',
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                fontFamily: 'var(--font-h)',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              {expanded ? 'View Less' : 'View More Success Stories'}
+            </button>
+          </div>
+        )}
       </div>
 
       <style>{`
