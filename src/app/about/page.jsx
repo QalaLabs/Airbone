@@ -2,8 +2,56 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 
 export const metadata = {
-  title: 'About Us & Leadership | Airborne Aviation Academy',
-  description: 'Learn about Airborne Aviation Academy in Dwarka, Delhi. Meet Capt. Navrang Singh, Deepak Sir, Piyush Sir, and check out our legacy of CPL exam pass rates.',
+  title: 'About Airborne Aviation — DGCA Approved Delhi',
+  description: 'Airborne Aviation Academy, Dwarka Delhi — led by Capt. Navrang Singh. 15+ years of DGCA-approved pilot training. Meet our faculty, fleet & placement record.',
+  alternates: {
+    canonical: 'https://airborneaviation.in/about/',
+  },
+  openGraph: {
+    title: 'About Airborne Aviation Academy — DGCA Approved | Dwarka Delhi',
+    description: 'Airborne Aviation Academy, Dwarka Delhi — led by Capt. Navrang Singh. 15+ years of DGCA-approved pilot training.',
+    url: 'https://airborneaviation.in/about/',
+    type: 'website',
+  },
+}
+
+const personSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'Capt. Navrang Singh',
+  jobTitle: 'Chief Flight Instructor & Founder',
+  worksFor: {
+    '@type': 'EducationalOrganization',
+    name: 'Airborne Aviation Academy',
+    url: 'https://airborneaviation.in',
+  },
+  description: 'DGCA CPL holder with 15+ years of flight instruction experience. Founder of Airborne Aviation Academy, Ramphal Chowk, Dwarka, New Delhi. Active commercial airline captain.',
+  url: 'https://airborneaviation.in/about/',
+  knowsAbout: ['DGCA CPL examination', 'Air Navigation', 'Aviation Meteorology', 'Commercial Pilot License India', 'Pilot training Delhi'],
+}
+
+const orgSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'EducationalOrganization',
+  name: 'Airborne Aviation Academy',
+  url: 'https://airborneaviation.in',
+  description: 'DGCA-approved Flying Training Organisation (FTO) at Ramphal Chowk, Dwarka, New Delhi. Founded by Capt. Navrang Singh. Offers CPL, ATPL, PPL, and cabin crew training.',
+  foundingDate: '2010',
+  founder: { '@type': 'Person', name: 'Capt. Navrang Singh' },
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: 'Ramphal Chowk, Sector 7 Dwarka',
+    addressLocality: 'New Delhi',
+    postalCode: '110075',
+    addressCountry: 'IN',
+  },
+  telephone: '+91-9953777320',
+  email: 'admissions@airborneaviation.in',
+  alumni: [
+    { '@type': 'Person', name: 'Ruzal Dhral', memberOf: { '@type': 'Organization', name: 'IndiGo' } },
+    { '@type': 'Person', name: 'Capt. Nipun Singh', memberOf: { '@type': 'Organization', name: 'Air India' } },
+    { '@type': 'Person', name: 'Capt. Himanish Sagwal', memberOf: { '@type': 'Organization', name: 'Emirates' } },
+  ],
 }
 
 const FOUNDERS = [
@@ -40,18 +88,20 @@ const STATS = [
 export default function AboutPage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }} />
       <Header />
       <main style={{ minHeight: '80vh', background: '#000810', padding: '4rem var(--margin) 6rem var(--margin)' }}>
-        
+
         {/* Hero Section */}
         <div style={{ maxWidth: '800px', marginBottom: '5rem' }}>
-          <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start' }}>Academy Authority</p>
+          <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start' }}>DGCA Approved Flying School</p>
           <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', marginTop: '1rem', textTransform: 'uppercase' }}>
-            Building Captains.
-            <em style={{ color: '#DB241E', fontStyle: 'normal' }}> Transforming Lives.</em>
+            About Airborne Aviation Academy —
+            <em style={{ color: '#DB241E', fontStyle: 'normal' }}> Dwarka, Delhi.</em>
           </h1>
           <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '1.05rem', lineHeight: '1.7', maxWidth: '100%' }}>
-            Located at Ramphal Chowk, Dwarka, Airborne Aviation Academy was established with a singular focus: to strip away the commercial noise of pilot training and return to rigorous, conceptual excellence.
+            Airborne Aviation Academy is a DGCA-approved Flying Training Organisation (FTO) located at Ramphal Chowk, Dwarka, New Delhi. Founded by Capt. Navrang Singh, the academy offers CPL, ATPL, PPL, cabin crew, and DGCA ground school programs. Airborne has trained 2,100+ aspirants currently pursuing and flying with Indian airlines including IndiGo, Air India, and Akasa Air.
           </p>
         </div>
 

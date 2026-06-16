@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { motion, useScroll, useTransform, useSpring, useMotionValue, useInView, AnimatePresence } from 'framer-motion'
-import { getLocalBusinessSchema, getEducationalOrgSchema } from '@/utils/seo'
+import { getLocalBusinessSchema, getEducationalOrgSchema, getWebSiteSchema, getFAQSchema } from '@/utils/seo'
 
 // Premium FX components — pure UI, no backend dependencies
 import {
@@ -187,13 +187,13 @@ function HeroChapter({ onBook, on3D }) {
           style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.6875rem', letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: '2rem' }}
         >
           <span style={{ height: '1px', width: '2.5rem', background: 'var(--red)' }} />
-          Dwarka, Delhi · Est. 2010
+          DGCA-Approved FTO · Ramphal Chowk, Dwarka, Delhi · Est. 2010
         </motion.div>
 
         <h1 style={{ fontFamily: 'var(--font-h)', fontWeight: 800, letterSpacing: '-0.045em', lineHeight: 0.92, fontSize: 'clamp(2.6rem,8.5vw,7.5rem)', color: '#fff', maxWidth: '14ch' }}>
-          <RevealLine delay={0.2}>From classroom</RevealLine>
+          <RevealLine delay={0.2}>DGCA Pilot Training</RevealLine>
           <RevealLine delay={0.4}>
-            to <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>cockpit.</span>
+            Academy,{' '}<span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>Delhi.</span>
           </RevealLine>
         </h1>
 
@@ -204,8 +204,7 @@ function HeroChapter({ onBook, on3D }) {
           style={{ marginTop: '2.5rem', display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem', maxWidth: '1100px' }}
         >
           <p style={{ color: 'rgba(255,255,255,0.8)', maxWidth: '28rem', fontSize: '0.9375rem', lineHeight: 1.7, fontFamily: 'var(--font-b)' }}>
-            India's most disciplined DGCA ground school. Mentor-led training under
-            Capt. Navrang Singh — clearing 5 papers, building careers, restarting dreams.
+            Airborne Aviation Academy is a DGCA-approved Flying Training Organisation (FTO) at Ramphal Chowk, Dwarka, New Delhi. CPL · ATPL · Cabin Crew · Ground School — mentor-led by Capt. Navrang Singh.
           </p>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -609,6 +608,7 @@ function CourseCard({ c, index }) {
   const [hovered, setHovered] = useState(false)
 
   return (
+    <Link href={c.href} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
     <motion.div
       ref={ref}
       initial={{ opacity: 0, y: 30 }}
@@ -628,8 +628,8 @@ function CourseCard({ c, index }) {
         padding: 'clamp(1.5rem,3vw,2rem)',
         display: 'flex', flexDirection: 'column', gap: '1.5rem',
         cursor: 'pointer', transition: 'background 0.5s, color 0.5s',
+        height: '100%',
       }}
-      onClick={() => window.location.href = c.href}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem' }}>
         <span style={{ fontSize: '0.625rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: hovered ? 'var(--gold)' : 'var(--red)', transition: 'color 0.5s' }}>
@@ -658,6 +658,7 @@ function CourseCard({ c, index }) {
         </div>
       </div>
     </motion.div>
+    </Link>
   )
 }
 
@@ -1121,6 +1122,8 @@ export default function HomePage() {
   const [is3dMode, setIs3dMode] = useState(false)
   const businessSchema = getLocalBusinessSchema()
   const orgSchema = getEducationalOrgSchema()
+  const websiteSchema = getWebSiteSchema()
+  const faqSchema = getFAQSchema()
 
   const openBooking = useCallback(() => setBookingOpen(true), [])
   const closeBooking = useCallback(() => setBookingOpen(false), [])
@@ -1153,9 +1156,11 @@ export default function HomePage() {
 
   return (
     <>
-      {/* Structured data — preserved */}
+      {/* Structured data */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(businessSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
 
       {/* Global FX layers */}
       <RouteProgress />

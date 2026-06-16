@@ -5,8 +5,17 @@ import LeadForm from '@/components/LeadForm'
 import { COURSES } from '@/utils/coursesData'
 
 export const metadata = {
-  title: 'Courses & Programs | Airborne Aviation Academy Delhi',
-  description: 'Explore our 10 core aviation training disciplines in Dwarka, Delhi. Programs include DGCA CPL Ground School, Cadet Pilot preparation, Airbus A320 SIM training, and Airline Prep.',
+  title: 'Pilot Training Courses in Delhi — CPL, ATPL, Cabin Crew | Airborne',
+  description: 'Browse all DGCA-approved pilot training courses at Airborne Aviation Academy, Dwarka Delhi. CPL, ATPL, PPL, Cabin Crew. Compare fees and eligibility.',
+  alternates: {
+    canonical: 'https://airborneaviation.in/courses/',
+  },
+  openGraph: {
+    title: 'Pilot Training Courses in Delhi — CPL, ATPL, Cabin Crew | Airborne',
+    description: 'Browse all DGCA-approved pilot training courses at Airborne Aviation Academy, Dwarka Delhi. CPL, ATPL, PPL, Cabin Crew. Compare fees and eligibility.',
+    url: 'https://airborneaviation.in/courses/',
+    type: 'website',
+  },
 }
 
 export default function CoursesPage() {
@@ -20,13 +29,13 @@ export default function CoursesPage() {
         
         {/* Header Hero Section */}
         <div style={{ maxWidth: '800px', marginBottom: '3.5rem' }}>
-          <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start' }}>Academy Syllabus</p>
+          <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start' }}>DGCA Approved Programs</p>
           <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', marginTop: '1rem', textTransform: 'uppercase' }}>
-            Course Portfolio &amp; 
-            <em style={{ color: '#D8A027', fontStyle: 'normal' }}> Flight Paths.</em>
+            Pilot Training Courses at Airborne —
+            <em style={{ color: '#D8A027', fontStyle: 'normal' }}> Dwarka, Delhi.</em>
           </h1>
           <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '1.02rem', lineHeight: '1.6', maxWidth: '100%' }}>
-            From absolute beginner ground training to advanced jet type readiness, our disciplines are structured to build conceptual clarity and meet strict DGCA requirements.
+            Airborne Aviation Academy in Dwarka, Delhi offers DGCA-approved pilot training courses for aspiring commercial pilots, cabin crew, and aviation professionals. Choose from CPL, ATPL, PPL, Type Rating, Cabin Crew Training, and DGCA Ground School — all taught by experienced airline instructors.
           </p>
         </div>
 
