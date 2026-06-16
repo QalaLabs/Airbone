@@ -32,7 +32,13 @@ export function getLocalBusinessSchema() {
     },
     'sameAs': [
       'https://airborneaviation.in'
-    ]
+    ],
+    'aggregateRating': {
+      '@type': 'AggregateRating',
+      'ratingValue': '4.9',
+      'bestRating': '5',
+      'reviewCount': '200'
+    }
   }
 }
 

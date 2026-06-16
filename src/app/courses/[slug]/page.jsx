@@ -19,9 +19,27 @@ export async function generateMetadata({ params }) {
 
   if (!course) return {}
 
+  const title = `${course.title} — DGCA Approved | Dwarka, Delhi | Airborne Aviation`
+  const description = `${course.tagline} DGCA-approved training at Airborne Aviation Academy, Ramphal Chowk, Dwarka, New Delhi. Fees, syllabus, eligibility & batch details.`
+  const url = `https://airborneaviation.in/courses/${course.slug}/`
+
   return {
-    title: `${course.title} | Airborne Aviation Academy`,
-    description: `${course.tagline} Details, syllabus highlights, pricing structures, and batch parameters.`,
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: 'website',
+      images: [{ url: `https://airborneaviation.in${course.image}`, width: 1200, height: 630, alt: course.title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [`https://airborneaviation.in${course.image}`],
+    },
   }
 }
 
@@ -64,7 +82,7 @@ export default async function CourseDetailPage({ params }) {
 
         {/* Course Wide-Bleed Hero Image */}
         <div className="course-hero-image-wrap">
-          <img src={course.image} alt={course.title} className="course-hero-image" />
+          <img src={course.image} alt={`${course.title} — Airborne Aviation Academy, Dwarka Delhi`} className="course-hero-image" />
           <div className="course-hero-overlay" />
         </div>
 

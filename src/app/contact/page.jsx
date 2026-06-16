@@ -1,24 +1,42 @@
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
+import { getLocalBusinessSchema } from '@/utils/seo'
 
 export const metadata = {
-  title: 'Contact Us & Location | Airborne Aviation Academy Delhi',
-  description: 'Contact our admissions desk at Ramphal Chowk, Dwarka, New Delhi. Book a free demo class, check seat availability, or map our location.',
+  title: 'Contact Airborne Aviation Academy — Dwarka, Delhi',
+  description: 'Contact our DGCA-approved pilot training admissions desk at Ramphal Chowk, Dwarka, New Delhi. Book a free demo class or check seat availability.',
+  alternates: {
+    canonical: 'https://airborneaviation.in/contact/',
+  },
+  openGraph: {
+    title: 'Contact Airborne Aviation Academy — Dwarka, Delhi',
+    description: 'Contact our DGCA-approved pilot training admissions desk at Ramphal Chowk, Dwarka, New Delhi. Book a free demo class or check seat availability.',
+    url: 'https://airborneaviation.in/contact/',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Contact Airborne Aviation Academy — Dwarka, Delhi',
+    description: 'Contact our DGCA-approved pilot training admissions desk at Ramphal Chowk, Dwarka, New Delhi.',
+  },
 }
+
+const businessSchema = getLocalBusinessSchema()
 
 export default function ContactPage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(businessSchema) }} />
       <Header />
       <main style={{ minHeight: '80vh', background: '#000810', padding: '4rem var(--margin) 6rem var(--margin)' }}>
-        
+
         {/* Title */}
         <div style={{ maxWidth: '800px', marginBottom: '4rem' }}>
           <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start' }}>Admissions Desk</p>
           <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', marginTop: '1rem', textTransform: 'uppercase' }}>
-            Get In Touch &amp; 
-            <em style={{ color: '#D8A027', fontStyle: 'normal' }}> Visit Dwarka.</em>
+            Contact Airborne Aviation Academy —
+            <em style={{ color: '#D8A027', fontStyle: 'normal' }}> Dwarka, Delhi.</em>
           </h1>
           <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '1.02rem', lineHeight: '1.6', maxWidth: '100%' }}>
             Book a 90-minute demo class with Capt. Navrang Singh or visit our center for career counseling.
