@@ -5,6 +5,7 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { motion, useScroll, useTransform, useSpring, useMotionValue, useInView, AnimatePresence } from 'framer-motion'
 import { getLocalBusinessSchema, getEducationalOrgSchema } from '@/utils/seo'
+import { GlowCard } from '@/components/ui/spotlight-card'
 
 // Premium FX components — pure UI, no backend dependencies
 import {
@@ -722,6 +723,9 @@ function mapCourseToCard(c) {
     price: meta.priceLabel ?? fmt(c.fee) ?? 'Contact us',
     tag: meta.tag ?? c.category ?? 'Program',
     lede: c.subtitle ?? c.description?.slice(0, 120) ?? '',
+    desc: c.description?.slice(0, 90) ?? c.subtitle ?? '',
+    duration: meta.duration ?? '',
+    eligibility: meta.eligibility ?? '',
     seats: meta.seats ?? '',
     href: `/courses/${c.slug}`,
   }
@@ -731,6 +735,8 @@ function CoursesSection() {
   const [courses, setCourses] = useState([])
   const [loaded, setLoaded] = useState(false)
   const [fetchError, setFetchError] = useState(false)
+  const [mobileActiveIdx, setMobileActiveIdx] = useState(0)
+  const mobileCarouselRef = useRef(null)
 
   useEffect(() => {
     fetch('/api/public-proxy/courses?limit=9')
@@ -744,8 +750,220 @@ function CoursesSection() {
     ? <>{count} program{count !== 1 ? 's' : ''}. <span style={{ fontStyle: 'italic', fontWeight: 300 }}>One cockpit.</span></>
     : <>Our programs. <span style={{ fontStyle: 'italic', fontWeight: 300 }}>One cockpit.</span></>
 
+  const handleMobileScroll = () => {
+    if (!mobileCarouselRef.current) return
+    const el = mobileCarouselRef.current
+    const cardWidth = el.clientWidth * 0.80 + 16 // 80vw card + 1rem gap
+    const idx = Math.round(el.scrollLeft / cardWidth)
+    setMobileActiveIdx(Math.min(courses.length - 1, Math.max(0, idx)))
+  }
+
+  const scrollToMobileCard = (idx) => {
+    if (!mobileCarouselRef.current) return
+    const el = mobileCarouselRef.current
+    const cardWidth = el.clientWidth * 0.80 + 16
+    el.scrollTo({ left: idx * cardWidth, behavior: 'smooth' })
+  }
+
   return (
     <section id="courses" style={{ position: 'relative', padding: 'clamp(3.5rem,8vw,10rem) clamp(1.5rem,5vw,4rem)', background: 'var(--paper)' }}>
+
+      {/* Mobile Carousel Styles (scoped by media query) */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        /* Desktop: show grid, hide mobile carousel */
+        .courses-desktop-grid {
+          display: grid !important;
+        }
+        .courses-mobile-carousel-layout {
+          display: none !important;
+        }
+
+        @media (max-width: 767px) {
+          .courses-desktop-grid {
+            display: none !important;
+          }
+          .courses-mobile-carousel-layout {
+            display: block !important;
+          }
+
+          .courses-mobile-wrapper {
+            position: relative;
+            margin: 0 -1.5rem;
+          }
+
+          /* Right-edge peek gradient */
+          .courses-mobile-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 36px;
+            background: linear-gradient(to left, var(--paper) 0%, transparent 100%);
+            pointer-events: none;
+            z-index: 10;
+          }
+
+          .courses-mobile-scroll {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+            gap: 1rem;
+            padding: 1rem 10vw 1.5rem;
+            margin-bottom: 0.5rem;
+          }
+
+          .courses-mobile-scroll::-webkit-scrollbar {
+            display: none;
+          }
+
+          /* Premium mobile card */
+          .course-mobile-card {
+            flex: 0 0 80vw;
+            scroll-snap-align: center;
+            background: #fff;
+            border: 1px solid rgba(0, 39, 76, 0.08);
+            border-radius: 14px;
+            padding: 1.5rem 1.25rem 1.25rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 39, 76, 0.04);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.25s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            min-height: 200px;
+          }
+
+          /* Gold top accent line */
+          .course-mobile-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent 5%, var(--gold) 50%, transparent 95%);
+            opacity: 0.5;
+          }
+
+          .course-mobile-card:active {
+            transform: scale(0.97);
+            border-color: var(--gold);
+            box-shadow: 0 4px 16px rgba(216, 160, 39, 0.12);
+          }
+
+          /* Category badge */
+          .course-mobile-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-family: var(--font-h);
+            font-size: 0.575rem;
+            font-weight: 800;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--red);
+            background: rgba(219, 36, 30, 0.06);
+            border: 1px solid rgba(219, 36, 30, 0.12);
+            border-radius: 999px;
+            padding: 0.3rem 0.7rem;
+            margin-bottom: 0.85rem;
+            width: fit-content;
+          }
+
+          .course-mobile-name {
+            font-family: var(--font-h);
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--navy);
+            text-transform: uppercase;
+            letter-spacing: -0.01em;
+            line-height: 1.2;
+            margin-bottom: 0.5rem;
+          }
+
+          .course-mobile-desc {
+            font-family: var(--font-b);
+            font-size: 0.78rem;
+            color: rgba(33, 33, 33, 0.55);
+            line-height: 1.55;
+            margin-bottom: 0.85rem;
+          }
+
+          /* Info pills row */
+          .course-mobile-pills {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.85rem;
+          }
+
+          .course-mobile-pill {
+            font-family: var(--font-h);
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--navy);
+            background: rgba(0, 39, 76, 0.04);
+            border: 1px solid rgba(0, 39, 76, 0.08);
+            border-radius: 6px;
+            padding: 0.3rem 0.55rem;
+          }
+
+          /* CTA */
+          .course-mobile-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-family: var(--font-h);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--gold);
+            text-decoration: none;
+            padding-top: 0.65rem;
+            border-top: 1px solid rgba(0, 39, 76, 0.06);
+            width: 100%;
+            transition: color 0.2s ease;
+          }
+
+          .course-mobile-cta svg {
+            transition: transform 0.25s ease;
+          }
+
+          .course-mobile-cta:active svg {
+            transform: translateX(4px);
+          }
+
+          /* Swipe hint */
+          .courses-swipe-hint {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            font-family: var(--font-h);
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--red);
+            opacity: 0.6;
+            animation: courseSwipeHint 2.5s infinite ease-in-out;
+            margin-bottom: 1rem;
+          }
+
+          @keyframes courseSwipeHint {
+            0%, 100% { transform: translateX(0); opacity: 0.4; }
+            50% { transform: translateX(6px); opacity: 0.8; }
+          }
+        }
+      ` }} />
+
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
         <div className="courses-header-grid">
           <div>
@@ -784,11 +1002,104 @@ function CoursesSection() {
         )}
 
         {loaded && !fetchError && courses.length > 0 && (
-          <div className="responsive-grid-courses" style={{ background: 'rgba(0,39,76,0.1)', borderRadius: '1.5rem', overflow: 'hidden', border: '1px solid rgba(0,39,76,0.1)' }}>
-            {courses.map((c, i) => (
-              <CourseCard key={c.href} c={c} index={i} />
-            ))}
-          </div>
+          <>
+            {/* 1. Desktop Grid — UNCHANGED */}
+            <div className="courses-desktop-grid responsive-grid-courses" style={{ background: 'rgba(0,39,76,0.1)', borderRadius: '1.5rem', overflow: 'hidden', border: '1px solid rgba(0,39,76,0.1)' }}>
+              {courses.map((c, i) => (
+                <CourseCard key={c.href} c={c} index={i} />
+              ))}
+            </div>
+
+            {/* 2. Mobile Carousel */}
+            <div className="courses-mobile-carousel-layout">
+              {/* Swipe Hint */}
+              <div className="courses-swipe-hint">
+                <span>Swipe to explore programs</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </div>
+
+              {/* Carousel Track */}
+              <div className="courses-mobile-wrapper">
+                <div
+                  className="courses-mobile-scroll"
+                  ref={mobileCarouselRef}
+                  onScroll={handleMobileScroll}
+                >
+                  {courses.map((c, idx) => (
+                    <a
+                      key={c.href}
+                      href={c.href}
+                      className="course-mobile-card"
+                      style={{ textDecoration: 'none', color: 'inherit' }}
+                    >
+                      {/* Category Badge */}
+                      <div>
+                        <div className="course-mobile-badge">
+                          <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5" /></svg>
+                          {c.tag}
+                        </div>
+
+                        {/* Course Name */}
+                        <h3 className="course-mobile-name">{c.name}</h3>
+
+                        {/* Short Description */}
+                        <p className="course-mobile-desc">{c.desc || c.lede}</p>
+
+                        {/* Duration / Eligibility Pills */}
+                        <div className="course-mobile-pills">
+                          {c.duration && (
+                            <span className="course-mobile-pill">{c.duration}</span>
+                          )}
+                          {c.eligibility && (
+                            <span className="course-mobile-pill">{c.eligibility}</span>
+                          )}
+                          {!c.duration && !c.eligibility && c.seats && (
+                            <span className="course-mobile-pill">{c.seats}</span>
+                          )}
+                          {!c.duration && !c.eligibility && !c.seats && (
+                            <span className="course-mobile-pill">{c.tag}</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* CTA */}
+                      <div className="course-mobile-cta">
+                        <span>Explore Program</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="5" y1="12" x2="19" y2="12" />
+                          <polyline points="12 5 19 12 12 19" />
+                        </svg>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+              {/* Progress Dots */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginTop: '0.5rem' }}>
+                {courses.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => scrollToMobileCard(idx)}
+                    style={{
+                      width: mobileActiveIdx === idx ? '18px' : '6px',
+                      height: '6px',
+                      borderRadius: '999px',
+                      background: mobileActiveIdx === idx ? 'var(--red)' : 'rgba(0, 39, 76, 0.15)',
+                      border: 'none',
+                      padding: 0,
+                      cursor: 'pointer',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    }}
+                    aria-label={`Go to program ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </>
         )}
       </div>
     </section>
@@ -1384,7 +1695,11 @@ function PremiumCursor() {
    AIRBORNE ADVANTAGE — 17 items grid
 ───────────────────────────────────── */
 function AirborneAdvantage() {
-  const items = [
+  const [activeIndex, setActiveIndex] = useState(0)
+  const carouselRef = useRef(null)
+
+  // 17 original items for Desktop
+  const desktopItems = [
     { title: 'Premium Goodies', desc: 'Bag, Keychain, Notebook, Pen, and T-Shirt provided to every student.' },
     { title: 'Own Your Material', desc: 'Keep all study materials and resources provided during the course.' },
     { title: 'Elite Infrastructure', desc: '5,000 sq ft state-of-the-art facility at Ramphal Chowk (as of 2024).' },
@@ -1404,8 +1719,262 @@ function AirborneAdvantage() {
     { title: 'Performance Reports', desc: 'Weekly progress and mock exam reports delivered directly to parents.' },
   ]
 
+  // 8 premium categories for Mobile
+  const mobileCategories = [
+    {
+      title: 'Student Kit & Goodies',
+      desc: 'Academy flight bag, keychain, customized notebook, pen, and Airborne T-shirt provided to every student.',
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="7" width="18" height="14" rx="2" ry="2" />
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+        </svg>
+      )
+    },
+    {
+      title: 'Study Material & Library',
+      desc: 'Retain your own comprehensive reference books/materials, plus access to quiet student library spaces after hours.',
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+        </svg>
+      )
+    },
+    {
+      title: 'RTR Lab & Infrastructure',
+      desc: '5,000 sq ft Ramphal Chowk facility with simulated RT communications lab, campus cafeteria, and clean private washrooms.',
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9" />
+          <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5" />
+          <circle cx="12" cy="12" r="2" />
+          <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5" />
+          <path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1" />
+        </svg>
+      )
+    },
+    {
+      title: 'Medical Support',
+      desc: 'In-house Class 2 medical pre-screening and consulting desk to guide your fitness and DGCA medical requirements.',
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+        </svg>
+      )
+    },
+    {
+      title: 'Personal Mentorship',
+      desc: 'Core ground school classes taught directly by Capt. Navrang, with 1-on-1 doubt solving and personalized pacing.',
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z" />
+          <path d="M2 17l10 5 10-5" />
+          <path d="M2 12l10 5 10-5" />
+        </svg>
+      )
+    },
+    {
+      title: 'Career Guidance',
+      desc: 'Lifelong guidance from CPL to type rating, plus interview preparation masterclasses by a retired Air India AGM.',
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+        </svg>
+      )
+    },
+    {
+      title: 'Parent Tracking',
+      desc: 'Real-time attendance notifications (check-in/out) and weekly mock exam reports delivered directly to parents.',
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+      )
+    },
+    {
+      title: 'Hostel Assistance',
+      desc: 'Support in choosing safe, premium, and comfortable hostel or PG accommodation close to the academy.',
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+      )
+    }
+  ]
+
+  const handleScroll = () => {
+    if (!carouselRef.current) return
+    const container = carouselRef.current
+    const scrollLeft = container.scrollLeft
+    const containerWidth = container.clientWidth
+    
+    // Each card is 85% of container width, plus a 16px gap
+    const cardWidth = containerWidth * 0.85 + 16
+    const index = Math.round(scrollLeft / cardWidth)
+    setActiveIndex(Math.min(mobileCategories.length - 1, Math.max(0, index)))
+  }
+
+  const scrollToCard = (index) => {
+    if (!carouselRef.current) return
+    const container = carouselRef.current
+    const containerWidth = container.clientWidth
+    const cardWidth = containerWidth * 0.85 + 16
+    container.scrollTo({
+      left: index * cardWidth,
+      behavior: 'smooth'
+    })
+  }
+
   return (
-    <section id="advantage" style={{ position: 'relative', padding: 'clamp(4rem, 8vw, 10rem) clamp(1.5rem, 5vw, 4rem)', background: 'var(--navy-deep)', color: '#fff', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+    <section id="advantage" style={{ position: 'relative', padding: 'clamp(4rem, 8vw, 10rem) clamp(1.5rem, 5vw, 4rem)', background: 'var(--navy-deep)', color: '#fff', borderTop: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+      
+      {/* Styles local block targeting desktop vs mobile views */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        /* Default Styles: Desktop Grid is visible, mobile layout hidden */
+        .advantage-desktop-grid {
+          display: grid !important;
+        }
+        .advantage-mobile-layout {
+          display: none !important;
+        }
+
+        /* Mobile Viewport Customization (< 768px) */
+        @media (max-width: 767px) {
+          .advantage-desktop-grid {
+            display: none !important;
+          }
+          .advantage-mobile-layout {
+            display: block !important;
+          }
+
+          /* Swipe Container and Wrapper */
+          .advantage-carousel-wrapper {
+            position: relative;
+            margin: 0 -1.5rem; /* touch edges of screen */
+          }
+
+          /* Right edge gradient overlay to hint at more scrollable cards */
+          .advantage-carousel-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 40px;
+            background: linear-gradient(to left, var(--navy-deep) 0%, transparent 100%);
+            pointer-events: none;
+            z-index: 10;
+          }
+
+          .advantage-carousel {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch; /* Momentum scrolling */
+            scroll-behavior: smooth;
+            gap: 1rem;
+            padding: 1.5rem 7.5vw 2.5rem; /* Centering offsets (100 - 85)/2 = 7.5% */
+            margin-bottom: 0.5rem;
+          }
+
+          .advantage-carousel::-webkit-scrollbar {
+            display: none;
+          }
+
+          /* Premium glassmorphic card design */
+          .advantage-card-mobile {
+            flex: 0 0 85vw; /* 85% viewport width */
+            scroll-snap-align: center;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+            border: 1px solid rgba(216, 160, 39, 0.12); /* Subtle gold highlights */
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 16px;
+            padding: 2.25rem 1.75rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            transition: border-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+          }
+
+          /* Gold top gradient hairline border */
+          .advantage-card-mobile::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            opacity: 0.6;
+          }
+
+          .advantage-card-mobile:active {
+            border-color: var(--gold);
+            transform: scale(0.98);
+          }
+
+          /* Circular gold icon frame */
+          .advantage-icon-frame {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(216, 160, 39, 0.15) 0%, rgba(216, 160, 39, 0.02) 100%);
+            border: 1px solid rgba(216, 160, 39, 0.25);
+            color: var(--gold);
+            margin-bottom: 1.25rem;
+            box-shadow: 0 4px 12px rgba(216, 160, 39, 0.08);
+          }
+
+          .advantage-mobile-title {
+            font-family: var(--font-h);
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.6rem;
+          }
+
+          .advantage-mobile-desc {
+            font-family: var(--font-b);
+            font-size: 0.8125rem;
+            color: rgba(255, 255, 255, 0.5);
+            line-height: 1.6;
+          }
+
+          /* Bouncing swipe hint */
+          .swipe-hint-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 0.7rem;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 700;
+            opacity: 0.7;
+            animation: pulseHint 2s infinite ease-in-out;
+            margin-bottom: 1.25rem;
+          }
+
+          @keyframes pulseHint {
+            0%, 100% { transform: translateX(0); opacity: 0.5; }
+            50% { transform: translateX(5px); opacity: 0.9; }
+          }
+        }
+      ` }} />
+
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
         <div style={{ marginBottom: '4rem', textAlign: 'center' }}>
           <div style={{ fontSize: '0.6875rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: '1rem', fontWeight: 700 }}>Exclusive Benefits</div>
@@ -1417,40 +1986,78 @@ function AirborneAdvantage() {
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
-          {items.map((item, i) => (
-            <div 
+        {/* 1. Desktop Layout (17 Items Grid with GlowCard) */}
+        <div className="advantage-desktop-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
+          {desktopItems.map((item, i) => (
+            <GlowCard 
               key={i} 
-              className="advantage-card-hover"
-              style={{ 
-                background: 'rgba(255,255,255,0.02)', 
-                border: '1px solid rgba(255,255,255,0.06)', 
-                borderRadius: '12px', 
-                padding: '2rem',
-                transition: 'transform 0.3s var(--easeC), border-color 0.3s var(--easeC), background 0.3s var(--easeC)',
-                cursor: 'pointer'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-4px)';
-                e.currentTarget.style.borderColor = 'var(--gold)';
-                e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'none';
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)';
-                e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
-              }}
+              customSize={true}
+              glowColor="gold"
+              className="h-full"
             >
-              <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', position: 'relative', zIndex: 10 }}>
                 <span style={{ fontSize: '1.25rem', color: 'var(--gold)' }}>✓</span>
                 <div>
                   <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', fontWeight: 700, color: '#fff', textTransform: 'uppercase', marginBottom: '0.5rem' }}>{item.title}</h3>
                   <p style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.6, fontFamily: 'var(--font-b)' }}>{item.desc}</p>
                 </div>
               </div>
-            </div>
+            </GlowCard>
           ))}
         </div>
+
+        {/* 2. Mobile Layout (8 Premium Cards Swipe Carousel) */}
+        <div className="advantage-mobile-layout">
+          {/* Animated Swipe Hint */}
+          <div className="swipe-hint-container">
+            <span>Swipe to explore benefits</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </div>
+
+          {/* Carousel Viewport */}
+          <div className="advantage-carousel-wrapper">
+            <div 
+              className="advantage-carousel" 
+              ref={carouselRef}
+              onScroll={handleScroll}
+            >
+              {mobileCategories.map((item, idx) => (
+                <div key={idx} className="advantage-card-mobile">
+                  <div className="advantage-icon-frame">
+                    {item.icon}
+                  </div>
+                  <h3 className="advantage-mobile-title">{item.title}</h3>
+                  <p className="advantage-mobile-desc">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Progress Indicators (Dots) */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '0.5rem' }}>
+            {mobileCategories.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => scrollToCard(idx)}
+                style={{
+                  width: activeIndex === idx ? '20px' : '8px',
+                  height: '8px',
+                  borderRadius: '999px',
+                  background: activeIndex === idx ? 'var(--gold)' : 'rgba(255, 255, 255, 0.25)',
+                  border: 'none',
+                  padding: 0,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                }}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+
       </div>
     </section>
   )
@@ -1477,10 +2084,11 @@ function PilotCareerOutlook() {
 
   const perks = [
     'Free or heavily discounted travel for self and family',
-    'Premium comprehensive global health insurance',
-    'International layover allowances and stay in 5-star hotels',
-    'High social recognition and structured career progression',
-    'Company-provided accommodation on outstation postings'
+    'Premium health insurance',
+    'International exposure and layover allowances',
+    'High social recognition',
+    'Structured career progression',
+    'Accommodation on outstation postings'
   ]
 
   return (
@@ -1505,12 +2113,23 @@ function PilotCareerOutlook() {
           
           {/* Left Column: Salaries Table */}
           <div>
-            <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.35rem', fontWeight: 900, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ height: '3px', width: '20px', background: 'var(--red)' }} />
-              Pilot Salary &amp; Lifestyle in India 2026
+            <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.35rem', fontWeight: 900, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '2rem', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+              <span style={{ height: '3px', width: '20px', background: 'var(--red)', flexShrink: 0, marginTop: '0.65rem' }} />
+              <span>Pilot Salary &amp; Lifestyle in India 2026</span>
             </h3>
+
+            <style dangerouslySetInnerHTML={{ __html: `
+              .salary-desktop-wrapper { display: block; border: 1px solid rgba(0,39,76,0.1); border-radius: 12px; overflow: hidden; }
+              .salary-mobile-cards { display: none; }
+              
+              @media (max-width: 767px) {
+                .salary-desktop-wrapper { display: none !important; }
+                .salary-mobile-cards { display: flex !important; flex-direction: column; gap: 1rem; }
+              }
+            ` }} />
             
-            <div style={{ overflowX: 'auto', border: '1px solid rgba(0,39,76,0.1)', borderRadius: '12px' }}>
+            {/* Desktop Table View */}
+            <div className="salary-desktop-wrapper">
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', background: '#fff', fontSize: '0.875rem', fontFamily: 'var(--font-b)' }}>
                 <thead>
                   <tr style={{ background: 'var(--navy)', color: '#fff', fontFamily: 'var(--font-h)', textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.1em' }}>
@@ -1541,7 +2160,22 @@ function PilotCareerOutlook() {
                 </tbody>
               </table>
             </div>
-            <p style={{ marginTop: '1rem', fontSize: '0.75rem', color: 'rgba(33,33,33,0.4)', fontFamily: 'var(--font-b)' }}>
+
+            {/* Mobile Cards View */}
+            <div className="salary-mobile-cards">
+              {stages.map((s, idx) => (
+                <div key={idx} style={{ background: '#fff', border: '1px solid rgba(0,39,76,0.08)', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                    <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.75rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.1em', background: 'rgba(0,39,76,0.04)', padding: '0.3rem 0.6rem', borderRadius: '4px' }}>{s.stage}</span>
+                    <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 900, color: 'var(--red)' }}>{s.salary}</span>
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-h)', color: 'var(--navy)', fontWeight: 800, fontSize: '1.05rem', marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '-0.01em' }}>{s.role}</div>
+                  <div style={{ fontFamily: 'var(--font-b)', color: 'rgba(33,33,33,0.6)', fontSize: '0.85rem' }}>Aircraft: <span style={{ fontWeight: 600 }}>{s.type}</span></div>
+                </div>
+              ))}
+            </div>
+
+            <p style={{ marginTop: '1.25rem', fontSize: '0.75rem', color: 'rgba(33,33,33,0.4)', fontFamily: 'var(--font-b)', lineHeight: 1.6 }}>
               *Standard Indian airline industry averages. Actual compensation varies by operator, route hours, and type rating allowances.
             </p>
           </div>
