@@ -28,6 +28,7 @@ export default function Footer() {
             <li><Link href="/courses" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Course Portfolio</Link></li>
             <li><Link href="/jobs" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Pilot Jobs Portal</Link></li>
             <li><Link href="/resources" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Gated E-Books</Link></li>
+            <li><Link href="/blog/how-to-become-pilot-india" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>How to Become a Pilot After Class 12</Link></li>
             <li><Link href="/contact" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Admissions Contact</Link></li>
           </ul>
         </div>
@@ -36,22 +37,23 @@ export default function Footer() {
           <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#D8A027', marginBottom: '1.25rem' }}>Core Programs</h4>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.88rem' }}>
             <li><Link href="/courses/cpl-ground-classes" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>DGCA CPL Ground School</Link></li>
-            <li><Link href="/courses/cadet-pilot-program" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Cadet Pilot Program</Link></li>
-            <li><Link href="/courses/airbus-a320-sim-training" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Airbus A320 SIM Hours</Link></li>
-            <li><Link href="/courses/atpl-ground-classes" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>ATPL Ground School</Link></li>
+            <li><Link href="/courses/cadet-preparation" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Cadet Pilot Program</Link></li>
+            <li><Link href="/courses/a320-simulator" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Airbus A320 Simulator</Link></li>
+            <li><Link href="/courses/atpl" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>ATPL Ground School</Link></li>
+            <li><Link href="/courses/cabin-crew" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Cabin Crew &amp; Hospitality</Link></li>
           </ul>
         </div>
 
         <div>
           <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#D8A027', marginBottom: '1.25rem' }}>Dwarka Center</h4>
           <p style={{ fontSize: '0.85rem', lineHeight: '1.6', color: 'rgba(255,255,255,0.6)', marginBottom: '0.5rem' }}>
-            📍 Ramphal Chowk Road, Sector 7 Dwarka,<br />New Delhi, Delhi 110075
+            📍 E-549, 2nd Floor, Ramphal Chowk, Sector 7, Dwarka.
           </p>
           <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', marginBottom: '0.5rem' }}>
-            📞 +91 9953-777-320
+            📞 +91 9953 777 320
           </p>
           <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)' }}>
-            ✉️ admissions@airborneaviation.in
+            ✉️ info@airborneaviation.in
           </p>
         </div>
       </div>

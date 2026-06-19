@@ -23,10 +23,14 @@ export async function fetchPublic(path, params = {}) {
   Object.entries(params).forEach(([k, v]) => {
     if (v !== undefined && v !== null) url.searchParams.set(k, String(v))
   })
-  const res = await fetch(url.toString(), { next: { revalidate: 60 } })
-  if (!res.ok) return null
-  const json = await res.json()
-  return json.data ?? null
+  try {
+    const res = await fetch(url.toString(), { next: { revalidate: 60 } })
+    if (!res.ok) return null
+    const json = await res.json()
+    return json.data ?? null
+  } catch {
+    return null
+  }
 }
 
 // Format ₹ from DB fee (number) → display string

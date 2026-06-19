@@ -8,10 +8,68 @@ import { getCourseSchema, getBreadcrumbSchema } from '@/utils/seo'
 
 export const revalidate = 60
 
+const COURSE_SEO = {
+  'commercial-pilot-license-cpl': {
+    title: 'CPL Course Delhi Commercial Pilot License | Airborne Aviation',
+    description: "Enrol in Airborne's DGCA-approved CPL course in Dwarka, Delhi. 200 flying hours, 6 DGCA exams, airline placement support. Fees ₹45–55L. Check eligibility."
+  },
+  'cpl-ground-classes': {
+    title: 'CPL Course Delhi Commercial Pilot License | Airborne Aviation',
+    description: "Enrol in Airborne's DGCA-approved CPL course in Dwarka, Delhi. 200 flying hours, 6 DGCA exams, airline placement support. Fees ₹45–55L. Check eligibility."
+  },
+  'atpl': {
+    title: 'ATPL Ground School India All Subjects | Airborne Aviation',
+    description: 'ATPL ground school in Delhi by Airborne Aviation Academy. Complete airline transport pilot license exam prep all subjects, DGCA-aligned. Enrol now.'
+  },
+  'cadet-preparation': {
+    title: 'Cadet Pilot Program Prep IndiGo, Air India, Akasa | Airborne',
+    description: 'Prepare for IndiGo, Air India & Akasa cadet pilot programs at Airborne, Dwarka. Aptitude tests, GD-PI, simulator prep join now.'
+  },
+  'a320-simulator': {
+    title: 'Airbus A320 Simulator Training Delhi | Airborne Aviation',
+    description: 'A320 simulator at Airborne Aviation Academy, Dwarka. Airline interview prep, type rating familiarisation, cadet selection practice. Book a session today.'
+  },
+  'cas-compass-adapt': {
+    title: 'CAS Compass & ADAPT Test Preparation Pilot Aptitude | Airborne',
+    description: 'Prepare for DGCA CAS Compass and ADAPT pilot aptitude screening tests at Airborne Aviation Academy, Dwarka. Structured preparation for cadet pilot selection.'
+  },
+  'airline-preparation': {
+    title: 'Airline Interview Prep Delhi GD/PI & Personality | Airborne',
+    description: 'Structured airline interview prep at Airborne, Dwarka. GD/PI coaching and personality development by retired Air India AGM with 37+ years experience. Book now.'
+  },
+  'flying-training-india-abroad': {
+    title: 'Flying Training India vs Abroad Cost & DGCA Guide | Airborne',
+    description: 'Compare flying training in India vs abroad. DGCA requirements, cost comparison, license conversion guide, and which countries are recognised. Free counselling.'
+  },
+  'flying-training': {
+    title: 'Flying Training India vs Abroad Cost & DGCA Guide | Airborne',
+    description: 'Compare flying training in India vs abroad. DGCA requirements, cost comparison, license conversion guide, and which countries are recognised. Free counselling.'
+  },
+  'cabin-crew': {
+    title: 'Cabin Crew Training Delhi Airline Veterans | Airborne Aviation',
+    description: 'Cabin crew training in Dwarka, Delhi by ex-Alliance Air & Air India AGM trainers. 3 structured pathways. ₹30K–₹54K. Small batches. Book free counselling.'
+  },
+  'ground-school': {
+    title: 'DGCA Ground School Delhi CPL & ATPL Classes | Airborne',
+    description: "Pass your DGCA CPL & ATPL exams with Airborne's expert-led ground school in Dwarka, Delhi. All subjects. Taught by airline pilots. Enrol now."
+  }
+}
+
 export async function generateMetadata({ params }) {
   const { slug } = await params
-  const course = await fetchPublic('/courses', { slug })
+  const apiSlug = slug === 'commercial-pilot-license-cpl' ? 'cpl-ground-classes' : (slug === 'flying-training-india-abroad' ? 'flying-training' : slug)
+  
+  const course = await fetchPublic('/courses', { slug: apiSlug })
   if (!course) return {}
+  
+  const custom = COURSE_SEO[slug] || COURSE_SEO[apiSlug]
+  if (custom) {
+    return {
+      title: custom.title,
+      description: custom.description,
+    }
+  }
+
   return {
     title: `${course.title} | Airborne Aviation Academy`,
     description: course.subtitle ?? `${course.title} — details, syllabus, and batch information.`,
@@ -20,7 +78,8 @@ export async function generateMetadata({ params }) {
 
 export default async function CourseDetailPage({ params }) {
   const { slug } = await params
-  const { data: course, status } = await fetchPublicWithStatus('/courses', { slug })
+  const apiSlug = slug === 'commercial-pilot-license-cpl' ? 'cpl-ground-classes' : (slug === 'flying-training-india-abroad' ? 'flying-training' : slug)
+  const { data: course, status } = await fetchPublicWithStatus('/courses', { slug: apiSlug })
 
   // status 0 = network error, 5xx = admin down — show service error, not 404
   if (!course && (status === 0 || status >= 500)) {
@@ -36,7 +95,7 @@ export default async function CourseDetailPage({ params }) {
             </p>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
               <Link href="/courses" className="btn btn-ghost" style={{ textDecoration: 'none' }}>← All Courses</Link>
-              <a href="tel:+919953777320" className="btn btn-primary">Call +91 9953-777-320</a>
+              <a href="tel:+919953777320" className="btn btn-primary">Call +91 9953 777 320</a>
             </div>
           </div>
         </main>
@@ -140,6 +199,17 @@ export default async function CourseDetailPage({ params }) {
                 </ul>
               </div>
             )}
+            {/* Eligibility Requirements */}
+            {(course.eligibility || course.slug === 'cabin-crew') && (
+              <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2.5rem' }}>
+                <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
+                  Eligibility Requirements
+                </h2>
+                <p style={{ fontSize: '0.92rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.6', margin: 0 }}>
+                  {course.slug === 'cabin-crew' ? '12th pass or above, 18–27 years of age, basic English ability' : course.eligibility}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -163,7 +233,7 @@ export default async function CourseDetailPage({ params }) {
                   Course Tuition Fee
                 </span>
                 <div style={{ fontFamily: 'var(--font-h)', fontSize: '2.2rem', fontWeight: 900, color: '#D8A027', letterSpacing: '0.02em' }}>
-                  {course.fee ? formatFee(course.fee) : 'Contact us'}
+                  {course.slug === 'cabin-crew' ? '₹30K–₹54K' : (course.fee ? formatFee(course.fee) : 'Contact us')}
                 </div>
                 <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.3)', display: 'block', marginTop: '0.5rem' }}>
                   *Excluding external licensing exam/viva processing fees.

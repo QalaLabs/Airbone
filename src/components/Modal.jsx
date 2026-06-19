@@ -107,7 +107,7 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
                 Or call us directly
               </p>
               <a href="tel:+919953777320" style={{ fontFamily: 'var(--font-heading)', fontSize: '1.2rem', fontWeight: 900, color: 'var(--white)', textDecoration: 'none' }}>
-                +91 9953-777-320
+                +91 9953 777 320
               </a>
             </div>
             <button className="btn btn-outline" onClick={onClose}>Close</button>

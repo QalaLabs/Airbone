@@ -17,8 +17,8 @@ const roboto = Roboto({
 })
 
 export const metadata = {
-  title: 'Airborne Aviation Academy | DGCA CPL Ground School Delhi',
-  description: 'India\'s most trusted DGCA CPL ground school in Dwarka, Delhi. Led by Capt. Navrang Singh with 15+ years of teaching excellence. Concept clarity, simulator training, and proven success.',
+  title: 'Pilot Training in Delhi DGCA Approved | Airborne Aviation',
+  description: "India's DGCA-approved pilot training academy in Dwarka, Delhi. CPL, ATPL, Cabin Crew & Ground School. 200+ graduates in top airlines. Enrol today.",
   metadataBase: new URL('https://airborneaviation.in'),
   alternates: {
     canonical: '/',

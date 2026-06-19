@@ -3,8 +3,8 @@ import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
 
 export const metadata = {
-  title: 'Contact Us & Location | Airborne Aviation Academy Delhi',
-  description: 'Contact our admissions desk at Ramphal Chowk, Dwarka, New Delhi. Book a free demo class, check seat availability, or map our location.',
+  title: 'Contact Airborne Aviation Academy Admissions, Dwarka Delhi',
+  description: 'Contact Airborne Aviation Academy in Dwarka, Delhi. Admissions: +91 9953 777 320. E-549, 2nd Floor, Ramphal Chowk, Sector 7, Dwarka.',
 }
 
 export default function ContactPage() {
@@ -38,7 +38,7 @@ export default function ContactPage() {
                   Direct Calling Line
                 </span>
                 <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.5rem', fontWeight: 900, color: '#FFFFFF' }}>
-                  +91 9953-777-320
+                  +91 9953 777 320
                 </span>
               </div>
 
@@ -47,7 +47,16 @@ export default function ContactPage() {
                   Electronic Mail
                 </span>
                 <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 900, color: '#FFFFFF' }}>
-                  admissions@airborneaviation.in
+                  info@airborneaviation.in
+                </span>
+              </div>
+
+              <div style={{ borderLeft: '3px solid #DB241E', paddingLeft: '1.5rem' }}>
+                <span style={{ fontSize: '0.62rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: '0.2rem', fontWeight: 700 }}>
+                  Office Timings
+                </span>
+                <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 900, color: '#FFFFFF' }}>
+                  Mon – Sat: 9:30 AM – 6:00 PM
                 </span>
               </div>
 
@@ -56,7 +65,7 @@ export default function ContactPage() {
                   Physical Location
                 </span>
                 <p style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.8)', lineHeight: '1.6', margin: 0 }}>
-                  Ramphal Chowk Road, Sector 7 Dwarka,<br />New Delhi, Delhi 110075
+                  E-549, 2nd Floor, Ramphal Chowk, Sector 7, Dwarka.
                 </p>
               </div>
             </div>

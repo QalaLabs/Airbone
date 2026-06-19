@@ -83,7 +83,7 @@ function FloatingNav({ onBook }) {
           {/* Logo */}
           <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span style={{ position: 'relative', display: 'inline-flex', height: '2.25rem', width: '2.25rem', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'var(--navy)', color: '#fff' }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" style={{ transform: 'rotate(-45deg)', transition: 'transform 0.3s' }} aria-hidden>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" style={{ transform: 'rotate(45deg)', transition: 'transform 0.3s' }} aria-hidden>
                 <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
               </svg>
             </span>
@@ -126,7 +126,7 @@ function FloatingNav({ onBook }) {
             onMouseEnter={e => e.currentTarget.style.background = 'var(--red)'}
             onMouseLeave={e => e.currentTarget.style.background = 'var(--navy)'}
           >
-            Book a class
+            Reserve Free Demo
             <span style={{ display: 'inline-flex', height: '1.5rem', width: '1.5rem', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'rgba(255,255,255,0.15)' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M7 17L17 7M17 7H7M17 7v10"/>
@@ -177,7 +177,7 @@ function FloatingNav({ onBook }) {
               {/* Logo */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <span style={{ display: 'inline-flex', height: '2.25rem', width: '2.25rem', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'var(--navy)', color: '#fff' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" style={{ transform: 'rotate(-45deg)' }} aria-hidden>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" style={{ transform: 'rotate(45deg)' }} aria-hidden>
                     <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
                   </svg>
                 </span>
@@ -265,14 +265,14 @@ function FloatingNav({ onBook }) {
                   height: '3.25rem', border: 'none', cursor: 'pointer',
                 }}
               >
-                Book a class
+                Reserve Free Demo
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M7 17L17 7M17 7H7M17 7v10"/>
                 </svg>
               </button>
 
               <div style={{ textAlign: 'center', fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.5rem' }}>
-                Ramphal Chowk, Dwarka, New Delhi · <a href="tel:+919953777320" style={{ color: 'inherit', textDecoration: 'underline' }}>+91 9953-777-320</a>
+                Ramphal Chowk, Dwarka, New Delhi · <a href="tel:+919953777320" style={{ color: 'inherit', textDecoration: 'underline' }}>+91 9953 777 320</a>
               </div>
             </div>
           </motion.div>
@@ -352,8 +352,8 @@ function HeroChapter({ onBook, on3D }) {
           style={{ marginTop: '2.5rem', display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem', maxWidth: '1100px' }}
         >
           <p style={{ color: 'rgba(255,255,255,0.8)', maxWidth: '28rem', fontSize: '0.9375rem', lineHeight: 1.7, fontFamily: 'var(--font-b)' }}>
-            India's most disciplined DGCA ground school. Mentor-led training under
-            Capt. Navrang Singh — clearing 5 papers, building careers, restarting dreams.
+            India's most disciplined DGCA ground school for CPL & APTL. Mentor-led training under
+            Capt. Navrang Singh — clearing exams, building careers, restarting dreams.
           </p>
 
           <div className="hero-btn-container" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -415,7 +415,7 @@ function BoardingStrip() {
   const stats = [
     { value: 15, suffix: '+', label: 'Years mentoring pilots' },
     { value: 5, suffix: '/5', label: 'DGCA papers cleared in 3 months' },
-    { value: 2700, prefix: '₹', suffix: '+', label: 'Students sent to the cockpit' },
+    { value: 2500, suffix: '+', label: 'Students sent to the cockpit' },
     { value: 100, suffix: '%', label: 'Mentor-led batches' },
   ]
   return (
@@ -570,7 +570,7 @@ function LearnChapter() {
       num="Chapter 02"
       kicker="Learn"
       title={<>Concepts that <span style={{ color: 'var(--gold)' }}>stick at 40,000 ft.</span></>}
-      body="Capt. Navrang Singh strips DGCA syllabi down to first principles. Air Regulations, Technical General, Navigation, Meteorology, RT&C — taught the way you'll actually use them in the cockpit."
+      body="Capt. Navrang Singh strips DGCA syllabi down to first principles. Air Regulations, Technical General, Navigation, Meteorology, RTR — taught the way you'll actually use them in the cockpit."
       image="/footage/classroom.jpg"
       alt="DGCA ground class at Airborne Aviation"
       reverse
@@ -1089,7 +1089,7 @@ function FinalCTA() {
             <a href="tel:+919953777320" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'underline', textUnderlineOffset: '4px', transition: 'color 0.2s' }}
               onMouseEnter={e => e.target.style.color = '#fff'}
               onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.4)'}
-            >+91 9953-777-320</a>
+            >+91 9953 777 320</a>
           </div>
         </motion.div>
       </div>
@@ -1104,9 +1104,10 @@ function SiteFooter() {
   const cols = [
     { title: 'Programs', links: [
       { label: 'CPL Ground', href: '/courses/cpl-ground-classes' },
-      { label: 'Cadet Pilot', href: '/courses/cadet-pilot-program' },
-      { label: 'ATPL Ground', href: '/courses/atpl-ground' },
+      { label: 'Cadet Pilot', href: '/courses/cadet-preparation' },
+      { label: 'ATPL Ground', href: '/courses/atpl' },
       { label: 'A320 SIM', href: '/courses/a320-simulator' },
+      { label: 'Cabin Crew', href: '/courses/cabin-crew' },
       { label: 'All Courses', href: '/courses' },
     ]},
     { title: 'Academy', links: [
@@ -1119,7 +1120,7 @@ function SiteFooter() {
     { title: 'Connect', links: [
       { label: 'Contact', href: '/contact' },
       { label: 'WhatsApp', href: 'https://wa.me/919953777320' },
-      { label: '+91 9953-777-320', href: 'tel:+919953777320' },
+      { label: '+91 9953 777 320', href: 'tel:+919953777320' },
     ]},
   ]
 
@@ -1133,8 +1134,8 @@ function SiteFooter() {
               Built for the <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>serious</span> aspirant.
             </h3>
             <p style={{ marginTop: '1.5rem', color: 'rgba(255,255,255,0.6)', fontSize: '0.875rem', lineHeight: 1.7, maxWidth: '28rem', fontFamily: 'var(--font-b)' }}>
-              Airborne Aviation Academy — Ramphal Chowk, Sector 7, Dwarka, New Delhi.<br />
-              Open Monday through Saturday, 9 AM to 7 PM.
+              Airborne Aviation Academy — E-549, 2nd Floor, Ramphal Chowk, Sector 7, Dwarka, New Delhi – 110075.<br />
+            Timings: Monday to Saturday, 9:30 AM – 6:00 PM (Closed on Sundays)
             </p>
           </div>
 
@@ -1380,6 +1381,213 @@ function PremiumCursor() {
 }
 
 /* ─────────────────────────────────────
+   AIRBORNE ADVANTAGE — 17 items grid
+───────────────────────────────────── */
+function AirborneAdvantage() {
+  const items = [
+    { title: 'Premium Goodies', desc: 'Bag, Keychain, Notebook, Pen, and T-Shirt provided to every student.' },
+    { title: 'Own Your Material', desc: 'Keep all study materials and resources provided during the course.' },
+    { title: 'Elite Infrastructure', desc: '5,000 sq ft state-of-the-art facility at Ramphal Chowk (as of 2024).' },
+    { title: 'Dedicated RTR Lab', desc: 'Simulated RT communication environment for hands-on wireless practice.' },
+    { title: 'Student Library', desc: 'Quiet study spaces open to students even after class hours.' },
+    { title: 'On-Campus Cafeteria', desc: 'Convenient dining and lounge area for student break sessions.' },
+    { title: 'Gender-Specific Washrooms', desc: 'Clean, private facilities for all students.' },
+    { title: 'GD/PI Masterclasses', desc: 'Led by Rajeet Khalsa, retired Air India AGM & Trainer (37+ years exp).' },
+    { title: '1-on-1 Doubt Solving', desc: 'Individual doubt-solving sessions directly with Chief Instructor Capt. Navrang.' },
+    { title: 'Founder-Led Classes', desc: 'All core ground school classes taught directly by Capt. Navrang.' },
+    { title: 'Personalized Pacing', desc: 'Ground school training speed adjusted to match your speed of learning.' },
+    { title: 'Hostel Assistance', desc: 'Support in choosing comfortable student accommodation near the academy.' },
+    { title: 'CPL Test Series', desc: 'Full mock exam battery to ensure first-attempt success in DGCA.' },
+    { title: 'Lifelong Guidance', desc: 'Career support extending past CPL to type rating and airline applications.' },
+    { title: 'In-House Class 2 Medical', desc: 'On-site Class 2 medical facility for pre-screening and advisory.' },
+    { title: 'Smart Attendance', desc: 'Real-time check-in/out attendance notifications sent to parents.' },
+    { title: 'Performance Reports', desc: 'Weekly progress and mock exam reports delivered directly to parents.' },
+  ]
+
+  return (
+    <section id="advantage" style={{ position: 'relative', padding: 'clamp(4rem, 8vw, 10rem) clamp(1.5rem, 5vw, 4rem)', background: 'var(--navy-deep)', color: '#fff', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+        <div style={{ marginBottom: '4rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.6875rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: '1rem', fontWeight: 700 }}>Exclusive Benefits</div>
+          <h2 className="display-xl" style={{ fontSize: 'clamp(2rem, 5vw, 4.5rem)', color: '#fff', textTransform: 'uppercase' }}>
+            The Airborne <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>Advantage.</span>
+          </h2>
+          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9375rem', lineHeight: 1.7, maxWidth: '36rem', margin: '1.5rem auto 0', fontFamily: 'var(--font-b)' }}>
+            What you get when you train at India's premier ground preparation academy. Every facility is built to support your launch.
+          </p>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
+          {items.map((item, i) => (
+            <div 
+              key={i} 
+              className="advantage-card-hover"
+              style={{ 
+                background: 'rgba(255,255,255,0.02)', 
+                border: '1px solid rgba(255,255,255,0.06)', 
+                borderRadius: '12px', 
+                padding: '2rem',
+                transition: 'transform 0.3s var(--easeC), border-color 0.3s var(--easeC), background 0.3s var(--easeC)',
+                cursor: 'pointer'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)';
+                e.currentTarget.style.borderColor = 'var(--gold)';
+                e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'none';
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)';
+                e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+              }}
+            >
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                <span style={{ fontSize: '1.25rem', color: 'var(--gold)' }}>✓</span>
+                <div>
+                  <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', fontWeight: 700, color: '#fff', textTransform: 'uppercase', marginBottom: '0.5rem' }}>{item.title}</h3>
+                  <p style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.6, fontFamily: 'var(--font-b)' }}>{item.desc}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ─────────────────────────────────────
+   PILOT CAREER OUTLOOK — Salary & Perks
+───────────────────────────────────── */
+function PilotCareerOutlook() {
+  const stages = [
+    { stage: 'Year 1–2', role: 'Junior First Officer (JFO)', salary: '₹1.5L – ₹2.5L', type: 'A320 / B737' },
+    { stage: 'Year 3–5', role: 'First Officer', salary: '₹3L – ₹5L', type: 'A320 / B737' },
+    { stage: 'Year 6–10', role: 'Senior First Officer', salary: '₹5L – ₹7L', type: 'A320 / B737' },
+    { stage: 'Year 10+', role: 'Captain / Commander', salary: '₹8L – ₹15L', type: 'Wide-body / Narrow-body' },
+  ]
+
+  const opportunities = [
+    { title: 'Scheduled Airlines', desc: 'IndiGo, Air India, Akasa Air, SpiceJet' },
+    { title: 'Cargo Operations', desc: 'Blue Dart and international freight carriers' },
+    { title: 'Charter & Corporate', desc: 'Private aviation and VIP transport wings' },
+    { title: 'Flight Instructors', desc: 'FTO trainer roles in India and overseas' },
+    { title: 'Global Opportunities', desc: 'Middle East, Southeast Asia, and Europe' }
+  ]
+
+  const perks = [
+    'Free or heavily discounted travel for self and family',
+    'Premium comprehensive global health insurance',
+    'International layover allowances and stay in 5-star hotels',
+    'High social recognition and structured career progression',
+    'Company-provided accommodation on outstation postings'
+  ]
+
+  return (
+    <section id="outlook" style={{ position: 'relative', padding: 'clamp(4rem, 8vw, 10rem) clamp(1.5rem, 5vw, 4rem)', background: 'var(--paper)', color: 'var(--navy)' }}>
+      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+        
+        {/* Intro */}
+        <div style={{ marginBottom: '5rem', display: 'grid', gridTemplateColumns: '1fr', lgGridTemplateColumns: '1.2fr 1fr', gap: '3rem', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: '0.6875rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--red)', marginBottom: '1rem', fontWeight: 700 }}>Industry Outlook</div>
+            <h2 className="display-xl" style={{ fontSize: 'clamp(2rem, 5vw, 4.5rem)', color: 'var(--navy)', textTransform: 'uppercase', lineHeight: 1.1 }}>
+              Why NOW is the Best Time to <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--red)' }}>Become a Pilot.</span>
+            </h2>
+          </div>
+          <p style={{ color: 'rgba(33,33,33,0.7)', fontSize: '1rem', lineHeight: 1.8, fontFamily: 'var(--font-b)', margin: 0 }}>
+            Indian aviation is at an inflection point. IndiGo, Air India, Akasa Air, and new entrants are collectively placing orders for 1,500+ aircraft over the next decade. Boeing's Pilot Outlook estimates India will need 8,000+ new pilots by 2040. Starting CPL training today means you are ready to fly exactly when the industry needs pilots most.
+          </p>
+        </div>
+
+        {/* Details Grid */}
+        <div className="responsive-grid-chapters" style={{ gridTemplateColumns: '1fr', lgGridTemplateColumns: '1.3fr 1fr', gap: '4rem', alignItems: 'start' }}>
+          
+          {/* Left Column: Salaries Table */}
+          <div>
+            <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.35rem', fontWeight: 900, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ height: '3px', width: '20px', background: 'var(--red)' }} />
+              Pilot Salary &amp; Lifestyle in India 2026
+            </h3>
+            
+            <div style={{ overflowX: 'auto', border: '1px solid rgba(0,39,76,0.1)', borderRadius: '12px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', background: '#fff', fontSize: '0.875rem', fontFamily: 'var(--font-b)' }}>
+                <thead>
+                  <tr style={{ background: 'var(--navy)', color: '#fff', fontFamily: 'var(--font-h)', textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.1em' }}>
+                    <th style={{ padding: '1.25rem 1.5rem' }}>Career Stage</th>
+                    <th style={{ padding: '1.25rem 1.5rem' }}>Role</th>
+                    <th style={{ padding: '1.25rem 1.5rem' }}>Monthly Salary</th>
+                    <th style={{ padding: '1.25rem 1.5rem' }}>Aircraft Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stages.map((s, idx) => (
+                    <tr 
+                      key={idx} 
+                      style={{ 
+                        borderBottom: '1px solid rgba(0,39,76,0.06)',
+                        background: idx % 2 === 0 ? 'rgba(0,39,76,0.02)' : '#fff',
+                        transition: 'background 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(216,160,39,0.08)'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = idx % 2 === 0 ? 'rgba(0,39,76,0.02)' : '#fff'}
+                    >
+                      <td style={{ padding: '1.25rem 1.5rem', fontWeight: 700, color: 'var(--navy)' }}>{s.stage}</td>
+                      <td style={{ padding: '1.25rem 1.5rem', color: 'rgba(33,33,33,0.8)' }}>{s.role}</td>
+                      <td style={{ padding: '1.25rem 1.5rem', fontWeight: 700, color: 'var(--red)' }}>{s.salary}</td>
+                      <td style={{ padding: '1.25rem 1.5rem', color: 'rgba(33,33,33,0.5)', fontSize: '0.8rem' }}>{s.type}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p style={{ marginTop: '1rem', fontSize: '0.75rem', color: 'rgba(33,33,33,0.4)', fontFamily: 'var(--font-b)' }}>
+              *Standard Indian airline industry averages. Actual compensation varies by operator, route hours, and type rating allowances.
+            </p>
+          </div>
+
+          {/* Right Column: Opportunities & Perks */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+            
+            {/* Opportunities */}
+            <div>
+              <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ height: '2px', width: '15px', background: 'var(--gold)' }} />
+                Job Opportunities
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {opportunities.map((o, idx) => (
+                  <div key={idx} style={{ background: '#fff', border: '1px solid rgba(0,39,76,0.06)', padding: '1.25rem', borderRadius: '8px' }}>
+                    <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.9rem', fontWeight: 700, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>{o.title}</h4>
+                    <p style={{ fontSize: '0.8125rem', color: 'rgba(33,33,33,0.6)', margin: 0, fontFamily: 'var(--font-b)' }}>{o.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Perks */}
+            <div>
+              <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ height: '2px', width: '15px', background: 'var(--gold)' }} />
+                Key Pilot Perks
+              </h3>
+              <ul style={{ paddingLeft: '1.25rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                {perks.map((p, idx) => (
+                  <li key={idx} style={{ fontSize: '0.875rem', color: 'rgba(33,33,33,0.7)', lineHeight: 1.6, fontFamily: 'var(--font-b)' }}>{p}</li>
+                ))}
+              </ul>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+  )
+}
+
+/* ─────────────────────────────────────
    ROOT PAGE — All sections orchestrated
 ───────────────────────────────────── */
 export default function HomePage() {
@@ -1455,6 +1663,9 @@ export default function HomePage() {
 
         {/* Courses grid */}
         <CoursesSection />
+
+        <AirborneAdvantage />
+        <PilotCareerOutlook />
 
         {/* Founder */}
         <FounderSection />

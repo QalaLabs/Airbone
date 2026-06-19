@@ -14,12 +14,15 @@ export default async function sitemap() {
   try {
     const courses = await fetchPublic('/courses', { limit: 100 })
     if (Array.isArray(courses)) {
-      courseRoutes = courses.map((course) => ({
-        url: `${baseUrl}/courses/${course.slug}`,
-        lastModified: new Date().toISOString(),
-        changeFrequency: 'monthly',
-        priority: 0.7,
-      }))
+      courseRoutes = courses.map((course) => {
+        const canonicalSlug = course.slug === 'cpl-ground-classes' ? 'commercial-pilot-license-cpl' : (course.slug === 'flying-training' ? 'flying-training-india-abroad' : course.slug)
+        return {
+          url: `${baseUrl}/courses/${canonicalSlug}`,
+          lastModified: new Date().toISOString(),
+          changeFrequency: 'monthly',
+          priority: 0.7,
+        }
+      })
     }
   } catch {
     // Admin API unavailable — sitemap still generates with static routes only

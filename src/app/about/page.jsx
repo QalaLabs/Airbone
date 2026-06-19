@@ -2,38 +2,59 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 
 export const metadata = {
-  title: 'About Us & Leadership | Airborne Aviation Academy',
-  description: 'Learn about Airborne Aviation Academy in Dwarka, Delhi. Meet Capt. Navrang Singh, Deepak Sir, Piyush Sir, and check out our legacy of CPL exam pass rates.',
+  title: 'About Airborne Aviation Academy DGCA Approved | Dwarka Delhi',
+  description: 'Airborne Aviation Academy, Dwarka Delhi founded by Capt. Navrang Singh in 2009. 2,500+ trained. DGCA-approved FTO. Meet our faculty, fleet & placement record.',
 }
 
 const FOUNDERS = [
   {
-    name: 'Capt. Navrang Singh',
-    role: 'Founder & Chief Ground Instructor',
+    name: 'Captain Navrang Singh',
+    role: 'Co-founder & Head Mentor',
     image: '/footage/cockpit_pilot_silhouette.jpg',
     bio: 'An active commercial airline captain with 15+ years of teaching expertise. Capt. Navrang specializes in translating highly technical aviation concepts (Air Navigation, Meteorology, Regulations) into practical cockpit understanding. Under his leadership, the academy has maintained the highest first-attempt DGCA examination pass rate in Delhi NCR.',
     accent: 'Concept Clarity over rote learning'
   },
   {
-    name: 'Deepak Sir',
-    role: 'Business Head & Operations Director',
+    name: 'Deepak Aggarwal',
+    role: 'Co-founder & Business Head',
     image: '/footage/student_overhead_panel.jpg',
-    bio: 'Deepak manages academic scheduling, partner flight school relationships (USA, NZ, SA), and DGCA license conversion pathways. His operational guidance ensures that students experience zero administrative friction when transition from foreign training logs back to Indian skies.',
+    bio: 'Deepak manages academic scheduling, partner flight school relationships (USA, NZ, SA), and DGCA license conversion pathways. His operational guidance ensures that students experience zero administrative friction when transitioning from foreign training logs back to Indian skies.',
     accent: 'Seamless international flight pathways'
   },
   {
-    name: 'Piyush Sir',
-    role: 'Student Relations & Admissions Lead',
+    name: 'Piyush Chandra',
+    role: 'Head of Operations',
     image: '/footage/simulator_entry_dark.jpg',
     bio: 'Piyush is the first contact point for aspirants, offering realistic career counseling, financing guidance, and structured study plans. He monitors batch sizing restrictions (capping inputs at 25 per session) to maintain high student-teacher contact ratios.',
     accent: 'Honest counseling and strict enrollment limits'
+  },
+  {
+    name: 'Capt. Mukul Mitra Barua',
+    role: 'Lead Trainer – Aviation Training & Safety',
+    image: '/footage/pilot-portrait.jpg',
+    bio: 'An ex-Alliance Air cabin and cockpit crew member with years of flying-side career. Now retired from active flying, he leads training at Airborne in flight safety, aircraft knowledge, Safety Management Systems (SMS), Dangerous Goods Regulations (DGR), and Aviation Security (AVSEC).',
+    accent: 'Building the safety-first crew mindset'
+  },
+  {
+    name: 'Rajeet Khalsa',
+    role: 'Lead Trainer – Soft Skills & Professional Readiness',
+    image: '/footage/clouds-above.jpg',
+    bio: 'Retired AGM (Training) at Air India, where she spent decades training cabin crew for India’s national carrier. A certified soft skills trainer and image consultant, she brings over 37 years of experience in aviation, communication, grooming, and professional presence.',
+    accent: 'Developing premium professional presence'
+  },
+  {
+    name: 'Capt. Vishal Chechi',
+    role: 'Lead Trainer – Technical',
+    image: '/footage/simulator_entry_dark.jpg',
+    bio: 'A seasoned pilot who specializes in technical systems coaching, aircraft-specific ratings (A320/B737), and raw instrument procedures training. He prepares commercial pilot license holders for technical type rating examinations.',
+    accent: 'Bridging CPL theory and type-rating systems'
   }
 ]
 
 const STATS = [
   { value: '15+ Yrs', label: 'Teaching Legacy' },
   { value: '100%', label: 'DGCA Exam Pass Rate' },
-  { value: '2,100+', label: 'Aspirants Mentored' },
+  { value: '2,500+', label: 'Aspirants Mentored' },
   { value: 'Max 25', label: 'Student Batch Limit' }
 ]
 
@@ -83,7 +104,7 @@ export default function AboutPage() {
                 style={{ 
                   background: '#000f1e', 
                   border: '1px solid rgba(255,255,255,0.08)', 
-                  borderTop: founder.name === 'Capt. Navrang Singh' ? '3px solid #DB241E' : '1px solid rgba(255,255,255,0.08)',
+                  borderTop: founder.name.includes('Navrang') ? '3px solid #DB241E' : '1px solid rgba(255,255,255,0.08)',
                   padding: '2.5rem', 
                   borderRadius: '1px',
                   display: 'flex',
@@ -97,7 +118,7 @@ export default function AboutPage() {
                     <div className="avatar-frame-gold">
                       <img src={founder.image} alt={founder.name} className="avatar-image" />
                     </div>
-                    {founder.name === 'Capt. Navrang Singh' ? (
+                    {founder.name.includes('Captain') || founder.name.includes('Capt.') ? (
                       <div className="captain-stripes" title="4 Captain Gold Stripes">
                         <div className="stripe-gold" />
                         <div className="stripe-gold" />
@@ -136,46 +157,73 @@ export default function AboutPage() {
         <div style={{ marginBottom: '5rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '4rem' }}>
           <div style={{ marginBottom: '3.5rem' }}>
             <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start' }}>Career Milestones</p>
-            <h2 className="ov-h2" style={{ marginTop: '0.75rem' }}>The Commander\'s Pathway</h2>
+            <h2 className="ov-h2" style={{ marginTop: '0.75rem' }}>The Commander's Pathway</h2>
             <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.88rem', marginTop: '0.5rem' }}>
-              Chronological summary of Capt. Navrang Singh\'s aviation legacy and academy achievements.
+              Chronological summary of Capt. Navrang Singh's aviation legacy and academy achievements.
             </p>
           </div>
 
           <div className="timeline" style={{ maxWidth: '800px' }}>
             <div className="timeline-item">
               <div className="timeline-dot" />
-              <div className="timeline-year">2011</div>
-              <h4 className="timeline-title">Commercial License Endorsement</h4>
+              <div className="timeline-year">2009</div>
+              <h4 className="timeline-title">CPL Tutoring Operations Begun</h4>
               <p className="timeline-text">
-                Cleared advanced multi-engine instrument check-rides. Began specialized tutoring for aviation physics and regulations.
+                Started taking classes for CPL in Sector 12, Dwarka from home, delivering a 100% result in the first batches.
+              </p>
+            </div>
+
+            <div className="timeline-item">
+              <div className="timeline-dot" />
+              <div className="timeline-year">2012</div>
+              <h4 className="timeline-title">Airborne Academy Inception</h4>
+              <p className="timeline-text">
+                Opened the first official commercial center under the brand name Airborne (300 sq ft office size).
+              </p>
+            </div>
+
+            <div className="timeline-item">
+              <div className="timeline-dot" />
+              <div className="timeline-year">2015</div>
+              <h4 className="timeline-title">Exam Coaching Milestones</h4>
+              <p className="timeline-text">
+                Successfully guided 100 students through formal DGCA exam sessions (spanning 4 sessions per calendar year).
               </p>
             </div>
 
             <div className="timeline-item">
               <div className="timeline-dot" />
               <div className="timeline-year">2016</div>
-              <h4 className="timeline-title">Dwarka Center Inauguration</h4>
+              <h4 className="timeline-title">Academy Office Expansion</h4>
               <p className="timeline-text">
-                Established Airborne Aviation Academy ground school at Ramphal Chowk. Authored the core navigation syllabus.
+                Upgraded to a 1000 sq ft office in Dwarka to house a student community crossing 300 active aspirants.
               </p>
             </div>
 
             <div className="timeline-item">
               <div className="timeline-dot" />
               <div className="timeline-year">2021</div>
-              <h4 className="timeline-title">Airbus A320 Commander rating</h4>
+              <h4 className="timeline-title">Establishment on Ramphal Chowk</h4>
               <p className="timeline-text">
-                Obtained jet rating. Expanded center by installing an in-house Airbus A320 Flight Training Device (FTD).
+                Established a 2000 sq ft center on the main road of Ramphal Chowk, pushing our student base past 1000.
+              </p>
+            </div>
+
+            <div className="timeline-item">
+              <div className="timeline-dot" />
+              <div className="timeline-year">2024</div>
+              <h4 className="timeline-title">A320 Simulator Fleet Upgrade</h4>
+              <p className="timeline-text">
+                Added an in-house Airbus A320 Simulator to the training fleet, upgrading the center to 5000 sq ft with premium amenities. Student base reached 2100+.
               </p>
             </div>
 
             <div className="timeline-item">
               <div className="timeline-dot" />
               <div className="timeline-year">2026</div>
-              <h4 className="timeline-title">2,100+ Aviation Aspirants Mentored</h4>
+              <h4 className="timeline-title">Private Limited Incorporation</h4>
               <p className="timeline-text">
-                Maintaining a verified 100% DGCA exam clearance record. Successfully directing pilots to major Indian and global airlines.
+                Incorporated as a private limited aviation training organization, with the student community base touching 2500+ annually.
               </p>
             </div>
           </div>

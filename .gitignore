@@ -50,3 +50,6 @@ next-env.d.ts
 # Package manager locks (keep package-lock.json only)
 pnpm-lock.yaml
 yarn.lock
+
+# Agent Workspaces
+.claude/

@@ -5,8 +5,8 @@ import LeadForm from '@/components/LeadForm'
 import { fetchPublic, formatFee } from '@/lib/adminApi'
 
 export const metadata = {
-  title: 'Courses & Programs | Airborne Aviation Academy Delhi',
-  description: 'Explore our aviation training disciplines in Dwarka, Delhi. Programs include DGCA CPL Ground School, Cadet Pilot preparation, Airbus A320 SIM training, and Airline Prep.',
+  title: 'Pilot Training Courses in Delhi CPL, ATPL, Cabin Crew | Airborne',
+  description: 'Browse all DGCA-approved pilot training courses at Airborne Aviation Academy, Dwarka Delhi. CPL, ATPL, PPL, Cabin Crew. Compare fees and eligibility.',
 }
 
 // Revalidate every 60 s so freshly published courses appear quickly
@@ -46,7 +46,7 @@ export default async function CoursesPage() {
               Course catalog is being updated.
             </p>
             <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.875rem' }}>
-              Contact us at <a href="tel:+919953777320" style={{ color: '#D8A027' }}>+91 9953-777-320</a> for current batch information.
+              Contact us at <a href="tel:+919953777320" style={{ color: '#D8A027' }}>+91 9953 777 320</a> for current batch information.
             </p>
           </div>
         )}
@@ -181,8 +181,12 @@ export default async function CoursesPage() {
                         {course.title}
                       </h3>
 
-                      <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', lineHeight: '1.6', marginBottom: '1.5rem' }}>
+                      <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', lineHeight: '1.6', marginBottom: '1rem' }}>
                         {course.subtitle ?? ''}
+                      </p>
+
+                      <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-b)', marginBottom: '1.5rem' }}>
+                        <strong>Eligibility:</strong> {course.slug === 'cabin-crew' ? '12th pass, 18–27 yrs' : (course.eligibility || 'Class 12 or above')}
                       </p>
                     </div>
 
@@ -191,7 +195,7 @@ export default async function CoursesPage() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '1.25rem', marginBottom: '1.5rem' }}>
                           <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>Tuition Rate</span>
                           <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.15rem', fontWeight: 700, color: '#FFFFFF' }}>
-                            {formatFee(course.fee)}
+                            {course.slug === 'cabin-crew' ? '₹30K–₹54K' : formatFee(course.fee)}
                           </span>
                         </div>
                       )}
@@ -210,6 +214,66 @@ export default async function CoursesPage() {
             </div>
           </>
         )}
+
+        {/* Course Comparison Table */}
+        <div style={{ marginTop: '5rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '4rem' }}>
+          <div style={{ marginBottom: '2.5rem' }}>
+            <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start' }}>At a Glance</p>
+            <h2 className="ov-h2" style={{ marginTop: '0.5rem', textTransform: 'uppercase' }}>All Courses at Airborne</h2>
+          </div>
+
+          <style dangerouslySetInnerHTML={{ __html: `
+            .compare-row {
+              transition: background 0.2s;
+            }
+            .compare-row:hover {
+              background: rgba(216,160,39,0.08) !important;
+            }
+          `}} />
+
+          <div style={{ overflowX: 'auto', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '1px', background: '#00162e', boxShadow: '0 4px 30px rgba(0,0,0,0.3)' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px', fontSize: '0.85rem', color: '#fff', fontFamily: 'var(--font-b)' }}>
+              <thead>
+                <tr style={{ background: '#000f1e', borderBottom: '2px solid rgba(255,255,255,0.1)', fontFamily: 'var(--font-h)', textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: '0.15em', color: '#D8A027' }}>
+                  <th style={{ padding: '1.2rem 1.5rem' }}>Course</th>
+                  <th style={{ padding: '1.2rem 1.5rem' }}>Duration</th>
+                  <th style={{ padding: '1.2rem 1.5rem' }}>Min Eligibility</th>
+                  <th style={{ padding: '1.2rem 1.5rem' }}>Est. Fee</th>
+                  <th style={{ padding: '1.2rem 1.5rem', textAlign: 'center' }}>DGCA Approved</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { name: 'Commercial Pilot License (CPL)', dur: '12–18 months', elig: '10+2 Phys+Maths, 17 yrs', fee: '₹45–55L', dgca: '✓' },
+                  { name: 'ATPL Ground School', dur: '4–6 months', elig: 'CPL holder', fee: '₹3–8L', dgca: '✓' },
+                  { name: 'Private Pilot License (PPL)', dur: '3–6 months', elig: '10+2, 16 yrs', fee: '₹8–12L', dgca: '✓' },
+                  { name: 'Instrument Rating', dur: '2–3 months', elig: 'PPL holder', fee: '₹5–8L', dgca: '✓' },
+                  { name: 'Multi-Engine Rating', dur: '1–2 months', elig: 'PPL/CPL holder', fee: '₹3–5L', dgca: '✓' },
+                  { name: 'Airbus A320 Type Rating', dur: '2–4 months', elig: 'CPL + 200 hrs', fee: '₹8–15L', dgca: '✓' },
+                  { name: 'DGCA Ground School', dur: '3–6 months', elig: 'Any', fee: '₹1–2L', dgca: '✓' },
+                  { name: 'Cabin Crew Training', dur: '3–6 months', elig: '12th pass, 18–27 yrs', fee: '₹30K–₹54K', dgca: '—' },
+                  { name: 'Aviation English (ICAO L4)', dur: '1–3 months', elig: 'Any', fee: '₹50K–1L', dgca: '—' },
+                  { name: 'Flight Dispatcher', dur: '3–6 months', elig: '10+2', fee: '₹1–2L', dgca: '—' },
+                ].map((row, idx) => (
+                  <tr 
+                    key={idx} 
+                    className="compare-row"
+                    style={{ 
+                      borderBottom: '1px solid rgba(255,255,255,0.06)',
+                      background: idx % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'rgba(255,255,255,0.03)',
+                    }}
+                  >
+                    <td style={{ padding: '1.2rem 1.5rem', fontWeight: 700, color: '#fff' }}>{row.name}</td>
+                    <td style={{ padding: '1.2rem 1.5rem', color: 'rgba(255,255,255,0.8)' }}>{row.dur}</td>
+                    <td style={{ padding: '1.2rem 1.5rem', color: 'rgba(255,255,255,0.8)' }}>{row.elig}</td>
+                    <td style={{ padding: '1.2rem 1.5rem', fontWeight: 700, color: '#D8A027' }}>{row.fee}</td>
+                    <td style={{ padding: '1.2rem 1.5rem', textAlign: 'center', fontWeight: 900, color: row.dgca === '✓' ? '#DB241E' : 'rgba(255,255,255,0.3)', fontSize: row.dgca === '✓' ? '1.1rem' : '0.9rem' }}>{row.dgca}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
       </main>
       <Footer />

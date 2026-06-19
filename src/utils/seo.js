@@ -7,11 +7,11 @@ export function getLocalBusinessSchema() {
     'name': 'Airborne Aviation Academy',
     'image': 'https://airborneaviation.in/footage/cockpit_throttle_hero.jpg',
     'url': 'https://airborneaviation.in',
-    'telephone': '+91-9953777320',
+    'telephone': '+91 9953 777 320',
     'priceRange': '₹₹₹',
     'address': {
       '@type': 'PostalAddress',
-      'streetAddress': 'Ramphal Chowk Road, Sector 7 Dwarka',
+      'streetAddress': 'E-549, 2nd Floor, Ramphal Chowk Road, Sector 7 Dwarka',
       'addressLocality': 'New Delhi',
       'addressRegion': 'Delhi',
       'postalCode': '110075',
@@ -32,8 +32,8 @@ export function getLocalBusinessSchema() {
         'Friday',
         'Saturday'
       ],
-      'opens': '09:00',
-      'closes': '19:00'
+      'opens': '09:30',
+      'closes': '18:00'
     }
   }
 }
