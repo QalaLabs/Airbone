@@ -19,18 +19,18 @@ const roboto = Roboto({
 export const metadata = {
   title: 'DGCA CPL & ATPL Ground School Delhi | Airborne Aviation',
   description: "India's top DGCA CPL & ATPL ground school in Dwarka, Delhi. Capt. Navrang Singh. 2,500+ pilots placed in top airlines. Mentor-led batches of 25. Book free demo.",
-  metadataBase: new URL('https://airborneaviation.in'),
+  metadataBase: new URL('https://airborneaviation.academy'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
     title: 'DGCA CPL & ATPL Ground School Delhi | Airborne Aviation',
     description: "India's top DGCA CPL & ATPL ground school in Dwarka, Delhi. 2,500+ pilots placed. Mentor-led batches of 25. Book free demo.",
-    url: 'https://airborneaviation.in',
+    url: 'https://airborneaviation.academy',
     siteName: 'Airborne Aviation Academy',
     images: [
       {
-        url: 'https://airborneaviation.in/footage/cockpit_throttle_hero.jpg',
+        url: 'https://airborneaviation.academy/footage/cockpit_throttle_hero.jpg',
         width: 1200,
         height: 630,
         alt: 'Airborne Aviation Academy — DGCA CPL Ground School, Dwarka Delhi',
@@ -43,7 +43,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'DGCA CPL & ATPL Ground School Delhi | Airborne Aviation',
     description: "India's top DGCA CPL & ATPL ground school in Dwarka, Delhi. 2,500+ pilots placed. Mentor-led batches of 25.",
-    images: ['https://airborneaviation.in/footage/cockpit_throttle_hero.jpg'],
+    images: ['https://airborneaviation.academy/footage/cockpit_throttle_hero.jpg'],
   },
 }
 

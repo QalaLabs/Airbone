@@ -33,7 +33,7 @@ export default function TermsPage() {
 
             <section>
               <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', fontWeight: 800, color: '#D8A027', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>1. Acceptance of Terms</h2>
-              <p>By accessing or using the website at <strong style={{ color: '#fff' }}>airborneaviation.in</strong>, you agree to be bound by these Terms of Service. If you do not agree with any part of these terms, please do not use our website.</p>
+              <p>By accessing or using the website at <strong style={{ color: '#fff' }}>airborneaviation.academy</strong>, you agree to be bound by these Terms of Service. If you do not agree with any part of these terms, please do not use our website.</p>
               <p style={{ marginTop: '0.75rem' }}>These terms apply to all visitors, students, and prospective students who access or use any services offered by Airborne Aviation Academy Pvt. Ltd.</p>
             </section>
 
@@ -100,7 +100,7 @@ export default function TermsPage() {
                 <p style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                   <strong style={{ color: '#fff', fontFamily: 'var(--font-h)', fontSize: '0.92rem' }}>Airborne Aviation Academy Pvt. Ltd.</strong>
                   <span>E-549, 2nd Floor, Ramphal Chowk, Sector 7, Dwarka, New Delhi — 110075</span>
-                  <span>Email: <a href="mailto:info@airborneaviation.in" style={{ color: '#D8A027', textDecoration: 'none' }}>info@airborneaviation.in</a></span>
+                  <span>Email: <a href="mailto:info@airborneaviation.academy" style={{ color: '#D8A027', textDecoration: 'none' }}>info@airborneaviation.academy</a></span>
                   <span>Phone: <a href="tel:+919953777320" style={{ color: '#D8A027', textDecoration: 'none' }}>+91 9953 777 320</a></span>
                 </p>
               </div>

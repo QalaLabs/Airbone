@@ -5,8 +5,8 @@ export function getLocalBusinessSchema() {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     'name': 'Airborne Aviation Academy',
-    'image': 'https://airborneaviation.in/footage/cockpit_throttle_hero.jpg',
-    'url': 'https://airborneaviation.in',
+    'image': 'https://airborneaviation.academy/footage/cockpit_throttle_hero.jpg',
+    'url': 'https://airborneaviation.academy',
     'telephone': '+91 9953 777 320',
     'priceRange': '₹₹₹',
     'address': {
@@ -43,8 +43,8 @@ export function getEducationalOrgSchema() {
     '@context': 'https://schema.org',
     '@type': 'EducationalOrganization',
     'name': 'Airborne Aviation Academy',
-    'url': 'https://airborneaviation.in',
-    'logo': 'https://airborneaviation.in/favicon.svg',
+    'url': 'https://airborneaviation.academy',
+    'logo': 'https://airborneaviation.academy/favicon.svg',
     'description': 'India\'s most trusted DGCA CPL ground school. Led by Capt. Navrang Singh with 15+ years of teaching excellence.',
     'founder': {
       '@type': 'Person',
@@ -62,7 +62,7 @@ export function getCourseSchema(course) {
     'provider': {
       '@type': 'EducationalOrganization',
       'name': 'Airborne Aviation Academy',
-      'sameAs': 'https://airborneaviation.in'
+      'sameAs': 'https://airborneaviation.academy'
     },
     'hasCourseInstance': {
       '@type': 'CourseInstance',
@@ -87,7 +87,7 @@ export function getBreadcrumbSchema(links) {
       '@type': 'ListItem',
       'position': index + 1,
       'name': link.name,
-      'item': `https://airborneaviation.in${link.path}`
+      'item': `https://airborneaviation.academy${link.path}`
     }))
   }
 }

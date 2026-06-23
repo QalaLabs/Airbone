@@ -5,6 +5,6 @@ export default function robots() {
       allow: '/',
       disallow: '/api/',
     },
-    sitemap: 'https://airborneaviation.in/sitemap.xml',
+    sitemap: 'https://airborneaviation.academy/sitemap.xml',
   }
 }

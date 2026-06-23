@@ -33,7 +33,7 @@ export default function PrivacyPage() {
 
             <section>
               <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', fontWeight: 800, color: '#D8A027', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>1. Introduction</h2>
-              <p>Airborne Aviation Academy Pvt. Ltd. (&quot;Airborne&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) operates the website at <strong style={{ color: '#fff' }}>airborneaviation.in</strong>. This Privacy Policy explains what personal information we collect when you use our website, how we use it, and how we protect it.</p>
+              <p>Airborne Aviation Academy Pvt. Ltd. (&quot;Airborne&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) operates the website at <strong style={{ color: '#fff' }}>airborneaviation.academy</strong>. This Privacy Policy explains what personal information we collect when you use our website, how we use it, and how we protect it.</p>
               <p style={{ marginTop: '0.75rem' }}>By using our website or submitting an enquiry form, you consent to the practices described in this policy.</p>
             </section>
 
@@ -71,7 +71,7 @@ export default function PrivacyPage() {
             <section>
               <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', fontWeight: 800, color: '#D8A027', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>4. Lead Form Data</h2>
               <p>When you submit an enquiry through any lead form on our website, your data is transmitted securely to our internal admissions management system. An Airborne admissions counsellor will typically contact you within 24 hours via phone or WhatsApp.</p>
-              <p style={{ marginTop: '0.75rem' }}>Automated follow-up communications may be triggered via our CRM system. You can opt out of these communications at any time by contacting us at <strong style={{ color: '#fff' }}>info@airborneaviation.in</strong>.</p>
+              <p style={{ marginTop: '0.75rem' }}>Automated follow-up communications may be triggered via our CRM system. You can opt out of these communications at any time by contacting us at <strong style={{ color: '#fff' }}>info@airborneaviation.academy</strong>.</p>
             </section>
 
             <section>
@@ -94,7 +94,7 @@ export default function PrivacyPage() {
                 <li>Opt out of marketing communications at any time</li>
                 <li>Withdraw consent for data processing at any time</li>
               </ul>
-              <p style={{ marginTop: '0.75rem' }}>To exercise any of these rights, contact us at <strong style={{ color: '#fff' }}>info@airborneaviation.in</strong> or call <strong style={{ color: '#fff' }}>+91 9953 777 320</strong>.</p>
+              <p style={{ marginTop: '0.75rem' }}>To exercise any of these rights, contact us at <strong style={{ color: '#fff' }}>info@airborneaviation.academy</strong> or call <strong style={{ color: '#fff' }}>+91 9953 777 320</strong>.</p>
             </section>
 
             <section>
@@ -114,7 +114,7 @@ export default function PrivacyPage() {
                 <p style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                   <strong style={{ color: '#fff', fontFamily: 'var(--font-h)', fontSize: '0.92rem' }}>Airborne Aviation Academy Pvt. Ltd.</strong>
                   <span>E-549, 2nd Floor, Ramphal Chowk, Sector 7, Dwarka, New Delhi — 110075</span>
-                  <span>Email: <a href="mailto:info@airborneaviation.in" style={{ color: '#D8A027', textDecoration: 'none' }}>info@airborneaviation.in</a></span>
+                  <span>Email: <a href="mailto:info@airborneaviation.academy" style={{ color: '#D8A027', textDecoration: 'none' }}>info@airborneaviation.academy</a></span>
                   <span>Phone: <a href="tel:+919953777320" style={{ color: '#D8A027', textDecoration: 'none' }}>+91 9953 777 320</a></span>
                 </p>
               </div>

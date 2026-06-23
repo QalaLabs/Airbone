@@ -24,13 +24,13 @@ const articleSchema = {
   publisher: {
     '@type': 'EducationalOrganization',
     name: 'Airborne Aviation Academy',
-    logo: { '@type': 'ImageObject', url: 'https://airborneaviation.in/favicon.svg' },
-    url: 'https://airborneaviation.in',
+    logo: { '@type': 'ImageObject', url: 'https://airborneaviation.academy/favicon.svg' },
+    url: 'https://airborneaviation.academy',
   },
   datePublished: '2026-01-15',
   dateModified: '2026-06-01',
-  url: 'https://airborneaviation.in/blog/how-to-become-pilot-india',
-  mainEntityOfPage: 'https://airborneaviation.in/blog/how-to-become-pilot-india',
+  url: 'https://airborneaviation.academy/blog/how-to-become-pilot-india',
+  mainEntityOfPage: 'https://airborneaviation.academy/blog/how-to-become-pilot-india',
 }
 
 const faqSchema = {

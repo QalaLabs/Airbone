@@ -24,13 +24,13 @@ const articleSchema = {
   publisher: {
     '@type': 'EducationalOrganization',
     name: 'Airborne Aviation Academy',
-    logo: { '@type': 'ImageObject', url: 'https://airborneaviation.in/favicon.svg' },
-    url: 'https://airborneaviation.in',
+    logo: { '@type': 'ImageObject', url: 'https://airborneaviation.academy/favicon.svg' },
+    url: 'https://airborneaviation.academy',
   },
   datePublished: '2026-01-20',
   dateModified: '2026-06-01',
-  url: 'https://airborneaviation.in/blog/dgca-ground-school-guide',
-  mainEntityOfPage: 'https://airborneaviation.in/blog/dgca-ground-school-guide',
+  url: 'https://airborneaviation.academy/blog/dgca-ground-school-guide',
+  mainEntityOfPage: 'https://airborneaviation.academy/blog/dgca-ground-school-guide',
 }
 
 const faqSchema = {

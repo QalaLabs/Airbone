@@ -266,7 +266,7 @@ export default function PremiumFooter({ onBookDemo }) {
               </div>
               <div className="pf-contact-item">
                 <span className="pf-contact-icon">✉</span>
-                <a href="mailto:info@airborneaviation.in" className="pf-link">info@airborneaviation.in</a>
+                <a href="mailto:info@airborneaviation.academy" className="pf-link">info@airborneaviation.academy</a>
               </div>
               <div className="pf-contact-item">
                 <span className="pf-contact-icon">🕘</span>

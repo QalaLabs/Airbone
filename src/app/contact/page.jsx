@@ -48,7 +48,7 @@ export default function ContactPage() {
                   Electronic Mail
                 </span>
                 <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 900, color: '#FFFFFF' }}>
-                  info@airborneaviation.in
+                  info@airborneaviation.academy
                 </span>
               </div>
 

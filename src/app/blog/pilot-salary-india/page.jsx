@@ -24,13 +24,13 @@ const articleSchema = {
   publisher: {
     '@type': 'EducationalOrganization',
     name: 'Airborne Aviation Academy',
-    logo: { '@type': 'ImageObject', url: 'https://airborneaviation.in/favicon.svg' },
-    url: 'https://airborneaviation.in',
+    logo: { '@type': 'ImageObject', url: 'https://airborneaviation.academy/favicon.svg' },
+    url: 'https://airborneaviation.academy',
   },
   datePublished: '2026-02-01',
   dateModified: '2026-06-01',
-  url: 'https://airborneaviation.in/blog/pilot-salary-india',
-  mainEntityOfPage: 'https://airborneaviation.in/blog/pilot-salary-india',
+  url: 'https://airborneaviation.academy/blog/pilot-salary-india',
+  mainEntityOfPage: 'https://airborneaviation.academy/blog/pilot-salary-india',
 }
 
 const faqSchema = {
