@@ -9,9 +9,11 @@ export async function GET(req) {
     const res = await fetch(`${ADMIN_API_URL}/api/public/courses?limit=${limit}`, {
       next: { revalidate: 60 },
     })
+    if (!res.ok) throw new Error('Upstream failed')
     const data = await res.json()
     return NextResponse.json(data)
-  } catch {
-    return NextResponse.json({ data: [] }, { status: 200 })
+  } catch (err) {
+    console.error('[Proxy Error /courses]:', err.message)
+    return NextResponse.json({ error: 'Upstream Error' }, { status: 502 })
   }
 }

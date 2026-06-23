@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+import { rateLimit } from '@/utils/rate-limit'
+import { storeFallbackLead } from '@/utils/fallback-storage'
 
 const ADMIN_API_URL = process.env.ADMIN_API_URL ?? 'http://localhost:3001'
 const INTAKE_KEY = process.env.PUBLIC_INTAKE_KEY ?? ''
@@ -20,11 +22,24 @@ function resolveSource(raw = '') {
 }
 
 export async function POST(req) {
-  try {
-    const payload = await req.json()
-    const { name, phone, email, course, source } = payload
+  let leadData = null
 
-    if (!name || !phone) {
+  try {
+    const rateLimitResult = rateLimit(req)
+    if (!rateLimitResult.success) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+    }
+
+    const payload = await req.json()
+    leadData = {
+      name: payload.name,
+      phone: payload.phone,
+      email: payload.email,
+      course: payload.course,
+      source: payload.source,
+    }
+
+    if (!leadData.name || !leadData.phone) {
       return NextResponse.json(
         { error: 'Name and phone are required.' },
         { status: 400 }
@@ -38,26 +53,23 @@ export async function POST(req) {
         'x-intake-key': INTAKE_KEY,
       },
       body: JSON.stringify({
-        name,
-        phone,
-        email: email || undefined,
-        courseInterest: course || undefined,
-        source: resolveSource(source),
+        name: leadData.name,
+        phone: leadData.phone,
+        email: leadData.email || undefined,
+        courseInterest: leadData.course || undefined,
+        source: resolveSource(leadData.source),
       }),
     })
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
-      console.error('[Lead Proxy Error]:', err)
-      // Still return success to user — never block form submission
-      return NextResponse.json({ success: true }, { status: 200 })
+      const errText = await res.text().catch(() => '')
+      console.error('[Lead Proxy Error]:', res.status, errText)
+      throw new Error(`Upstream returned ${res.status}`)
     }
 
     // Fire optional webhooks (non-blocking)
     const json = await res.json().catch(() => ({}))
     const gateToken = json.gateToken ?? null
-
-    const leadData = { name, phone, email, course, source }
 
     if (process.env.N8N_WHATSAPP_WEBHOOK) {
       fetch(process.env.N8N_WHATSAPP_WEBHOOK, {
@@ -81,6 +93,17 @@ export async function POST(req) {
     )
   } catch (err) {
     console.error('[Lead API Error]:', err.message)
-    return NextResponse.json({ success: true }, { status: 200 })
+    
+    if (leadData && leadData.name && leadData.phone) {
+      const stored = await storeFallbackLead(leadData)
+      if (stored) {
+        return NextResponse.json(
+          { success: true, message: 'Lead captured (fallback)' },
+          { status: 200 }
+        )
+      }
+    }
+    
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
