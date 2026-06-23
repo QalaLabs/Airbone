@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import { motion, useScroll, useTransform, useSpring, useMotionValue, useInView, AnimatePresence } from 'framer-motion'
 import { getLocalBusinessSchema, getEducationalOrgSchema } from '@/utils/seo'
 import { GlowCard } from '@/components/ui/spotlight-card'
+import PremiumFooter from '@/components/PremiumFooter'
 
 // Premium FX components — pure UI, no backend dependencies
 import {
@@ -353,7 +354,7 @@ function HeroChapter({ onBook, on3D }) {
           style={{ marginTop: '2.5rem', display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem', maxWidth: '1100px' }}
         >
           <p style={{ color: 'rgba(255,255,255,0.8)', maxWidth: '28rem', fontSize: '0.9375rem', lineHeight: 1.7, fontFamily: 'var(--font-b)' }}>
-            India's most disciplined DGCA ground school for CPL & APTL. Mentor-led training under
+            India's most disciplined DGCA ground school for CPL & ATPL. Mentor-led training under
             Capt. Navrang Singh — clearing exams, building careers, restarting dreams.
           </p>
 
@@ -713,6 +714,18 @@ function FounderSection() {
 /* ─────────────────────────────────────
    COURSES — 3-col tilt grid
 ───────────────────────────────────── */
+// Static fallback — renders when API returns 0 results (courses not yet in DB)
+const STATIC_COURSES = [
+  { name: 'CPL Ground School',    price: '₹1,50,000',       tag: 'Ground School',  lede: 'Complete DGCA CPL exam prep. All subjects. Mentor-led batches of 25.', desc: 'Complete DGCA CPL exam prep. All subjects. Mentor-led batches of 25.', duration: '12–18 months', eligibility: 'Class 12 PCM',   href: '/courses/cpl-ground-classes' },
+  { name: 'ATPL Ground School',   price: '₹1,50,000',       tag: 'Ground School',  lede: 'Airline Transport Pilot License exam prep covering all DGCA subjects.', desc: 'ATPL exam prep — all DGCA subjects covered, viva included.', duration: '4–6 months',  eligibility: 'Valid CPL',        href: '/courses/atpl' },
+  { name: 'Cadet Preparation',    price: '₹50,000',         tag: 'Cadet Selection',lede: 'IndiGo, Air India & Akasa cadet pilot selection program preparation.', desc: 'Aptitude tests, GD/PI, SIM prep for airline cadet programs.', duration: '2–3 months',  eligibility: 'CPL in progress',  href: '/courses/cadet-preparation' },
+  { name: 'A320 Simulator',       price: '₹10,000/hr',      tag: 'Simulator',      lede: 'In-house Airbus A320 simulator for type rating familiarisation and airline SIM prep.', desc: 'Type rating fam, cadet SIM prep, emergency procedures.', duration: 'Per session', eligibility: 'CPL holders',      href: '/courses/a320-simulator' },
+  { name: 'CAS Compass & ADAPT',  price: '₹30,000',         tag: 'Aptitude Test',  lede: 'Structured preparation for CAS Compass and ADAPT pilot aptitude test batteries.', desc: 'Numerical, spatial, psychomotor, multi-tasking, personality.', duration: '4–6 weeks',  eligibility: 'Any stage',        href: '/courses/cas-compass-adapt' },
+  { name: 'Airline Preparation',  price: '₹1,00,000',       tag: 'GD / PI',        lede: 'GD, PI, personal development and mock interviews led by Rajeet Khalsa.', desc: 'GD, PI, mock interviews, communication, resume prep.', duration: '6–8 weeks',  eligibility: 'CPL holders',      href: '/courses/airline-preparation' },
+  { name: 'Flying Training Guide',price: 'Free Counselling', tag: 'Guidance',       lede: 'India vs abroad comparison, DGCA conversion guide, and personalised roadmap.', desc: 'India vs abroad, DGCA conversion, which path suits you.', duration: 'Self-paced', eligibility: 'All students',     href: '/courses/flying-training-india-abroad' },
+  { name: 'Cabin Crew',           price: 'On Request',       tag: 'Hospitality',    lede: 'Cabin crew and hospitality training for aviation service careers.', desc: 'Cabin crew and hospitality training for aviation careers.', duration: '3 months',   eligibility: '18+ years',        href: '/courses/cabin-crew' },
+]
+
 function mapCourseToCard(c) {
   const meta = c.metadata ?? {}
   const fmt = (fee) => fee
@@ -741,8 +754,12 @@ function CoursesSection() {
   useEffect(() => {
     fetch('/api/public-proxy/courses?limit=9')
       .then((r) => r.json())
-      .then((d) => { setCourses((d.data ?? []).map(mapCourseToCard)); setLoaded(true) })
-      .catch(() => { setFetchError(true); setLoaded(true) })
+      .then((d) => {
+        const fetched = (d.data ?? []).map(mapCourseToCard)
+        setCourses(fetched.length > 0 ? fetched : STATIC_COURSES)
+        setLoaded(true)
+      })
+      .catch(() => { setCourses(STATIC_COURSES); setLoaded(true) })
   }, [])
 
   const count = courses.length
@@ -807,8 +824,11 @@ function CoursesSection() {
           .courses-mobile-scroll {
             display: flex;
             overflow-x: auto;
+            overflow-y: hidden;
             scroll-snap-type: x mandatory;
             -webkit-overflow-scrolling: touch;
+            touch-action: pan-x;
+            overscroll-behavior-x: contain;
             scroll-behavior: smooth;
             gap: 1rem;
             padding: 1rem 10vw 1.5rem;
@@ -1300,6 +1320,87 @@ function TestimonialsSection() {
 }
 
 /* ─────────────────────────────────────
+   HOMEPAGE FAQ
+───────────────────────────────────── */
+const HOME_FAQS = [
+  { q: 'What is the eligibility to join CPL ground school at Airborne?', a: 'Class 12 with Physics and Mathematics (minimum 50% in PCM). You must also hold or be eligible for a DGCA Class 1 Medical. Age 17+ at time of first solo flight. No prior aviation experience required.' },
+  { q: 'How long is the CPL ground school program?', a: "Airborne's CPL ground school runs 12–18 months for the full DGCA subject battery. Batches are capped at 25 students. Weekend and weekday batches available from our Dwarka, Delhi campus." },
+  { q: 'What is the fee for CPL ground school?', a: 'CPL ground school at Airborne is ₹1,50,000. This covers all DGCA subjects, study materials, and viva preparation. Flying training (done at an ATO of your choice) is a separate cost — speak to our admissions team for current ATO tie-up rates.' },
+  { q: 'Is Airborne Aviation Academy DGCA approved?', a: 'Yes. Airborne Aviation Academy is a DGCA-approved ground training organisation. Our curriculum is aligned with the DGCA CPL and ATPL examination syllabus. Capt. Navrang Singh has been the principal mentor since founding in 2009.' },
+  { q: 'Can I do CPL and ATPL ground school together?', a: 'Yes, and Airborne recommends it. The CPL and ATPL syllabi overlap significantly in Air Navigation, Meteorology, and Technical subjects. Completing both together improves exam efficiency and reduces total preparation time.' },
+  { q: 'What airlines have Airborne graduates joined?', a: 'Airborne graduates have joined IndiGo, Air India, Akasa Air, SpiceJet, Air Asia India, Alliance Air, and regional operators. Over 2,500 pilots have trained at Airborne since 2009.' },
+]
+
+function HomepageFAQ() {
+  const [open, setOpen] = useState(null)
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true, margin: '-80px' })
+
+  return (
+    <section ref={ref} style={{ padding: '6rem var(--margin)', background: '#000810', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.7 }}
+        style={{ maxWidth: '800px', margin: '0 auto' }}
+      >
+        <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+          <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.7rem', letterSpacing: '0.3em', textTransform: 'uppercase', color: '#DB241E', fontWeight: 700, display: 'block', marginBottom: '1rem' }}>
+            QUESTIONS & ANSWERS
+          </span>
+          <h2 style={{ fontFamily: 'var(--font-h)', fontSize: 'clamp(1.75rem, 3.5vw, 2.5rem)', fontWeight: 900, textTransform: 'uppercase', lineHeight: '1.1', margin: 0 }}>
+            Frequently Asked <span style={{ color: '#D8A027' }}>Questions</span>
+          </h2>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
+          {HOME_FAQS.map((faq, i) => (
+            <div key={i} style={{ borderBottom: i < HOME_FAQS.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+              <button
+                onClick={() => setOpen(open === i ? null : i)}
+                style={{ width: '100%', background: open === i ? 'rgba(216,160,39,0.04)' : 'transparent', border: 'none', cursor: 'pointer', padding: '1.4rem 1.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1.5rem', textAlign: 'left', transition: 'background 0.2s' }}
+              >
+                <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.9rem', fontWeight: 700, color: open === i ? '#D8A027' : '#FFFFFF', lineHeight: '1.4', flex: 1 }}>{faq.q}</span>
+                <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 900, color: '#D8A027', flexShrink: 0, transform: open === i ? 'rotate(45deg)' : 'rotate(0)', transition: 'transform 0.25s', display: 'inline-block' }}>+</span>
+              </button>
+              <AnimatePresence initial={false}>
+                {open === i && (
+                  <motion.div
+                    key="content"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    style={{ overflow: 'hidden' }}
+                  >
+                    <p style={{ margin: 0, padding: '0 1.75rem 1.4rem 1.75rem', fontSize: '0.875rem', color: 'rgba(255,255,255,0.65)', lineHeight: '1.75' }}>{faq.a}</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ))}
+        </div>
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'FAQPage',
+              mainEntity: HOME_FAQS.map(f => ({
+                '@type': 'Question',
+                name: f.q,
+                acceptedAnswer: { '@type': 'Answer', text: f.a }
+              }))
+            })
+          }}
+        />
+      </motion.div>
+    </section>
+  )
+}
+
+/* ─────────────────────────────────────
    FINAL CTA — Preserves existing /api/lead integration
 ───────────────────────────────────── */
 function FinalCTA() {
@@ -1414,7 +1515,7 @@ function FinalCTA() {
 function SiteFooter() {
   const cols = [
     { title: 'Programs', links: [
-      { label: 'CPL Ground', href: '/courses/cpl-ground-classes' },
+      { label: 'CPL Ground', href: '/courses/commercial-pilot-license-cpl' },
       { label: 'Cadet Pilot', href: '/courses/cadet-preparation' },
       { label: 'ATPL Ground', href: '/courses/atpl' },
       { label: 'A320 SIM', href: '/courses/a320-simulator' },
@@ -1427,6 +1528,7 @@ function SiteFooter() {
       { label: 'Dwarka Centre', href: '/contact' },
       { label: 'Jobs Portal', href: '/jobs' },
       { label: 'Resources', href: '/resources' },
+      { label: 'How to Become a Pilot After Class 12', href: '/blog/how-to-become-pilot-india' },
     ]},
     { title: 'Connect', links: [
       { label: 'Contact', href: '/contact' },
@@ -1484,9 +1586,9 @@ function SiteFooter() {
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>
           <div>© {new Date().getFullYear()} Airborne Aviation Academy. All rights reserved.</div>
           <div style={{ display: 'flex', gap: '1.5rem' }}>
-            <a href="#" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#fff'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.4)'}>Privacy</a>
-            <a href="#" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#fff'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.4)'}>Terms</a>
-            <a href="#" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#fff'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.4)'}>DGCA Compliance</a>
+            <a href="/privacy" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#fff'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.4)'}>Privacy</a>
+            <a href="/terms" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#fff'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.4)'}>Terms</a>
+            <a href="/dgca-compliance" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#fff'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.4)'}>DGCA Compliance</a>
           </div>
         </div>
       </div>
@@ -1541,6 +1643,82 @@ function WhatsAppFloat() {
         </svg>
         <span>Chat on WhatsApp</span>
       </a>
+    </div>
+  )
+}
+
+/* ─────────────────────────────────────
+   STICKY MOBILE CTA BAR
+───────────────────────────────────── */
+function StickyMobileCTA({ onBookDemo }) {
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrolled = window.scrollY > 400
+      const footer = document.querySelector('footer')
+      const cta = document.querySelector('#cta')
+      const elementsToAvoid = [footer, cta].filter(Boolean)
+      let nearBottom = false
+      const viewportHeight = window.innerHeight
+      for (const el of elementsToAvoid) {
+        const rect = el.getBoundingClientRect()
+        if (rect.top < viewportHeight - 60) { nearBottom = true; break }
+      }
+      setVisible(scrolled && !nearBottom)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll()
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  return (
+    <div style={{
+      position: 'fixed',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      zIndex: 800,
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr 1fr',
+      background: '#000f1e',
+      borderTop: '1px solid rgba(255,255,255,0.08)',
+      transform: visible ? 'translateY(0)' : 'translateY(100%)',
+      transition: 'transform 0.35s cubic-bezier(0.4,0,0.2,1)',
+      boxShadow: '0 -8px 32px rgba(0,0,0,0.6)',
+    }}
+    className="sticky-mobile-cta"
+    >
+      <a
+        href="tel:+919953777320"
+        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0.9rem 0.5rem', color: '#FFFFFF', textDecoration: 'none', borderRight: '1px solid rgba(255,255,255,0.06)', background: 'transparent' }}
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20, marginBottom: 4 }}>
+          <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.43 10.8a19.79 19.79 0 01-3.07-8.67A2 2 0 012.35 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006 6l1.27-.76a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 15.22z"/>
+        </svg>
+        <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Call</span>
+      </a>
+      <a
+        href="https://wa.me/919953777320"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0.9rem 0.5rem', color: '#25D366', textDecoration: 'none', borderRight: '1px solid rgba(255,255,255,0.06)', background: 'transparent' }}
+      >
+        <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: 20, height: 20, marginBottom: 4 }}>
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+        </svg>
+        <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>WhatsApp</span>
+      </a>
+      <button
+        onClick={onBookDemo}
+        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0.9rem 0.5rem', color: '#FFFFFF', background: '#DB241E', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-h)' }}
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20, marginBottom: 4 }}>
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <span style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Book Demo</span>
+      </button>
     </div>
   )
 }
@@ -1811,8 +1989,8 @@ function AirborneAdvantage() {
     const scrollLeft = container.scrollLeft
     const containerWidth = container.clientWidth
     
-    // Each card is 85% of container width, plus a 16px gap
-    const cardWidth = containerWidth * 0.85 + 16
+    // Card is 76vw + 12px gap
+    const cardWidth = containerWidth * 0.76 + 12
     const index = Math.round(scrollLeft / cardWidth)
     setActiveIndex(Math.min(mobileCategories.length - 1, Math.max(0, index)))
   }
@@ -1821,7 +1999,7 @@ function AirborneAdvantage() {
     if (!carouselRef.current) return
     const container = carouselRef.current
     const containerWidth = container.clientWidth
-    const cardWidth = containerWidth * 0.85 + 16
+    const cardWidth = containerWidth * 0.76 + 12
     container.scrollTo({
       left: index * cardWidth,
       behavior: 'smooth'
@@ -1872,11 +2050,14 @@ function AirborneAdvantage() {
           .advantage-carousel {
             display: flex;
             overflow-x: auto;
+            overflow-y: hidden;
             scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch; /* Momentum scrolling */
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-x;
+            overscroll-behavior-x: contain;
             scroll-behavior: smooth;
-            gap: 1rem;
-            padding: 1.5rem 7.5vw 2.5rem; /* Centering offsets (100 - 85)/2 = 7.5% */
+            gap: 0.75rem;
+            padding: 1.5rem 0 2rem 1.5rem; /* left padding only — right bleeds to show next card */
             margin-bottom: 0.5rem;
           }
 
@@ -1886,8 +2067,8 @@ function AirborneAdvantage() {
 
           /* Premium glassmorphic card design */
           .advantage-card-mobile {
-            flex: 0 0 85vw; /* 85% viewport width */
-            scroll-snap-align: center;
+            flex: 0 0 76vw; /* 76vw — leaves ~20% of next card visible on right */
+            scroll-snap-align: start;
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
             border: 1px solid rgba(216, 160, 39, 0.12); /* Subtle gold highlights */
             backdrop-filter: blur(16px);
@@ -2075,11 +2256,11 @@ function PilotCareerOutlook() {
   ]
 
   const opportunities = [
-    { title: 'Scheduled Airlines', desc: 'IndiGo, Air India, Akasa Air, SpiceJet' },
-    { title: 'Cargo Operations', desc: 'Blue Dart and international freight carriers' },
-    { title: 'Charter & Corporate', desc: 'Private aviation and VIP transport wings' },
-    { title: 'Flight Instructors', desc: 'FTO trainer roles in India and overseas' },
-    { title: 'Global Opportunities', desc: 'Middle East, Southeast Asia, and Europe' }
+    { icon: '✈', title: 'Scheduled Airlines',    desc: 'IndiGo, Air India, Akasa Air, SpiceJet' },
+    { icon: '📦', title: 'Cargo Operations',      desc: 'Blue Dart and international freight' },
+    { icon: '🏢', title: 'Corporate Aviation',    desc: 'Private jets and VIP transport wings' },
+    { icon: '👨‍✈️', title: 'Flight Instruction', desc: 'FTO trainer roles in India and abroad' },
+    { icon: '🌍', title: 'International Pathways',desc: 'Middle East, Southeast Asia, Europe' },
   ]
 
   const perks = [
@@ -2121,10 +2302,37 @@ function PilotCareerOutlook() {
             <style dangerouslySetInnerHTML={{ __html: `
               .salary-desktop-wrapper { display: block; border: 1px solid rgba(0,39,76,0.1); border-radius: 12px; overflow: hidden; }
               .salary-mobile-cards { display: none; }
-              
+              .opportunities-grid { display: flex; flex-direction: column; gap: 1rem; }
+
               @media (max-width: 767px) {
                 .salary-desktop-wrapper { display: none !important; }
-                .salary-mobile-cards { display: flex !important; flex-direction: column; gap: 1rem; }
+
+                /* Horizontal scroll-snap carousel */
+                .salary-mobile-cards {
+                  display: flex !important;
+                  flex-direction: row;
+                  overflow-x: auto;
+                  overflow-y: hidden;
+                  scroll-snap-type: x mandatory;
+                  -webkit-overflow-scrolling: touch;
+                  touch-action: pan-x;
+                  overscroll-behavior-x: contain;
+                  gap: 0.75rem;
+                  padding: 0.25rem 0 1rem 0;
+                }
+                .salary-mobile-cards::-webkit-scrollbar { display: none; }
+
+                .salary-mobile-card-item {
+                  flex: 0 0 76vw;
+                  scroll-snap-align: start;
+                }
+
+                /* 2-column grid for opportunities */
+                .opportunities-grid {
+                  display: grid !important;
+                  grid-template-columns: repeat(2, calc(50vw - 1.8rem));
+                  gap: 0.65rem;
+                }
               }
             ` }} />
             
@@ -2161,10 +2369,10 @@ function PilotCareerOutlook() {
               </table>
             </div>
 
-            {/* Mobile Cards View */}
+            {/* Mobile Cards View — horizontal scroll-snap */}
             <div className="salary-mobile-cards">
               {stages.map((s, idx) => (
-                <div key={idx} style={{ background: '#fff', border: '1px solid rgba(0,39,76,0.08)', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
+                <div key={idx} className="salary-mobile-card-item" style={{ background: '#fff', border: '1px solid rgba(0,39,76,0.08)', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                     <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.75rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.1em', background: 'rgba(0,39,76,0.04)', padding: '0.3rem 0.6rem', borderRadius: '4px' }}>{s.stage}</span>
                     <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 900, color: 'var(--red)' }}>{s.salary}</span>
@@ -2189,11 +2397,12 @@ function PilotCareerOutlook() {
                 <span style={{ height: '2px', width: '15px', background: 'var(--gold)' }} />
                 Job Opportunities
               </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div className="opportunities-grid">
                 {opportunities.map((o, idx) => (
-                  <div key={idx} style={{ background: '#fff', border: '1px solid rgba(0,39,76,0.06)', padding: '1.25rem', borderRadius: '8px' }}>
-                    <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.9rem', fontWeight: 700, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>{o.title}</h4>
-                    <p style={{ fontSize: '0.8125rem', color: 'rgba(33,33,33,0.6)', margin: 0, fontFamily: 'var(--font-b)' }}>{o.desc}</p>
+                  <div key={idx} style={{ background: '#fff', border: '1px solid rgba(0,39,76,0.06)', padding: '1rem', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                    <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>{o.icon}</span>
+                    <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.78rem', fontWeight: 700, color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.04em', margin: 0 }}>{o.title}</h4>
+                    <p style={{ fontSize: '0.75rem', color: 'rgba(33,33,33,0.55)', margin: 0, fontFamily: 'var(--font-b)', lineHeight: 1.4 }}>{o.desc}</p>
                   </div>
                 ))}
               </div>
@@ -2310,15 +2519,21 @@ export default function HomePage() {
         {/* Testimonials */}
         <TestimonialsSection />
 
+        {/* Homepage FAQ with JSON-LD */}
+        <HomepageFAQ />
+
         {/* Final CTA with /api/lead */}
         <FinalCTA />
       </main>
 
       {/* Footer */}
-      <SiteFooter />
+      <PremiumFooter onBookDemo={openBooking} />
 
       {/* Floating WhatsApp */}
       <WhatsAppFloat />
+
+      {/* Sticky mobile CTA bar — mobile only via CSS */}
+      <StickyMobileCTA onBookDemo={openBooking} />
 
       {/* Booking modal with /api/lead — preserved */}
       <BookingModal open={bookingOpen} onClose={closeBooking} />

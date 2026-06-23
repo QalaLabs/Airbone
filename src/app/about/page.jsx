@@ -4,6 +4,7 @@ import Footer from '@/components/Footer'
 export const metadata = {
   title: 'About Airborne Aviation Academy DGCA Approved | Dwarka Delhi',
   description: 'Airborne Aviation Academy, Dwarka Delhi founded by Capt. Navrang Singh in 2009. 2,500+ trained. DGCA-approved FTO. Meet our faculty, fleet & placement record.',
+  alternates: { canonical: '/about' },
 }
 
 const FOUNDERS = [

@@ -5,6 +5,7 @@ import LeadForm from '@/components/LeadForm'
 export const metadata = {
   title: 'Contact Airborne Aviation Academy Admissions, Dwarka Delhi',
   description: 'Contact Airborne Aviation Academy in Dwarka, Delhi. Admissions: +91 9953 777 320. E-549, 2nd Floor, Ramphal Chowk, Sector 7, Dwarka.',
+  alternates: { canonical: '/contact' },
 }
 
 export default function ContactPage() {

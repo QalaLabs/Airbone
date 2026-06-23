@@ -5,8 +5,8 @@ import LeadForm from '@/components/LeadForm'
 import { fetchPublic, formatFee } from '@/lib/adminApi'
 
 export const metadata = {
-  title: 'Pilot Training Courses in Delhi CPL, ATPL, Cabin Crew | Airborne',
-  description: 'Browse all DGCA-approved pilot training courses at Airborne Aviation Academy, Dwarka Delhi. CPL, ATPL, PPL, Cabin Crew. Compare fees and eligibility.',
+  title: 'Aviation Courses Delhi | CPL - ATPL - Cabin Crew | Airborne',
+  description: 'Browse all DGCA-approved aviation courses at Airborne Aviation Academy, Dwarka Delhi. CPL ground school, ATPL, Cabin Crew, A320 SIM, cadet prep. Compare fees and eligibility.',
 }
 
 // Revalidate every 60 s so freshly published courses appear quickly

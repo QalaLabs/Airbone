@@ -39,9 +39,9 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
   if (status === 'success') {
     return (
       <div style={{ background: 'rgba(0, 15, 30, 0.7)', border: '1px solid #D8A027', borderTop: '4px solid #DB241E', padding: '2.5rem', textAlign: 'center', borderRadius: '1px', boxShadow: '0 8px 30px rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)' }}>
-        <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', color: '#D8A027', marginBottom: '0.6rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.1em' }}>Transmission Verified</h3>
+        <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', color: '#D8A027', marginBottom: '0.6rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.1em' }}>Enquiry Received</h3>
         <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.6', margin: 0 }}>
-          Thank you! Your inquiry for {courseName || 'aviation training'} has been successfully logged. An admissions advisor from our Dwarka desk will contact you shortly.
+          Thank you! Your {courseName || 'aviation training'} enquiry has been received. An Airborne admissions counsellor will contact you within 24 hours.
         </p>
       </div>
     )
