@@ -1,11 +1,11 @@
 /** @type {import('next').NextConfig} */
 
 if (!process.env.ADMIN_API_URL) {
-  throw new Error('FATAL: Missing required environment variable ADMIN_API_URL')
+  console.warn('WARNING: Missing environment variable ADMIN_API_URL')
 }
 
 if (!process.env.PUBLIC_INTAKE_KEY) {
-  throw new Error('FATAL: Missing required environment variable PUBLIC_INTAKE_KEY')
+  console.warn('WARNING: Missing environment variable PUBLIC_INTAKE_KEY')
 }
 
 const nextConfig = {
