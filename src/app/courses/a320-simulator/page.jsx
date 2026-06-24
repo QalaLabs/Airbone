@@ -3,6 +3,7 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
 import { getBreadcrumbSchema } from '@/utils/seo'
+import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
   title: 'Airbus A320 Simulator Training Delhi | Airborne Aviation',
@@ -138,6 +139,19 @@ export default function A320SimulatorPage() {
           </div>
 
         </div>
+        <CoursePageFooter
+          whatsappText="Hi, I want to book an A320 Simulator session at Airborne Aviation Academy, Dwarka. Please share availability and fee."
+          nextCourses={[
+            { label: 'Airline Interview Preparation', href: '/courses/airline-preparation', note: 'Complete your selection prep with GD/PI coaching by Rajeet Khalsa' },
+            { label: 'Cadet Pilot Preparation', href: '/courses/cadet-preparation', note: 'Full aptitude, GD/PI and SIM preparation for cadet programs' },
+          ]}
+          relatedCourses={[
+            { label: 'ATPL Ground School', href: '/courses/atpl' },
+            { label: 'Cadet Preparation', href: '/courses/cadet-preparation' },
+            { label: 'Instrument Rating', href: '/courses/instrument-rating' },
+            { label: 'All Courses', href: '/courses' },
+          ]}
+        />
       </main>
       <Footer />
     </>

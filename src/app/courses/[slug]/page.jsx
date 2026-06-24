@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
+import CoursePageFooter from '@/components/CoursePageFooter'
 import { fetchPublic, fetchPublicWithStatus, formatFee } from '@/lib/adminApi'
 import { getCourseSchema, getBreadcrumbSchema } from '@/utils/seo'
 
@@ -246,6 +247,19 @@ export default async function CourseDetailPage({ params }) {
           </div>
         </div>
 
+        <CoursePageFooter
+          whatsappText={`Hi, I'm interested in the ${course.title} at Airborne Aviation Academy, Dwarka. Please share batch details and fee.`}
+          nextCourses={[
+            { label: 'Airline Interview Preparation', href: '/courses/airline-preparation', note: 'GD/PI and mock interview coaching to land your first officer seat' },
+            { label: 'Airbus A320 Simulator', href: '/courses/a320-simulator', note: 'Type rating familiarisation and cadet SIM prep' },
+          ]}
+          relatedCourses={[
+            { label: 'CPL Ground School', href: '/courses/commercial-pilot-license-cpl' },
+            { label: 'ATPL Ground School', href: '/courses/atpl' },
+            { label: 'Cadet Preparation', href: '/courses/cadet-preparation' },
+            { label: 'All Courses', href: '/courses' },
+          ]}
+        />
       </main>
       <Footer />
     </>

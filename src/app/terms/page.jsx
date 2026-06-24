@@ -100,7 +100,7 @@ export default function TermsPage() {
                 <p style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                   <strong style={{ color: '#fff', fontFamily: 'var(--font-h)', fontSize: '0.92rem' }}>Airborne Aviation Academy Pvt. Ltd.</strong>
                   <span>E-549, 2nd Floor, Ramphal Chowk, Sector 7, Dwarka, New Delhi — 110075</span>
-                  <span>Email: <a href="mailto:info@airborneaviation.academy" style={{ color: '#D8A027', textDecoration: 'none' }}>info@airborneaviation.academy</a></span>
+                  <span>Email: <a href="mailto:info@airborneaviation.in" style={{ color: '#D8A027', textDecoration: 'none' }}>info@airborneaviation.in</a></span>
                   <span>Phone: <a href="tel:+919953777320" style={{ color: '#D8A027', textDecoration: 'none' }}>+91 9953 777 320</a></span>
                 </p>
               </div>

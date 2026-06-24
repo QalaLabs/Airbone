@@ -73,7 +73,9 @@ export default async function CoursesPage() {
                 ⭐ {meta(flagship, 'batch', 'Next batch — contact us')}
               </span>
               <h2 className="ov-h1" style={{ fontSize: 'clamp(1.8rem, 4.5vw, 2.8rem)', fontWeight: 900, textTransform: 'uppercase', lineHeight: '1.1' }}>
-                {flagship.title}
+                <Link href={`/courses/${flagship.slug}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                  {flagship.title}
+                </Link>
               </h2>
               <p style={{ fontSize: '0.98rem', color: '#D8A027', fontWeight: 700, margin: '1rem 0 1.5rem 0', letterSpacing: '0.05em' }}>
                 {flagship.subtitle ?? meta(flagship, 'tagline', '')}
@@ -118,7 +120,9 @@ export default async function CoursesPage() {
             {/* Image */}
             {meta(flagship, 'image') && (
               <div className="cpl-banner-image-wrap">
-                <img src={meta(flagship, 'image')} alt={flagship.title} className="cpl-banner-image" />
+                <Link href={`/courses/${flagship.slug}`} style={{ display: 'block' }}>
+                  <img src={meta(flagship, 'image')} alt={flagship.title} className="cpl-banner-image" />
+                </Link>
               </div>
             )}
 
@@ -154,14 +158,19 @@ export default async function CoursesPage() {
                   }}
                 >
                   {meta(course, 'image') && (
-                    <div style={{ width: '100%', height: '160px', overflow: 'hidden' }}>
+                    <Link
+                      href={`/courses/${course.slug}`}
+                      style={{ display: 'block', width: '100%', height: '160px', overflow: 'hidden' }}
+                      tabIndex={-1}
+                      aria-hidden="true"
+                    >
                       <img
                         src={meta(course, 'image')}
                         alt={course.title}
                         className="course-card-image"
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
-                    </div>
+                    </Link>
                   )}
 
                   <div style={{ padding: '2rem', flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
@@ -178,7 +187,9 @@ export default async function CoursesPage() {
                       </div>
 
                       <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.15rem', fontWeight: 800, color: '#FFFFFF', marginBottom: '0.8rem', textTransform: 'uppercase', lineHeight: '1.3' }}>
-                        {course.title}
+                        <Link href={`/courses/${course.slug}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                          {course.title}
+                        </Link>
                       </h3>
 
                       <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', lineHeight: '1.6', marginBottom: '1rem' }}>
@@ -229,6 +240,24 @@ export default async function CoursesPage() {
             .compare-row:hover {
               background: rgba(216,160,39,0.08) !important;
             }
+            .compare-course-link {
+              color: inherit;
+              text-decoration: none;
+              border-bottom: 1px solid rgba(216,160,39,0.35);
+              transition: color 0.2s, border-color 0.2s;
+              cursor: pointer;
+              outline: none;
+              padding-bottom: 1px;
+            }
+            .compare-course-link:hover {
+              color: #D8A027;
+              border-color: #D8A027;
+            }
+            .compare-course-link:focus-visible {
+              outline: 2px solid #D8A027;
+              outline-offset: 3px;
+              border-radius: 2px;
+            }
           `}} />
 
           <div style={{ overflowX: 'auto', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '1px', background: '#00162e', boxShadow: '0 4px 30px rgba(0,0,0,0.3)' }}>
@@ -244,26 +273,32 @@ export default async function CoursesPage() {
               </thead>
               <tbody>
                 {[
-                  { name: 'Commercial Pilot License (CPL)', dur: '12–18 months', elig: '10+2 Phys+Maths, 17 yrs', fee: '₹45–55L', dgca: '✓' },
-                  { name: 'ATPL Ground School', dur: '4–6 months', elig: 'CPL holder', fee: '₹3–8L', dgca: '✓' },
-                  { name: 'Private Pilot License (PPL)', dur: '3–6 months', elig: '10+2, 16 yrs', fee: '₹8–12L', dgca: '✓' },
-                  { name: 'Instrument Rating', dur: '2–3 months', elig: 'PPL holder', fee: '₹5–8L', dgca: '✓' },
-                  { name: 'Multi-Engine Rating', dur: '1–2 months', elig: 'PPL/CPL holder', fee: '₹3–5L', dgca: '✓' },
-                  { name: 'Airbus A320 Type Rating', dur: '2–4 months', elig: 'CPL + 200 hrs', fee: '₹8–15L', dgca: '✓' },
-                  { name: 'DGCA Ground School', dur: '3–6 months', elig: 'Any', fee: '₹1–2L', dgca: '✓' },
-                  { name: 'Cabin Crew Training', dur: '3–6 months', elig: '12th pass, 18–27 yrs', fee: '₹30K–₹54K', dgca: '—' },
-                  { name: 'Aviation English (ICAO L4)', dur: '1–3 months', elig: 'Any', fee: '₹50K–1L', dgca: '—' },
-                  { name: 'Flight Dispatcher', dur: '3–6 months', elig: '10+2', fee: '₹1–2L', dgca: '—' },
+                  { name: 'Commercial Pilot License (CPL)', slug: 'commercial-pilot-license-cpl', dur: '12–18 months', elig: '10+2 Phys+Maths, 17 yrs', fee: '₹45–55L',    dgca: '✓' },
+                  { name: 'ATPL Ground School',             slug: 'atpl',                        dur: '4–6 months',   elig: 'CPL holder',               fee: '₹3–8L',     dgca: '✓' },
+                  { name: 'Private Pilot License (PPL)',    slug: 'private-pilot-license',       dur: '3–6 months',   elig: '10+2, 16 yrs',             fee: '₹8–12L',    dgca: '✓' },
+                  { name: 'Instrument Rating',              slug: 'instrument-rating',           dur: '2–3 months',   elig: 'PPL holder',               fee: '₹5–8L',     dgca: '✓' },
+                  { name: 'Multi-Engine Rating',            slug: 'multi-engine-rating',         dur: '1–2 months',   elig: 'PPL/CPL holder',           fee: '₹3–5L',     dgca: '✓' },
+                  { name: 'Airbus A320 Type Rating',        slug: 'a320-simulator',              dur: '2–4 months',   elig: 'CPL + 200 hrs',            fee: '₹8–15L',    dgca: '✓' },
+                  { name: 'DGCA Ground School',             slug: 'ground-school',               dur: '3–6 months',   elig: 'Any',                      fee: '₹2,70,000', dgca: '✓' },
+                  { name: 'Cabin Crew Training',            slug: 'cabin-crew-training',         dur: '3–6 months',   elig: '12th pass, 18–27 yrs',     fee: '₹30K–₹54K', dgca: '—' },
+                  { name: 'Aviation English (ICAO L4)',     slug: 'aviation-english-icao',       dur: '1–3 months',   elig: 'Any',                      fee: '₹50K–1L',   dgca: '—' },
+                  { name: 'Flight Dispatcher',              slug: 'flight-dispatcher',           dur: '3–6 months',   elig: '10+2',                     fee: '₹1–2L',     dgca: '—' },
                 ].map((row, idx) => (
-                  <tr 
-                    key={idx} 
+                  <tr
+                    key={idx}
                     className="compare-row"
-                    style={{ 
+                    style={{
                       borderBottom: '1px solid rgba(255,255,255,0.06)',
                       background: idx % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'rgba(255,255,255,0.03)',
                     }}
                   >
-                    <td style={{ padding: '1.2rem 1.5rem', fontWeight: 700, color: '#fff' }}>{row.name}</td>
+                    <td style={{ padding: '1.2rem 1.5rem', fontWeight: 700, color: '#fff' }}>
+                      {row.slug ? (
+                        <Link href={`/courses/${row.slug}`} className="compare-course-link">
+                          {row.name}
+                        </Link>
+                      ) : row.name}
+                    </td>
                     <td style={{ padding: '1.2rem 1.5rem', color: 'rgba(255,255,255,0.8)' }}>{row.dur}</td>
                     <td style={{ padding: '1.2rem 1.5rem', color: 'rgba(255,255,255,0.8)' }}>{row.elig}</td>
                     <td style={{ padding: '1.2rem 1.5rem', fontWeight: 700, color: '#D8A027' }}>{row.fee}</td>

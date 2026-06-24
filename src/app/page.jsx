@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import { motion, useScroll, useTransform, useSpring, useMotionValue, useInView, AnimatePresence } from 'framer-motion'
 import { getLocalBusinessSchema, getEducationalOrgSchema } from '@/utils/seo'
@@ -90,7 +91,7 @@ function FloatingNav({ onBook }) {
               </svg>
             </span>
             <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.9375rem', fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--navy)' }}>
-              AIRB<span style={{ color: 'var(--red)' }}>O</span>RNE
+              AIRB<span style={{ color: 'var(--red)' }}>O</span>RNE AVIATION
             </span>
           </Link>
 
@@ -184,7 +185,7 @@ function FloatingNav({ onBook }) {
                   </svg>
                 </span>
                 <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.9375rem', fontWeight: 900, letterSpacing: '-0.02em', color: '#fff' }}>
-                  AIRB<span style={{ color: 'var(--red)' }}>O</span>RNE
+                  AIRB<span style={{ color: 'var(--red)' }}>O</span>RNE AVIATION
                 </span>
               </div>
 
@@ -313,14 +314,16 @@ function HeroChapter({ onBook, on3D }) {
   return (
     <section id="top" ref={ref} style={{ position: 'relative', height: '100svh', minHeight: '640px', width: '100%', overflow: 'hidden', background: 'var(--navy-deep)' }}>
       <motion.div style={{ y: yBg, scale, position: 'absolute', inset: 0 }}>
-        <img
+        <Image
           src="/footage/hero-cockpit.jpg"
           alt="Sunrise from a commercial cockpit above the clouds"
-          style={{ height: '100%', width: '100%', objectFit: 'cover' }}
-          width={1920}
-          height={1280}
+          fill
+          priority
+          fetchPriority="high"
+          style={{ objectFit: 'cover' }}
+          sizes="100vw"
         />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,8,22,0.4) 0%, rgba(0,8,22,0.2) 40%, rgba(0,8,22,0.95) 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,8,22,0.5) 0%, rgba(0,8,22,0.4) 40%, rgba(0,8,22,0.98) 100%)' }} />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,8,22,0.6), transparent, transparent)' }} />
         <HeroLayers />
       </motion.div>
@@ -336,10 +339,10 @@ function HeroChapter({ onBook, on3D }) {
           style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.6875rem', letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: '2rem' }}
         >
           <span style={{ height: '1px', width: '2.5rem', background: 'var(--red)' }} />
-          Dwarka, Delhi · Est. 2010
+          Dwarka, Delhi · Est. 2009
         </motion.div>
 
-        <h1 style={{ fontFamily: 'var(--font-h)', fontWeight: 800, letterSpacing: '-0.045em', lineHeight: 0.92, fontSize: 'clamp(2.2rem,8.5vw,7.5rem)', color: '#fff', maxWidth: '14ch' }}>
+        <h1 style={{ fontFamily: 'var(--font-h)', fontWeight: 800, letterSpacing: '-0.045em', lineHeight: 0.92, fontSize: 'clamp(2.2rem,8.5vw,7.5rem)', color: '#fff', maxWidth: '14ch', textShadow: '0 4px 24px rgba(0,0,0,0.9), 0 2px 8px rgba(0,0,0,0.8)' }}>
           <RevealLine delay={0.2}>From classroom</RevealLine>
           <RevealLine delay={0.4}>
             to <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>cockpit.</span>
@@ -373,8 +376,8 @@ function HeroChapter({ onBook, on3D }) {
                 onMouseLeave={e => e.currentTarget.style.background = 'var(--red)'}
               >
                 Reserve your seat
-                <span style={{ display: 'inline-flex', height: '2rem', width: '2rem', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'rgba(255,255,255,0.2)' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+                <span style={{ display: 'inline-flex', height: '2rem', width: '2rem', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: '#ffffff', color: 'var(--red)' }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
                 </span>
               </button>
             </Magnetic>
@@ -485,14 +488,15 @@ function ChapterShell({ id, num, kicker, title, body, image, alt, reverse = fals
           className="chapter-img-side"
           style={{ y: isMobile ? 0 : y, position: 'relative', aspectRatio: '4/5', overflow: 'hidden', borderRadius: '1.5rem', boxShadow: 'var(--shadow-float)', order: reverse ? 2 : 1 }}
         >
-          <motion.img
-            style={{ scale: imgScale, position: 'absolute', inset: 0, height: '100%', width: '100%', objectFit: 'cover' }}
-            src={image}
-            alt={alt}
-            loading="lazy"
-            width={1600}
-            height={2000}
-          />
+          <motion.div style={{ scale: imgScale, position: 'absolute', inset: 0 }}>
+            <Image
+              style={{ objectFit: 'cover' }}
+              src={image}
+              alt={alt}
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+            />
+          </motion.div>
           {imageAccent}
         </motion.div>
 
@@ -674,7 +678,7 @@ function FounderSection() {
           <div style={{ marginTop: '2.5rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'rgba(255,255,255,0.1)', maxWidth: '28rem', width: '100%' }}>
             {[
               ['15+', 'Years teaching'],
-              ['1000+', 'Students mentored'],
+              ['2,500+', 'Students mentored'],
               ['5/5', 'Papers, first attempt'],
               ['36', 'Oldest restart, Air India'],
             ].map(([k, v]) => (
@@ -716,7 +720,7 @@ function FounderSection() {
 ───────────────────────────────────── */
 // Static fallback — renders when API returns 0 results (courses not yet in DB)
 const STATIC_COURSES = [
-  { name: 'CPL Ground School',    price: '₹1,50,000',       tag: 'Ground School',  lede: 'Complete DGCA CPL exam prep. All subjects. Mentor-led batches of 25.', desc: 'Complete DGCA CPL exam prep. All subjects. Mentor-led batches of 25.', duration: '12–18 months', eligibility: 'Class 12 PCM',   href: '/courses/cpl-ground-classes' },
+  { name: 'CPL Ground School',    price: '₹2,70,000',       tag: 'Ground School',  lede: 'Complete DGCA CPL exam prep. All subjects. Mentor-led batches of 25.', desc: 'Complete DGCA CPL exam prep. All subjects. Mentor-led batches of 25.', duration: '12–18 months', eligibility: 'Class 12 PM',    href: '/courses/cpl-ground-classes' },
   { name: 'ATPL Ground School',   price: '₹1,50,000',       tag: 'Ground School',  lede: 'Airline Transport Pilot License exam prep covering all DGCA subjects.', desc: 'ATPL exam prep — all DGCA subjects covered, viva included.', duration: '4–6 months',  eligibility: 'Valid CPL',        href: '/courses/atpl' },
   { name: 'Cadet Preparation',    price: '₹50,000',         tag: 'Cadet Selection',lede: 'IndiGo, Air India & Akasa cadet pilot selection program preparation.', desc: 'Aptitude tests, GD/PI, SIM prep for airline cadet programs.', duration: '2–3 months',  eligibility: 'CPL in progress',  href: '/courses/cadet-preparation' },
   { name: 'A320 Simulator',       price: '₹10,000/hr',      tag: 'Simulator',      lede: 'In-house Airbus A320 simulator for type rating familiarisation and airline SIM prep.', desc: 'Type rating fam, cadet SIM prep, emergency procedures.', duration: 'Per session', eligibility: 'CPL holders',      href: '/courses/a320-simulator' },
@@ -998,9 +1002,19 @@ function CoursesSection() {
         </div>
 
         {!loaded && (
-          <div className="responsive-grid-courses" style={{ background: 'rgba(0,39,76,0.1)', borderRadius: '1.5rem', overflow: 'hidden', border: '1px solid rgba(0,39,76,0.1)' }}>
+          <div className="responsive-grid-courses" style={{ background: 'rgba(0,39,76,0.1)', borderRadius: '1.5rem', overflow: 'hidden', border: '1px solid rgba(0,39,76,0.1)', minHeight: '600px' }}>
             {[...Array(9)].map((_, i) => (
-              <div key={i} style={{ padding: 'clamp(1.5rem,3vw,2rem)', minHeight: '160px', background: '#fff', opacity: 0.4 }} />
+              <div key={i} style={{ padding: 'clamp(1.5rem,3vw,2rem)', minHeight: '280px', background: '#fff', opacity: 0.5, animation: 'pulse 2s infinite ease-in-out', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '1rem' }}>
+                <div>
+                  <div style={{ width: '40%', height: '1.2rem', background: 'rgba(0,39,76,0.1)', borderRadius: '4px', marginBottom: '1rem' }} />
+                  <div style={{ width: '90%', height: '2rem', background: 'rgba(0,39,76,0.15)', borderRadius: '4px', marginBottom: '0.5rem' }} />
+                  <div style={{ width: '70%', height: '1rem', background: 'rgba(0,39,76,0.1)', borderRadius: '4px' }} />
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <div style={{ width: '60px', height: '22px', background: 'rgba(0,39,76,0.08)', borderRadius: '4px' }} />
+                  <div style={{ width: '60px', height: '22px', background: 'rgba(0,39,76,0.08)', borderRadius: '4px' }} />
+                </div>
+              </div>
             ))}
           </div>
         )}
@@ -1323,9 +1337,9 @@ function TestimonialsSection() {
    HOMEPAGE FAQ
 ───────────────────────────────────── */
 const HOME_FAQS = [
-  { q: 'What is the eligibility to join CPL ground school at Airborne?', a: 'Class 12 with Physics and Mathematics (minimum 50% in PCM). You must also hold or be eligible for a DGCA Class 1 Medical. Age 17+ at time of first solo flight. No prior aviation experience required.' },
-  { q: 'How long is the CPL ground school program?', a: "Airborne's CPL ground school runs 12–18 months for the full DGCA subject battery. Batches are capped at 25 students. Weekend and weekday batches available from our Dwarka, Delhi campus." },
-  { q: 'What is the fee for CPL ground school?', a: 'CPL ground school at Airborne is ₹1,50,000. This covers all DGCA subjects, study materials, and viva preparation. Flying training (done at an ATO of your choice) is a separate cost — speak to our admissions team for current ATO tie-up rates.' },
+  { q: 'What is the eligibility to join CPL ground school at Airborne?', a: 'Class 12 with Physics and Mathematics (minimum 50% in PM). You must also hold or be eligible for a DGCA Class 1 Medical. Age 17+ at time of first solo flight. No prior aviation experience required.' },
+  { q: 'How long is the CPL ground school program?', a: "Airborne's CPL ground school runs 3–6 months for the full DGCA subject battery. Complete CPL with flying takes 12–18 months. Batches are capped at 25 students. Weekend and weekday batches available from our Dwarka, Delhi campus." },
+  { q: 'What is the fee for CPL ground school?', a: 'CPL ground school at Airborne is ₹2,70,000. This covers all DGCA subjects, study materials, and viva preparation. Flying training (done at an FTO of your choice) is a separate cost — speak to our admissions team for current FTO tie-up rates.' },
   { q: 'Is Airborne Aviation Academy DGCA approved?', a: 'Yes. Airborne Aviation Academy is a DGCA-approved ground training organisation. Our curriculum is aligned with the DGCA CPL and ATPL examination syllabus. Capt. Navrang Singh has been the principal mentor since founding in 2009.' },
   { q: 'Can I do CPL and ATPL ground school together?', a: 'Yes, and Airborne recommends it. The CPL and ATPL syllabi overlap significantly in Air Navigation, Meteorology, and Technical subjects. Completing both together improves exam efficiency and reduces total preparation time.' },
   { q: 'What airlines have Airborne graduates joined?', a: 'Airborne graduates have joined IndiGo, Air India, Akasa Air, SpiceJet, Air Asia India, Alliance Air, and regional operators. Over 2,500 pilots have trained at Airborne since 2009.' },
@@ -1420,11 +1434,12 @@ function FinalCTA() {
     const name = form.elements['cta-name'].value
     const phone = form.elements['cta-phone'].value
     const email = form.elements['cta-email'].value
+    const pincode = form.elements['cta-pincode'].value
     try {
       await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, phone, email, course: 'DGCA CPL Ground School', source: 'Homepage Final CTA' })
+        body: JSON.stringify({ name, phone, email, pincode, course: 'DGCA CPL Ground School', source: 'Homepage Final CTA' })
       })
     } catch (_) { }
     setLoading(false)
@@ -1456,11 +1471,16 @@ function FinalCTA() {
             <motion.div
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
-              style={{ marginTop: '3rem', textAlign: 'center', padding: '3rem', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '1rem' }}
+              style={{ marginTop: '3rem', textAlign: 'center', padding: '3rem', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '1rem', background: 'rgba(0,8,22,0.6)' }}
             >
               <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--red)', marginBottom: '0.8rem' }}>Application Received</div>
               <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 800, textTransform: 'uppercase', color: '#fff', marginBottom: '0.6rem' }}>We'll contact you within 24 hours.</div>
-              <p style={{ fontFamily: 'var(--font-b)', fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)' }}>Capt. Navrang Singh's team · Dwarka, New Delhi</p>
+              <p style={{ fontFamily: 'var(--font-b)', fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', marginBottom: '2rem' }}>Capt. Navrang Singh's team · Dwarka, New Delhi</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
+                <a href="tel:+919953777320" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.2rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', textDecoration: 'none', fontSize: '0.875rem', fontFamily: 'var(--font-h)' }}>📞 Call Us</a>
+                <a href="https://wa.me/919953777320" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.2rem', borderRadius: '4px', border: '1px solid #25D366', color: '#25D366', textDecoration: 'none', fontSize: '0.875rem', fontFamily: 'var(--font-h)' }}>💬 WhatsApp</a>
+                <a href="/courses" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.2rem', borderRadius: '4px', background: 'var(--red)', color: '#fff', textDecoration: 'none', fontSize: '0.875rem', fontFamily: 'var(--font-h)' }}>Explore Courses →</a>
+              </div>
             </motion.div>
           ) : (
             <form
@@ -1483,6 +1503,12 @@ function FinalCTA() {
                 id="cta-email"
                 type="email"
                 placeholder="Email address"
+                required
+              />
+              <input
+                id="cta-pincode"
+                type="text"
+                placeholder="PIN code / Zip code"
                 required
               />
               <button
@@ -1597,133 +1623,6 @@ function SiteFooter() {
 }
 
 /* ─────────────────────────────────────
-   WHATSAPP FLOAT — Green pill
-───────────────────────────────────── */
-function WhatsAppFloat() {
-  const [visible, setVisible] = useState(true)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const footer = document.querySelector('footer')
-      const cta = document.querySelector('#cta')
-      const testimonials = document.querySelector('#stories')
-      
-      const elementsToAvoid = [footer, cta, testimonials].filter(Boolean)
-      let shouldHide = false
-      const viewportHeight = window.innerHeight
-
-      for (const el of elementsToAvoid) {
-        const rect = el.getBoundingClientRect()
-        if (rect.top < viewportHeight - 80) {
-          shouldHide = true
-          break
-        }
-      }
-      setVisible(!shouldHide)
-    }
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    handleScroll()
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  return (
-    <div className={`whatsapp-float ${!visible ? 'whatsapp-hide' : ''}`}>
-      <a
-        href="https://wa.me/919953777320"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Chat on WhatsApp"
-        className="whatsapp-btn"
-        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 20px 40px -10px rgba(37,211,102,0.5)' }}
-        onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'var(--shadow-float)' }}
-      >
-        <svg viewBox="0 0 24 24" fill="currentColor" style={{ display: 'block' }}>
-          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
-        </svg>
-        <span>Chat on WhatsApp</span>
-      </a>
-    </div>
-  )
-}
-
-/* ─────────────────────────────────────
-   STICKY MOBILE CTA BAR
-───────────────────────────────────── */
-function StickyMobileCTA({ onBookDemo }) {
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrolled = window.scrollY > 400
-      const footer = document.querySelector('footer')
-      const cta = document.querySelector('#cta')
-      const elementsToAvoid = [footer, cta].filter(Boolean)
-      let nearBottom = false
-      const viewportHeight = window.innerHeight
-      for (const el of elementsToAvoid) {
-        const rect = el.getBoundingClientRect()
-        if (rect.top < viewportHeight - 60) { nearBottom = true; break }
-      }
-      setVisible(scrolled && !nearBottom)
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    handleScroll()
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  return (
-    <div style={{
-      position: 'fixed',
-      bottom: 0,
-      left: 0,
-      right: 0,
-      zIndex: 800,
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr 1fr',
-      background: '#000f1e',
-      borderTop: '1px solid rgba(255,255,255,0.08)',
-      transform: visible ? 'translateY(0)' : 'translateY(100%)',
-      transition: 'transform 0.35s cubic-bezier(0.4,0,0.2,1)',
-      boxShadow: '0 -8px 32px rgba(0,0,0,0.6)',
-    }}
-    className="sticky-mobile-cta"
-    >
-      <a
-        href="tel:+919953777320"
-        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0.9rem 0.5rem', color: '#FFFFFF', textDecoration: 'none', borderRight: '1px solid rgba(255,255,255,0.06)', background: 'transparent' }}
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20, marginBottom: 4 }}>
-          <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.43 10.8a19.79 19.79 0 01-3.07-8.67A2 2 0 012.35 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006 6l1.27-.76a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 15.22z"/>
-        </svg>
-        <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Call</span>
-      </a>
-      <a
-        href="https://wa.me/919953777320"
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0.9rem 0.5rem', color: '#25D366', textDecoration: 'none', borderRight: '1px solid rgba(255,255,255,0.06)', background: 'transparent' }}
-      >
-        <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: 20, height: 20, marginBottom: 4 }}>
-          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
-        </svg>
-        <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>WhatsApp</span>
-      </a>
-      <button
-        onClick={onBookDemo}
-        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0.9rem 0.5rem', color: '#FFFFFF', background: '#DB241E', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-h)' }}
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20, marginBottom: 4 }}>
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-          <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-        </svg>
-        <span style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Book Demo</span>
-      </button>
-    </div>
-  )
-}
-
-/* ─────────────────────────────────────
    BOOKING MODAL — Preserved intact, connects to /api/lead
 ───────────────────────────────────── */
 function BookingModal({ open, onClose }) {
@@ -1736,11 +1635,12 @@ function BookingModal({ open, onClose }) {
     const name = e.target.elements['m-name'].value
     const phone = e.target.elements['m-phone'].value
     const email = e.target.elements['m-email'].value
+    const pincode = e.target.elements['m-pincode'].value
     try {
       await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, phone, email, course: 'DGCA CPL Ground School', source: 'Homepage Modal' })
+        body: JSON.stringify({ name, phone, email, pincode, course: 'DGCA CPL Ground School', source: 'Homepage Modal' })
       })
     } catch (_) { }
     setStatus('success')
@@ -1779,7 +1679,12 @@ function BookingModal({ open, onClose }) {
               <div style={{ textAlign: 'center', padding: '1rem 0' }}>
                 <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.2em', color: 'var(--red)', textTransform: 'uppercase', marginBottom: '1rem' }}>Confirmed</div>
                 <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 900, textTransform: 'uppercase', color: '#fff', marginBottom: '0.8rem' }}>Demo Seat Reserved</div>
-                <p style={{ fontFamily: 'var(--font-b)', fontSize: '0.85rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.6 }}>Our admissions team will reach out within 24 hours to confirm your demo class schedule with Capt. Navrang Singh.</p>
+                <p style={{ fontFamily: 'var(--font-b)', fontSize: '0.85rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, marginBottom: '1.5rem' }}>Our admissions team will reach out within 24 hours to confirm your demo class schedule with Capt. Navrang Singh.</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
+                  <a href="tel:+919953777320" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', textDecoration: 'none', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>📞 Call Us</a>
+                  <a href="https://wa.me/919953777320" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid #25D366', color: '#25D366', textDecoration: 'none', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>💬 WhatsApp</a>
+                  <a href="/courses" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', background: 'var(--red)', color: '#fff', textDecoration: 'none', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>Explore Courses →</a>
+                </div>
               </div>
             ) : (
               <>
@@ -1798,6 +1703,7 @@ function BookingModal({ open, onClose }) {
                     { id: 'm-name', type: 'text', placeholder: 'Full Name' },
                     { id: 'm-phone', type: 'tel', placeholder: 'Phone Number' },
                     { id: 'm-email', type: 'email', placeholder: 'Email Address' },
+                    { id: 'm-pincode', type: 'text', placeholder: 'PIN Code / Zip Code' },
                   ].map(f => (
                     <input key={f.id} id={f.id} type={f.type} placeholder={f.placeholder} required style={{
                       background: '#000810', border: 'none', outline: 'none',
@@ -2528,12 +2434,6 @@ export default function HomePage() {
 
       {/* Footer */}
       <PremiumFooter onBookDemo={openBooking} />
-
-      {/* Floating WhatsApp */}
-      <WhatsAppFloat />
-
-      {/* Sticky mobile CTA bar — mobile only via CSS */}
-      <StickyMobileCTA onBookDemo={openBooking} />
 
       {/* Booking modal with /api/lead — preserved */}
       <BookingModal open={bookingOpen} onClose={closeBooking} />

@@ -43,8 +43,11 @@ body {
   background: #000810;
   color: var(--white);
   overflow-x: hidden;
-  cursor: none;
   -webkit-font-smoothing: antialiased;
+}
+/* Hide native cursor only on desktop pointer devices where custom cursor is active */
+@media (pointer: fine) and (min-width: 1025px) {
+  body { cursor: none; }
 }
 img, video { display: block; max-width: 100%; }
 ::selection { background: var(--red); color: var(--white); }
@@ -2318,7 +2321,10 @@ html { scroll-behavior: smooth; }
   color: rgba(255,255,255,0.55);
   text-decoration: none;
   transition: color 0.18s;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 44px;
   padding: 0.5rem 0;
 }
 

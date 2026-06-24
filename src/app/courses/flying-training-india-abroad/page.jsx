@@ -3,6 +3,7 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
 import { getBreadcrumbSchema } from '@/utils/seo'
+import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
   title: 'Flying Training India vs Abroad — CPL Guide | Airborne Aviation',
@@ -214,6 +215,20 @@ export default function FlyingTrainingIndiaAbroadPage() {
           </div>
 
         </div>
+        <CoursePageFooter
+          whatsappText="Hi, I want a free counselling session to compare flying training in India vs abroad. Please share details from Airborne Aviation Academy."
+          nextCourses={[
+            { label: 'CPL Ground School', href: '/courses/commercial-pilot-license-cpl', note: 'Begin DGCA CPL ground school in Dwarka — next batch July 2026' },
+            { label: 'DGCA Ground School', href: '/courses/ground-school', note: 'All 5 DGCA subjects by Capt. Navrang Singh — ₹2,70,000' },
+          ]}
+          relatedCourses={[
+            { label: 'CPL Ground School', href: '/courses/commercial-pilot-license-cpl' },
+            { label: 'DGCA Ground School', href: '/courses/ground-school' },
+            { label: 'Instrument Rating', href: '/courses/instrument-rating' },
+            { label: 'PPL', href: '/courses/private-pilot-license' },
+            { label: 'All Courses', href: '/courses' },
+          ]}
+        />
       </main>
       <Footer />
     </>

@@ -3,6 +3,7 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
 import { getBreadcrumbSchema } from '@/utils/seo'
+import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
   title: 'ATPL Ground School India All Subjects | Airborne Aviation',
@@ -141,8 +142,8 @@ export default function ATPLPage() {
               <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
                 ATPL vs CPL — Key Differences
               </h2>
-              <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', overflow: 'hidden' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem', fontFamily: 'var(--font-b)' }}>
+              <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', overflowX: 'auto' }}>
+                <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', fontSize: '0.875rem', fontFamily: 'var(--font-b)' }}>
                   <thead>
                     <tr style={{ background: '#00162e', color: 'rgba(255,255,255,0.6)', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
                       <th style={{ padding: '1rem 1.25rem', textAlign: 'left' }}>Parameter</th>
@@ -225,6 +226,19 @@ export default function ATPLPage() {
           </div>
 
         </div>
+        <CoursePageFooter
+          whatsappText="Hi, I'm interested in the ATPL Ground School at Airborne Aviation Academy, Dwarka. Please share batch details and fee."
+          nextCourses={[
+            { label: 'Airline Interview Preparation', href: '/courses/airline-preparation', note: 'GD/PI and mock interview coaching to land your first officer seat' },
+            { label: 'Airbus A320 Simulator', href: '/courses/a320-simulator', note: 'Type rating familiarisation and cadet SIM prep' },
+          ]}
+          relatedCourses={[
+            { label: 'CPL Ground School', href: '/courses/commercial-pilot-license-cpl' },
+            { label: 'Instrument Rating', href: '/courses/instrument-rating' },
+            { label: 'Cadet Preparation', href: '/courses/cadet-preparation' },
+            { label: 'All Courses', href: '/courses' },
+          ]}
+        />
       </main>
       <Footer />
     </>

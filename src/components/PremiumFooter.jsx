@@ -134,7 +134,7 @@ const TRUST = [
 /* ─── Main component ─────────────────────────────────────────── */
 export default function PremiumFooter({ onBookDemo }) {
   const handleBook = onBookDemo ?? (() => {
-    window.open('https://wa.me/919953777320?text=I%27d+like+to+book+a+free+demo+class', '_blank')
+    window.location.href = '/contact'
   })
 
   return (
@@ -266,7 +266,7 @@ export default function PremiumFooter({ onBookDemo }) {
               </div>
               <div className="pf-contact-item">
                 <span className="pf-contact-icon">✉</span>
-                <a href="mailto:info@airborneaviation.academy" className="pf-link">info@airborneaviation.academy</a>
+                <a href="mailto:info@airborneaviation.in" className="pf-link">info@airborneaviation.in</a>
               </div>
               <div className="pf-contact-item">
                 <span className="pf-contact-icon">🕘</span>

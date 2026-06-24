@@ -3,6 +3,7 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
 import { getBreadcrumbSchema } from '@/utils/seo'
+import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
   title: 'CAS Compass & ADAPT Test Prep Delhi | Airborne Aviation',
@@ -165,6 +166,19 @@ export default function CASCompassAdaptPage() {
           </div>
 
         </div>
+        <CoursePageFooter
+          whatsappText="Hi, I want to prepare for the CAS Compass / ADAPT pilot aptitude test at Airborne Aviation Academy, Dwarka. Please share details."
+          nextCourses={[
+            { label: 'Cadet Pilot Preparation', href: '/courses/cadet-preparation', note: 'Full GD/PI and SIM prep for IndiGo, Air India & Akasa cadet programs' },
+            { label: 'A320 Simulator', href: '/courses/a320-simulator', note: 'Practice the SIM assessment with our in-house A320 FTD' },
+          ]}
+          relatedCourses={[
+            { label: 'Cadet Preparation', href: '/courses/cadet-preparation' },
+            { label: 'Airline Interview Prep', href: '/courses/airline-preparation' },
+            { label: 'CPL Ground School', href: '/courses/commercial-pilot-license-cpl' },
+            { label: 'All Courses', href: '/courses' },
+          ]}
+        />
       </main>
       <Footer />
     </>

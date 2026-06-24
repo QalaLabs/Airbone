@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import LeadForm from '@/components/LeadForm'
 import { getBreadcrumbSchema } from '@/utils/seo'
 
 export const metadata = {
@@ -179,21 +180,18 @@ export default function PilotSalaryPage() {
             </div>
           </section>
 
-          {/* CTA */}
-          <div style={{ background: '#00162e', border: '1px solid rgba(216,160,39,0.3)', borderTop: '4px solid #DB241E', padding: '2.5rem', textAlign: 'center', borderRadius: '1px' }}>
-            <span style={{ fontSize: '0.65rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#DB241E', fontWeight: 700, display: 'block', marginBottom: '0.75rem', fontFamily: 'var(--font-h)' }}>Admissions Open — July 2026</span>
-            <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.4rem', fontWeight: 900, color: '#FFFFFF', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
-              Ready to Earn a Pilot's Salary?
-            </h2>
-            <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', lineHeight: '1.6', marginBottom: '2rem', maxWidth: '420px', margin: '0 auto 2rem auto', fontFamily: 'var(--font-b)' }}>
-              Begin with a free 90-minute demo class. Capt. Navrang Singh will give you an honest roadmap — timeline, costs, and realistic earning expectations.
-            </p>
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Link href="/contact" className="btn btn-primary" style={{ textDecoration: 'none' }}>Book Free Demo →</Link>
-              <a href="https://wa.me/919953777320?text=Hi%2C%20I%27d%20like%20to%20know%20about%20pilot%20salary%20and%20career%20prospects" target="_blank" rel="noopener noreferrer" className="btn btn-ghost" style={{ textDecoration: 'none' }}>
-                💬 WhatsApp Us
-              </a>
+          {/* CTA & Lead Form */}
+          <div style={{ marginBottom: '3.5rem' }}>
+            <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
+              <span style={{ fontSize: '0.65rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#DB241E', fontWeight: 700, display: 'block', marginBottom: '0.75rem', fontFamily: 'var(--font-h)' }}>Admissions Open — July 2026</span>
+              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.4rem', fontWeight: 900, color: '#FFFFFF', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+                Ready to Earn a Pilot's Salary?
+              </h2>
+              <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', lineHeight: '1.6', maxWidth: '420px', margin: '0 auto', fontFamily: 'var(--font-b)' }}>
+                Begin with a free 90-minute demo class. Capt. Navrang Singh will give you an honest roadmap — timeline, costs, and realistic earning expectations.
+              </p>
             </div>
+            <LeadForm courseName="CPL & Airline Preparation" source="Blog: Pilot Salary India" />
           </div>
 
           {/* Internal links */}

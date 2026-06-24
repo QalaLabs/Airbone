@@ -3,6 +3,7 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
 import { getBreadcrumbSchema } from '@/utils/seo'
+import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
   title: 'Airline GD PI Interview Preparation Delhi | Airborne Aviation',
@@ -150,6 +151,19 @@ export default function AirlinePreparationPage() {
           </div>
 
         </div>
+        <CoursePageFooter
+          whatsappText="Hi, I'm interested in the Airline GD/PI Interview Preparation course at Airborne Aviation Academy. Please share details."
+          nextCourses={[
+            { label: 'Cadet Pilot Preparation', href: '/courses/cadet-preparation', note: 'Full aptitude, SIM and interview prep for IndiGo, Air India & Akasa cadet programs' },
+          ]}
+          relatedCourses={[
+            { label: 'CPL Ground School', href: '/courses/commercial-pilot-license-cpl' },
+            { label: 'ATPL Ground School', href: '/courses/atpl' },
+            { label: 'A320 Simulator', href: '/courses/a320-simulator' },
+            { label: 'Cadet Preparation', href: '/courses/cadet-preparation' },
+            { label: 'All Courses', href: '/courses' },
+          ]}
+        />
       </main>
       <Footer />
     </>

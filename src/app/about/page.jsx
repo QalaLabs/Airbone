@@ -1,5 +1,6 @@
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import LeadForm from '@/components/LeadForm'
 
 export const metadata = {
   title: 'About Airborne Aviation Academy DGCA Approved | Dwarka Delhi',
@@ -19,15 +20,15 @@ const FOUNDERS = [
     name: 'Deepak Aggarwal',
     role: 'Co-founder & Business Head',
     image: '/footage/student_overhead_panel.jpg',
-    bio: 'Deepak manages academic scheduling, partner flight school relationships (USA, NZ, SA), and DGCA license conversion pathways. His operational guidance ensures that students experience zero administrative friction when transitioning from foreign training logs back to Indian skies.',
-    accent: 'Seamless international flight pathways'
+    bio: 'Deepak is the first contact point for aspirants, offering realistic career counseling, financing guidance, and structured study plans. He monitors batch sizing restrictions (capping inputs at 25 per session) to maintain high student-teacher contact ratios.',
+    accent: 'Honest counseling and strict enrollment limits'
   },
   {
     name: 'Piyush Chandra',
     role: 'Head of Operations',
     image: '/footage/simulator_entry_dark.jpg',
-    bio: 'Piyush is the first contact point for aspirants, offering realistic career counseling, financing guidance, and structured study plans. He monitors batch sizing restrictions (capping inputs at 25 per session) to maintain high student-teacher contact ratios.',
-    accent: 'Honest counseling and strict enrollment limits'
+    bio: 'Piyush manages academic scheduling, partner flight school relationships (USA, NZ, SA), and DGCA license conversion pathways. His operational guidance ensures that students experience zero administrative friction when transitioning from foreign training logs back to Indian skies.',
+    accent: 'Seamless international flight pathways'
   },
   {
     name: 'Capt. Mukul Mitra Barua',
@@ -231,7 +232,7 @@ export default function AboutPage() {
         </div>
 
         {/* Academy Values */}
-        <div style={{ background: '#00162e', border: '1px solid rgba(255,255,255,0.08)', padding: '3.5rem var(--margin)', borderRadius: '1px' }}>
+        <div style={{ background: '#00162e', border: '1px solid rgba(255,255,255,0.08)', padding: '3.5rem var(--margin)', borderRadius: '1px', marginBottom: '5rem' }}>
           <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.4rem', fontWeight: 800, color: '#FFFFFF', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '2rem' }}>
             Why Serious Aspirants Choose Airborne
           </h2>
@@ -251,6 +252,20 @@ export default function AboutPage() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* CTA & Lead Form */}
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
+            <span style={{ fontSize: '0.65rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#DB241E', fontWeight: 700, display: 'block', marginBottom: '0.75rem', fontFamily: 'var(--font-h)' }}>Admissions Open — July 2026</span>
+            <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.8rem', fontWeight: 900, color: '#FFFFFF', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+              Begin Your Training With Airborne
+            </h2>
+            <p style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.6', maxWidth: '520px', margin: '0 auto', fontFamily: 'var(--font-b)' }}>
+              Take the first step towards your airline cockpit career. Book a free counselling session and demo class at our Dwarka academy.
+            </p>
+          </div>
+          <LeadForm courseName="General Pilot Training & Counselling" source="About Page" />
         </div>
 
       </main>

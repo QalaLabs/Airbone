@@ -35,6 +35,7 @@ export async function POST(req) {
       name: payload.name,
       phone: payload.phone,
       email: payload.email,
+      pincode: payload.pincode,
       course: payload.course,
       source: payload.source,
     }
@@ -56,6 +57,7 @@ export async function POST(req) {
         name: leadData.name,
         phone: leadData.phone,
         email: leadData.email || undefined,
+        pincode: leadData.pincode || undefined,
         courseInterest: leadData.course || undefined,
         source: resolveSource(leadData.source),
       }),

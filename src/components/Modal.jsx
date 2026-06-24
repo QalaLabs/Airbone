@@ -15,7 +15,7 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState({
-    name: '', phone: '', email: '', course: '', message: '',
+    name: '', phone: '', email: '', pincode: '', course: '', message: '',
   })
   const submitLock = useRef(false)
 
@@ -39,6 +39,7 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
           name: form.name,
           phone: form.phone,
           email: form.email || undefined,
+          pincode: form.pincode,
           course: form.course || 'DGCA CPL Ground School',
           source: type === 'demo' ? 'Homepage Modal' : 'Homepage Modal',
         }),
@@ -103,12 +104,18 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
               padding: '0.75rem 1rem',
               marginBottom: '1.5rem',
             }}>
-              <p style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--label-size)', fontWeight: 700, color: 'var(--gold)', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
-                Or call us directly
+              <p style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--label-size)', fontWeight: 700, color: 'var(--gold)', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                Or connect instantly
               </p>
-              <a href="tel:+919953777320" style={{ fontFamily: 'var(--font-heading)', fontSize: '1.2rem', fontWeight: 900, color: 'var(--white)', textDecoration: 'none' }}>
-                +91 9953 777 320
-              </a>
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                <a href="tel:+919953777320" style={{ fontFamily: 'var(--font-heading)', fontSize: '1rem', fontWeight: 900, color: 'var(--white)', textDecoration: 'none' }}>
+                  📞 +91 9953 777 320
+                </a>
+                <span style={{ color: 'rgba(255,255,255,0.3)' }}>|</span>
+                <a href="https://wa.me/919953777320" target="_blank" rel="noopener noreferrer" style={{ fontFamily: 'var(--font-heading)', fontSize: '1rem', fontWeight: 900, color: '#25D366', textDecoration: 'none' }}>
+                  💬 WhatsApp
+                </a>
+              </div>
             </div>
             <button className="btn btn-outline" onClick={onClose}>Close</button>
           </div>
@@ -182,6 +189,20 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
                   placeholder="you@email.com"
                   value={form.email}
                   onChange={handleChange}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label" htmlFor="modal-pincode">PIN Code / Zip Code *</label>
+                <input
+                  id="modal-pincode"
+                  name="pincode"
+                  className="form-input"
+                  type="text"
+                  placeholder="e.g. 110075"
+                  value={form.pincode}
+                  onChange={handleChange}
+                  required
                 />
               </div>
 

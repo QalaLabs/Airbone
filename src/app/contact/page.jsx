@@ -48,7 +48,7 @@ export default function ContactPage() {
                   Electronic Mail
                 </span>
                 <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 900, color: '#FFFFFF' }}>
-                  info@airborneaviation.academy
+                  info@airborneaviation.in
                 </span>
               </div>
 
@@ -78,13 +78,13 @@ export default function ContactPage() {
                   Dwarka Sector 7 Center
                 </h4>
                 <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)', lineHeight: '1.5', margin: 0 }}>
-                  Our ground academy and simulator trainer are located 5 minutes walking distance from Ramphal Chowk market.
+                  Located approximately 50–100 metres from Ramphal Chowk Metro Station.
                 </p>
               </div>
               
               {/* Mock visual map representation or simple Google Maps embed iframe */}
               <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3502.827931388656!2d77.06822247630267!3d28.589926875690325!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d1ad3d9d435cb%3A0xc3cf33887ebf4ef3!2sRamphal%20Chowk%20Rd%2C%20Sector%207%20Dwarka%2C%20Dwarka%2C%20Delhi%2C%20110075!5e0!3m2!1sen!2sin!4v1718318000000!5m2!1sen!2sin" 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3502.827931388656!2d77.06822247630267!3d28.589926875690325!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d1ad3d9d435cb%3A0xc3cf33887ebf4ef3!2sAirborne%20Aviation%20Academy%20%7C%20DGCA%20CPL%20%26%20ATPL%20Ground%20Classes!5e0!3m2!1sen!2sin!4v1718318000000!5m2!1sen!2sin" 
                 width="100%" 
                 height="180" 
                 style={{ border: 0, borderRadius: '1px', background: '#000f1e' }} 

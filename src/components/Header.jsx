@@ -32,7 +32,7 @@ export default function Header() {
             </svg>
           </div>
           <div>
-            <div className="nav-logo-name">Air<span className="o" style={{ color: '#DB241E' }}>b</span>orne</div>
+            <div className="nav-logo-name">Air<span className="o" style={{ color: '#DB241E' }}>b</span>orne Aviation</div>
             <div className="nav-logo-sub">Aviation Academy</div>
           </div>
         </Link>
@@ -102,7 +102,7 @@ export default function Header() {
                   </svg>
                 </div>
                 <div>
-                  <div className="nav-logo-name">Air<span className="o" style={{ color: '#DB241E' }}>b</span>orne</div>
+                  <div className="nav-logo-name">Air<span className="o" style={{ color: '#DB241E' }}>b</span>orne Aviation</div>
                   <div className="nav-logo-sub" style={{ color: 'rgba(255,255,255,0.5)' }}>Aviation Academy</div>
                 </div>
               </div>
@@ -167,8 +167,11 @@ export default function Header() {
                 </svg>
               </Link>
 
-              <div className="drawer-address">
-                Ramphal Chowk, Dwarka, New Delhi · <a href="tel:+919953777320" style={{ color: 'inherit', textDecoration: 'underline' }}>+91 9953 777 320</a>
+              <div className="drawer-address" style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+                <div style={{ marginBottom: '0.75rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)' }}>Ramphal Chowk, Dwarka, New Delhi</div>
+                <a href="tel:+919953777320" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: '44px', minWidth: '220px', padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', color: '#fff', textDecoration: 'none', fontWeight: 700, border: '1px solid rgba(255,255,255,0.2)' }}>
+                  📞 +91 9953 777 320
+                </a>
               </div>
             </div>
           </motion.div>

@@ -3,6 +3,7 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
 import { getBreadcrumbSchema } from '@/utils/seo'
+import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
   title: 'Cadet Pilot Program Prep IndiGo, Air India, Akasa | Airborne',
@@ -152,6 +153,19 @@ export default function CadetPreparationPage() {
           </div>
 
         </div>
+        <CoursePageFooter
+          whatsappText="Hi, I'm interested in Cadet Pilot Program Preparation at Airborne Aviation Academy, Dwarka. Please share details for IndiGo/Air India/Akasa cadet prep."
+          nextCourses={[
+            { label: 'Airline Interview Preparation', href: '/courses/airline-preparation', note: 'Advanced GD/PI coaching by Rajeet Khalsa — ex-Air India AGM Training' },
+            { label: 'A320 Simulator', href: '/courses/a320-simulator', note: 'Simulator assessment practice on our in-house A320 FTD' },
+          ]}
+          relatedCourses={[
+            { label: 'CPL Ground School', href: '/courses/commercial-pilot-license-cpl' },
+            { label: 'ATPL Ground School', href: '/courses/atpl' },
+            { label: 'CAS Compass & ADAPT', href: '/courses/cas-compass-adapt' },
+            { label: 'All Courses', href: '/courses' },
+          ]}
+        />
       </main>
       <Footer />
     </>
