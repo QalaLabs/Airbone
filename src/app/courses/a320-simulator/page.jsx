@@ -68,7 +68,7 @@ export default function A320SimulatorPage() {
         </div>
 
         <div className="course-hero-image-wrap">
-          <img src="/footage/simulator-training.jpg" alt="Airbus A320 Simulator Training at Airborne Aviation Academy, Dwarka Delhi" className="course-hero-image" />
+          <img src="/campus/simulator_real.jpg" alt="Airbus A320 Simulator Training at Airborne Aviation Academy, Dwarka Delhi" className="course-hero-image" />
           <div className="course-hero-overlay" />
         </div>
 

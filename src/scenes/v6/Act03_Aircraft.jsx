@@ -6,7 +6,7 @@ import * as THREE from 'three'
 /* ── AIRCRAFT BILLBOARD — Replaces low-poly primitive shapes ── */
 function Aircraft({ progress = 0 }) {
   const ref = useRef()
-  const tex = useTexture('/photos/Gemini_Generated_Image_tbcp3ytbcp3ytbcp (4).png')
+  const tex = useTexture('/footage/aircraft-ascending.jpg')
 
   useFrame((s) => {
     if (!ref.current) return

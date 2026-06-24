@@ -75,7 +75,7 @@ export default function CadetPreparationPage() {
         </div>
 
         <div className="course-hero-image-wrap">
-          <img src="/footage/simulator-training.jpg" alt="Cadet Pilot Program Preparation at Airborne Aviation Academy" className="course-hero-image" />
+          <img src="/campus/campus_training.jpg" alt="Cadet Pilot Program Preparation at Airborne Aviation Academy" className="course-hero-image" />
           <div className="course-hero-overlay" />
         </div>
 

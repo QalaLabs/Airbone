@@ -12,42 +12,42 @@ const FOUNDERS = [
   {
     name: 'Captain Navrang Singh',
     role: 'Co-founder & Head Mentor',
-    image: '/footage/cockpit_pilot_silhouette.jpg',
+    image: '/team/navrang_portrait.jpg',
     bio: 'An active commercial airline captain with 15+ years of teaching expertise. Capt. Navrang specializes in translating highly technical aviation concepts (Air Navigation, Meteorology, Regulations) into practical cockpit understanding. Under his leadership, the academy has maintained the highest first-attempt DGCA examination pass rate in Delhi NCR.',
     accent: 'Concept Clarity over rote learning'
   },
   {
     name: 'Deepak Aggarwal',
     role: 'Co-founder & Business Head',
-    image: '/footage/student_overhead_panel.jpg',
+    image: '/team/deepak_portrait.jpg',
     bio: 'Deepak is the first contact point for aspirants, offering realistic career counseling, financing guidance, and structured study plans. He monitors batch sizing restrictions (capping inputs at 25 per session) to maintain high student-teacher contact ratios.',
     accent: 'Honest counseling and strict enrollment limits'
   },
   {
     name: 'Piyush Chandra',
     role: 'Head of Operations',
-    image: '/footage/simulator_entry_dark.jpg',
+    image: '/team/piyush_portrait.jpg',
     bio: 'Piyush manages academic scheduling, partner flight school relationships (USA, NZ, SA), and DGCA license conversion pathways. His operational guidance ensures that students experience zero administrative friction when transitioning from foreign training logs back to Indian skies.',
     accent: 'Seamless international flight pathways'
   },
   {
     name: 'Capt. Mukul Mitra Barua',
     role: 'Lead Trainer – Aviation Training & Safety',
-    image: '/footage/pilot-portrait.jpg',
+    image: '/team/mukul_portrait.jpg',
     bio: 'An ex-Alliance Air cabin and cockpit crew member with years of flying-side career. Now retired from active flying, he leads training at Airborne in flight safety, aircraft knowledge, Safety Management Systems (SMS), Dangerous Goods Regulations (DGR), and Aviation Security (AVSEC).',
     accent: 'Building the safety-first crew mindset'
   },
   {
     name: 'Rajeet Khalsa',
     role: 'Lead Trainer – Soft Skills & Professional Readiness',
-    image: '/footage/clouds-above.jpg',
-    bio: 'Retired AGM (Training) at Air India, where she spent decades training cabin crew for India’s national carrier. A certified soft skills trainer and image consultant, she brings over 37 years of experience in aviation, communication, grooming, and professional presence.',
+    image: '/team/rajeet_portrait.jpg',
+    bio: 'Retired AGM (Training) at Air India, where she spent decades training cabin crew for India\'s national carrier. A certified soft skills trainer and image consultant, she brings over 37 years of experience in aviation, communication, grooming, and professional presence.',
     accent: 'Developing premium professional presence'
   },
   {
     name: 'Capt. Vishal Chechi',
     role: 'Lead Trainer – Technical',
-    image: '/footage/simulator_entry_dark.jpg',
+    image: '/team/vishal_portrait.jpg',
     bio: 'A seasoned pilot who specializes in technical systems coaching, aircraft-specific ratings (A320/B737), and raw instrument procedures training. He prepares commercial pilot license holders for technical type rating examinations.',
     accent: 'Bridging CPL theory and type-rating systems'
   }

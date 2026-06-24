@@ -54,28 +54,7 @@ export default function Navigation({ sceneIndex, progress, onDemo }) {
       <nav ref={navRef} className="nav" role="navigation" aria-label="Main navigation">
         {/* Brand logo per Brand Book 2026 */}
         <a href="#dream" className="nav-logo" aria-label="Airborne Aviation Academy home">
-          {/* SVG logo: wordmark + aircraft + contrail + focal O */}
-          <svg className="nav-logo-icon" viewBox="0 0 40 40" fill="none" aria-hidden="true">
-            <circle cx="20" cy="20" r="19" fill="#00274C" />
-            {/* Aircraft silhouette ascending at steep angle */}
-            <g transform="translate(10,22) rotate(-35)">
-              {/* Fuselage */}
-              <rect x="-1" y="-6" width="2" height="12" rx="1" fill="#DB241E" />
-              {/* Wings */}
-              <rect x="-6" y="-1" width="12" height="1.5" rx="0.5" fill="#DB241E" />
-              {/* Tail */}
-              <rect x="-0.75" y="4" width="1.5" height="4" rx="0.5" fill="#DB241E" />
-              <rect x="-3" y="5.5" width="6" height="1" rx="0.5" fill="#DB241E" />
-            </g>
-            {/* Contrail sweeping arc */}
-            <path d="M8 32 Q18 20 30 10" stroke="#DB241E" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.6" />
-          </svg>
-          <div>
-            <div className="nav-logo-text">
-              AIRB<span className="focal-o">O</span>RNE
-            </div>
-            <div className="nav-logo-sub">Aviation Academy</div>
-          </div>
+          <img src="/logo-white.webp" alt="Airborne Aviation Academy" style={{ height: '40px', width: 'auto', objectFit: 'contain' }} />
         </a>
 
         {/* Links */}

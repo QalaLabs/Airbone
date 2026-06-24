@@ -12,7 +12,7 @@ import * as THREE from 'three'
 
 /* ── Mentor Panel ── */
 function MentorPanel() {
-  const tex = useTexture('/photos/act2_mentor_hero.png')
+  const tex = useTexture('/photos/classroom_mentor.jpg')
   return (
     <group position={[-2.2, 1.8, -3]}>
       {/* High-quality classroom mentorship panel */}
@@ -69,7 +69,7 @@ function DustMotes() {
 
 /* ── Academy study illustration panel (replaces low-poly desk) ── */
 function StudyPanel() {
-  const tex = useTexture('/footage/student_overhead_panel.jpg')
+  const tex = useTexture('/photos/instructor_hero.jpg')
   return (
     <group position={[2.2, 1.8, -3]}>
       {/* Visual illustration of cockpit training */}

@@ -90,7 +90,7 @@ export default function ATPLPage() {
 
         {/* Hero Image */}
         <div className="course-hero-image-wrap">
-          <img src="/footage/cockpit_instruments_closeup.jpg" alt="ATPL Ground School at Airborne Aviation Academy, Delhi" className="course-hero-image" />
+          <img src="/campus/a320_sim.jpg" alt="ATPL Ground School at Airborne Aviation Academy, Delhi" className="course-hero-image" />
           <div className="course-hero-overlay" />
         </div>
 

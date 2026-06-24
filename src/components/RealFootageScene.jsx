@@ -59,8 +59,8 @@ export function SimulatorScene({ visible, sceneProgress = 0 }) {
     >
       <div ref={parallaxRef} className="footage-parallax-layer">
         <img
-          src="/footage/simulator_wide.jpg"
-          alt="Airborne Aviation Simulator"
+          src="/campus/simulator_real.jpg"
+          alt="Airborne Aviation A320 Simulator"
           className="footage-img footage-kenburns-in"
           style={{ filter: 'contrast(1.1) saturate(1.2) brightness(0.85)' }}
         />

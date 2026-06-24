@@ -126,7 +126,7 @@ export default function CPLPage() {
 
         {/* Hero Image */}
         <div className="course-hero-image-wrap">
-          <img src="/footage/cockpit_instruments_closeup.jpg" alt="CPL Ground School at Airborne Aviation Academy, Dwarka Delhi" className="course-hero-image" />
+          <img src="/campus/classroom_navrang.jpg" alt="CPL Ground School at Airborne Aviation Academy, Dwarka Delhi" className="course-hero-image" />
           <div className="course-hero-overlay" />
         </div>
 

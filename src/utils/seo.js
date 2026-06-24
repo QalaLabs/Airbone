@@ -5,7 +5,7 @@ export function getLocalBusinessSchema() {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     'name': 'Airborne Aviation Academy',
-    'image': 'https://airborneaviation.academy/footage/cockpit_throttle_hero.jpg',
+    'image': 'https://airborneaviation.academy/campus/og_image.jpg',
     'url': 'https://airborneaviation.academy',
     'telephone': '+91 9953 777 320',
     'priceRange': '₹₹₹',
@@ -44,7 +44,7 @@ export function getEducationalOrgSchema() {
     '@type': 'EducationalOrganization',
     'name': 'Airborne Aviation Academy',
     'url': 'https://airborneaviation.academy',
-    'logo': 'https://airborneaviation.academy/favicon.svg',
+    'logo': 'https://airborneaviation.academy/logo-primary.png',
     'description': 'India\'s most trusted DGCA CPL ground school. Led by Capt. Navrang Singh with 15+ years of teaching excellence.',
     'founder': {
       '@type': 'Person',

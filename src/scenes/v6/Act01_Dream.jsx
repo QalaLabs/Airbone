@@ -69,7 +69,7 @@ function SkyDome({ progress }) {
 
 /* ── Dream panel ── */
 function DreamPanel() {
-  const tex = useTexture('/photos/act1_dream_hero.png')
+  const tex = useTexture('/photos/campus_dream.jpg')
   return (
     <group position={[0, 2.4, -2]}>
       {/* High-quality dream illustration panel */}

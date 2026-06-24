@@ -278,12 +278,11 @@ export default function PremiumFooter({ onBookDemo }) {
         </div>
       </div>
 
-      {/* ── SECTION 4: Wordmark (desktop only) ───────────────── */}
+      {/* ── SECTION 4: Wordmark ──────────────────────────────── */}
       <div className="pf-wordmark-section" aria-hidden="true">
         <div className="pf-wordmark-wrap">
-          <AirborneWordmark />
+          <img src="/logo-white.webp" alt="Airborne Aviation Academy" />
         </div>
-        <p className="pf-wordmark-hint">Move cursor over wordmark</p>
       </div>
 
       {/* ── SECTION 5: Bottom bar ─────────────────────────────── */}

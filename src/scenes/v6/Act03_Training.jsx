@@ -68,7 +68,7 @@ export default function Act03_Training({ progress = 0 }) {
   const pencilRef = useRef()
 
   // Load the cockpit closeup background
-  const bgTexture = useTexture('/footage/cockpit_instruments_closeup.jpg')
+  const bgTexture = useTexture('/campus/classroom_navrang.jpg')
 
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime()

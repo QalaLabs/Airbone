@@ -25,7 +25,7 @@ const articleSchema = {
   publisher: {
     '@type': 'EducationalOrganization',
     name: 'Airborne Aviation Academy',
-    logo: { '@type': 'ImageObject', url: 'https://airborneaviation.academy/favicon.svg' },
+    logo: { '@type': 'ImageObject', url: 'https://airborneaviation.academy/logo-primary.png' },
     url: 'https://airborneaviation.academy',
   },
   datePublished: '2026-02-01',

@@ -31,7 +31,12 @@ export const metadata = {
   themeColor: '#000810',
   metadataBase: new URL('https://airborneaviation.academy'),
   icons: {
-    icon: '/favicon.svg',
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+    ],
+    apple: '/apple-touch-icon.png',
   },
   alternates: {
     canonical: '/',
@@ -43,8 +48,8 @@ export const metadata = {
     siteName: 'Airborne Aviation Academy',
     images: [
       {
-        url: 'https://airborneaviation.academy/footage/cockpit_throttle_hero.jpg',
-        width: 1200,
+        url: 'https://airborneaviation.academy/campus/og_image.jpg',
+        width: 945,
         height: 630,
         alt: 'Airborne Aviation Academy — DGCA CPL Ground School, Dwarka Delhi',
       },
@@ -56,7 +61,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'DGCA CPL & ATPL Ground School Delhi | Airborne Aviation',
     description: "India's top DGCA CPL & ATPL ground school in Dwarka, Delhi. 2,500+ pilots placed. Mentor-led batches of 25.",
-    images: ['https://airborneaviation.academy/footage/cockpit_throttle_hero.jpg'],
+    images: ['https://airborneaviation.academy/campus/og_image.jpg'],
   },
 }
 
@@ -65,8 +70,10 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.svg" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
+        <link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body className={`${montserrat.variable} ${roboto.variable}`}>
         <GlobalCursor />

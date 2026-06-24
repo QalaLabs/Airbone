@@ -84,15 +84,8 @@ function FloatingNav({ onBook }) {
           }}
         >
           {/* Logo */}
-          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ position: 'relative', display: 'inline-flex', height: '2.25rem', width: '2.25rem', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'var(--navy)', color: '#fff' }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" style={{ transform: 'rotate(45deg)', transition: 'transform 0.3s' }} aria-hidden>
-                <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
-              </svg>
-            </span>
-            <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.9375rem', fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--navy)' }}>
-              AIRB<span style={{ color: 'var(--red)' }}>O</span>RNE AVIATION
-            </span>
+          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+            <img src="/logo-primary.webp" alt="Airborne Aviation Academy" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
           </Link>
 
           {/* Desktop nav links */}
@@ -178,15 +171,8 @@ function FloatingNav({ onBook }) {
             {/* Drawer Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '3rem', position: 'relative', zIndex: 10 }}>
               {/* Logo */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ display: 'inline-flex', height: '2.25rem', width: '2.25rem', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'var(--navy)', color: '#fff' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" style={{ transform: 'rotate(45deg)' }} aria-hidden>
-                    <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
-                  </svg>
-                </span>
-                <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.9375rem', fontWeight: 900, letterSpacing: '-0.02em', color: '#fff' }}>
-                  AIRB<span style={{ color: 'var(--red)' }}>O</span>RNE AVIATION
-                </span>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <img src="/logo-white.webp" alt="Airborne Aviation Academy" style={{ height: '38px', width: 'auto', objectFit: 'contain' }} />
               </div>
 
               {/* Close Button */}
@@ -631,8 +617,8 @@ function HiredChapter() {
       kicker="Get hired"
       title={<>Four stripes. <span style={{ color: 'var(--gold)' }}>One uniform.</span></>}
       body="Ruzal Dhral — IndiGo Cadet. Capt. Nipun Singh — Air India, restarted at 36. Capt. Himanish Sagwal — Emirates. The success club isn't a marketing slide. It's a roster."
-      image="/footage/pilot-portrait.jpg"
-      alt="Commercial airline captain in uniform"
+      image="/campus/simulator_real.jpg"
+      alt="Airborne Aviation A320 Simulator — Airline preparation"
       dark
       imageAccent={
         <div
@@ -699,9 +685,9 @@ function FounderSection() {
           style={{ position: 'relative', aspectRatio: '4/5', borderRadius: '1.5rem', overflow: 'hidden', boxShadow: 'var(--shadow-glow)' }}
         >
           <img
-            src="/footage/pilot-portrait.jpg"
+            src="/team/navrang_portrait.jpg"
             alt="Capt. Navrang Singh — Chief Instructor, Airborne Aviation Academy"
-            style={{ height: '100%', width: '100%', objectFit: 'cover' }}
+            style={{ height: '100%', width: '100%', objectFit: 'cover', objectPosition: 'top center' }}
             loading="lazy"
           />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, var(--navy-deep) 0%, transparent 60%)' }} />
@@ -1602,9 +1588,9 @@ function SiteFooter() {
         </div>
 
         {/* Mega wordmark */}
-        <div style={{ paddingTop: '4rem', paddingBottom: '4rem', textAlign: 'center' }}>
-          <div style={{ fontFamily: 'var(--font-h)', fontWeight: 900, letterSpacing: '-0.05em', fontSize: 'clamp(2.2rem,18vw,16rem)', lineHeight: 1, color: 'rgba(255,255,255,0.95)' }}>
-            AIRB<span style={{ color: 'var(--red)' }}>O</span>RNE
+        <div className="pf-wordmark-section" aria-hidden="true">
+          <div className="pf-wordmark-wrap">
+            <img src="/logo-white.webp" alt="Airborne Aviation Academy" />
           </div>
         </div>
 

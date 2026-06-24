@@ -448,17 +448,17 @@ export function JourneyMap() {
  * SuccessMosaic — Asymmetric pilot wall grid with stagger reveal
  * ===================================================================*/
 const PILOTS = [
-  { name: 'Ruzal Dhral',          role: 'Cadet · IndiGo',               year: '2024', batch: 'CPL-43' },
-  { name: 'Capt. Nipun Singh',    role: 'First Officer · Air India',     year: '2023', batch: 'CPL-39' },
-  { name: 'Capt. Himanish Sagwal',role: 'First Officer · Emirates',      year: '2022', batch: 'ATPL-12' },
-  { name: 'Aanya Verma',          role: 'Cadet · Vistara',               year: '2024', batch: 'CDT-08' },
-  { name: 'Rohan Mehta',          role: 'First Officer · SpiceJet',      year: '2023', batch: 'CPL-41' },
-  { name: 'Saanvi Rao',           role: 'Cadet · Akasa',                 year: '2025', batch: 'CDT-11' },
-  { name: 'Ishaan Khanna',        role: 'First Officer · Qatar',         year: '2022', batch: 'ATPL-10' },
-  { name: 'Meher Kapoor',         role: 'Cadet · IndiGo',                year: '2025', batch: 'CDT-12' },
+  { name: 'Ruzal Dhral',           role: 'Cadet · IndiGo',            year: '2024', batch: 'CPL-43',  image: '/reviews/ruzal.jpg' },
+  { name: 'Capt. Nipun Singh',     role: 'First Officer · Air India', year: '2023', batch: 'CPL-39',  image: '/reviews/nipun.jpg' },
+  { name: 'Capt. Himansh Sagwal',  role: 'First Officer · Emirates',  year: '2022', batch: 'ATPL-12', image: '/reviews/himansh.jpg' },
+  { name: 'Kartik Juneja',         role: 'Cadet · IndiGo',            year: '2024', batch: 'CDT-08',  image: '/reviews/kartik.jpg' },
+  { name: 'Adesh Yadav',           role: 'First Officer · Air India', year: '2023', batch: 'CPL-41',  image: '/reviews/adesh.jpg' },
+  { name: 'Naveen Kumar',          role: 'Cadet · Akasa',             year: '2025', batch: 'CDT-11',  image: '/reviews/naveen.jpg' },
+  { name: 'Nabansh Sardana',       role: 'First Officer · SpiceJet',  year: '2022', batch: 'ATPL-10', image: '/reviews/nabansh.jpg' },
+  { name: 'Priyanshi Kumar',       role: 'Cadet · IndiGo',            year: '2025', batch: 'CDT-12',  image: '/reviews/priyanshi.jpg' },
 ]
 
-export function SuccessMosaic({ image }) {
+export function SuccessMosaic({ image: fallbackImage }) {
   const [isMobile, setIsMobile] = useState(false)
   const [expanded, setExpanded] = useState(false)
 
@@ -510,13 +510,13 @@ export function SuccessMosaic({ image }) {
                 className="mosaic-figure"
               >
                 <img
-                  src={image}
+                  src={p.image || fallbackImage}
                   alt={p.name}
                   loading="lazy"
                   style={{
                     position: 'absolute', inset: 0, height: '100%', width: '100%', objectFit: 'cover',
+                    objectPosition: 'top center',
                     transition: 'transform 1200ms ease-out',
-                    filter: `hue-rotate(${(i * 14) % 60}deg) saturate(${0.8 + (i % 3) * 0.1})`,
                   }}
                   className="mosaic-img"
                 />
