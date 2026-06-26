@@ -1198,34 +1198,29 @@ function CourseCard({ c, index }) {
 }
 
 /* ─────────────────────────────────────
-   TESTIMONIALS — White cards, gold quotes
+   THE SUCCESS CLUB — Premium Achievement Wall
 ───────────────────────────────────── */
+const SUCCESS_STUDENTS = [
+  { name: 'Anusha Jain', image: '/success/Anusha%20Jain.jpeg' },
+  { name: 'Capt Abdul Salam Khan', image: '/success/Capt%20Abdul%20Salam%20khan.jpeg' },
+  { name: 'Mohd Yunus Bin Wahaj', image: '/success/Mohd%20Yunus%20Bin%20Wahaj.jpeg' },
+  { name: 'Mohit Bhargava', image: '/success/Mohit%20Bhargava.jpeg' },
+  { name: 'Samarth', image: '/success/Samarth.jpeg' },
+]
+
 function TestimonialsSection() {
-  const [stories, setStories] = useState([])
-  const [storiesLoaded, setStoriesLoaded] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
   const carouselRef = useRef(null)
 
-  useEffect(() => {
-    fetch('/api/public-proxy/testimonials')
-      .then((r) => r.json())
-      .then((d) => {
-        const mapped = (d.data ?? []).map((t) => ({
-          name: t.authorName,
-          role: t.authorTitle ?? '',
-          quote: t.content,
-        }))
-        setStories(mapped)
-        setStoriesLoaded(true)
-      })
-      .catch(() => setStoriesLoaded(true))
-  }, [])
+  if (SUCCESS_STUDENTS.length < 3) {
+    return null
+  }
 
   const handleScroll = () => {
     if (!carouselRef.current) return
     const container = carouselRef.current
     const scrollLeft = container.scrollLeft
-    const width = container.clientWidth
+    const width = container.clientWidth * 0.8
     if (width > 0) {
       const index = Math.round(scrollLeft / width)
       setActiveIndex(index)
@@ -1235,7 +1230,7 @@ function TestimonialsSection() {
   const scrollTo = (index) => {
     if (!carouselRef.current) return
     const container = carouselRef.current
-    const width = container.clientWidth
+    const width = container.clientWidth * 0.8
     container.scrollTo({
       left: index * width,
       behavior: 'smooth'
@@ -1250,61 +1245,64 @@ function TestimonialsSection() {
           <div>
             <div className="chapter-num" style={{ color: 'var(--red)', marginBottom: '1rem' }}>The Success Club</div>
             <h2 className="display-xl" style={{ fontSize: 'clamp(2rem,4.5vw,4rem)', color: 'var(--navy)', maxWidth: '30rem' }}>
-              Real names. Real cockpits. <span style={{ fontStyle: 'italic', fontWeight: 300 }}>Real scores.</span>
+              Real names. Real cockpits. <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>Real scores.</span>
             </h2>
           </div>
         </div>
 
-        <div className="testimonials-carousel-container">
-          {!storiesLoaded && (
-            <div style={{ display: 'flex', gap: '1.5rem', overflow: 'hidden', padding: '0.5rem 0' }}>
-              {[1, 2, 3].map((i) => (
-                <div key={i} style={{ flex: '0 0 calc(33.33% - 1rem)', minWidth: '280px', background: 'rgba(0,39,76,0.06)', borderRadius: '1.5rem', height: '220px', opacity: 0.5 }} />
-              ))}
-            </div>
-          )}
-          {storiesLoaded && stories.length === 0 && (
-            <p style={{ color: 'rgba(0,39,76,0.4)', fontSize: '0.9375rem', textAlign: 'center', padding: '3rem 0' }}>
-              Student stories coming soon.
-            </p>
-          )}
+        <div className="success-club-container">
           <div
             ref={carouselRef}
             onScroll={handleScroll}
-            className="testimonials-carousel"
+            className="success-club-carousel"
           >
-            {stories.map((s, i) => (
+            {SUCCESS_STUDENTS.map((s, i) => (
               <motion.figure
                 key={`${s.name}-${i}`}
-                className="testimonial-card-slide"
+                className="success-club-card"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
+                viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.7, delay: i * 0.1 }}
                 style={{
-                  position: 'relative', borderRadius: '1.5rem', border: '1px solid rgba(0,39,76,0.1)',
-                  background: '#fff', padding: '2rem',
-                  display: 'flex', flexDirection: 'column', gap: '2rem',
+                  position: 'relative', borderRadius: '1.5rem', border: '1px solid rgba(0,39,76,0.08)',
+                  background: '#fff', overflow: 'hidden',
+                  display: 'flex', flexDirection: 'column',
                   margin: 0,
-                  transition: 'box-shadow 0.3s',
+                  boxShadow: '0 10px 30px rgba(0,39,76,0.06)',
+                  transition: 'box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
                 }}
-                onMouseEnter={e => e.currentTarget.style.boxShadow = 'var(--shadow-float)'}
-                onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow = 'var(--shadow-float)'; e.currentTarget.style.transform = 'translateY(-6px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,39,76,0.06)'; e.currentTarget.style.transform = 'none'; }}
               >
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '3.75rem', lineHeight: 1, color: 'var(--gold)', marginBottom: '-1rem' }}>"</div>
-                <blockquote style={{ fontSize: '1rem', lineHeight: 1.65, color: 'rgba(33,33,33,0.85)', fontFamily: 'var(--font-h)', fontWeight: 500, margin: 0 }}>
-                  {s.quote}
-                </blockquote>
-                <figcaption style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid rgba(0,39,76,0.1)' }}>
-                  <div style={{ fontFamily: 'var(--font-h)', fontWeight: 700, color: 'var(--navy)' }}>{s.name}</div>
-                  <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--red)', marginTop: '0.25rem' }}>{s.role}</div>
+                <div style={{ position: 'relative', width: '100%', paddingTop: '120%', overflow: 'hidden', background: 'var(--navy)' }}>
+                  <img
+                    src={s.image}
+                    alt={s.name}
+                    loading="lazy"
+                    style={{
+                      position: 'absolute', inset: 0, height: '100%', width: '100%', objectFit: 'cover',
+                      objectPosition: 'top center',
+                      transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.06)'}
+                    onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                  />
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,39,76,0.2) 0%, transparent 40%)', pointerEvents: 'none' }} />
+                </div>
+                <figcaption style={{ padding: '1.5rem 1.25rem', background: '#fff', borderTop: '3px solid var(--gold)', display: 'flex', flexDirection: 'column', gap: '0.35rem', flexGrow: 1, justifyContent: 'center' }}>
+                  <div style={{ fontFamily: 'var(--font-h)', fontWeight: 800, fontSize: 'clamp(1.05rem, 1.1vw, 1.25rem)', color: 'var(--navy)', lineHeight: 1.2 }}>{s.name}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: 'var(--red)' }} />
+                    <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--red)', fontWeight: 700 }}>Airborne Alumnus</span>
+                  </div>
                 </figcaption>
               </motion.figure>
             ))}
           </div>
 
           <div className="carousel-dots">
-            {stories.map((_, i) => (
+            {SUCCESS_STUDENTS.map((_, i) => (
               <button
                 key={i}
                 aria-label={`Go to slide ${i + 1}`}
