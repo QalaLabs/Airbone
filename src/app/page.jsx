@@ -1404,9 +1404,9 @@ function HomepageFAQ() {
 function FinalCTA() {
   const ref = useRef(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end end'] })
-  const y = useTransform(scrollYProgress, [0, 1], [60, 0])
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [0, 1])
-  const bgY = useTransform(scrollYProgress, [0, 1], ['20%', '-20%'])
+  const y = useTransform(scrollYProgress, [0, 1], [40, 0])
+  const opacity = useTransform(scrollYProgress, [0, 0.3], [0.2, 1])
+  const bgY = useTransform(scrollYProgress, [0, 1], ['15%', '-15%'])
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
 
@@ -1432,20 +1432,21 @@ function FinalCTA() {
 
   return (
     <section id="cta" ref={ref} style={{ position: 'relative', isolation: 'isolate', overflow: 'hidden', background: 'var(--navy-deep)', color: '#fff' }}>
-      <motion.div style={{ y: bgY, position: 'absolute', inset: 0, opacity: 0.4 }}>
+      <motion.div style={{ y: bgY, position: 'absolute', inset: 0, opacity: 0.7 }}>
         <img src="/footage/clouds-above.jpg" alt="" style={{ height: '100%', width: '100%', objectFit: 'cover' }} loading="lazy" />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,8,22,0.7) 0%, rgba(0,8,22,0.4) 50%, var(--navy-deep) 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, var(--navy-deep) 0%, rgba(0,8,22,0.35) 25%, transparent 60%, var(--navy-deep) 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 40% 50%, rgba(255, 215, 0, 0.12) 0%, transparent 65%)', pointerEvents: 'none' }} />
       </motion.div>
 
-      <div className="cta-content-wrapper" style={{ position: 'relative', maxWidth: '1100px', margin: '0 auto', padding: 'clamp(8rem,12vw,12rem) clamp(1.5rem,5vw,4rem)' }}>
+      <div className="cta-content-wrapper" style={{ position: 'relative', maxWidth: '1100px', margin: '0 auto', padding: 'clamp(5rem,10vw,12rem) clamp(1.25rem,5vw,4rem)' }}>
         <motion.div style={{ y, opacity }}>
-          <div className="chapter-num" style={{ color: 'var(--gold)', marginBottom: '2rem' }}>Final boarding</div>
+          <div className="chapter-num" style={{ color: 'var(--gold)', marginBottom: '1.5rem' }}>Final boarding</div>
 
-          <h2 className="display-xl" style={{ fontSize: 'clamp(2.5rem,8vw,7rem)', color: '#fff', maxWidth: '14ch' }}>
+          <h2 className="display-xl" style={{ fontSize: 'clamp(2.25rem,7.5vw,6.5rem)', lineHeight: 1.08, letterSpacing: '-0.02em', color: '#fff', maxWidth: '14ch' }}>
             Your <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>cockpit</span> is waiting.
           </h2>
 
-          <p style={{ marginTop: '2rem', color: 'rgba(255,255,255,0.7)', maxWidth: '36rem', fontSize: '0.9375rem', lineHeight: 1.7, fontFamily: 'var(--font-b)' }}>
+          <p style={{ marginTop: '1.5rem', color: 'rgba(255,255,255,0.85)', maxWidth: '38rem', fontSize: 'clamp(0.9375rem,1.5vw,1.05rem)', lineHeight: 1.7, fontFamily: 'var(--font-b)' }}>
             Visit our Dwarka center, sit in on a class, meet Capt. Navrang. No pressure.
             Just an honest look at the system that's been sending pilots into airline cockpits for fifteen years.
           </p>
@@ -1455,21 +1456,21 @@ function FinalCTA() {
             <motion.div
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
-              style={{ marginTop: '3rem', textAlign: 'center', padding: '3rem', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '1rem', background: 'rgba(0,8,22,0.6)' }}
+              style={{ marginTop: '3rem', textAlign: 'center', padding: '3rem', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '1.25rem', background: 'rgba(15,23,42,0.55)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
             >
-              <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--red)', marginBottom: '0.8rem' }}>Application Received</div>
-              <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 800, textTransform: 'uppercase', color: '#fff', marginBottom: '0.6rem' }}>We'll contact you within 24 hours.</div>
-              <p style={{ fontFamily: 'var(--font-b)', fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', marginBottom: '2rem' }}>Capt. Navrang Singh's team · Dwarka, New Delhi</p>
+              <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--red)', marginBottom: '0.8rem' }}>Application Received</div>
+              <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, textTransform: 'uppercase', color: '#fff', marginBottom: '0.6rem' }}>We'll contact you within 24 hours.</div>
+              <p style={{ fontFamily: 'var(--font-b)', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', marginBottom: '2rem' }}>Capt. Navrang Singh's team · Dwarka, New Delhi</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
-                <a href="tel:+919953777320" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.2rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', textDecoration: 'none', fontSize: '0.875rem', fontFamily: 'var(--font-h)' }}>📞 Call Us</a>
-                <a href="https://wa.me/919953777320" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.2rem', borderRadius: '4px', border: '1px solid #25D366', color: '#25D366', textDecoration: 'none', fontSize: '0.875rem', fontFamily: 'var(--font-h)' }}>💬 WhatsApp</a>
-                <a href="/courses" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.2rem', borderRadius: '4px', background: 'var(--red)', color: '#fff', textDecoration: 'none', fontSize: '0.875rem', fontFamily: 'var(--font-h)' }}>Explore Courses →</a>
+                <a href="tel:+919953777320" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', borderRadius: '0.6rem', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', textDecoration: 'none', fontSize: '0.9375rem', fontFamily: 'var(--font-h)', fontWeight: 600 }}>📞 Call Us</a>
+                <a href="https://wa.me/919953777320" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', borderRadius: '0.6rem', border: '1px solid #25D366', color: '#25D366', textDecoration: 'none', fontSize: '0.9375rem', fontFamily: 'var(--font-h)', fontWeight: 600 }}>💬 WhatsApp</a>
+                <a href="/courses" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', borderRadius: '0.6rem', background: 'var(--red)', color: '#fff', textDecoration: 'none', fontSize: '0.9375rem', fontFamily: 'var(--font-h)', fontWeight: 700 }}>Explore Courses →</a>
               </div>
             </motion.div>
           ) : (
             <form
               onSubmit={handleSubmit}
-              className="glass-dark cta-form"
+              className="cta-form"
             >
               <input
                 id="cta-name"
@@ -1506,11 +1507,11 @@ function FinalCTA() {
             </form>
           )}
 
-          <div style={{ marginTop: '1.5rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em' }}>
+          <div style={{ marginTop: '1.5rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.55)', letterSpacing: '0.05em' }}>
             Or call us directly ·{' '}
-            <a href="tel:+919953777320" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'underline', textUnderlineOffset: '4px', transition: 'color 0.2s' }}
+            <a href="tel:+919953777320" style={{ color: 'rgba(255,255,255,0.55)', textDecoration: 'underline', textUnderlineOffset: '4px', transition: 'color 0.2s' }}
               onMouseEnter={e => e.target.style.color = '#fff'}
-              onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.4)'}
+              onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.55)'}
             >+91 9953 777 320</a>
           </div>
         </motion.div>
