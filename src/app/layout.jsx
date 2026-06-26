@@ -1,4 +1,5 @@
 import { Montserrat, Roboto } from 'next/font/google'
+import Script from 'next/script'
 import '@/index.css'
 import ToastContainer from '@/components/Toast'
 import GlobalCursor from '@/components/GlobalCursor'
@@ -28,7 +29,6 @@ export const viewport = {
 export const metadata = {
   title: 'DGCA CPL & ATPL Ground School Delhi | Airborne Aviation',
   description: "India's top DGCA CPL & ATPL ground school in Dwarka, Delhi. Capt. Navrang Singh. 2,500+ pilots placed in top airlines. Mentor-led batches of 25. Book free demo.",
-  themeColor: '#000810',
   metadataBase: new URL('https://airborneaviation.academy'),
   icons: {
     icon: [
@@ -74,6 +74,20 @@ export default function RootLayout({ children }) {
         <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
         <link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        {/* Google Analytics GA4 */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-KB3Y1MSLR6"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-KB3Y1MSLR6');
+          `}
+        </Script>
       </head>
       <body className={`${montserrat.variable} ${roboto.variable}`}>
         <GlobalCursor />
