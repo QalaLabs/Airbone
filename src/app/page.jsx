@@ -1404,8 +1404,6 @@ function HomepageFAQ() {
 function FinalCTA() {
   const ref = useRef(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end end'] })
-  const y = useTransform(scrollYProgress, [0, 1], [40, 0])
-  const opacity = useTransform(scrollYProgress, [0, 0.3], [0.2, 1])
   const bgY = useTransform(scrollYProgress, [0, 1], ['15%', '-15%'])
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -1439,7 +1437,12 @@ function FinalCTA() {
       </motion.div>
 
       <div className="cta-content-wrapper" style={{ position: 'relative', maxWidth: '1100px', margin: '0 auto', padding: 'clamp(5rem,10vw,12rem) clamp(1.25rem,5vw,4rem)' }}>
-        <motion.div style={{ y, opacity }}>
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.15 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        >
           <div className="chapter-num" style={{ color: 'var(--gold)', marginBottom: '1.5rem' }}>Final boarding</div>
 
           <h2 className="display-xl" style={{ fontSize: 'clamp(2.25rem,7.5vw,6.5rem)', lineHeight: 1.08, letterSpacing: '-0.02em', color: '#fff', maxWidth: '14ch' }}>
