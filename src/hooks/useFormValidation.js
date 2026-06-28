@@ -56,7 +56,7 @@ export default function useFormValidation(initialValues, validators) {
     error: touched[name] ? errors[name] : null,
     onChange: (val) => handleChange(name, val),
     onBlur: () => handleBlur(name),
-  }), [name, values, errors, touched, handleChange, handleBlur])
+  }), [values, errors, touched, handleChange, handleBlur])
 
   return { values, errors, touched, handleChange, handleBlur, validate, isValid, reset, setValues, getFieldProps }
 }

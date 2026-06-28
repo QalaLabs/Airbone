@@ -23,14 +23,12 @@ export default function FormField({
   ].filter(Boolean).join(' ')
 
   const handleChange = (e) => {
-    const raw = e.target.value
-    if (type === 'tel' || type === 'text') {
-      const digitsOnly = raw.replace(/[^0-9]/g, '')
-      if (maxLength && digitsOnly.length > maxLength) return
-      onChange(digitsOnly)
-    } else {
-      onChange(raw)
+    let val = e.target.value
+    if (type === 'tel') {
+      val = val.replace(/[^0-9]/g, '')
+      if (maxLength && val.length > maxLength) return
     }
+    onChange(val)
   }
 
   return (
