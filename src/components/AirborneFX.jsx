@@ -77,6 +77,8 @@ export function RouteProgress() {
 
 /* =====================================================================
  * CockpitHUD — Fixed bottom-left instrument cluster, scroll-reactive
+ * Desktop: full instrument panel at bottom-left.
+ * Mobile: compact aviation pill, repositions above sticky CTA.
  * ===================================================================*/
 export function CockpitHUD() {
   const { scrollYProgress } = useScroll()
@@ -85,6 +87,8 @@ export function CockpitHUD() {
   const [hdg, setHdg] = useState(90)
   const [spd, setSpd] = useState(220)
   const [phase, setPhase] = useState('PUSHBACK')
+  const [ctaVisible, setCtaVisible] = useState(false)
+  const [isCompact, setIsCompact] = useState(false)
 
   useEffect(() => {
     return smooth.on('change', (v) => {
@@ -102,37 +106,87 @@ export function CockpitHUD() {
     })
   }, [smooth])
 
+  useEffect(() => {
+    const check = () => {
+      const w = window.innerWidth
+      setIsCompact(w < 1024 && w >= 320)
+    }
+    check()
+    window.addEventListener('resize', check, { passive: true })
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
+  useEffect(() => {
+    if (!isCompact) return
+    const handleScroll = () => {
+      const scrolled = window.scrollY > 400
+      const footer = document.querySelector('footer')
+      const cta = document.querySelector('#cta')
+      let nearBottom = false
+      const vh = window.innerHeight
+      for (const el of [footer, cta].filter(Boolean)) {
+        const rect = el.getBoundingClientRect()
+        if (rect.top < vh - 60) { nearBottom = true; break }
+      }
+      setCtaVisible(scrolled && !nearBottom)
+    }
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [isCompact])
+
+  const ctaHeight = 64
+  const bottomOffset = isCompact
+    ? (ctaVisible ? ctaHeight + 10 : 16)
+    : 20
+
   return (
     <motion.aside
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 1.4, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-      aria-hidden
-      style={{
-        display: 'none',
-        position: 'fixed', bottom: '1.25rem', left: '1.25rem', zIndex: 40,
-        background: 'rgba(0,8,22,0.5)',
-        backdropFilter: 'blur(24px) saturate(180%)',
-        border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: '1rem', padding: '0.75rem 1rem',
-        alignItems: 'center', gap: '1.25rem',
-        color: 'rgba(255,255,255,0.9)',
-        fontFamily: 'var(--font-h)',
-        fontVariantNumeric: 'tabular-nums',
-        userSelect: 'none',
+      initial={{ opacity: 0, y: 12 }}
+      animate={{
+        opacity: 1,
+        y: 0,
+        bottom: bottomOffset,
       }}
-      className="cockpit-hud-visible"
+      transition={{
+        duration: 0.45,
+        ease: [0.16, 1, 0.3, 1],
+        bottom: { duration: 0.4, ease: [0.16, 1, 0.3, 1] },
+      }}
+      aria-hidden
+      className={`cockpit-hud ${isCompact ? 'compact' : ''}`}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.625rem', letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gold)' }}>
-        <span style={{ position: 'relative', display: 'inline-flex', height: '6px', width: '6px' }}>
-          <span className="animate-ping" style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'var(--red)', opacity: 0.75 }} />
-          <span style={{ position: 'relative', display: 'inline-flex', height: '6px', width: '6px', borderRadius: '50%', background: 'var(--red)' }} />
-        </span>
-        {phase}
-      </div>
-      <HudInstrument label="ALT" value={alt.toLocaleString()} unit="ft" />
-      <HudInstrument label="HDG" value={String(hdg).padStart(3, '0')} unit="°" />
-      <HudInstrument label="SPD" value={String(spd)} unit="kt" />
+      {isCompact ? (
+        <div className="hud-compact" style={{
+          display: 'flex', alignItems: 'center', gap: '0.5rem',
+          fontSize: '0.625rem', color: 'rgba(255,255,255,0.85)',
+          fontFamily: 'var(--font-h)', fontWeight: 700,
+          letterSpacing: '0.02em', fontVariantNumeric: 'tabular-nums',
+          whiteSpace: 'nowrap',
+        }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: 'var(--gold)', fontSize: '0.55rem', textTransform: 'uppercase', letterSpacing: '0.2em' }}>
+            <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--red)', display: 'inline-block' }} />
+            {phase}
+          </span>
+          <span style={{ opacity: 0.25 }}>|</span>
+          <span>✈ {String(hdg).padStart(3, '0')}°</span>
+          <span style={{ opacity: 0.25 }}>·</span>
+          <span>{alt.toLocaleString()} ft</span>
+        </div>
+      ) : (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.625rem', letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gold)' }}>
+            <span style={{ position: 'relative', display: 'inline-flex', height: '6px', width: '6px' }}>
+              <span className="animate-ping" style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'var(--red)', opacity: 0.75 }} />
+              <span style={{ position: 'relative', display: 'inline-flex', height: '6px', width: '6px', borderRadius: '50%', background: 'var(--red)' }} />
+            </span>
+            {phase}
+          </div>
+          <HudInstrument label="ALT" value={alt.toLocaleString()} unit="ft" />
+          <HudInstrument label="HDG" value={String(hdg).padStart(3, '0')} unit="°" />
+          <HudInstrument label="SPD" value={String(spd)} unit="kt" />
+        </>
+      )}
     </motion.aside>
   )
 }
@@ -448,19 +502,23 @@ export function JourneyMap() {
  * SuccessMosaic — Asymmetric pilot wall grid with stagger reveal
  * ===================================================================*/
 const PILOTS = [
-  { name: 'Ruzal Dhral',           role: 'Cadet · IndiGo',            year: '2024', batch: 'CPL-43',  image: '/reviews/ruzal.jpg' },
-  { name: 'Capt. Nipun Singh',     role: 'First Officer · Air India', year: '2023', batch: 'CPL-39',  image: '/reviews/nipun.jpg' },
-  { name: 'Capt. Himansh Sagwal',  role: 'First Officer · Emirates',  year: '2022', batch: 'ATPL-12', image: '/reviews/himansh.jpg' },
-  { name: 'Kartik Juneja',         role: 'Cadet · IndiGo',            year: '2024', batch: 'CDT-08',  image: '/reviews/kartik.jpg' },
-  { name: 'Adesh Yadav',           role: 'First Officer · Air India', year: '2023', batch: 'CPL-41',  image: '/reviews/adesh.jpg' },
-  { name: 'Naveen Kumar',          role: 'Cadet · Akasa',             year: '2025', batch: 'CDT-11',  image: '/reviews/naveen.jpg' },
-  { name: 'Nabansh Sardana',       role: 'First Officer · SpiceJet',  year: '2022', batch: 'ATPL-10', image: '/reviews/nabansh.jpg' },
-  { name: 'Priyanshi Kumar',       role: 'Cadet · IndiGo',            year: '2025', batch: 'CDT-12',  image: '/reviews/priyanshi.jpg' },
+  { name: 'Ruzal Dhral',           role: 'Cadet · IndiGo',            year: '2024', batch: 'CPL-43',  image: '/reviews/ruzal.jpg', objectPosition: 'center 15%', badge: '✈ Selected' },
+  { name: 'Capt. Nipun Singh',     role: 'First Officer · Air India', year: '2023', batch: 'CPL-39',  image: '/reviews/nipun.jpg', objectPosition: 'center 20%', badge: 'First Officer' },
+  { name: 'Capt. Himansh Sagwal',  role: 'First Officer · Emirates',  year: '2022', batch: 'ATPL-12', image: '/reviews/himansh.jpg', objectPosition: 'center 12%', badge: 'First Officer' },
+  { name: 'Kartik Juneja',         role: 'Cadet · IndiGo',            year: '2024', batch: 'CDT-08',  image: '/reviews/kartik.jpg', objectPosition: 'center 20%', badge: 'Cadet Pilot' },
+  { name: 'Adesh Yadav',           role: 'First Officer · Air India', year: '2023', batch: 'CPL-41',  image: '/reviews/adesh.jpg', objectPosition: 'center 12%', badge: 'First Officer' },
+  { name: 'Naveen Kumar',          role: 'Cadet · Akasa',             year: '2025', batch: 'CDT-11',  image: '/reviews/naveen.jpg', objectPosition: 'center 18%', badge: '✈ Selected' },
+  { name: 'Nabansh Sardana',       role: 'First Officer · SpiceJet',  year: '2022', batch: 'ATPL-10', image: '/reviews/nabansh.jpg', objectPosition: 'center 15%', badge: 'First Officer' },
+  { name: 'Priyanshi Kumar',       role: 'Cadet · IndiGo',            year: '2025', batch: 'CDT-12',  image: '/reviews/priyanshi.jpg', objectPosition: 'center 10%', badge: 'Cadet Pilot' },
 ]
 
 export function SuccessMosaic({ image: fallbackImage }) {
   const [isMobile, setIsMobile] = useState(false)
   const [expanded, setExpanded] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [isPaused, setIsPaused] = useState(false)
+  
+  const containerRef = useRef(null)
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -469,18 +527,96 @@ export function SuccessMosaic({ image: fallbackImage }) {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
+  // Auto-scroll logic for mobile carousel
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container || !isMobile || isPaused) return
+
+    const timer = setInterval(() => {
+      const card = container.querySelector('.success-carousel-card')
+      if (!card) return
+      
+      const cardWidth = card.clientWidth
+      const gap = parseFloat(window.getComputedStyle(container).gap) || 16
+      const step = cardWidth + gap
+      
+      const nextIndex = (activeIndex + 1) % PILOTS.length
+      
+      container.scrollTo({
+        left: nextIndex * step,
+        behavior: 'smooth'
+      })
+      setActiveIndex(nextIndex)
+    }, 6000)
+
+    return () => clearInterval(timer)
+  }, [activeIndex, isPaused, isMobile])
+
+  const handleScroll = (e) => {
+    const container = e.currentTarget
+    const scrollLeft = container.scrollLeft
+    const card = container.querySelector('.success-carousel-card')
+    if (!card) return
+    
+    const cardWidth = card.clientWidth
+    const gap = parseFloat(window.getComputedStyle(container).gap) || 16
+    const step = cardWidth + gap
+    
+    const newIndex = Math.round(scrollLeft / step)
+    if (newIndex >= 0 && newIndex < PILOTS.length && newIndex !== activeIndex) {
+      setActiveIndex(newIndex)
+    }
+  }
+
+  const handleTouchStart = () => {
+    setIsPaused(true)
+  }
+
+  const handleTouchEnd = () => {
+    // Resume auto-scroll after a short delay
+    setTimeout(() => {
+      setIsPaused(false)
+    }, 2000)
+  }
+
+  const scrollToIndex = (index) => {
+    const container = containerRef.current
+    if (!container) return
+    
+    const card = container.querySelector('.success-carousel-card')
+    if (!card) return
+    
+    const cardWidth = card.clientWidth
+    const gap = parseFloat(window.getComputedStyle(container).gap) || 16
+    const step = cardWidth + gap
+    
+    container.scrollTo({
+      left: index * step,
+      behavior: 'smooth'
+    })
+    setActiveIndex(index)
+  }
+
   const displayedPilots = isMobile && !expanded ? PILOTS.slice(0, 3) : PILOTS
 
   return (
-    <section style={{ position: 'relative', padding: 'clamp(3.5rem,8vw,10rem) clamp(1.5rem,5vw,4rem)', background: 'var(--paper)' }}>
+    <section style={{ position: 'relative', padding: 'clamp(3.5rem,8vw,10rem) clamp(1.5rem,5vw,4rem)', background: 'var(--paper)', overflow: 'hidden' }}>
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
         <div className="mosaic-header-grid">
           <div className="mosaic-header-title">
-            <div className="chapter-num" style={{ color: 'var(--red)', marginBottom: '1rem' }}>The Wall</div>
-            <h2 className="display-xl" style={{ fontSize: 'clamp(2rem,4.5vw,4rem)', color: 'var(--navy)' }}>
+            <div className="chapter-num" style={{ color: 'var(--red)', marginBottom: '0.5rem' }}>The Wall</div>
+            <h2 className="display-xl" style={{ fontSize: 'clamp(2rem,4.5vw,4rem)', color: 'var(--navy)', marginBottom: isMobile ? '0.5rem' : '0' }}>
               Faces on the{' '}
               <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--red)' }}>flight line.</span>
             </h2>
+            {isMobile && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem', marginBottom: '1rem' }}>
+                <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--red)', boxShadow: '0 0 8px var(--red-glow)' }} />
+                <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--navy)', opacity: 0.8 }}>
+                  50+ Airline Placements
+                </span>
+              </div>
+            )}
           </div>
           <div className="mosaic-header-desc">
             <p style={{ color: 'rgba(33,33,33,0.7)', fontSize: '0.9375rem', lineHeight: 1.7, maxWidth: '28rem' }}>
@@ -489,69 +625,111 @@ export function SuccessMosaic({ image: fallbackImage }) {
           </div>
         </div>
 
-        <div className="responsive-grid-mosaic" style={{ gap: '0.75rem' }}>
-          {displayedPilots.map((p, i) => {
-            const tall = i === 0 || i === 5
-            const wide = i === 3
-            return (
-              <motion.figure
-                key={p.name}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 0.7, delay: (i % 4) * 0.06, ease: [0.16, 1, 0.3, 1] }}
-                style={{
-                  position: 'relative', overflow: 'hidden', borderRadius: '1rem',
-                  background: 'var(--navy)',
-                  gridRow: tall && (!isMobile || expanded) ? 'span 2' : 'span 1',
-                  gridColumn: wide && (!isMobile || expanded) ? 'span 2' : 'span 1',
-                  margin: 0,
-                }}
-                className="mosaic-figure"
-              >
-                <img
-                  src={p.image || fallbackImage}
-                  alt={p.name}
-                  loading="lazy"
-                  style={{
-                    position: 'absolute', inset: 0, height: '100%', width: '100%', objectFit: 'cover',
-                    objectPosition: 'top center',
-                    transition: 'transform 1200ms ease-out',
-                  }}
-                  className="mosaic-img"
-                />
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,8,22,0.95) 0%, rgba(0,8,22,0.2) 50%, transparent 100%)' }} />
-                <div style={{ position: 'absolute', left: '1rem', right: '1rem', bottom: '1rem', color: '#fff' }}>
-                  <div style={{ fontSize: '0.5625rem', letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gold)', opacity: 0.8 }}>
-                    {p.batch} · {p.year}
-                  </div>
-                  <div style={{ fontFamily: 'var(--font-h)', fontWeight: 700, fontSize: '0.875rem', marginTop: '0.25rem', lineHeight: 1.2 }}>{p.name}</div>
-                  <div style={{ fontSize: '0.6875rem', color: 'rgba(255,255,255,0.65)', marginTop: '0.125rem' }}>{p.role}</div>
-                </div>
-              </motion.figure>
-            )
-          })}
-        </div>
-
-        {isMobile && (
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2.5rem' }}>
-            <button
-              onClick={() => setExpanded(!expanded)}
-              style={{
-                borderRadius: '999px',
-                background: 'rgba(0,39,76,0.05)',
-                border: '1px solid rgba(0,39,76,0.1)',
-                color: 'var(--navy)',
-                padding: '0.75rem 1.5rem',
-                fontSize: '0.875rem',
-                fontWeight: 600,
-                fontFamily: 'var(--font-h)',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-              }}
+        {isMobile ? (
+          /* Mobile Redesign: Premium snap-scroll horizontal carousel */
+          <div className="success-carousel-outer">
+            <div 
+              ref={containerRef}
+              className="success-carousel-container"
+              onScroll={handleScroll}
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+              onMouseEnter={handleTouchStart}
+              onMouseLeave={handleTouchEnd}
             >
-              {expanded ? 'View Less' : 'View More Success Stories'}
-            </button>
+              {PILOTS.map((p, i) => {
+                const parts = p.role.split('·')
+                const roleName = parts[0]?.trim() || ''
+                const airlineName = parts[1]?.trim() || ''
+                
+                return (
+                  <div key={p.name} className="success-carousel-card">
+                    <img
+                      src={p.image || fallbackImage}
+                      alt={p.name}
+                      loading="lazy"
+                      className="success-carousel-card-img"
+                      style={{ objectPosition: p.objectPosition || 'center center' }}
+                    />
+                    <div className="success-carousel-card-gradient" />
+                    
+                    {p.badge && (
+                      <div className={`success-carousel-card-glass-badge ${p.badge.includes('Selected') ? 'selected' : ''}`}>
+                        {p.badge}
+                      </div>
+                    )}
+                    
+                    <div className="success-carousel-card-info">
+                      <div className="success-carousel-card-meta">
+                        <span>{p.batch}</span>
+                      </div>
+                      <div className="success-carousel-card-name">{p.name}</div>
+                      <div className="success-carousel-card-details">
+                        <span className="success-carousel-card-role-airline">{roleName} · {airlineName}</span>
+                        <span className="success-carousel-card-year-batch">{p.year}</span>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            
+            {/* Pagination indicators */}
+            <div className="success-carousel-dots">
+              {PILOTS.map((_, i) => (
+                <button
+                  key={i}
+                  className={`success-carousel-dot ${i === activeIndex ? 'active' : ''}`}
+                  onClick={() => scrollToIndex(i)}
+                  aria-label={`Go to slide ${i + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          /* Desktop Layout: Asymmetric mosaic grid remains exactly as is */
+          <div className="responsive-grid-mosaic" style={{ gap: '0.75rem' }}>
+            {displayedPilots.map((p, i) => {
+              const tall = i === 0 || i === 5
+              const wide = i === 3
+              return (
+                <motion.figure
+                  key={p.name}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.7, delay: (i % 4) * 0.06, ease: [0.16, 1, 0.3, 1] }}
+                  style={{
+                    position: 'relative', overflow: 'hidden', borderRadius: '1rem',
+                    background: 'var(--navy)',
+                    gridRow: tall ? 'span 2' : 'span 1',
+                    gridColumn: wide ? 'span 2' : 'span 1',
+                    margin: 0,
+                  }}
+                  className="mosaic-figure"
+                >
+                  <img
+                    src={p.image || fallbackImage}
+                    alt={p.name}
+                    loading="lazy"
+                    style={{
+                      position: 'absolute', inset: 0, height: '100%', width: '100%', objectFit: 'cover',
+                      objectPosition: 'top center',
+                      transition: 'transform 1200ms ease-out',
+                    }}
+                    className="mosaic-img"
+                  />
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,8,22,0.95) 0%, rgba(0,8,22,0.2) 50%, transparent 100%)' }} />
+                  <div style={{ position: 'absolute', left: '1rem', right: '1rem', bottom: '1rem', color: '#fff' }}>
+                    <div style={{ fontSize: '0.5625rem', letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gold)', opacity: 0.8 }}>
+                      {p.batch} · {p.year}
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-h)', fontWeight: 700, fontSize: '0.875rem', marginTop: '0.25rem', lineHeight: 1.2 }}>{p.name}</div>
+                    <div style={{ fontSize: '0.6875rem', color: 'rgba(255,255,255,0.65)', marginTop: '0.125rem' }}>{p.role}</div>
+                  </div>
+                </motion.figure>
+              )
+            })}
           </div>
         )}
       </div>

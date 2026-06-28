@@ -113,102 +113,102 @@ export default function CPLPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <Header />
-      <main style={{ minHeight: '80vh', background: '#000810', padding: '4rem var(--margin) 6rem var(--margin)' }}>
+      <main className="course-main-wrapper" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
 
         {/* Breadcrumb */}
-        <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginBottom: '3rem', fontFamily: 'var(--font-h)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-          <Link href="/" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }}>Home</Link>
+        <div className="course-breadcrumb">
+          <Link href="/" >Home</Link>
           <span>/</span>
-          <Link href="/courses" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }}>Courses</Link>
+          <Link href="/courses" >Courses</Link>
           <span>/</span>
-          <span style={{ color: '#D8A027' }}>CPL Ground School</span>
+          <span className="current">CPL Ground School</span>
         </div>
 
         {/* Hero Image */}
-        <div className="course-hero-image-wrap">
+        <div className="course-hero-image-wrap" style={{ borderRadius: '8px' }}>
           <img src="/campus/classroom_navrang.jpg" alt="CPL Ground School at Airborne Aviation Academy, Dwarka Delhi" className="course-hero-image" />
-          <div className="course-hero-overlay" />
+          <div className="course-hero-overlay" style={{ background: 'linear-gradient(to top, rgba(0, 39, 76, 0.4) 0%, transparent 100%)' }} />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '4rem' }}>
+        <div className="course-details-layout">
 
           {/* Main Content */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
 
             <div>
-              <span className="badge" style={{ borderColor: '#DB241E', background: 'rgba(219,36,30,0.08)', color: '#DB241E' }}>
+              <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
                 📍 Dwarka, Delhi · 3 Months · ₹2,70,000
               </span>
-              <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1' }}>
+              <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
                 Commercial Pilot License (CPL) Course in Delhi — DGCA Approved
               </h1>
-              <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '1.05rem', lineHeight: '1.7', maxWidth: '100%' }}>
+              <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75', maxWidth: '100%' }}>
                 Airborne Aviation Academy offers a DGCA-approved Commercial Pilot License (CPL) Ground School in Dwarka, Delhi. The CPL Ground School covers all 5 DGCA written examination papers — taught personally by Capt. Navrang Singh, who has maintained a 100% first-attempt pass rate across 2,500+ students since 2009. July 2026 batch now enrolling. 25 seats. ₹2,70,000.
               </p>
             </div>
 
             {/* Subjects */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
                 DGCA Ground School — Curriculum Subjects
               </h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+              <div className="course-subject-grid">
                 {SUBJECTS.map((s, i) => (
-                  <div key={i} style={{ background: '#00162e', borderLeft: '3px solid #DB241E', padding: '1rem 1.25rem' }}>
-                    <div style={{ fontSize: '0.72rem', fontFamily: 'var(--font-h)', letterSpacing: '0.1em', color: '#D8A027', marginBottom: '0.4rem', textTransform: 'uppercase' }}>{s.code}</div>
-                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#FFFFFF', marginBottom: '0.25rem' }}>{s.name}</div>
-                    <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)' }}>{s.detail}</div>
+                  <div key={i} className="course-subject-card">
+                    <div style={{ fontSize: '0.72rem', fontFamily: 'var(--font-h)', letterSpacing: '0.12em', color: 'var(--red)', marginBottom: '0.4rem', textTransform: 'uppercase', fontWeight: 800 }}>{s.code}</div>
+                    <div className="course-subject-card-title">{s.name}</div>
+                    <div className="course-subject-card-detail">{s.detail}</div>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Fee Breakdown */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
                 CPL Course Fees — Full Breakdown
               </h2>
-              <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', overflow: 'hidden' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem', fontFamily: 'var(--font-b)' }}>
+              <div className="course-table-wrap" style={{ overflowX: 'auto' }}>
+                <table className="course-table" style={{ minWidth: "600px" }}>
                   <thead>
-                    <tr style={{ background: '#00162e', color: 'rgba(255,255,255,0.6)', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
-                      <th style={{ padding: '1rem 1.25rem', textAlign: 'left' }}>Fee Component</th>
-                      <th style={{ padding: '1rem 1.25rem', textAlign: 'left', color: '#D8A027' }}>Amount</th>
+                    <tr>
+                      <th>Fee Component</th>
+                      <th>Amount</th>
                     </tr>
                   </thead>
                   <tbody>
                     {FEE_ROWS.map((row, i) => (
-                      <tr key={i} style={{ borderTop: '1px solid rgba(255,255,255,0.04)', background: i % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'transparent' }}>
-                        <td style={{ padding: '1rem 1.25rem', color: i === FEE_ROWS.length - 1 ? '#FFFFFF' : 'rgba(255,255,255,0.7)', fontWeight: i === FEE_ROWS.length - 1 ? 700 : 400 }}>{row.component}</td>
-                        <td style={{ padding: '1rem 1.25rem', color: '#D8A027', fontWeight: i === FEE_ROWS.length - 1 ? 900 : 600, fontSize: i === FEE_ROWS.length - 1 ? '1rem' : '0.875rem' }}>{row.amount}</td>
+                      <tr key={i}>
+                        <td style={{ padding: '1rem 1.25rem', color: i === FEE_ROWS.length - 1 ? '#FFFFFF' : 'rgba(0, 39, 76, 0.75)', fontWeight: i === FEE_ROWS.length - 1 ? 700 : 400 }}>{row.component}</td>
+                        <td style={{ padding: '1rem 1.25rem', color: 'var(--navy)', fontWeight: i === FEE_ROWS.length - 1 ? 900 : 600, fontSize: i === FEE_ROWS.length - 1 ? '1rem' : '0.875rem' }}>{row.amount}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', marginTop: '0.75rem', lineHeight: '1.5' }}>
+              <p style={{ fontSize: '0.78rem', color: 'rgba(0, 39, 76, 0.45)', marginTop: '0.75rem', lineHeight: '1.5' }}>
                 Education loans available via SBI, Bank of Baroda, and PNB. Contact our admissions team for loan guidance.
               </p>
             </div>
 
             {/* Eligibility */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
                 CPL Eligibility Requirements
               </h2>
-              <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', overflow: 'hidden' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem', fontFamily: 'var(--font-b)' }}>
+              <div className="course-table-wrap" style={{ overflowX: 'auto' }}>
+                <table className="course-table" style={{ minWidth: "600px" }}>
                   <thead>
-                    <tr style={{ background: '#00162e', color: 'rgba(255,255,255,0.6)', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
-                      <th style={{ padding: '1rem 1.25rem', textAlign: 'left' }}>Requirement</th>
-                      <th style={{ padding: '1rem 1.25rem', textAlign: 'left' }}>Details</th>
+                    <tr>
+                      <th>Requirement</th>
+                      <th>Details</th>
                     </tr>
                   </thead>
                   <tbody>
                     {ELIGIBILITY.map((row, i) => (
-                      <tr key={i} style={{ borderTop: '1px solid rgba(255,255,255,0.04)', background: i % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'transparent' }}>
-                        <td style={{ padding: '1rem 1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>{row.req}</td>
-                        <td style={{ padding: '1rem 1.25rem', color: 'rgba(255,255,255,0.8)' }}>{row.detail}</td>
+                      <tr key={i}>
+                        <td style={{ fontWeight: 600 }}>{row.req}</td>
+                        <td>{row.detail}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -217,8 +217,8 @@ export default function CPLPage() {
             </div>
 
             {/* Why Airborne */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
                 Why Choose Airborne for CPL Ground School?
               </h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
@@ -228,18 +228,18 @@ export default function CPLPage() {
                   { icon: '📚', title: 'First-Principles Approach', body: 'No question banks. DGCA syllabi taught from fundamentals up.' },
                   { icon: '🏫', title: 'Small Batches — Max 25', body: 'Individual attention and personalised pacing for every student.' },
                 ].map((c, i) => (
-                  <div key={i} style={{ background: '#00162e', border: '1px solid rgba(255,255,255,0.06)', padding: '1.5rem', borderRadius: '4px' }}>
+                  <div key={i} style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', border: '1px solid rgba(0, 39, 76, 0.08)', padding: '1.5rem', borderRadius: '4px' }}>
                     <div style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}>{c.icon}</div>
-                    <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.85rem', fontWeight: 700, color: '#FFFFFF', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{c.title}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', lineHeight: '1.5' }}>{c.body}</div>
+                    <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.85rem', fontWeight: 700, color: 'var(--navy)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{c.title}</div>
+                    <div style={{ fontSize: '0.8rem', color: 'rgba(0, 39, 76, 0.55)', lineHeight: '1.5' }}>{c.body}</div>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* FAQ */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '2rem' }}>
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
                 Frequently Asked Questions
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
@@ -250,9 +250,9 @@ export default function CPLPage() {
                   { q: 'What is the batch size?', a: 'Strictly capped at 25 students per session to maintain high contact ratios and personalised pacing.' },
                   { q: 'How long does CPL Ground School take?', a: 'Approximately 3 months for the complete 5-subject ground school curriculum. Weekend and weekday batches available.' },
                 ].map((faq, i) => (
-                  <div key={i}>
-                    <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.95rem', fontWeight: 700, color: '#FFFFFF', marginBottom: '0.5rem' }}>{faq.q}</h3>
-                    <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.65)', lineHeight: '1.7', margin: 0 }}>{faq.a}</p>
+                  <div key={i} className="course-faq-item">
+                    <h3 className="course-faq-q">{faq.q}</h3>
+                    <p className="course-faq-a">{faq.a}</p>
                   </div>
                 ))}
               </div>
@@ -264,17 +264,17 @@ export default function CPLPage() {
           {/* Sidebar */}
           <div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-              <div style={{ background: '#000f1e', border: '1px solid rgba(255,255,255,0.08)', padding: '2rem', borderRadius: '1px', textAlign: 'center' }}>
-                <span style={{ fontSize: '0.72rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: '0.5rem' }}>Ground School Fee</span>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '2.2rem', fontWeight: 900, color: '#D8A027' }}>₹2,70,000</div>
-                <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.3)', display: 'block', marginTop: '0.5rem' }}>All 5 DGCA subjects included</span>
-                <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(255,255,255,0.06)' }} />
-                <span style={{ fontSize: '0.72rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: '0.5rem' }}>Duration</span>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: '#FFFFFF' }}>⏱️ 3 Months</div>
-                <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(255,255,255,0.06)' }} />
-                <span style={{ fontSize: '0.72rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: '0.5rem' }}>Batch Size</span>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: '#FFFFFF' }}>👥 Max 25 Students</div>
-                <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.3)', display: 'block', marginTop: '0.5rem' }}>July 2026 batch now enrolling</span>
+              <div className="course-sidebar-card">
+                <span className="course-sidebar-label">Ground School Fee</span>
+                <div className="course-sidebar-price">₹2,70,000</div>
+                <span className="course-sidebar-note">All 5 DGCA subjects included</span>
+                <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(0, 39, 76, 0.08)' }} />
+                <span className="course-sidebar-label">Duration</span>
+                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)' }}>⏱️ 3 Months</div>
+                <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(0, 39, 76, 0.08)' }} />
+                <span className="course-sidebar-label">Batch Size</span>
+                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)' }}>👥 Max 25 Students</div>
+                <span className="course-sidebar-note">July 2026 batch now enrolling</span>
               </div>
               <LeadForm courseName="CPL Ground School" source="Course Detail: commercial-pilot-license-cpl" />
             </div>

@@ -32,7 +32,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       // On token refresh, verify the user still exists and is active
       const active = await prisma.user.findFirst({
-        where: { id: token.id, isActive: true, deletedAt: null },
+        where: { id: token.id as string, isActive: true, deletedAt: null },
         select: { id: true },
       });
       if (!active) return null; // Revoke session — user deactivated or deleted
@@ -127,9 +127,6 @@ declare module "next-auth" {
       name: string;
     };
   }
-}
-
-declare module "@auth/core/jwt" {
   interface JWT {
     id: string;
     orgId: string;

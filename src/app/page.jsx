@@ -6,8 +6,15 @@ import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import { motion, useScroll, useTransform, useSpring, useMotionValue, useInView, AnimatePresence } from 'framer-motion'
 import { getLocalBusinessSchema, getEducationalOrgSchema } from '@/utils/seo'
+import JourneyFlightPath from '@/components/JourneyFlightPath'
 import { GlowCard } from '@/components/ui/spotlight-card'
 import PremiumFooter from '@/components/PremiumFooter'
+import GlobalRouteMap from '@/components/GlobalRouteMap'
+import ProgramGrid from '@/components/ProgramGrid'
+import useFormValidation from '@/hooks/useFormValidation'
+import { validateName, validatePhone, validateEmail, validatePincode } from '@/utils/validation'
+import FormField from '@/components/FormField'
+import SubmitButton from '@/components/SubmitButton'
 
 // Premium FX components — pure UI, no backend dependencies
 import {
@@ -55,7 +62,6 @@ function FloatingNav({ onBook }) {
 
   const links = [
     { label: 'Courses', href: '/courses' },
-    { label: 'Journey', href: '#dream' },
     { label: 'Mentor', href: '#founder' },
     { label: 'Stories', href: '#stories' },
     { label: 'About', href: '/about' },
@@ -204,10 +210,9 @@ function FloatingNav({ onBook }) {
             >
               {[
                 { label: 'Courses', sub: 'Ground school & ratings', href: '/courses', prefix: '01' },
-                { label: 'Journey', sub: 'From classroom to cockpit', href: '#dream', prefix: '02' },
-                { label: 'Mentor', sub: 'Capt. Navrang Singh', href: '#founder', prefix: '03' },
-                { label: 'Stories', sub: 'Our success roster', href: '#stories', prefix: '04' },
-                { label: 'About', sub: 'Dwarka Centre details', href: '/about', prefix: '05' },
+                { label: 'Mentor', sub: 'Capt. Navrang Singh', href: '#founder', prefix: '02' },
+                { label: 'Stories', sub: 'Our success roster', href: '#stories', prefix: '03' },
+                { label: 'About', sub: 'Dwarka Centre details', href: '/about', prefix: '04' },
               ].map((l) => (
                 <motion.div
                   key={l.href}
@@ -351,6 +356,7 @@ function HeroChapter({ onBook, on3D }) {
             <Magnetic>
               <button
                 onClick={onBook}
+                className="reserve-seat-btn"
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
                   borderRadius: '999px', background: 'var(--red)', color: '#fff',
@@ -362,11 +368,12 @@ function HeroChapter({ onBook, on3D }) {
                 onMouseLeave={e => e.currentTarget.style.background = 'var(--red)'}
               >
                 Reserve your seat
-                <span style={{ display: 'inline-flex', height: '2rem', width: '2rem', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: '#ffffff', color: 'var(--red)' }}>
+                <span className="reserve-seat-arrow" style={{ display: 'inline-flex', height: '2rem', width: '2rem', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: '#ffffff', color: 'var(--red)', flexShrink: 0 }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
                 </span>
               </button>
             </Magnetic>
+            {/*
             <button
               onClick={on3D}
               className="desktop-only-inline-flex"
@@ -382,6 +389,7 @@ function HeroChapter({ onBook, on3D }) {
             >
               ✦ Enter 3D Cockpit
             </button>
+            */}
           </div>
         </motion.div>
       </motion.div>
@@ -440,19 +448,46 @@ function BoardingStrip() {
 /* ─────────────────────────────────────
    CHAPTER SHELL — Reusable editorial section
 ───────────────────────────────────── */
-function ChapterShell({ id, num, kicker, title, body, image, alt, reverse = false, dark = false, imageAccent }) {
+function ChapterImageReveal({ image, alt, imageAccent, isMobile }) {
   const ref = useRef(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
-  const y = useTransform(scrollYProgress, [0, 1], [60, -60])
-  const imgScale = useTransform(scrollYProgress, [0, 1], [1.08, 1])
+  
+  // Curtain reveal from right to left
+  const curtainTranslateX = useTransform(scrollYProgress, [0.1, 0.4], ['0%', '100%'])
+  const imgScale = useTransform(scrollYProgress, [0, 1], [1.12, 1])
+  const y = useTransform(scrollYProgress, [0, 1], [40, -40])
 
-  const bg = dark ? 'var(--navy-deep)' : 'var(--paper)'
-  const textColor = dark ? '#fff' : 'var(--navy)'
-  const bodyColor = dark ? 'rgba(255,255,255,0.7)' : 'rgba(33,33,33,0.7)'
-  const numColor = dark ? 'var(--gold)' : 'var(--red)'
-  const kickerColor = dark ? 'rgba(255,255,255,0.6)' : 'rgba(0,39,76,0.6)'
-  const lineColor = dark ? 'rgba(255,255,255,0.3)' : 'rgba(0,39,76,0.3)'
+  return (
+    <motion.div
+      ref={ref}
+      className="curtain-reveal-wrap"
+      style={{
+        y: isMobile ? 0 : y,
+        position: 'relative',
+        aspectRatio: '4/5',
+        overflow: 'hidden',
+        boxShadow: '0 20px 50px rgba(0,39,76,0.06)'
+      }}
+    >
+      <motion.div
+        className="curtain-overlay"
+        style={{ translateX: curtainTranslateX }}
+      />
+      <motion.div style={{ scale: imgScale, position: 'absolute', inset: 0 }}>
+        <Image
+          style={{ objectFit: 'cover' }}
+          src={image}
+          alt={alt}
+          fill
+          sizes="(max-width: 768px) 100vw, 50vw"
+        />
+      </motion.div>
+      {imageAccent}
+    </motion.div>
+  )
+}
 
+function ChapterShell({ id, num, kicker, title, body, image, alt, reverse = false, dark = false, imageAccent }) {
   const [isMobile, setIsMobile] = useState(false)
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -461,65 +496,83 @@ function ChapterShell({ id, num, kicker, title, body, image, alt, reverse = fals
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
+  const bg = dark ? 'var(--navy)' : 'var(--paper)'
+  const textColor = dark ? '#ffffff' : 'var(--navy)'
+  const bodyColor = dark ? 'rgba(255,255,255,0.8)' : 'rgba(0, 39, 76, 0.7)'
+  const numColor = dark ? 'var(--gold)' : 'var(--red)'
+  const kickerColor = dark ? 'rgba(255,255,255,0.6)' : 'rgba(0,39,76,0.6)'
+  const lineColor = dark ? 'rgba(255,255,255,0.3)' : 'rgba(0,39,76,0.3)'
+  const numDisplay = num.replace('Chapter ', '')
+
   return (
     <section
       id={id}
-      ref={ref}
-      style={{ position: 'relative', padding: 'clamp(3.5rem,8vw,10rem) clamp(1.5rem,5vw,4rem)', background: bg, color: textColor }}
+      style={{
+        position: 'relative',
+        padding: 'clamp(4rem, 8vw, 8rem) clamp(1.5rem, 5vw, 4rem)',
+        background: bg,
+        color: textColor,
+        overflow: 'hidden'
+      }}
     >
-      <div className="responsive-grid-chapters" style={{ maxWidth: '1280px', margin: '0 auto' }}>
+      {/* Top reveal line — draws across on section enter */}
+      <motion.div
+        initial={{ scaleX: 0 }}
+        whileInView={{ scaleX: 1 }}
+        viewport={{ once: true, amount: 0.15 }}
+        transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+        style={{
+          position: 'absolute', top: 0, left: 0, right: 0, height: '1px',
+          background: dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,39,76,0.05)',
+          transformOrigin: 'left', zIndex: 2,
+        }}
+      />
+      {/* Ghost chapter number — atmospheric depth */}
+      <div aria-hidden style={{
+        position: 'absolute', right: '-0.05em', top: '50%',
+        transform: 'translateY(-50%)',
+        fontFamily: 'var(--font-h)',
+        fontSize: 'clamp(10rem, 26vw, 22rem)',
+        fontWeight: 900, lineHeight: 1, letterSpacing: '-0.05em',
+        color: dark ? 'rgba(255,255,255,0.025)' : 'rgba(0,39,76,0.03)',
+        pointerEvents: 'none', userSelect: 'none', zIndex: 0,
+      }}>
+        {numDisplay}
+      </div>
+      <div className="responsive-grid-chapters" style={{ maxWidth: '1100px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+        {/* Image Column */}
+        <div style={{ order: reverse ? (isMobile ? 1 : 2) : 1 }}>
+          <ChapterImageReveal image={image} alt={alt} imageAccent={imageAccent} isMobile={isMobile} />
+        </div>
 
-        {/* Image side */}
-        <motion.div
-          className="chapter-img-side"
-          style={{ y: isMobile ? 0 : y, position: 'relative', aspectRatio: '4/5', overflow: 'hidden', borderRadius: '1.5rem', boxShadow: 'var(--shadow-float)', order: reverse ? 2 : 1 }}
-        >
-          <motion.div style={{ scale: imgScale, position: 'absolute', inset: 0 }}>
-            <Image
-              style={{ objectFit: 'cover' }}
-              src={image}
-              alt={alt}
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
-          </motion.div>
-          {imageAccent}
-        </motion.div>
-
-        {/* Text side */}
-        <div className="chapter-text-side" style={{ order: reverse ? 1 : 2 }}>
+        {/* Text Column */}
+        <div className="chapter-text-side" style={{ order: reverse ? (isMobile ? 2 : 1) : 2 }}>
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.5 }}
-            transition={{ duration: 0.7 }}
+            transition={{ duration: 0.6 }}
             style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}
           >
-            <span className="chapter-num" style={{ color: numColor }}>{num}</span>
-            <span style={{ height: '1px', width: '2.5rem', background: lineColor }} />
-            <span className="chapter-num" style={{ color: kickerColor }}>{kicker}</span>
+            <span className="chapter-num" style={{ color: numColor, fontWeight: 800 }}>{num}</span>
+            <span style={{ height: '1px', width: '2rem', background: lineColor }} />
+            <span className="chapter-num" style={{ color: kickerColor, fontWeight: 700, letterSpacing: '0.1em' }}>{kicker}</span>
           </motion.div>
 
           <motion.h2
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 25 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
-            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="display-xl"
-            style={{ fontSize: 'clamp(2rem,5vw,4rem)', color: textColor }}
+            style={{ fontSize: 'clamp(2rem,4.5vw,3.25rem)', color: textColor, textTransform: 'uppercase', lineHeight: '1.15' }}
           >
             {title}
           </motion.h2>
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.4 }}
-            transition={{ duration: 0.9, delay: 0.1 }}
-            style={{ marginTop: '1.5rem', maxWidth: '28rem', fontSize: '0.9375rem', lineHeight: 1.7, color: bodyColor, fontFamily: 'var(--font-b)' }}
-          >
-            {body}
-          </motion.p>
+          <p style={{ marginTop: '1.5rem', maxWidth: '28rem', fontSize: '0.95rem', lineHeight: 1.7, color: bodyColor, fontFamily: 'var(--font-b)' }}>
+            <StaggerText text={body} />
+          </p>
         </div>
       </div>
     </section>
@@ -527,12 +580,12 @@ function ChapterShell({ id, num, kicker, title, body, image, alt, reverse = fals
 }
 
 /* ─────────────────────────────────────
-   INDIVIDUAL CHAPTER SECTIONS
+   INDIVIDUAL CHAPTER SECTIONS (8 CHAPTER STORYTELLING)
 ───────────────────────────────────── */
 function DreamChapter() {
   return (
     <ChapterShell
-      id="dream"
+      id="chapter-dream"
       num="Chapter 01"
       kicker="Dream"
       title={<>The sky was never the limit. <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--red)' }}>It was the invitation.</span></>}
@@ -540,7 +593,7 @@ function DreamChapter() {
       image="/footage/clouds-above.jpg"
       alt="Layered clouds at golden hour seen from above"
       imageAccent={
-        <div style={{ position: 'absolute', bottom: '1.5rem', left: '1.5rem', right: '1.5rem', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', color: 'rgba(255,255,255,0.9)' }}>
+        <div style={{ position: 'absolute', bottom: '1.5rem', left: '1.5rem', right: '1.5rem', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', color: 'rgba(255,255,255,0.9)', zIndex: 10 }}>
           <div>
             <div style={{ fontSize: '0.625rem', letterSpacing: '0.3em', textTransform: 'uppercase', opacity: 0.7 }}>Altitude</div>
             <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.875rem', fontWeight: 700 }}>36,000 ft</div>
@@ -555,36 +608,51 @@ function DreamChapter() {
   )
 }
 
-function LearnChapter() {
+function GroundSchoolChapter() {
   return (
     <ChapterShell
-      id="learn"
+      id="chapter-ground"
       num="Chapter 02"
-      kicker="Learn"
+      kicker="Ground School"
       title={<>Concepts that <span style={{ color: 'var(--gold)' }}>stick at 40,000 ft.</span></>}
-      body="Capt. Navrang Singh strips DGCA syllabi down to first principles. Air Regulations, Technical General, Navigation, Meteorology, RTR — taught the way you'll actually use them in the cockpit."
+      body="Capt. Navrang Singh strips DGCA CPL/ATPL syllabi down to first principles. Air Regulations, Technical General, Navigation, Meteorology, RTR — taught the way you'll actually use them in the cockpit."
       image="/footage/classroom.jpg"
-      alt="DGCA ground class at Airborne Aviation"
+      alt="DGCA ground class at Airborne Aviation Dwarka campus"
       reverse
     />
   )
 }
 
-function TrainChapter() {
+function LearningChapter() {
   return (
     <ChapterShell
-      id="train"
+      id="chapter-learning"
       num="Chapter 03"
-      kicker="Train"
+      kicker="Learning"
+      title={<>Then the runway <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--red)' }}>lets go.</span></>}
+      body="CPL flying training across partner schools in India and abroad. Practical flight pathway mentorship. From your first solo takeoff to the commercial license issue."
+      image="/footage/aircraft-ascending.jpg"
+      alt="Commercial pilot runway takeoff climb"
+    />
+  )
+}
+
+function SimulatorChapter() {
+  return (
+    <ChapterShell
+      id="chapter-sim"
+      num="Chapter 04"
+      kicker="Simulator"
       title={<>Procedures, repeated. <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>Until they're instinct.</span></>}
-      body="In-house Airbus A320 simulator. CASS / COMPASS / ADAPT pre-screening. GD & PI mocks run by line captains. The moment you sit in front of an airline panel, nothing should feel new."
+      body="In-house Airbus A320 cockpit simulator training. Repeat multi-crew procedures, automate flight management inputs, and master standard callouts before selection."
       image="/footage/simulator-training.jpg"
-      alt="Pilot trainees in Airbus A320 flight simulator"
+      alt="Trainees repeating procedures in Airbus A320 simulator"
+      reverse
       dark
       imageAccent={
         <div
           className="glass-dark"
-          style={{ position: 'absolute', top: '1.5rem', left: '1.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', borderRadius: '999px', padding: '0.375rem 0.75rem', fontSize: '0.625rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#fff' }}
+          style={{ position: 'absolute', top: '1.5rem', left: '1.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', borderRadius: '999px', padding: '0.375rem 0.75rem', fontSize: '0.625rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#fff', zIndex: 10 }}
         >
           <span className="animate-pulse" style={{ height: '6px', width: '6px', borderRadius: '50%', background: 'var(--red)', display: 'inline-block' }} />
           Live · A320 SIM
@@ -594,42 +662,295 @@ function TrainChapter() {
   )
 }
 
-function FlyChapter() {
+function AirlineSelectionChapter() {
   return (
     <ChapterShell
-      id="fly"
-      num="Chapter 04"
-      kicker="Fly"
-      title={<>Then the runway <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--red)' }}>lets go.</span></>}
-      body="CPL flying training across partner schools. PPL pathways. ATPL ground for the next type rating. From your first solo to the four stripes on your shoulder — one continuous mentorship."
-      image="/footage/aircraft-ascending.jpg"
-      alt="Commercial jet ascending through high-altitude clouds"
-      reverse
+      id="chapter-selection"
+      num="Chapter 05"
+      kicker="Airline Selection"
+      title={<>The finishing <span style={{ color: 'var(--gold)' }}>line.</span></>}
+      body="COMPASS / CASS / ADAPT pre-screening assessments. Group discussions and panel interviews. Mocks coached directly by active airline captains."
+      image="/campus/simulator_real.jpg"
+      alt="Airborne Aviation simulator flight deck preparation"
     />
   )
 }
 
-function HiredChapter() {
+function CockpitChapter() {
   return (
     <ChapterShell
-      id="hired"
-      num="Chapter 05"
-      kicker="Get hired"
-      title={<>Four stripes. <span style={{ color: 'var(--gold)' }}>One uniform.</span></>}
+      id="chapter-cockpit"
+      num="Chapter 06"
+      kicker="Cockpit"
+      title={<>Four stripes. <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--red)' }}>One uniform.</span></>}
       body="Ruzal Dhral — IndiGo Cadet. Capt. Nipun Singh — Air India, restarted at 36. Capt. Himanish Sagwal — Emirates. The success club isn't a marketing slide. It's a roster."
-      image="/campus/simulator_real.jpg"
-      alt="Airborne Aviation A320 Simulator — Airline preparation"
+      image="/footage/pilot-portrait.jpg"
+      alt="Success pilot graduate in uniform cockpit"
+      reverse
       dark
       imageAccent={
         <div
           className="glass-dark"
-          style={{ position: 'absolute', bottom: '1.5rem', right: '1.5rem', borderRadius: '1rem', padding: '0.75rem 1rem', color: '#fff' }}
+          style={{ position: 'absolute', bottom: '1.5rem', right: '1.5rem', borderRadius: '1rem', padding: '0.75rem 1rem', color: '#fff', zIndex: 10 }}
         >
           <div style={{ fontSize: '0.625rem', letterSpacing: '0.3em', textTransform: 'uppercase', opacity: 0.7 }}>Class of 2024</div>
           <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 700, marginTop: '0.125rem' }}>IndiGo · Air India · Emirates</div>
         </div>
       }
     />
+  )
+}
+
+function CareerChapter() {
+  return (
+    <ChapterShell
+      id="chapter-career"
+      num="Chapter 07"
+      kicker="Career"
+      title={<>A lifetime in <span style={{ color: 'var(--gold)' }}>the skies.</span></>}
+      body="Aviation is a lifelong 35-year profession. From first officer to command upgrades, transitioning to widebody jets, and flying international routes."
+      image="/footage/aircraft-ascending.jpg"
+      alt="Widebody jet rising through clouds"
+    />
+  )
+}
+
+function StartJourneyChapter({ onBook }) {
+  return (
+    <section
+      id="chapter-start"
+      style={{
+        position: 'relative',
+        padding: 'clamp(5rem, 10vw, 8rem) clamp(1.5rem, 5vw, 4rem)',
+        background: 'var(--navy)',
+        color: '#ffffff',
+        overflow: 'hidden',
+        textAlign: 'center'
+      }}
+    >
+      <div style={{ maxWidth: '750px', margin: '0 auto', position: 'relative', zIndex: 10 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 0.6 }}
+          style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}
+        >
+          <span className="chapter-num" style={{ color: 'var(--gold)', fontWeight: 800 }}>Chapter 08</span>
+          <span style={{ height: '1px', width: '2rem', background: 'rgba(255,255,255,0.3)' }} />
+          <span className="chapter-num" style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 700, letterSpacing: '0.1em' }}>Starts Here</span>
+        </motion.div>
+
+        <motion.h2
+          initial={{ opacity: 0, y: 25 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="display-xl"
+          style={{ fontSize: 'clamp(2.2rem,5vw,3.75rem)', color: '#ffffff', textTransform: 'uppercase', lineHeight: '1.15', marginBottom: '1.5rem' }}
+        >
+          Your cockpit is <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>waiting.</span>
+        </motion.h2>
+
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.8, delay: 0.1 }}
+          style={{ maxWidth: '35rem', margin: '0 auto 2.5rem', fontSize: '1rem', lineHeight: 1.7, color: 'rgba(255,255,255,0.85)', fontFamily: 'var(--font-b)' }}
+        >
+          Visit our Dwarka flight academy center, sit in on a live ground school batch, or experience the A320 simulator cockpit. Take the first step.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          style={{ display: 'inline-flex', flexWrap: 'wrap', gap: '1.25rem', justifyContent: 'center' }}
+        >
+          <button
+            onClick={onBook}
+            className="btn btn-primary"
+            style={{ padding: '1rem 2rem', fontSize: '0.9rem', cursor: 'pointer' }}
+          >
+            Request Simulator Demo Cockpit
+          </button>
+          <a
+            href="tel:+919953777320"
+            className="btn btn-ghost"
+            style={{ padding: '1rem 2.25rem', fontSize: '0.9rem', textDecoration: 'none', background: 'rgba(255,255,255,0.06)', color: '#fff', borderColor: 'rgba(255,255,255,0.15)' }}
+          >
+            Call Admissions Team
+          </a>
+        </motion.div>
+      </div>
+    </section>
+  )
+}
+
+/* ─────────────────────────────────────
+   STORYTELLING PRIMITIVES
+───────────────────────────────────── */
+function StaggerText({ text }) {
+  const words = text.split(' ')
+  return (
+    <>
+      {words.map((word, i) => (
+        <motion.span
+          key={i}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.45, delay: i * 0.018 }}
+          style={{ display: 'inline' }}
+        >
+          {word}{i < words.length - 1 ? ' ' : ''}
+        </motion.span>
+      ))}
+    </>
+  )
+}
+
+function ChapterDivider({ fromDark = false, toDark = false, chapterNum = '02', chapterLabel = '' }) {
+  const ref = useRef(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
+  const lineProgress = useTransform(scrollYProgress, [0.15, 0.6], [0, 1])
+
+  const fromBg = fromDark ? 'var(--navy)' : 'var(--paper)'
+  const toBg = toDark ? 'var(--navy)' : 'var(--paper)'
+  const lineBase = fromDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,39,76,0.07)'
+  const lineFill = toDark ? 'var(--gold)' : 'var(--red)'
+  const labelBg = fromDark ? 'var(--navy)' : 'var(--paper)'
+  const labelColor = fromDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,39,76,0.22)'
+
+  return (
+    <div
+      ref={ref}
+      style={{
+        position: 'relative', height: '88px',
+        background: `linear-gradient(to bottom, ${fromBg} 50%, ${toBg} 50%)`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        overflow: 'hidden', zIndex: 5,
+      }}
+    >
+      <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: '1px', background: lineBase }}>
+        <motion.div style={{ height: '100%', background: lineFill, scaleX: lineProgress, transformOrigin: 'left' }} />
+      </div>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true, amount: 0.8 }}
+        transition={{ duration: 0.45 }}
+        style={{
+          position: 'relative', zIndex: 2,
+          background: labelBg, padding: '0.4rem 1.5rem',
+          fontFamily: 'var(--font-h)', fontSize: '0.6rem', fontWeight: 700,
+          letterSpacing: '0.3em', textTransform: 'uppercase',
+          color: labelColor, whiteSpace: 'nowrap',
+        }}
+      >
+        Chapter {chapterNum} · {chapterLabel}
+      </motion.div>
+    </div>
+  )
+}
+
+const CHAPTER_META = {
+  'chapter-dream':     { num: '01', label: 'Dream' },
+  'chapter-ground':    { num: '02', label: 'Ground School' },
+  'chapter-learning':  { num: '03', label: 'Learning' },
+  'chapter-sim':       { num: '04', label: 'Simulator' },
+  'chapter-selection': { num: '05', label: 'Selection' },
+  'chapter-cockpit':   { num: '06', label: 'Cockpit' },
+  'chapter-career':    { num: '07', label: 'Career' },
+  'chapter-start':     { num: '08', label: 'Your Journey' },
+}
+
+function FloatingChapterCounter({ activeChapter, visible }) {
+  const meta = CHAPTER_META[activeChapter] || CHAPTER_META['chapter-dream']
+  return (
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          className="floating-chapter-counter"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 12 }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={activeChapter}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.22 }}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            >
+              <span style={{ color: 'var(--red)', fontWeight: 800 }}>{meta.num}</span>
+              <span style={{ opacity: 0.35 }}>/</span>
+              <span style={{ opacity: 0.35 }}>08</span>
+              <span style={{ opacity: 0.15, margin: '0 0.15rem', fontSize: '0.5rem' }}>●</span>
+              <span style={{ opacity: 0.65 }}>{meta.label}</span>
+            </motion.span>
+          </AnimatePresence>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
+/* ─────────────────────────────────────
+   PILOT JOURNEY UTILITIES — Sidebar & Connectors
+───────────────────────────────────── */
+const JOURNEY_CHAPTERS = [
+  { id: 'chapter-dream', label: 'Dream' },
+  { id: 'chapter-ground', label: 'Ground School' },
+  { id: 'chapter-learning', label: 'Learning' },
+  { id: 'chapter-sim', label: 'Simulator' },
+  { id: 'chapter-selection', label: 'Selection' },
+  { id: 'chapter-cockpit', label: 'Cockpit' },
+  { id: 'chapter-career', label: 'Career' },
+  { id: 'chapter-start', label: 'Takeoff' },
+]
+
+function TimelineConnector() {
+  const ref = useRef(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
+  const scaleY = useTransform(scrollYProgress, [0, 0.5], [0, 1])
+
+  return (
+    <div ref={ref} className="timeline-section-connector">
+      <motion.div className="timeline-section-connector-fill" style={{ scaleY }} />
+    </div>
+  )
+}
+
+function JourneySidebar({ activeChapter, visible }) {
+  const scrollToSection = (id) => {
+    const el = document.getElementById(id)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }
+
+  return (
+    <div className={`journey-progress-sidebar ${visible ? 'visible' : ''}`}>
+      {JOURNEY_CHAPTERS.map((ch, idx) => (
+        <button
+          key={ch.id}
+          className={`journey-sidebar-node ${activeChapter === ch.id ? 'active' : ''}`}
+          onClick={() => scrollToSection(ch.id)}
+          aria-label={`Go to ${ch.label}`}
+        >
+          <div className="journey-sidebar-dot" />
+          <span className="journey-sidebar-label">
+            {String(idx + 1).padStart(2, '0')} {ch.label}
+          </span>
+        </button>
+      ))}
+    </div>
   )
 }
 
@@ -1210,9 +1531,24 @@ const SUCCESS_STUDENTS = [
 
 function TestimonialsSection() {
   const [activeIndex, setActiveIndex] = useState(0)
+  const [students, setStudents] = useState(SUCCESS_STUDENTS)
   const carouselRef = useRef(null)
 
-  if (SUCCESS_STUDENTS.length < 3) {
+  useEffect(() => {
+    fetch('/api/public-proxy/testimonials?limit=6')
+      .then(r => { if (!r.ok) throw new Error('fail'); return r.json() })
+      .then(d => {
+        if (d.data && Array.isArray(d.data) && d.data.length > 0) {
+          setStudents(d.data.map((t, idx) => ({
+            name: t.authorName || 'Airborne Alumnus',
+            image: t.metadata?.image || SUCCESS_STUDENTS[idx % SUCCESS_STUDENTS.length].image
+          })))
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  if (students.length < 3) {
     return null
   }
 
@@ -1256,7 +1592,7 @@ function TestimonialsSection() {
             onScroll={handleScroll}
             className="success-club-carousel"
           >
-            {SUCCESS_STUDENTS.map((s, i) => (
+            {students.map((s, i) => (
               <motion.figure
                 key={`${s.name}-${i}`}
                 className="success-club-card"
@@ -1408,20 +1744,28 @@ function FinalCTA() {
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  // ✅ PRESERVED: existing /api/lead backend integration
+  const { values, handleChange, handleBlur, validate, isValid } = useFormValidation(
+    { name: '', phone: '', email: '', pincode: '' },
+    { name: validateName, phone: validatePhone, email: validateEmail, pincode: validatePincode }
+  )
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!validate()) return
     setLoading(true)
-    const form = e.target
-    const name = form.elements['cta-name'].value
-    const phone = form.elements['cta-phone'].value
-    const email = form.elements['cta-email'].value
-    const pincode = form.elements['cta-pincode'].value
+    const urlParams = new URLSearchParams(window.location.search)
+    const utm_source = urlParams.get('utm_source') || undefined
+    const utm_medium = urlParams.get('utm_medium') || undefined
+    const utm_campaign = urlParams.get('utm_campaign') || undefined
+    const utm_term = urlParams.get('utm_term') || undefined
+    const utm_content = urlParams.get('utm_content') || undefined
+    const referrer = document.referrer || undefined
+    const landing_page = window.location.href || undefined
     try {
       await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, phone, email, pincode, course: 'DGCA CPL Ground School', source: 'Homepage Final CTA' })
+        body: JSON.stringify({ ...values, course: 'DGCA CPL Ground School', source: 'Homepage Final CTA', utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page })
       })
     } catch (_) { }
     setLoading(false)
@@ -1454,7 +1798,6 @@ function FinalCTA() {
             Just an honest look at the system that's been sending pilots into airline cockpits for fifteen years.
           </p>
 
-          {/* ✅ PRESERVED: form posts to /api/lead */}
           {submitted ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.96 }}
@@ -1474,39 +1817,64 @@ function FinalCTA() {
             <form
               onSubmit={handleSubmit}
               className="cta-form"
+              noValidate
             >
-              <input
+              <FormField
                 id="cta-name"
                 type="text"
                 placeholder="Full name"
+                value={values.name}
+                onChange={(v) => handleChange('name', v)}
+                onBlur={() => handleBlur('name')}
                 required
               />
-              <input
+              <FormField
                 id="cta-phone"
                 type="tel"
                 placeholder="Mobile number"
+                value={values.phone}
+                onChange={(v) => handleChange('phone', v)}
+                onBlur={() => handleBlur('phone')}
                 required
+                maxLength={10}
               />
-              <input
+              <FormField
                 id="cta-email"
                 type="email"
                 placeholder="Email address"
+                value={values.email}
+                onChange={(v) => handleChange('email', v)}
+                onBlur={() => handleBlur('email')}
                 required
               />
-              <input
+              <FormField
                 id="cta-pincode"
                 type="text"
                 placeholder="PIN code / Zip code"
+                value={values.pincode}
+                onChange={(v) => handleChange('pincode', v)}
+                onBlur={() => handleBlur('pincode')}
                 required
+                maxLength={6}
               />
-              <button
+              <SubmitButton
                 type="submit"
-                disabled={loading}
+                loading={loading}
+                disabled={!isValid}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                  borderRadius: '0.6rem', background: 'var(--red)', color: '#fff',
+                  padding: '0.875rem 2rem', fontSize: '0.95rem', fontWeight: 700,
+                  fontFamily: 'var(--font-h)', letterSpacing: '0.02em',
+                  border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer',
+                  whiteSpace: 'nowrap', height: '3.25rem',
+                  boxShadow: '0 8px 20px rgba(219, 39, 39, 0.4)',
+                }}
                 onMouseEnter={e => e.currentTarget.style.background = 'var(--red-dark)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'var(--red)'}
               >
-                {loading ? 'Sending…' : <>Reserve seat <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></>}
-              </button>
+                <>Reserve seat <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></>
+              </SubmitButton>
             </form>
           )}
 
@@ -1616,27 +1984,36 @@ function SiteFooter() {
 function BookingModal({ open, onClose }) {
   const [status, setStatus] = useState('idle')
 
-  // ✅ PRESERVED: /api/lead backend integration
+  const { values, handleChange, handleBlur, validate, isValid, setValues } = useFormValidation(
+    { name: '', phone: '', email: '', pincode: '' },
+    { name: validateName, phone: validatePhone, email: validateEmail, pincode: validatePincode }
+  )
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!validate()) return
     setStatus('loading')
-    const name = e.target.elements['m-name'].value
-    const phone = e.target.elements['m-phone'].value
-    const email = e.target.elements['m-email'].value
-    const pincode = e.target.elements['m-pincode'].value
+    const urlParams = new URLSearchParams(window.location.search)
+    const utm_source = urlParams.get('utm_source') || undefined
+    const utm_medium = urlParams.get('utm_medium') || undefined
+    const utm_campaign = urlParams.get('utm_campaign') || undefined
+    const utm_term = urlParams.get('utm_term') || undefined
+    const utm_content = urlParams.get('utm_content') || undefined
+    const referrer = document.referrer || undefined
+    const landing_page = window.location.href || undefined
     try {
       await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, phone, email, pincode, course: 'DGCA CPL Ground School', source: 'Homepage Modal' })
+        body: JSON.stringify({ ...values, course: 'DGCA CPL Ground School', source: 'Homepage Modal', utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page })
       })
     } catch (_) { }
     setStatus('success')
   }
 
   useEffect(() => {
-    if (!open) setStatus('idle')
-  }, [open])
+    if (!open) { setStatus('idle'); setValues({ name: '', phone: '', email: '', pincode: '' }) }
+  }, [open, setValues])
 
   useEffect(() => {
     const esc = (e) => { if (e.key === 'Escape') onClose() }
@@ -1686,28 +2063,58 @@ function BookingModal({ open, onClose }) {
                 <p style={{ fontFamily: 'var(--font-b)', fontSize: '0.82rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.65, marginBottom: '2rem' }}>
                   A 90-minute introduction with Capt. Navrang Singh. Free, no commitment.
                 </p>
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
-                  {[
-                    { id: 'm-name', type: 'text', placeholder: 'Full Name' },
-                    { id: 'm-phone', type: 'tel', placeholder: 'Phone Number' },
-                    { id: 'm-email', type: 'email', placeholder: 'Email Address' },
-                    { id: 'm-pincode', type: 'text', placeholder: 'PIN Code / Zip Code' },
-                  ].map(f => (
-                    <input key={f.id} id={f.id} type={f.type} placeholder={f.placeholder} required style={{
-                      background: '#000810', border: 'none', outline: 'none',
-                      padding: '1.2rem 1.4rem', fontFamily: 'var(--font-b)',
-                      fontSize: '0.88rem', color: '#fff', width: '100%',
-                    }} />
-                  ))}
-                  <button type="submit" disabled={status === 'loading'} style={{
-                    fontFamily: 'var(--font-h)', fontSize: '0.65rem', fontWeight: 800,
-                    letterSpacing: '0.14em', textTransform: 'uppercase',
-                    background: 'var(--red)', color: '#fff',
-                    border: 'none', padding: '1.2rem 1.4rem',
-                    cursor: 'pointer',
-                  }}>
-                    {status === 'loading' ? 'Sending…' : 'Reserve Seat →'}
-                  </button>
+                <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <FormField
+                    id="m-name"
+                    type="text"
+                    placeholder="Full Name"
+                    value={values.name}
+                    onChange={(v) => handleChange('name', v)}
+                    onBlur={() => handleBlur('name')}
+                    required
+                  />
+                  <FormField
+                    id="m-phone"
+                    type="tel"
+                    placeholder="Phone Number"
+                    value={values.phone}
+                    onChange={(v) => handleChange('phone', v)}
+                    onBlur={() => handleBlur('phone')}
+                    required
+                    maxLength={10}
+                  />
+                  <FormField
+                    id="m-email"
+                    type="email"
+                    placeholder="Email Address"
+                    value={values.email}
+                    onChange={(v) => handleChange('email', v)}
+                    onBlur={() => handleBlur('email')}
+                    required
+                  />
+                  <FormField
+                    id="m-pincode"
+                    type="text"
+                    placeholder="PIN Code / Zip Code"
+                    value={values.pincode}
+                    onChange={(v) => handleChange('pincode', v)}
+                    onBlur={() => handleBlur('pincode')}
+                    required
+                    maxLength={6}
+                  />
+                  <SubmitButton
+                    type="submit"
+                    loading={status === 'loading'}
+                    disabled={!isValid}
+                    style={{
+                      fontFamily: 'var(--font-h)', fontSize: '0.65rem', fontWeight: 800,
+                      letterSpacing: '0.14em', textTransform: 'uppercase',
+                      background: 'var(--red)', color: '#fff',
+                      border: 'none', padding: '1.2rem 1.4rem',
+                    }}
+                  >
+                    Reserve Seat →
+                  </SubmitButton>
                 </form>
               </>
             )}
@@ -2362,6 +2769,7 @@ export default function HomePage() {
     )
   }
 
+
   return (
     <>
       {/* Structured data — preserved */}
@@ -2388,18 +2796,14 @@ export default function HomePage() {
         {/* Airline partner marquee */}
         <AirlineMarquee />
 
-        {/* Chapter journey */}
-        <DreamChapter />
-        <LearnChapter />
-        <TrainChapter />
-        <FlyChapter />
-        <HiredChapter />
+        {/* Cinematic flight-path journey — 8 chapters, scroll-driven aircraft */}
+        <JourneyFlightPath onBook={openBooking} />
 
-        {/* Journey route map */}
-        <JourneyMap />
+        {/* Global route map — Redesigned */}
+        <GlobalRouteMap />
 
-        {/* Courses grid */}
-        <CoursesSection />
+        {/* Program grid — Redesigned 4×2 */}
+        <ProgramGrid />
 
         <AirborneAdvantage />
         <PilotCareerOutlook />

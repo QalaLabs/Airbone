@@ -85,105 +85,105 @@ export default function FlightDispatcherPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <Header />
-      <main style={{ minHeight: '80vh', background: '#000810', padding: '4rem var(--margin) 6rem var(--margin)' }}>
+      <main className="course-main-wrapper" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
 
         {/* Breadcrumb */}
-        <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginBottom: '3rem', fontFamily: 'var(--font-h)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-          <Link href="/" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }}>Home</Link>
+        <div className="course-breadcrumb">
+          <Link href="/" >Home</Link>
           <span>/</span>
-          <Link href="/courses" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }}>Courses</Link>
+          <Link href="/courses" >Courses</Link>
           <span>/</span>
-          <span style={{ color: '#D8A027' }}>Flight Dispatcher</span>
+          <span className="current">Flight Dispatcher</span>
         </div>
 
         {/* Hero Image */}
-        <div className="course-hero-image-wrap">
+        <div className="course-hero-image-wrap" style={{ borderRadius: '8px' }}>
           <img src="/footage/classroom.jpg" alt="Flight Dispatcher course at Airborne Aviation Academy, Dwarka Delhi" className="course-hero-image" />
-          <div className="course-hero-overlay" />
+          <div className="course-hero-overlay" style={{ background: 'linear-gradient(to top, rgba(0, 39, 76, 0.4) 0%, transparent 100%)' }} />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '4rem' }}>
+        <div className="course-details-layout">
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
 
             <div>
-              <span className="badge" style={{ borderColor: '#DB241E', background: 'rgba(219,36,30,0.08)', color: '#DB241E' }}>
+              <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
                 📍 Dwarka, Delhi · 3–6 Months · ₹1–2 Lakh
               </span>
-              <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1' }}>
+              <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
                 Flight Dispatcher Course — Aviation Operations Training, Delhi
               </h1>
-              <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '1.05rem', lineHeight: '1.7' }}>
+              <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
                 Flight Dispatchers co-authorise every commercial flight alongside the captain — a critical, licenced operations role at every airline. Airborne Aviation Academy's Flight Dispatcher course prepares candidates for the DGCA Flight Dispatcher License (FDL) examination, covering flight planning, meteorology, air regulations, and aircraft performance.
               </p>
             </div>
 
             {/* What FD Does */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1rem' }}>
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
                 What Does a Flight Dispatcher Do?
               </h2>
-              <p style={{ fontSize: '0.92rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.7', margin: '0 0 1.25rem 0' }}>
+              <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: '0 0 1.25rem 0' }}>
                 A licensed Flight Dispatcher (also called a Flight Operations Officer or Airline Dispatcher) co-signs every flight plan along with the aircraft captain. They are responsible for route planning, fuel calculations, alternate aerodrome selection, weather briefing, NOTAM review, and ATC slot coordination — all before the aircraft moves.
               </p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
                 {['Co-signs every flight plan', 'Monitors weather en-route', 'Coordinates fuel load', 'Reviews all NOTAMs', 'Manages ATC slots', 'Supports in-flight decisions'].map((item, i) => (
-                  <div key={i} style={{ background: '#00162e', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '4px', padding: '0.75rem 1rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ color: '#D8A027', fontWeight: 700 }}>✓</span> {item}
+                  <div key={i} style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', border: '1px solid rgba(0, 39, 76, 0.08)', borderRadius: '4px', padding: '0.75rem 1rem', fontSize: '0.8rem', color: 'rgba(0, 39, 76, 0.75)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ color: 'var(--navy)', fontWeight: 700 }}>✓</span> {item}
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Eligibility */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
                 Flight Dispatcher Eligibility
               </h2>
-              <ul style={{ paddingLeft: '1.25rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <ul className="course-list">
                 {[
                   '10+2 from any stream (no Physics/Maths requirement)',
                   'Minimum age: 18 years',
                   'Basic English communication ability',
                   'No prior aviation experience required — course starts from fundamentals',
                 ].map((item, i) => (
-                  <li key={i} style={{ fontSize: '0.92rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.6' }}>{item}</li>
+                  <li key={i} className="course-list-item">{item}</li>
                 ))}
               </ul>
             </div>
 
             {/* Curriculum */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
                 Flight Dispatcher Training Curriculum
               </h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+              <div className="course-subject-grid">
                 {CURRICULUM.map((s, i) => (
-                  <div key={i} style={{ background: '#00162e', borderLeft: '3px solid #DB241E', padding: '1rem 1.25rem' }}>
-                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#FFFFFF', marginBottom: '0.25rem' }}>{s.subject}</div>
-                    <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)' }}>{s.detail}</div>
+                  <div key={i} className="course-subject-card">
+                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--navy)', marginBottom: '0.25rem' }}>{s.subject}</div>
+                    <div className="course-subject-card-detail">{s.detail}</div>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Career */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
                 Career as a Flight Dispatcher
               </h2>
-              <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', overflow: 'hidden' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem', fontFamily: 'var(--font-b)' }}>
+              <div className="course-table-wrap" style={{ overflowX: 'auto' }}>
+                <table className="course-table" style={{ minWidth: "600px" }}>
                   <thead>
-                    <tr style={{ background: '#00162e', color: 'rgba(255,255,255,0.6)', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
-                      <th style={{ padding: '1rem 1.25rem', textAlign: 'left' }}>Role</th>
-                      <th style={{ padding: '1rem 1.25rem', textAlign: 'left' }}>Typical Employer</th>
+                    <tr>
+                      <th>Role</th>
+                      <th>Typical Employer</th>
                     </tr>
                   </thead>
                   <tbody>
                     {CAREER_OPTIONS.map((row, i) => (
-                      <tr key={i} style={{ borderTop: '1px solid rgba(255,255,255,0.04)', background: i % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'transparent' }}>
-                        <td style={{ padding: '1rem 1.25rem', color: '#FFFFFF', fontWeight: 600 }}>{row.role}</td>
-                        <td style={{ padding: '1rem 1.25rem', color: 'rgba(255,255,255,0.65)' }}>{row.employer}</td>
+                      <tr key={i}>
+                        <td style={{ padding: '1rem 1.25rem', color: 'var(--navy)', fontWeight: 600 }}>{row.role}</td>
+                        <td style={{ padding: '1rem 1.25rem', color: 'rgba(0, 39, 76, 0.65)' }}>{row.employer}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -192,8 +192,8 @@ export default function FlightDispatcherPage() {
             </div>
 
             {/* FAQ */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '2rem' }}>
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
                 Frequently Asked Questions
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
@@ -203,9 +203,9 @@ export default function FlightDispatcherPage() {
                   { q: 'Can I become a Flight Dispatcher without a pilot license?', a: 'Yes. Flight Dispatcher training is open to 10+2 graduates of any stream. No flying license is required. The dispatcher works from the airline operations centre, not the cockpit.' },
                   { q: 'What is the salary of a Flight Dispatcher in India?', a: 'Entry-level Flight Dispatchers earn ₹25,000–₹45,000/month at Indian airlines. Senior dispatchers with 5+ years experience and multi-type endorsements earn ₹60,000–₹1,20,000/month.' },
                 ].map((faq, i) => (
-                  <div key={i}>
-                    <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.95rem', fontWeight: 700, color: '#FFFFFF', marginBottom: '0.5rem' }}>{faq.q}</h3>
-                    <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.65)', lineHeight: '1.7', margin: 0 }}>{faq.a}</p>
+                  <div key={i} className="course-faq-item">
+                    <h3 className="course-faq-q">{faq.q}</h3>
+                    <p className="course-faq-a">{faq.a}</p>
                   </div>
                 ))}
               </div>
@@ -217,16 +217,16 @@ export default function FlightDispatcherPage() {
           {/* Sidebar */}
           <div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-              <div style={{ background: '#000f1e', border: '1px solid rgba(255,255,255,0.08)', padding: '2rem', borderRadius: '1px', textAlign: 'center' }}>
-                <span style={{ fontSize: '0.72rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: '0.5rem' }}>Course Fee</span>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '2.2rem', fontWeight: 900, color: '#D8A027' }}>₹1–2L</div>
-                <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.3)', display: 'block', marginTop: '0.5rem' }}>DGCA exam prep included</span>
-                <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(255,255,255,0.06)' }} />
-                <span style={{ fontSize: '0.72rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: '0.5rem' }}>Duration</span>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: '#FFFFFF' }}>⏱️ 3–6 Months</div>
-                <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(255,255,255,0.06)' }} />
-                <span style={{ fontSize: '0.72rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: '0.5rem' }}>Min Eligibility</span>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', fontWeight: 700, color: '#FFFFFF' }}>10+2 Any Stream</div>
+              <div className="course-sidebar-card">
+                <span className="course-sidebar-label">Course Fee</span>
+                <div className="course-sidebar-price">₹1–2L</div>
+                <span className="course-sidebar-note">DGCA exam prep included</span>
+                <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(0, 39, 76, 0.08)' }} />
+                <span className="course-sidebar-label">Duration</span>
+                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)' }}>⏱️ 3–6 Months</div>
+                <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(0, 39, 76, 0.08)' }} />
+                <span className="course-sidebar-label">Min Eligibility</span>
+                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', fontWeight: 700, color: 'var(--navy)' }}>10+2 Any Stream</div>
               </div>
               <LeadForm courseName="Flight Dispatcher" source="Course Detail: flight-dispatcher" />
             </div>

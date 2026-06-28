@@ -20,14 +20,14 @@ export default function CoursePageFooter({
     fontFamily: 'var(--font-h)',
     fontSize: '1.25rem',
     fontWeight: 800,
-    color: '#D8A027',
-    letterSpacing: '0.1em',
+    color: 'var(--navy)',
+    letterSpacing: '0.08em',
     textTransform: 'uppercase',
     marginBottom: '1.5rem',
   }
 
   const dividerStyle = {
-    borderTop: '1px solid rgba(255,255,255,0.08)',
+    borderTop: '1px solid rgba(0, 39, 76, 0.08)',
     paddingTop: '2.5rem',
   }
 
@@ -36,8 +36,8 @@ export default function CoursePageFooter({
       {/* ── WhatsApp CTA ─────────────────────────────────── */}
       <div style={dividerStyle}>
         <div style={{
-          background: 'rgba(37,211,102,0.06)',
-          border: '1px solid rgba(37,211,102,0.2)',
+          background: 'rgba(37,211,102,0.05)',
+          border: '1px solid rgba(37,211,102,0.18)',
           borderRadius: '6px',
           padding: '1.75rem 2rem',
           display: 'flex',
@@ -50,10 +50,10 @@ export default function CoursePageFooter({
             <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.8rem', color: 'rgba(37,211,102,0.8)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '0.4rem' }}>
               Prefer WhatsApp?
             </div>
-            <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 800, color: '#FFFFFF' }}>
+            <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 800, color: 'var(--navy)' }}>
               Message us — response within 2 minutes
             </div>
-            <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.25rem' }}>
+            <div style={{ fontSize: '0.78rem', color: 'rgba(0, 39, 76, 0.55)', marginTop: '0.25rem' }}>
               +91 9953 777 320 · Dwarka Admissions
             </div>
           </div>
@@ -127,20 +127,20 @@ export default function CoursePageFooter({
               target={c.href.startsWith('http') ? '_blank' : undefined}
               rel={c.href.startsWith('http') ? 'noopener noreferrer' : undefined}
               style={{
-                background: '#00162e',
-                border: '1px solid rgba(255,255,255,0.06)',
+                background: '#ffffff',
+                border: '1px solid rgba(0,39,76,0.08)',
                 padding: '1.25rem',
                 borderRadius: '4px',
                 textDecoration: 'none',
                 display: 'block',
-                transition: 'border-color 0.2s',
+                transition: 'border-color 0.2s, box-shadow 0.2s',
               }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(216,160,39,0.3)'}
-              onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(216,160,39,0.3)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,39,76,0.04)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(0,39,76,0.08)'; e.currentTarget.style.boxShadow = 'none' }}
             >
               <div style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{c.icon}</div>
               <div style={{ fontSize: '0.68rem', fontFamily: 'var(--font-h)', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#D8A027', marginBottom: '0.3rem' }}>{c.label}</div>
-              <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.75)', lineHeight: '1.4' }}>{c.value}</div>
+              <div style={{ fontSize: '0.82rem', color: 'rgba(0,39,76,0.7)', lineHeight: '1.4' }}>{c.value}</div>
             </a>
           ))}
         </div>
@@ -156,23 +156,23 @@ export default function CoursePageFooter({
                 key={i}
                 href={c.href}
                 style={{
-                  background: '#00162e',
-                  border: '1px solid rgba(216,160,39,0.15)',
+                  background: '#ffffff',
+                  border: '1px solid rgba(216,160,39,0.18)',
                   borderLeft: '3px solid #D8A027',
                   padding: '1.25rem 1.5rem',
                   textDecoration: 'none',
                   display: 'block',
                   borderRadius: '2px',
-                  transition: 'border-color 0.2s, background 0.2s',
+                  transition: 'border-color 0.2s, background 0.2s, box-shadow 0.2s',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(216,160,39,0.4)'; e.currentTarget.style.background = 'rgba(216,160,39,0.05)' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(216,160,39,0.15)'; e.currentTarget.style.background = '#00162e' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(216,160,39,0.4)'; e.currentTarget.style.background = 'rgba(216,160,39,0.02)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,39,76,0.04)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(216,160,39,0.18)'; e.currentTarget.style.background = '#ffffff'; e.currentTarget.style.boxShadow = 'none' }}
               >
                 <div style={{ fontSize: '0.68rem', fontFamily: 'var(--font-h)', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#D8A027', marginBottom: '0.3rem' }}>
                   Next Step
                 </div>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.95rem', fontWeight: 700, color: '#FFFFFF', marginBottom: c.note ? '0.35rem' : 0 }}>{c.label}</div>
-                {c.note && <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)', lineHeight: '1.4' }}>{c.note}</div>}
+                <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.95rem', fontWeight: 700, color: 'var(--navy)', marginBottom: c.note ? '0.35rem' : 0 }}>{c.label}</div>
+                {c.note && <div style={{ fontSize: '0.75rem', color: 'rgba(0,39,76,0.55)', lineHeight: '1.4' }}>{c.note}</div>}
                 <div style={{ marginTop: '0.75rem', fontSize: '0.72rem', fontFamily: 'var(--font-h)', fontWeight: 700, color: '#D8A027', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                   View Course →
                 </div>
@@ -197,16 +197,16 @@ export default function CoursePageFooter({
                   fontWeight: 700,
                   letterSpacing: '0.08em',
                   textTransform: 'uppercase',
-                  color: 'rgba(255,255,255,0.7)',
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: 'rgba(0,39,76,0.65)',
+                  background: 'rgba(0,39,76,0.03)',
+                  border: '1px solid rgba(0,39,76,0.08)',
                   padding: '0.5rem 1rem',
                   borderRadius: '2px',
                   textDecoration: 'none',
-                  transition: 'color 0.15s, border-color 0.15s',
+                  transition: 'color 0.15s, border-color 0.15s, background 0.15s',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.color = '#D8A027'; e.currentTarget.style.borderColor = 'rgba(216,160,39,0.3)' }}
-                onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}
+                onMouseEnter={e => { e.currentTarget.style.color = 'var(--red)'; e.currentTarget.style.borderColor = 'rgba(219,36,30,0.3)'; e.currentTarget.style.background = 'rgba(219,36,30,0.02)' }}
+                onMouseLeave={e => { e.currentTarget.style.color = 'rgba(0,39,76,0.65)'; e.currentTarget.style.borderColor = 'rgba(0,39,76,0.08)'; e.currentTarget.style.background = 'rgba(0,39,76,0.03)' }}
               >
                 {c.label}
               </Link>
@@ -216,18 +216,21 @@ export default function CoursePageFooter({
       )}
 
       {/* ── Back link ────────────────────────────────────── */}
-      <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2rem' }}>
+      <div style={{ borderTop: '1px solid rgba(0, 39, 76, 0.08)', paddingTop: '2rem' }}>
         <Link
           href="/courses"
           style={{
             fontFamily: 'var(--font-h)',
             fontSize: '0.8rem',
             fontWeight: 700,
-            color: 'rgba(255,255,255,0.4)',
+            color: 'rgba(0, 39, 76, 0.45)',
             textDecoration: 'none',
             letterSpacing: '0.1em',
             textTransform: 'uppercase',
+            transition: 'color 0.2s',
           }}
+          onMouseEnter={e => e.currentTarget.style.color = 'var(--red)'}
+          onMouseLeave={e => e.currentTarget.style.color = 'rgba(0, 39, 76, 0.45)'}
         >
           ← All Courses
         </Link>

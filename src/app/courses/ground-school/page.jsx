@@ -92,59 +92,59 @@ export default function GroundSchoolPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <Header />
-      <main style={{ minHeight: '80vh', background: '#000810', padding: '4rem var(--margin) 6rem var(--margin)' }}>
+      <main className="course-main-wrapper" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
 
         {/* Breadcrumb */}
-        <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginBottom: '3rem', fontFamily: 'var(--font-h)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-          <Link href="/" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }}>Home</Link>
+        <div className="course-breadcrumb">
+          <Link href="/" >Home</Link>
           <span>/</span>
-          <Link href="/courses" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }}>Courses</Link>
+          <Link href="/courses" >Courses</Link>
           <span>/</span>
-          <span style={{ color: '#D8A027' }}>DGCA Ground School</span>
+          <span className="current">DGCA Ground School</span>
         </div>
 
         {/* Hero Image */}
-        <div className="course-hero-image-wrap">
+        <div className="course-hero-image-wrap" style={{ borderRadius: '8px' }}>
           <img src="/footage/classroom.jpg" alt="DGCA Ground School at Airborne Aviation Academy, Dwarka Delhi" className="course-hero-image" />
-          <div className="course-hero-overlay" />
+          <div className="course-hero-overlay" style={{ background: 'linear-gradient(to top, rgba(0, 39, 76, 0.4) 0%, transparent 100%)' }} />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '4rem' }}>
+        <div className="course-details-layout">
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
 
             <div>
-              <span className="badge" style={{ borderColor: '#DB241E', background: 'rgba(219,36,30,0.08)', color: '#DB241E' }}>
+              <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
                 📍 Dwarka, Delhi · 3 Months · ₹2,70,000
               </span>
-              <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1' }}>
+              <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
                 DGCA Ground School Classes in Dwarka, Delhi — CPL & ATPL
               </h1>
-              <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '1.05rem', lineHeight: '1.7' }}>
+              <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
                 Airborne Aviation Academy offers DGCA-approved ground school classes in Dwarka, New Delhi. All DGCA subjects covered by Capt. Navrang Singh — who has personally trained 2,500+ aviation aspirants since 2009.
               </p>
             </div>
 
             {/* Subjects Table */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
                 Subjects Covered
               </h2>
-              <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', overflow: 'hidden', overflowX: 'auto' }}>
+              <div style={{ border: '1px solid rgba(0, 39, 76, 0.08)', borderRadius: '8px', overflow: 'hidden', overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem', fontFamily: 'var(--font-b)', minWidth: '480px' }}>
                   <thead>
-                    <tr style={{ background: '#00162e', color: 'rgba(255,255,255,0.6)', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
-                      <th style={{ padding: '1rem 1.25rem', textAlign: 'left' }}>Subject</th>
-                      <th style={{ padding: '1rem 1.25rem', textAlign: 'left' }}>DGCA Code</th>
-                      <th style={{ padding: '1rem 1.25rem', textAlign: 'left' }}>What You Learn</th>
+                    <tr>
+                      <th>Subject</th>
+                      <th>DGCA Code</th>
+                      <th>What You Learn</th>
                     </tr>
                   </thead>
                   <tbody>
                     {SUBJECTS.map((row, i) => (
-                      <tr key={i} style={{ borderTop: '1px solid rgba(255,255,255,0.04)', background: i % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'transparent' }}>
-                        <td style={{ padding: '1rem 1.25rem', color: '#FFFFFF', fontWeight: 600 }}>{row.name}</td>
-                        <td style={{ padding: '1rem 1.25rem', color: '#D8A027', fontWeight: 700, fontFamily: 'var(--font-h)', fontSize: '0.78rem', letterSpacing: '0.08em' }}>{row.code}</td>
-                        <td style={{ padding: '1rem 1.25rem', color: 'rgba(255,255,255,0.6)' }}>{row.detail}</td>
+                      <tr key={i}>
+                        <td style={{ padding: '1rem 1.25rem', color: 'var(--navy)', fontWeight: 600 }}>{row.name}</td>
+                        <td style={{ padding: '1rem 1.25rem', color: 'var(--navy)', fontWeight: 700, fontFamily: 'var(--font-h)', fontSize: '0.78rem', letterSpacing: '0.08em' }}>{row.code}</td>
+                        <td style={{ padding: '1rem 1.25rem', color: 'rgba(0, 39, 76, 0.65)' }}>{row.detail}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -153,41 +153,41 @@ export default function GroundSchoolPage() {
             </div>
 
             {/* Instructor */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
                 Your Instructor — Capt. Navrang Singh
               </h2>
-              <div style={{ background: '#00162e', border: '1px solid rgba(255,255,255,0.06)', padding: '2rem', borderRadius: '4px' }}>
-                <p style={{ fontSize: '0.92rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.8', margin: 0 }}>
+              <div style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', border: '1px solid rgba(0, 39, 76, 0.08)', padding: '2rem', borderRadius: '4px' }}>
+                <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.8', margin: 0 }}>
                   Capt. Navrang Singh is the co-founder of Airborne Aviation Academy and has been teaching DGCA ground school personally since 2009. With 15+ years of flight instruction experience, he strips DGCA syllabi down to first principles — Air Regulations, Technical General, Navigation, Meteorology, RTR — taught the way you will actually use them in the cockpit.
                 </p>
                 <div style={{ marginTop: '1.5rem', display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
                   {['15+ Years Teaching', '2,500+ Students', '100% First-Attempt Pass Rate', 'Personal Classes — No Substitutes'].map((stat, i) => (
-                    <span key={i} style={{ fontSize: '0.75rem', fontFamily: 'var(--font-h)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#D8A027', background: 'rgba(216,160,39,0.08)', border: '1px solid rgba(216,160,39,0.2)', padding: '0.35rem 0.85rem', borderRadius: '2px' }}>{stat}</span>
+                    <span key={i} style={{ fontSize: '0.75rem', fontFamily: 'var(--font-h)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--navy)', background: 'rgba(216,160,39,0.08)', border: '1px solid rgba(216,160,39,0.2)', padding: '0.35rem 0.85rem', borderRadius: '2px' }}>{stat}</span>
                   ))}
                 </div>
               </div>
             </div>
 
             {/* The Airborne Advantage */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
                 The Airborne Advantage
               </h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                 {ADVANTAGES.map((c, i) => (
-                  <div key={i} style={{ background: '#00162e', borderLeft: '3px solid #DB241E', padding: '1.25rem' }}>
+                  <div key={i} style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', borderLeft: '3px solid #DB241E', padding: '1.25rem' }}>
                     <div style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{c.icon}</div>
-                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#FFFFFF', marginBottom: '0.35rem', fontFamily: 'var(--font-h)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{c.title}</div>
-                    <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)', lineHeight: '1.5' }}>{c.body}</div>
+                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--navy)', marginBottom: '0.35rem', fontFamily: 'var(--font-h)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{c.title}</div>
+                    <div style={{ fontSize: '0.78rem', color: 'rgba(0, 39, 76, 0.55)', lineHeight: '1.5' }}>{c.body}</div>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* FAQ */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '2rem' }}>
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
                 Frequently Asked Questions
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
@@ -197,9 +197,9 @@ export default function GroundSchoolPage() {
                   { q: 'What is the DGCA Ground School fee at Airborne?', a: '₹2,70,000 covering all 5 DGCA theoretical papers. All study material provided and kept by students. No hidden charges.' },
                   { q: 'Can I join without a CPL in progress?', a: 'Yes. Students pursuing any aviation path — CPL, ATPL, or general DGCA exam preparation — can join. Minimum eligibility is Class 12 with Physics and Mathematics.' },
                 ].map((faq, i) => (
-                  <div key={i}>
-                    <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.95rem', fontWeight: 700, color: '#FFFFFF', marginBottom: '0.5rem' }}>{faq.q}</h3>
-                    <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.65)', lineHeight: '1.7', margin: 0 }}>{faq.a}</p>
+                  <div key={i} className="course-faq-item">
+                    <h3 className="course-faq-q">{faq.q}</h3>
+                    <p className="course-faq-a">{faq.a}</p>
                   </div>
                 ))}
               </div>
@@ -211,14 +211,14 @@ export default function GroundSchoolPage() {
           {/* Sidebar */}
           <div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-              <div style={{ background: '#000f1e', border: '1px solid rgba(255,255,255,0.08)', padding: '2rem', borderRadius: '1px', textAlign: 'center' }}>
-                <span style={{ fontSize: '0.72rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: '0.5rem' }}>Course Fee</span>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '2.2rem', fontWeight: 900, color: '#D8A027' }}>₹2,70,000</div>
-                <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.3)', display: 'block', marginTop: '0.5rem' }}>All subjects including viva preparation</span>
-                <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(255,255,255,0.06)' }} />
-                <span style={{ fontSize: '0.72rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: '0.5rem' }}>Duration</span>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: '#FFFFFF' }}>⏱️ 3 Months</div>
-                <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.3)', display: 'block', marginTop: '0.5rem' }}>July 2026 batch · 25 seats</span>
+              <div className="course-sidebar-card">
+                <span className="course-sidebar-label">Course Fee</span>
+                <div className="course-sidebar-price">₹2,70,000</div>
+                <span className="course-sidebar-note">All subjects including viva preparation</span>
+                <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(0, 39, 76, 0.08)' }} />
+                <span className="course-sidebar-label">Duration</span>
+                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)' }}>⏱️ 3 Months</div>
+                <span className="course-sidebar-note">July 2026 batch · 25 seats</span>
               </div>
               <LeadForm courseName="DGCA Ground School" source="Course Detail: ground-school" />
             </div>

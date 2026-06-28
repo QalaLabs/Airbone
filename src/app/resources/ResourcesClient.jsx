@@ -4,6 +4,10 @@ import { useState, useEffect } from 'react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import { getFAQSchema } from '@/utils/seo'
+import useFormValidation from '@/hooks/useFormValidation'
+import { validateName, validatePhone, validateEmail, validateRequired } from '@/utils/validation'
+import FormField from '@/components/FormField'
+import SubmitButton from '@/components/SubmitButton'
 
 function mapResource(r) {
   const meta = r.metadata ?? {}
@@ -29,6 +33,11 @@ export default function ResourcesClient() {
   const [showGateModal, setShowGateModal] = useState(false)
   const [targetResource, setTargetResource] = useState(null)
   const [formStatus, setFormStatus] = useState('idle') // idle, loading, success
+
+  const { values, handleChange, handleBlur, validate, isValid, setValues } = useFormValidation(
+    { name: '', phone: '', email: '', course: '' },
+    { name: validateName, phone: validatePhone, email: validateEmail, course: validateRequired }
+  )
 
   useEffect(() => {
     const token = sessionStorage.getItem('resource_gate_token')
@@ -81,12 +90,8 @@ export default function ResourcesClient() {
 
   const handleGateSubmit = async (e) => {
     e.preventDefault()
+    if (!validate()) return
     setFormStatus('loading')
-
-    const name = e.target.elements['gate-name'].value
-    const phone = e.target.elements['gate-phone'].value
-    const email = e.target.elements['gate-email'].value
-    const course = e.target.elements['gate-course'].value
 
     let token = null
     try {
@@ -94,10 +99,7 @@ export default function ResourcesClient() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name,
-          phone,
-          email,
-          course,
+          ...values,
           source: `Resource Gate: ${targetResource?.title || 'Unknown'}`
         })
       })
@@ -107,9 +109,7 @@ export default function ResourcesClient() {
         sessionStorage.setItem('resource_gate_token', token)
         setGateToken(token)
       }
-    } catch {
-      // Suppress network errors — unlock regardless
-    }
+    } catch {}
 
     setUnlocked(true)
     setFormStatus('success')
@@ -243,54 +243,65 @@ export default function ResourcesClient() {
                   <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.7)' }}>Your file is downloading automatically...</p>
                 </div>
               ) : (
-                <form className="modal-form" onSubmit={handleGateSubmit}>
-                  <input
+                <form className="modal-form" onSubmit={handleGateSubmit} noValidate>
+                  <FormField
                     id="gate-name"
-                    className="modal-input modal-input-dark"
                     type="text"
                     placeholder="Full Name"
+                    dark
+                    value={values.name}
+                    onChange={(v) => handleChange('name', v)}
+                    onBlur={() => handleBlur('name')}
                     required
                   />
 
-                  <input
+                  <FormField
                     id="gate-phone"
-                    className="modal-input modal-input-dark"
                     type="tel"
                     placeholder="Mobile Number (e.g. +91...)"
+                    dark
+                    value={values.phone}
+                    onChange={(v) => handleChange('phone', v)}
+                    onBlur={() => handleBlur('phone')}
                     required
+                    maxLength={10}
                   />
 
-                  <input
+                  <FormField
                     id="gate-email"
-                    className="modal-input modal-input-dark"
                     type="email"
                     placeholder="Email Address"
+                    dark
+                    value={values.email}
+                    onChange={(v) => handleChange('email', v)}
+                    onBlur={() => handleBlur('email')}
                     required
                   />
 
-                  <select
+                  <FormField
                     id="gate-course"
-                    className="modal-input modal-input-dark"
-                    defaultValue=""
+                    as="select"
+                    dark
+                    value={values.course}
+                    onChange={(v) => handleChange('course', v)}
                     required
-                    style={{ borderRadius: '1px' }}
                   >
                     <option value="" disabled>Select Targeted Course</option>
                     <option>DGCA CPL Ground School</option>
                     <option>Cadet Pilot Prep Program</option>
                     <option>Airbus A320 SIM Hours</option>
                     <option>ATPL Ground School</option>
-                  </select>
+                  </FormField>
 
-                  <button
+                  <SubmitButton
                     id="gate-submit-btn"
                     className="btn btn-primary"
-                    type="submit"
-                    disabled={formStatus === 'loading'}
+                    loading={formStatus === 'loading'}
+                    disabled={!isValid}
                     style={{ width: '100%', justifyContent: 'center' }}
                   >
-                    {formStatus === 'loading' ? 'Verifying...' : 'Unlock & Download →'}
-                  </button>
+                    Unlock & Download →
+                  </SubmitButton>
                 </form>
               )}
             </div>

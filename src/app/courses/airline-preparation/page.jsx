@@ -63,65 +63,65 @@ export default function AirlinePreparationPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <Header />
-      <main style={{ minHeight: '80vh', background: '#000810', padding: '4rem var(--margin) 6rem var(--margin)' }}>
+      <main className="course-main-wrapper" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
 
-        <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginBottom: '3rem', fontFamily: 'var(--font-h)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-          <Link href="/" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }}>Home</Link>
+        <div className="course-breadcrumb">
+          <Link href="/" >Home</Link>
           <span>/</span>
-          <Link href="/courses" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }}>Courses</Link>
+          <Link href="/courses" >Courses</Link>
           <span>/</span>
-          <span style={{ color: '#D8A027' }}>Airline Interview Prep</span>
+          <span className="current">Airline Interview Prep</span>
         </div>
 
-        <div className="course-hero-image-wrap">
+        <div className="course-hero-image-wrap" style={{ borderRadius: '8px' }}>
           <img src="/footage/classroom_instructor.jpg" alt="Airline GD PI Interview Preparation at Airborne Aviation Academy, Dwarka Delhi" className="course-hero-image" />
-          <div className="course-hero-overlay" />
+          <div className="course-hero-overlay" style={{ background: 'linear-gradient(to top, rgba(0, 39, 76, 0.4) 0%, transparent 100%)' }} />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '4rem' }}>
+        <div className="course-details-layout">
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
 
             <div>
-              <span className="badge" style={{ borderColor: '#DB241E', background: 'rgba(219,36,30,0.08)', color: '#DB241E' }}>
+              <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
                 📍 Dwarka, Delhi · ₹1,00,000
               </span>
-              <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1' }}>
+              <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
                 GD/PI & Airline Interview Preparation — IndiGo, Air India & Akasa
               </h1>
-              <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '1.05rem', lineHeight: '1.7' }}>
+              <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
                 Getting a CPL is the qualifying step. Getting hired is a different skill. Airborne's airline interview preparation program — led by Rajeet Khalsa — prepares pilots for the GD, PI, and final selection rounds at India's top carriers. Every module is calibrated to actual airline interview formats, not generic HR coaching.
               </p>
             </div>
 
             {/* Trainer */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1rem' }}>
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
                 Your Trainer — Rajeet Khalsa
               </h2>
-              <p style={{ fontSize: '0.92rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.7', margin: 0 }}>
+              <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: 0 }}>
                 Rajeet Khalsa is a certified soft-skills and personal development trainer with deep airline HR experience. At Airborne, Rajeet leads all GD/PI preparation, mock interview sessions, and personal development coaching. Students trained by Rajeet have successfully cleared selection panels at IndiGo, Air India, Akasa Air, and SpiceJet.
               </p>
             </div>
 
             {/* Modules */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
                 What's Covered — 6 Modules
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {MODULES.map((m, i) => (
-                  <div key={i} style={{ background: i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent', border: '1px solid rgba(255,255,255,0.06)', borderLeft: '3px solid #DB241E', padding: '1.25rem 1.5rem' }}>
-                    <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.9rem', fontWeight: 700, color: '#FFFFFF', marginBottom: '0.4rem' }}>{m.module}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.55)', lineHeight: '1.6' }}>{m.detail}</div>
+                  <div key={i} style={{ background: i % 2 === 0 ? 'rgba(0, 39, 76, 0.02)' : 'transparent', border: '1px solid rgba(0, 39, 76, 0.08)', borderLeft: '3px solid #DB241E', padding: '1.25rem 1.5rem' }}>
+                    <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.9rem', fontWeight: 700, color: 'var(--navy)', marginBottom: '0.4rem' }}>{m.module}</div>
+                    <div style={{ fontSize: '0.8rem', color: 'rgba(0, 39, 76, 0.55)', lineHeight: '1.6' }}>{m.detail}</div>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* FAQ */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '2rem' }}>
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
                 Frequently Asked Questions
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
@@ -129,9 +129,9 @@ export default function AirlinePreparationPage() {
                   { q: 'Who trains the airline interview preparation module at Airborne?', a: 'The module is led by Rajeet Khalsa, a certified soft-skills trainer with airline HR experience. Rajeet has prepared hundreds of CPL holders for IndiGo, Air India, Akasa Air, and SpiceJet selection panels.' },
                   { q: 'What makes airline interviews different from normal job interviews?', a: "Airline selection panels assess CRM (Crew Resource Management) principles, situational judgement, composure under pressure, and cultural fit with the airline. Standard job interview prep does not cover these. Airborne's program is aviation-specific — every scenario, role-play, and mock interview is calibrated to actual airline interview formats." },
                 ].map((faq, i) => (
-                  <div key={i}>
-                    <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.95rem', fontWeight: 700, color: '#FFFFFF', marginBottom: '0.5rem' }}>{faq.q}</h3>
-                    <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.65)', lineHeight: '1.7', margin: 0 }}>{faq.a}</p>
+                  <div key={i} className="course-faq-item">
+                    <h3 className="course-faq-q">{faq.q}</h3>
+                    <p className="course-faq-a">{faq.a}</p>
                   </div>
                 ))}
               </div>
@@ -141,10 +141,10 @@ export default function AirlinePreparationPage() {
 
           <div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-              <div style={{ background: '#000f1e', border: '1px solid rgba(255,255,255,0.08)', padding: '2rem', borderRadius: '1px', textAlign: 'center' }}>
-                <span style={{ fontSize: '0.72rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: '0.5rem' }}>Course Fee</span>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '2.2rem', fontWeight: 900, color: '#D8A027' }}>₹1,00,000</div>
-                <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.3)', display: 'block', marginTop: '0.5rem' }}>GD + PI + Mock Interviews + PD</span>
+              <div className="course-sidebar-card">
+                <span className="course-sidebar-label">Course Fee</span>
+                <div className="course-sidebar-price">₹1,00,000</div>
+                <span className="course-sidebar-note">GD + PI + Mock Interviews + PD</span>
               </div>
               <LeadForm courseName="GD/PI & Airline Interview Preparation" source="Course Detail: airline-preparation" />
             </div>

@@ -11,6 +11,10 @@ import { AdaptiveDpr, PerformanceMonitor } from '@react-three/drei'
 import { useScrollEngine, ACTS, TOTAL_VH } from '../hooks/useScrollEngine'
 import MasterScene from '../scenes/MasterScene'
 import { triggerToast } from '@/components/Toast'
+import useFormValidation from '@/hooks/useFormValidation'
+import { validateName, validatePhone, validateEmail, validateRequired } from '@/utils/validation'
+import FormField from '@/components/FormField'
+import SubmitButton from '@/components/SubmitButton'
 
 /* ─── CURSOR ─── */
 function Cursor() {
@@ -431,32 +435,51 @@ function Act7Overlay({ visible, onDemo, onApply }) {
 function Modal({ open, type, onClose }) {
   const isDemo = type === 'demo'
 
+  const validators = {
+    name: validateName,
+    phone: validatePhone,
+    email: validateEmail,
+    ...(!isDemo ? { course: validateRequired } : {}),
+  }
+
+  const { values, handleChange, handleBlur, validate, isValid, setValues } = useFormValidation(
+    { name: '', phone: '', email: '', course: '' },
+    validators
+  )
+
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
     const fn = (e) => { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', fn)
+    if (!open) setValues({ name: '', phone: '', email: '', course: '' })
     return () => { window.removeEventListener('keydown', fn); document.body.style.overflow = '' }
-  }, [open, onClose])
+  }, [open, onClose, setValues])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const name = e.target.elements['modal-name'].value
-    const phone = e.target.elements['modal-phone'].value
-    const email = e.target.elements['modal-email'].value
-    const course = e.target.elements['modal-course']?.value || 'DGCA CPL Ground School'
+    if (!validate()) return
+
+    const urlParams = new URLSearchParams(window.location.search)
+    const utm_source = urlParams.get('utm_source') || undefined
+    const utm_medium = urlParams.get('utm_medium') || undefined
+    const utm_campaign = urlParams.get('utm_campaign') || undefined
+    const utm_term = urlParams.get('utm_term') || undefined
+    const utm_content = urlParams.get('utm_content') || undefined
+    const referrer = document.referrer || undefined
+    const landing_page = window.location.href || undefined
 
     try {
       const res = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, phone, email, course, source: 'Homepage Modal' })
+        body: JSON.stringify({ ...values, source: 'Homepage Modal', course: values.course || 'DGCA CPL Ground School', utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page })
       })
       if (res.ok) {
         triggerToast('Registration Success', 'Your details have been registered. An admissions advisor will contact you within 24 hours.')
       } else {
         triggerToast('Inquiry Captured', 'Our team has logged your slot request.')
       }
-    } catch (err) {
+    } catch {
       triggerToast('Inquiry Captured', 'Our team has logged your slot request.')
     }
     onClose()
@@ -477,22 +500,22 @@ function Modal({ open, type, onClose }) {
             ? 'Experience the Airborne teaching method firsthand. A free 90-minute demo class with Capt. Navrang Singh.'
             : 'July 2026 seats are limited to 25 students. Submit your details and we will contact you within 24 hours.'}
         </p>
-        <form className="modal-form" onSubmit={handleSubmit}>
-          <input id="modal-name"  className="modal-input modal-input-dark" type="text"  placeholder="Your Full Name"  required />
-          <input id="modal-phone" className="modal-input modal-input-dark" type="tel"   placeholder="Phone Number"     required />
-          <input id="modal-email" className="modal-input modal-input-dark" type="email" placeholder="Email Address"    required />
+        <form className="modal-form" onSubmit={handleSubmit} noValidate>
+          <FormField id="modal-name" type="text" placeholder="Your Full Name" dark value={values.name} onChange={(v) => handleChange('name', v)} onBlur={() => handleBlur('name')} required />
+          <FormField id="modal-phone" type="tel" placeholder="Phone Number" dark value={values.phone} onChange={(v) => handleChange('phone', v)} onBlur={() => handleBlur('phone')} required maxLength={10} />
+          <FormField id="modal-email" type="email" placeholder="Email Address" dark value={values.email} onChange={(v) => handleChange('email', v)} onBlur={() => handleBlur('email')} required />
           {!isDemo && (
-            <select id="modal-course" className="modal-input modal-input-dark" defaultValue="" style={{ borderRadius: '1px' }}>
+            <FormField id="modal-course" as="select" dark value={values.course} onChange={(v) => handleChange('course', v)} required>
               <option value="" disabled>Select Course</option>
               <option>DGCA CPL Ground School</option>
               <option>RTR (A) Radio Telephony</option>
               <option>Air Navigation</option>
               <option>Meteorology</option>
-            </select>
+            </FormField>
           )}
-          <button id="modal-submit-btn" className="modal-btn" type="submit" style={{ borderRadius: '1px' }}>
+          <SubmitButton id="modal-submit-btn" className="modal-btn" loading={false} disabled={!isValid} style={{ borderRadius: '1px' }}>
             {isDemo ? 'Reserve My Demo Seat →' : 'Submit Application →'}
-          </button>
+          </SubmitButton>
         </form>
       </div>
     </div>

@@ -9,6 +9,7 @@ const { auth } = NextAuth(authConfig);
 // Public paths that skip auth
 const PUBLIC_PATHS = [
   "/login",
+  "/api/auth",
   "/api/v1/auth",
   "/api/v1/users/invite/accept",
   "/api/inngest",

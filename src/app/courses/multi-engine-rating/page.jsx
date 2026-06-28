@@ -72,93 +72,93 @@ export default function MultiEngineRatingPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <Header />
-      <main style={{ minHeight: '80vh', background: '#000810', padding: '4rem var(--margin) 6rem var(--margin)' }}>
+      <main className="course-main-wrapper" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
 
         {/* Breadcrumb */}
-        <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginBottom: '3rem', fontFamily: 'var(--font-h)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-          <Link href="/" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }}>Home</Link>
+        <div className="course-breadcrumb">
+          <Link href="/" >Home</Link>
           <span>/</span>
-          <Link href="/courses" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }}>Courses</Link>
+          <Link href="/courses" >Courses</Link>
           <span>/</span>
-          <span style={{ color: '#D8A027' }}>Multi-Engine Rating</span>
+          <span className="current">Multi-Engine Rating</span>
         </div>
 
         {/* Hero Image */}
-        <div className="course-hero-image-wrap">
+        <div className="course-hero-image-wrap" style={{ borderRadius: '8px' }}>
           <img src="/footage/cockpit_instruments_closeup.jpg" alt="Multi-Engine Rating training at Airborne Aviation Academy" className="course-hero-image" />
-          <div className="course-hero-overlay" />
+          <div className="course-hero-overlay" style={{ background: 'linear-gradient(to top, rgba(0, 39, 76, 0.4) 0%, transparent 100%)' }} />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '4rem' }}>
+        <div className="course-details-layout">
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
 
             <div>
-              <span className="badge" style={{ borderColor: '#DB241E', background: 'rgba(219,36,30,0.08)', color: '#DB241E' }}>
+              <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
                 📍 Dwarka, Delhi · 1–2 Months · ₹3–5 Lakh
               </span>
-              <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1' }}>
+              <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
                 Multi-Engine Rating (MER) — Twin-Engine Training, Delhi
               </h1>
-              <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '1.05rem', lineHeight: '1.7' }}>
+              <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
                 A Multi-Engine Rating (MER) adds a twin-engine aircraft endorsement to your existing DGCA PPL or CPL. It is an essential step for pilots targeting commercial airline operations — virtually every scheduled airline in India operates twin or multi-engine aircraft. The MER gives you the skills and licence authority to act as Pilot-in-Command of multi-engine aircraft.
               </p>
             </div>
 
             {/* What is MER */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1rem' }}>
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
                 What Is a Multi-Engine Rating?
               </h2>
-              <p style={{ fontSize: '0.92rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.7', margin: 0 }}>
+              <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: 0 }}>
                 A Multi-Engine Rating (MER) is a DGCA endorsement that authorises a pilot to fly aircraft with two or more engines. It involves both theoretical training (twin-engine systems, asymmetric flight theory, performance calculations) and practical flying on a multi-engine aircraft — including engine-out procedures, asymmetric approaches, and feathering drills. The MER is a crucial milestone for any pilot building toward airline operations.
               </p>
             </div>
 
             {/* Training Content */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
                 Multi-Engine Training Content
               </h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+              <div className="course-subject-grid">
                 {TRAINING_CONTENT.map((s, i) => (
-                  <div key={i} style={{ background: '#00162e', borderLeft: '3px solid #DB241E', padding: '1rem 1.25rem' }}>
-                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#FFFFFF', marginBottom: '0.25rem' }}>{s.topic}</div>
-                    <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)' }}>{s.detail}</div>
+                  <div key={i} className="course-subject-card">
+                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--navy)', marginBottom: '0.25rem' }}>{s.topic}</div>
+                    <div className="course-subject-card-detail">{s.detail}</div>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Eligibility */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
                 MER Eligibility Requirements
               </h2>
-              <ul style={{ paddingLeft: '1.25rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <ul className="course-list">
                 {[
                   'Valid DGCA PPL or CPL holder',
                   'Valid DGCA Medical Certificate (Class 1 or Class 2)',
                   'Completion of required solo and cross-country flying hours (as applicable)',
                   'Valid RTR(A) Radio Telephony certificate',
                 ].map((item, i) => (
-                  <li key={i} style={{ fontSize: '0.92rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.6' }}>{item}</li>
+                  <li key={i} className="course-list-item">{item}</li>
                 ))}
               </ul>
             </div>
 
             {/* MER + CPL path */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1rem' }}>
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
                 MER + CPL + IR — Airline-Ready Pilot Profile
               </h2>
-              <p style={{ fontSize: '0.92rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.7', margin: 0 }}>
+              <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: 0 }}>
                 The combination of a DGCA CPL, Instrument Rating (IR), and Multi-Engine Rating (MER) is the standard profile expected by Indian airlines for First Officer positions. Pilots who hold all three ratings and have 200+ total hours are eligible to apply directly to IndiGo, Air India, Akasa Air, and other scheduled carriers.
               </p>
             </div>
 
             {/* FAQ */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '2rem' }}>
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
                 Frequently Asked Questions
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
@@ -167,9 +167,9 @@ export default function MultiEngineRatingPage() {
                   { q: 'How long does Multi-Engine Rating training take?', a: '1–2 months. The MER involves ground school covering twin-engine systems and asymmetric flight, plus practical flying hours on a multi-engine aircraft.' },
                   { q: 'What aircraft is used for Multi-Engine Rating training?', a: 'Multi-Engine Rating training is conducted through our DGCA-approved partner FTOs on twin-engine piston aircraft. Contact Airborne admissions for current aircraft type and availability.' },
                 ].map((faq, i) => (
-                  <div key={i}>
-                    <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.95rem', fontWeight: 700, color: '#FFFFFF', marginBottom: '0.5rem' }}>{faq.q}</h3>
-                    <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.65)', lineHeight: '1.7', margin: 0 }}>{faq.a}</p>
+                  <div key={i} className="course-faq-item">
+                    <h3 className="course-faq-q">{faq.q}</h3>
+                    <p className="course-faq-a">{faq.a}</p>
                   </div>
                 ))}
               </div>
@@ -181,16 +181,16 @@ export default function MultiEngineRatingPage() {
           {/* Sidebar */}
           <div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-              <div style={{ background: '#000f1e', border: '1px solid rgba(255,255,255,0.08)', padding: '2rem', borderRadius: '1px', textAlign: 'center' }}>
-                <span style={{ fontSize: '0.72rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: '0.5rem' }}>Course Fee</span>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '2.2rem', fontWeight: 900, color: '#D8A027' }}>₹3–5L</div>
-                <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.3)', display: 'block', marginTop: '0.5rem' }}>Ground school + flying through partner FTO</span>
-                <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(255,255,255,0.06)' }} />
-                <span style={{ fontSize: '0.72rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: '0.5rem' }}>Duration</span>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: '#FFFFFF' }}>⏱️ 1–2 Months</div>
-                <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(255,255,255,0.06)' }} />
-                <span style={{ fontSize: '0.72rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: '0.5rem' }}>Prerequisite</span>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', fontWeight: 700, color: '#FFFFFF' }}>PPL / CPL Holder</div>
+              <div className="course-sidebar-card">
+                <span className="course-sidebar-label">Course Fee</span>
+                <div className="course-sidebar-price">₹3–5L</div>
+                <span className="course-sidebar-note">Ground school + flying through partner FTO</span>
+                <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(0, 39, 76, 0.08)' }} />
+                <span className="course-sidebar-label">Duration</span>
+                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)' }}>⏱️ 1–2 Months</div>
+                <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(0, 39, 76, 0.08)' }} />
+                <span className="course-sidebar-label">Prerequisite</span>
+                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', fontWeight: 700, color: 'var(--navy)' }}>PPL / CPL Holder</div>
               </div>
               <LeadForm courseName="Multi-Engine Rating" source="Course Detail: multi-engine-rating" />
             </div>

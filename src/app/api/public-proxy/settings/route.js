@@ -1,0 +1,17 @@
+import { NextResponse } from 'next/server'
+
+const ADMIN_API_URL = process.env.ADMIN_API_URL ?? 'http://localhost:4000'
+
+export async function GET(req) {
+  try {
+    const res = await fetch(`${ADMIN_API_URL}/api/public/settings`, {
+      next: { revalidate: 60 },
+    })
+    if (!res.ok) throw new Error('Upstream failed')
+    const data = await res.json()
+    return NextResponse.json(data)
+  } catch (err) {
+    console.error('[Proxy Error /settings]:', err.message)
+    return NextResponse.json({ error: 'Upstream Error' }, { status: 502 })
+  }
+}

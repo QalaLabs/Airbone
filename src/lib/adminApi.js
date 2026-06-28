@@ -1,4 +1,4 @@
-const BASE = process.env.ADMIN_API_URL ?? 'http://localhost:3001'
+const BASE = process.env.ADMIN_API_URL ?? 'http://localhost:4000'
 
 // Returns { data, status } — status 0 means network error, non-zero is HTTP status
 export async function fetchPublicWithStatus(path, params = {}) {

@@ -42,12 +42,32 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = (await req.json()) as Record<string, unknown>;
-    const { name, email, phone, courseInterest, source } = body as {
+    const {
+      name,
+      email,
+      phone,
+      courseInterest,
+      source,
+      utmSource,
+      utmMedium,
+      utmCampaign,
+      utmTerm,
+      utmContent,
+      referrerUrl,
+      landingPage,
+    } = body as {
       name?: string;
       email?: string;
       phone?: string;
       courseInterest?: string;
       source?: string;
+      utmSource?: string;
+      utmMedium?: string;
+      utmCampaign?: string;
+      utmTerm?: string;
+      utmContent?: string;
+      referrerUrl?: string;
+      landingPage?: string;
     };
 
     if (!name || !phone) {
@@ -81,6 +101,13 @@ export async function POST(req: NextRequest) {
         courseInterest: courseInterest ? String(courseInterest).trim() : null,
         source: leadSource,
         orgId: org.id,
+        utmSource: utmSource ? String(utmSource).trim() : null,
+        utmMedium: utmMedium ? String(utmMedium).trim() : null,
+        utmCampaign: utmCampaign ? String(utmCampaign).trim() : null,
+        utmTerm: utmTerm ? String(utmTerm).trim() : null,
+        utmContent: utmContent ? String(utmContent).trim() : null,
+        referrerUrl: referrerUrl ? String(referrerUrl).trim() : null,
+        landingPage: landingPage ? String(landingPage).trim() : null,
         isDuplicate: !!existing,
         ...(existing ? { duplicateOf: existing.id } : {}),
         customFields: { webSource: source ?? "website" },

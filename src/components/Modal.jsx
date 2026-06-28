@@ -1,4 +1,10 @@
-import { useState, useEffect, useRef } from 'react'
+'use client'
+
+import { useState, useEffect, useRef, useCallback } from 'react'
+import useFormValidation from '@/hooks/useFormValidation'
+import { validateName, validatePhone, validateEmail, validatePincode, validateRequired } from '@/utils/validation'
+import FormField from '@/components/FormField'
+import SubmitButton from '@/components/SubmitButton'
 
 const COURSES = [
   'CPL Ground Classes (₹2,70,000)',
@@ -13,49 +19,58 @@ const COURSES = [
 
 export default function Modal({ type = 'demo', isOpen, onClose }) {
   const [submitted, setSubmitted] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
-  const [form, setForm] = useState({
-    name: '', phone: '', email: '', pincode: '', course: '', message: '',
-  })
   const submitLock = useRef(false)
+  const isDemo = type === 'demo'
 
-  // Lock scroll when open
+  const validators = {
+    name: validateName,
+    phone: validatePhone,
+    email: validateEmail,
+    pincode: validatePincode,
+    course: validateRequired,
+  }
+
+  const { values, handleChange, handleBlur, validate, isValid, setValues } = useFormValidation(
+    { name: '', phone: '', email: '', pincode: '', course: '' },
+    validators
+  )
+
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : ''
-    if (!isOpen) { setSubmitted(false); setSubmitting(false); submitLock.current = false }
+    if (!isOpen) { setSubmitted(false); submitLock.current = false; setValues({ name: '', phone: '', email: '', pincode: '', course: '' }) }
     return () => { document.body.style.overflow = '' }
-  }, [isOpen])
+  }, [isOpen, setValues])
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault()
-    if (submitLock.current) return
+    if (!validate() || submitLock.current) return
     submitLock.current = true
-    setSubmitting(true)
+    const urlParams = new URLSearchParams(window.location.search)
+    const utm_source = urlParams.get('utm_source') || undefined
+    const utm_medium = urlParams.get('utm_medium') || undefined
+    const utm_campaign = urlParams.get('utm_campaign') || undefined
+    const utm_term = urlParams.get('utm_term') || undefined
+    const utm_content = urlParams.get('utm_content') || undefined
+    const referrer = document.referrer || undefined
+    const landing_page = window.location.href || undefined
+
     try {
       await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: form.name,
-          phone: form.phone,
-          email: form.email || undefined,
-          pincode: form.pincode,
-          course: form.course || 'DGCA CPL Ground School',
-          source: type === 'demo' ? 'Homepage Modal' : 'Homepage Modal',
+          name: values.name,
+          phone: values.phone,
+          email: values.email || undefined,
+          pincode: values.pincode,
+          course: values.course || 'DGCA CPL Ground School',
+          source: 'Homepage Modal',
+          utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page,
         }),
       })
-    } catch {
-      // Network error — still show success, lead may have been saved
-    }
-    setSubmitting(false)
+    } catch {}
     setSubmitted(true)
-  }
-
-  const handleChange = (e) => {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
-  }
-
-  const isDemo = type === 'demo'
+  }, [values, validate])
 
   return (
     <div
@@ -66,17 +81,9 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
       aria-label={isDemo ? 'Book Free Demo Class' : 'Apply Now'}
     >
       <div className="modal">
-        {/* Close */}
-        <button
-          className="modal-close"
-          onClick={onClose}
-          aria-label="Close"
-        >
-          ×
-        </button>
+        <button className="modal-close" onClick={onClose} aria-label="Close">×</button>
 
         {submitted ? (
-          /* Success state */
           <div style={{ textAlign: 'center', padding: '2rem 0' }}>
             <div style={{
               width: 64, height: 64,
@@ -86,9 +93,7 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               margin: '0 auto 1.5rem',
               fontSize: '1.75rem',
-            }}>
-              ✓
-            </div>
+            }}>✓</div>
             <div className="modal-title" style={{ marginBottom: '0.75rem' }}>
               {isDemo ? 'Demo Confirmed!' : 'Application Received!'}
             </div>
@@ -121,7 +126,6 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
           </div>
         ) : (
           <>
-            {/* Header */}
             <div style={{ marginBottom: '1.75rem' }}>
               <div style={{
                 display: 'inline-block',
@@ -148,104 +152,85 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
               </p>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="form-grid">
+            <form onSubmit={handleSubmit} className="form-grid" noValidate>
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label" htmlFor="modal-name">Full Name *</label>
-                  <input
+                  <FormField
                     id="modal-name"
-                    name="name"
-                    className="form-input"
                     type="text"
                     placeholder="Your full name"
-                    value={form.name}
-                    onChange={handleChange}
+                    value={values.name}
+                    onChange={(v) => handleChange('name', v)}
+                    onBlur={() => handleBlur('name')}
                     required
                   />
                 </div>
                 <div className="form-group">
                   <label className="form-label" htmlFor="modal-phone">Phone Number *</label>
-                  <input
+                  <FormField
                     id="modal-phone"
-                    name="phone"
-                    className="form-input"
                     type="tel"
                     placeholder="+91 98765 43210"
-                    value={form.phone}
-                    onChange={handleChange}
+                    value={values.phone}
+                    onChange={(v) => handleChange('phone', v)}
+                    onBlur={() => handleBlur('phone')}
                     required
+                    maxLength={10}
                   />
                 </div>
               </div>
 
               <div className="form-group">
                 <label className="form-label" htmlFor="modal-email">Email Address</label>
-                <input
+                <FormField
                   id="modal-email"
-                  name="email"
-                  className="form-input"
                   type="email"
                   placeholder="you@email.com"
-                  value={form.email}
-                  onChange={handleChange}
+                  value={values.email}
+                  onChange={(v) => handleChange('email', v)}
+                  onBlur={() => handleBlur('email')}
                 />
               </div>
 
               <div className="form-group">
                 <label className="form-label" htmlFor="modal-pincode">PIN Code / Zip Code *</label>
-                <input
+                <FormField
                   id="modal-pincode"
-                  name="pincode"
-                  className="form-input"
                   type="text"
                   placeholder="e.g. 110075"
-                  value={form.pincode}
-                  onChange={handleChange}
+                  value={values.pincode}
+                  onChange={(v) => handleChange('pincode', v)}
+                  onBlur={() => handleBlur('pincode')}
                   required
+                  maxLength={6}
                 />
               </div>
 
               <div className="form-group">
                 <label className="form-label" htmlFor="modal-course">Course of Interest *</label>
-                <select
+                <FormField
                   id="modal-course"
-                  name="course"
-                  className="form-select"
-                  value={form.course}
-                  onChange={handleChange}
+                  as="select"
+                  value={values.course}
+                  onChange={(v) => handleChange('course', v)}
                   required
                 >
                   <option value="">Select a program</option>
                   {COURSES.map((c) => (
                     <option key={c} value={c}>{c}</option>
                   ))}
-                </select>
+                </FormField>
               </div>
 
-              {!isDemo && (
-                <div className="form-group">
-                  <label className="form-label" htmlFor="modal-message">Your Aviation Background</label>
-                  <input
-                    id="modal-message"
-                    name="message"
-                    className="form-input"
-                    placeholder="e.g. Student pilot, no experience, cleared ATPL..."
-                    value={form.message}
-                    onChange={handleChange}
-                  />
-                </div>
-              )}
-
-              <button
-                type="submit"
+              <SubmitButton
                 className="btn btn-primary"
                 id={isDemo ? 'submit-demo-form' : 'submit-apply-form'}
-                disabled={submitting}
+                disabled={!isValid}
                 style={{ width: '100%', justifyContent: 'center', padding: '0.9rem' }}
               >
-                {submitting ? 'Submitting...' : isDemo ? 'Book My Free Demo →' : 'Submit Application →'}
-              </button>
+                {isDemo ? 'Book My Free Demo →' : 'Submit Application →'}
+              </SubmitButton>
 
               <p className="form-legal">
                 By submitting, you consent to being contacted by Airborne Aviation Academy

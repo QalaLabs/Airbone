@@ -139,6 +139,13 @@ export async function POST(req) {
       pincode,
       course,
       source: rawSource,
+      utmSource: typeof payload.utm_source === 'string' ? payload.utm_source.trim() : undefined,
+      utmMedium: typeof payload.utm_medium === 'string' ? payload.utm_medium.trim() : undefined,
+      utmCampaign: typeof payload.utm_campaign === 'string' ? payload.utm_campaign.trim() : undefined,
+      utmTerm: typeof payload.utm_term === 'string' ? payload.utm_term.trim() : undefined,
+      utmContent: typeof payload.utm_content === 'string' ? payload.utm_content.trim() : undefined,
+      referrerUrl: typeof payload.referrer === 'string' ? payload.referrer.trim() : undefined,
+      landingPage: typeof payload.landing_page === 'string' ? payload.landing_page.trim() : undefined,
     }
 
     // Upstream fetch with AbortController timeout protection
@@ -158,6 +165,13 @@ export async function POST(req) {
         pincode: leadData.pincode || undefined,
         courseInterest: leadData.course || undefined,
         source: resolveSource(leadData.source),
+        utmSource: leadData.utmSource,
+        utmMedium: leadData.utmMedium,
+        utmCampaign: leadData.utmCampaign,
+        utmTerm: leadData.utmTerm,
+        utmContent: leadData.utmContent,
+        referrerUrl: leadData.referrerUrl,
+        landingPage: leadData.landingPage,
       }),
       signal: controller.signal,
     })

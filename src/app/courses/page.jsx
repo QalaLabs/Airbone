@@ -25,28 +25,28 @@ export default async function CoursesPage() {
   return (
     <>
       <Header />
-      <main style={{ minHeight: '80vh', background: '#000810', padding: '4rem var(--margin) 6rem var(--margin)' }}>
+      <main className="course-main-wrapper" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
 
         {/* Header Hero Section */}
-        <div style={{ maxWidth: '800px', marginBottom: '3.5rem' }}>
-          <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start' }}>Academy Syllabus</p>
-          <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', marginTop: '1rem', textTransform: 'uppercase' }}>
+        <div style={{ maxWidth: '800px', marginBottom: '4rem' }}>
+          <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start', color: 'var(--red)' }}>Academy Syllabus</p>
+          <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', marginTop: '1rem', textTransform: 'uppercase', color: 'var(--navy)' }}>
             Course Portfolio &amp;
-            <em style={{ color: '#D8A027', fontStyle: 'normal' }}> Flight Paths.</em>
+            <em style={{ color: 'var(--gold)', fontStyle: 'normal' }}> Flight Paths.</em>
           </h1>
-          <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '1.02rem', lineHeight: '1.6', maxWidth: '100%' }}>
+          <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0,39,76,0.75)', fontSize: '1.02rem', lineHeight: '1.7', maxWidth: '100%' }}>
             From absolute beginner ground training to advanced jet type readiness, our disciplines are structured to build conceptual clarity and meet strict DGCA requirements.
           </p>
         </div>
 
         {/* Empty state */}
         {courses.length === 0 && (
-          <div style={{ padding: '6rem 2rem', textAlign: 'center', background: '#00162e', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '1px' }}>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '1rem', marginBottom: '1rem' }}>
+          <div style={{ padding: '6rem 2rem', textAlign: 'center', background: '#ffffff', border: '1px dashed rgba(0,39,76,0.18)', borderRadius: '6px', boxShadow: '0 4px 20px rgba(0,39,76,0.02)' }}>
+            <p style={{ color: 'rgba(0,39,76,0.5)', fontSize: '1rem', marginBottom: '1rem' }}>
               Course catalog is being updated.
             </p>
-            <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.875rem' }}>
-              Contact us at <a href="tel:+919953777320" style={{ color: '#D8A027' }}>+91 9953 777 320</a> for current batch information.
+            <p style={{ color: 'rgba(0,39,76,0.4)', fontSize: '0.875rem' }}>
+              Contact us at <a href="tel:+919953777320" style={{ color: 'var(--gold)' }}>+91 9953 777 320</a> for current batch information.
             </p>
           </div>
         )}
@@ -54,22 +54,17 @@ export default async function CoursesPage() {
         {/* Flagship Program */}
         {flagship && (
           <div
-            className="cpl-hero-banner"
+            className="cpl-hero-banner cpl-grid-layout"
             style={{
-              borderRadius: '1px',
-              padding: '3rem var(--margin)',
+              borderRadius: '12px',
               marginBottom: '5rem',
-              display: 'grid',
-              gridTemplateColumns: '1fr',
-              gap: '3rem',
-              alignItems: 'center',
             }}
           >
             <div className="cpl-badge-ribbon">FLAGSHIP</div>
 
             {/* Left Info Column */}
             <div>
-              <span className="badge" style={{ borderColor: '#DB241E', background: 'rgba(219,36,30,0.12)', color: '#DB241E', marginBottom: '1.25rem' }}>
+              <span className="badge" style={{ borderColor: 'var(--gold)', background: 'rgba(216,160,39,0.15)', color: 'var(--gold)', marginBottom: '1.25rem', boxShadow: 'none' }}>
                 ⭐ {meta(flagship, 'batch', 'Next batch — contact us')}
               </span>
               <h2 className="ov-h1" style={{ fontSize: 'clamp(1.8rem, 4.5vw, 2.8rem)', fontWeight: 900, textTransform: 'uppercase', lineHeight: '1.1' }}>
@@ -77,10 +72,10 @@ export default async function CoursesPage() {
                   {flagship.title}
                 </Link>
               </h2>
-              <p style={{ fontSize: '0.98rem', color: '#D8A027', fontWeight: 700, margin: '1rem 0 1.5rem 0', letterSpacing: '0.05em' }}>
+              <p style={{ fontSize: '0.98rem', color: 'var(--gold)', fontWeight: 700, margin: '1rem 0 1.5rem 0', letterSpacing: '0.05em' }}>
                 {flagship.subtitle ?? meta(flagship, 'tagline', '')}
               </p>
-              <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.7', marginBottom: '2rem' }}>
+              <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.78)', lineHeight: '1.75', marginBottom: '2rem' }}>
                 {flagship.description ?? ''}
               </p>
 
@@ -92,7 +87,7 @@ export default async function CoursesPage() {
                   </h4>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
                     {flagship.curriculum.map((m) => (
-                      <div key={m.module} style={{ background: '#000f1e', borderLeft: '2px solid #DB241E', padding: '0.75rem 1rem', fontSize: '0.82rem', color: '#FFFFFF', fontWeight: 600 }}>
+                      <div key={m.module} style={{ background: 'rgba(255,255,255,0.06)', borderLeft: '2px solid var(--gold)', padding: '0.75rem 1rem', fontSize: '0.82rem', color: '#FFFFFF', fontWeight: 600 }}>
                         ✓ {m.module}
                       </div>
                     ))}
@@ -104,7 +99,7 @@ export default async function CoursesPage() {
                 {flagship.fee && (
                   <div>
                     <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', display: 'block', marginBottom: '0.2rem' }}>Tuition Fee</span>
-                    <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.6rem', fontWeight: 900, color: '#D8A027' }}>
+                    <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.6rem', fontWeight: 900, color: 'var(--gold)' }}>
                       {formatFee(flagship.fee)}
                     </span>
                   </div>
@@ -119,7 +114,7 @@ export default async function CoursesPage() {
 
             {/* Image */}
             {meta(flagship, 'image') && (
-              <div className="cpl-banner-image-wrap">
+              <div className="cpl-banner-image-wrap" style={{ borderRadius: '8px' }}>
                 <Link href={`/courses/${flagship.slug}`} style={{ display: 'block' }}>
                   <img src={meta(flagship, 'image')} alt={flagship.title} className="cpl-banner-image" />
                 </Link>
@@ -137,25 +132,15 @@ export default async function CoursesPage() {
         {supporting.length > 0 && (
           <>
             <div style={{ marginBottom: '2.5rem' }}>
-              <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start' }}>Supporting Programs</p>
-              <h2 className="ov-h2" style={{ marginTop: '0.5rem' }}>Simulator &amp; Cadet Preparation Packages</h2>
+              <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start', color: 'var(--red)' }}>Supporting Programs</p>
+              <h2 className="ov-h2" style={{ marginTop: '0.5rem', color: 'var(--navy)' }}>Simulator &amp; Cadet Preparation Packages</h2>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem' }}>
               {supporting.map((course) => (
                 <div
                   key={course.id}
-                  style={{
-                    background: '#00162e',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    borderRadius: '1px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    transition: 'transform 0.3s ease, border-color 0.3s ease',
-                    boxShadow: '0 4px 30px rgba(0,0,0,0.3)',
-                    overflow: 'hidden',
-                  }}
+                  className="course-page-card"
                 >
                   {meta(course, 'image') && (
                     <Link
@@ -168,7 +153,7 @@ export default async function CoursesPage() {
                         src={meta(course, 'image')}
                         alt={course.title}
                         className="course-card-image"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderBottom: '2.5px solid var(--gold)' }}
                       />
                     </Link>
                   )}
@@ -176,36 +161,36 @@ export default async function CoursesPage() {
                   <div style={{ padding: '2rem', flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                        <span style={{ fontSize: '0.62rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#D8A027', fontWeight: 700 }}>
+                        <span style={{ fontSize: '0.625rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--red)', fontWeight: 800 }}>
                           {course.duration ?? ''}
                         </span>
                         {meta(course, 'availability') && (
-                          <span className="badge" style={{ fontSize: '0.55rem', padding: '0.2rem 0.5rem', margin: 0, borderColor: 'rgba(216,160,39,0.4)', background: 'rgba(216,160,39,0.05)', color: '#D8A027' }}>
+                          <span className="badge" style={{ fontSize: '0.55rem', padding: '0.2rem 0.5rem', margin: 0, borderColor: 'rgba(216,160,39,0.3)', background: 'rgba(216,160,39,0.05)', color: 'var(--gold)', boxShadow: 'none' }}>
                             {meta(course, 'availability')}
                           </span>
                         )}
                       </div>
 
-                      <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.15rem', fontWeight: 800, color: '#FFFFFF', marginBottom: '0.8rem', textTransform: 'uppercase', lineHeight: '1.3' }}>
+                      <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.15rem', fontWeight: 800, color: 'var(--navy)', marginBottom: '0.8rem', textTransform: 'uppercase', lineHeight: '1.3' }}>
                         <Link href={`/courses/${course.slug}`} style={{ color: 'inherit', textDecoration: 'none' }}>
                           {course.title}
                         </Link>
                       </h3>
 
-                      <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', lineHeight: '1.6', marginBottom: '1rem' }}>
+                      <p style={{ fontSize: '0.85rem', color: 'rgba(0, 39, 76, 0.7)', lineHeight: '1.6', marginBottom: '1rem', fontFamily: 'var(--font-b)' }}>
                         {course.subtitle ?? ''}
                       </p>
 
-                      <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-b)', marginBottom: '1.5rem' }}>
+                      <p style={{ fontSize: '0.75rem', color: 'rgba(0, 39, 76, 0.55)', fontFamily: 'var(--font-b)', marginBottom: '1.5rem' }}>
                         <strong>Eligibility:</strong> {course.slug === 'cabin-crew' ? '12th pass, 18–27 yrs' : (course.eligibility || 'Class 12 or above')}
                       </p>
                     </div>
 
                     <div>
                       {course.fee && (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '1.25rem', marginBottom: '1.5rem' }}>
-                          <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>Tuition Rate</span>
-                          <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.15rem', fontWeight: 700, color: '#FFFFFF' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderTop: '1px solid rgba(0, 39, 76, 0.08)', paddingTop: '1.25rem', marginBottom: '1.5rem' }}>
+                          <span style={{ fontSize: '0.75rem', color: 'rgba(0, 39, 76, 0.45)' }}>Tuition Rate</span>
+                          <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.15rem', fontWeight: 700, color: 'var(--navy)' }}>
                             {course.slug === 'cabin-crew' ? '₹30K–₹54K' : formatFee(course.fee)}
                           </span>
                         </div>
@@ -214,7 +199,7 @@ export default async function CoursesPage() {
                       <Link
                         href={`/courses/${course.slug}`}
                         className="btn btn-ghost"
-                        style={{ width: '100%', justifyContent: 'center', padding: '0.75rem 1rem', textDecoration: 'none', textAlign: 'center', display: 'block' }}
+                        style={{ width: '100%', justifyContent: 'center', padding: '0.75rem 1rem', textDecoration: 'none', textAlign: 'center', display: 'block', background: 'rgba(0, 39, 76, 0.04)', color: 'var(--navy)', borderColor: 'rgba(0, 39, 76, 0.15)' }}
                       >
                         View Curriculum →
                       </Link>
@@ -227,21 +212,18 @@ export default async function CoursesPage() {
         )}
 
         {/* Course Comparison Table */}
-        <div style={{ marginTop: '5rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '4rem' }}>
+        <div style={{ marginTop: '5rem', borderTop: '1px solid rgba(0, 39, 76, 0.08)', paddingTop: '4rem' }}>
           <div style={{ marginBottom: '2.5rem' }}>
-            <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start' }}>At a Glance</p>
-            <h2 className="ov-h2" style={{ marginTop: '0.5rem', textTransform: 'uppercase' }}>All Courses at Airborne</h2>
+            <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start', color: 'var(--red)' }}>At a Glance</p>
+            <h2 className="ov-h2" style={{ marginTop: '0.5rem', textTransform: 'uppercase', color: 'var(--navy)' }}>All Courses at Airborne</h2>
           </div>
 
           <style dangerouslySetInnerHTML={{ __html: `
             .compare-row {
               transition: background 0.2s;
             }
-            .compare-row:hover {
-              background: rgba(216,160,39,0.08) !important;
-            }
             .compare-course-link {
-              color: inherit;
+              color: var(--navy);
               text-decoration: none;
               border-bottom: 1px solid rgba(216,160,39,0.35);
               transition: color 0.2s, border-color 0.2s;
@@ -250,8 +232,8 @@ export default async function CoursesPage() {
               padding-bottom: 1px;
             }
             .compare-course-link:hover {
-              color: #D8A027;
-              border-color: #D8A027;
+              color: var(--red);
+              border-color: var(--red);
             }
             .compare-course-link:focus-visible {
               outline: 2px solid #D8A027;
@@ -260,10 +242,10 @@ export default async function CoursesPage() {
             }
           `}} />
 
-          <div style={{ overflowX: 'auto', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '1px', background: '#00162e', boxShadow: '0 4px 30px rgba(0,0,0,0.3)' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px', fontSize: '0.85rem', color: '#fff', fontFamily: 'var(--font-b)' }}>
+          <div className="course-table-wrap" style={{ overflowX: 'auto' }}>
+            <table className="course-table" style={{ minWidth: '800px' }}>
               <thead>
-                <tr style={{ background: '#000f1e', borderBottom: '2px solid rgba(255,255,255,0.1)', fontFamily: 'var(--font-h)', textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: '0.15em', color: '#D8A027' }}>
+                <tr>
                   <th style={{ padding: '1.2rem 1.5rem' }}>Course</th>
                   <th style={{ padding: '1.2rem 1.5rem' }}>Duration</th>
                   <th style={{ padding: '1.2rem 1.5rem' }}>Min Eligibility</th>
@@ -287,22 +269,18 @@ export default async function CoursesPage() {
                   <tr
                     key={idx}
                     className="compare-row"
-                    style={{
-                      borderBottom: '1px solid rgba(255,255,255,0.06)',
-                      background: idx % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'rgba(255,255,255,0.03)',
-                    }}
                   >
-                    <td style={{ padding: '1.2rem 1.5rem', fontWeight: 700, color: '#fff' }}>
+                    <td style={{ padding: '1.2rem 1.5rem', fontWeight: 700 }}>
                       {row.slug ? (
                         <Link href={`/courses/${row.slug}`} className="compare-course-link">
                           {row.name}
                         </Link>
                       ) : row.name}
                     </td>
-                    <td style={{ padding: '1.2rem 1.5rem', color: 'rgba(255,255,255,0.8)' }}>{row.dur}</td>
-                    <td style={{ padding: '1.2rem 1.5rem', color: 'rgba(255,255,255,0.8)' }}>{row.elig}</td>
-                    <td style={{ padding: '1.2rem 1.5rem', fontWeight: 700, color: '#D8A027' }}>{row.fee}</td>
-                    <td style={{ padding: '1.2rem 1.5rem', textAlign: 'center', fontWeight: 900, color: row.dgca === '✓' ? '#DB241E' : 'rgba(255,255,255,0.3)', fontSize: row.dgca === '✓' ? '1.1rem' : '0.9rem' }}>{row.dgca}</td>
+                    <td style={{ padding: '1.2rem 1.5rem' }}>{row.dur}</td>
+                    <td style={{ padding: '1.2rem 1.5rem' }}>{row.elig}</td>
+                    <td style={{ padding: '1.2rem 1.5rem', fontWeight: 700, color: 'var(--gold)' }}>{row.fee}</td>
+                    <td style={{ padding: '1.2rem 1.5rem', textAlign: 'center', fontWeight: 900, color: row.dgca === '✓' ? 'var(--red)' : 'rgba(0, 39, 76, 0.25)', fontSize: row.dgca === '✓' ? '1.1rem' : '0.9rem' }}>{row.dgca}</td>
                   </tr>
                 ))}
               </tbody>

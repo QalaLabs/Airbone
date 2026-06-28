@@ -13,6 +13,10 @@ import { Canvas } from '@react-three/fiber'
 import { AdaptiveDpr, PerformanceMonitor } from '@react-three/drei'
 import { useScrollEngine, ACTS, TOTAL_VH } from './hooks/useScrollEngine'
 import MasterScene from './scenes/MasterScene'
+import useFormValidation from './hooks/useFormValidation'
+import { validateName, validatePhone, validateEmail, validateRequired } from './utils/validation'
+import FormField from './components/FormField'
+import SubmitButton from './components/SubmitButton'
 import './index.css'
 
 /* ─── CURSOR ─── */
@@ -417,12 +421,32 @@ function Act7Overlay({ visible, onDemo, onApply }) {
 function Modal({ open, type, onClose }) {
   const isDemo = type === 'demo'
 
+  const validators = {
+    name: validateName,
+    phone: validatePhone,
+    email: validateEmail,
+    ...(!isDemo ? { course: validateRequired } : {}),
+  }
+
+  const { values, handleChange, handleBlur, validate, isValid, setValues } = useFormValidation(
+    { name: '', phone: '', email: '', course: '' },
+    validators
+  )
+
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
     const fn = (e) => { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', fn)
+    if (!open) setValues({ name: '', phone: '', email: '', course: '' })
     return () => { window.removeEventListener('keydown', fn); document.body.style.overflow = '' }
-  }, [open, onClose])
+  }, [open, onClose, setValues])
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (!validate()) return
+    onClose()
+    alert('Thank you! We will be in touch within 24 hours.')
+  }
 
   return (
     <div
@@ -439,22 +463,22 @@ function Modal({ open, type, onClose }) {
             ? 'Experience the Airborne teaching method firsthand. A free 90-minute demo class with Capt. Navrang Singh.'
             : 'July 2026 seats are limited to 25 students. Submit your details and we will contact you within 24 hours.'}
         </p>
-        <form className="modal-form" onSubmit={(e) => { e.preventDefault(); onClose(); alert('Thank you! We will be in touch within 24 hours.') }}>
-          <input id="modal-name"  className="modal-input" type="text"  placeholder="Your Full Name"  required />
-          <input id="modal-phone" className="modal-input" type="tel"   placeholder="Phone Number"     required />
-          <input id="modal-email" className="modal-input" type="email" placeholder="Email Address"    required />
+        <form className="modal-form" onSubmit={handleSubmit} noValidate>
+          <FormField id="modal-name" type="text" placeholder="Your Full Name" value={values.name} onChange={(v) => handleChange('name', v)} onBlur={() => handleBlur('name')} required />
+          <FormField id="modal-phone" type="tel" placeholder="Phone Number" value={values.phone} onChange={(v) => handleChange('phone', v)} onBlur={() => handleBlur('phone')} required maxLength={10} />
+          <FormField id="modal-email" type="email" placeholder="Email Address" value={values.email} onChange={(v) => handleChange('email', v)} onBlur={() => handleBlur('email')} required />
           {!isDemo && (
-            <select id="modal-course" className="modal-input" defaultValue="">
+            <FormField id="modal-course" as="select" value={values.course} onChange={(v) => handleChange('course', v)} required>
               <option value="" disabled>Select Course</option>
               <option>DGCA CPL Ground School</option>
               <option>RTR (A) Radio Telephony</option>
               <option>Air Navigation</option>
               <option>Meteorology</option>
-            </select>
+            </FormField>
           )}
-          <button id="modal-submit-btn" className="modal-btn" type="submit">
+          <SubmitButton id="modal-submit-btn" className="modal-btn" disabled={!isValid}>
             {isDemo ? 'Reserve My Demo Seat →' : 'Submit Application →'}
-          </button>
+          </SubmitButton>
         </form>
       </div>
     </div>
