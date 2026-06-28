@@ -80,8 +80,7 @@ const CHAPTERS = [
   },
 ]
 
-/* ── SVG flight path ──────────────────────────────────── */
-// viewBox 0 0 100 800, preserveAspectRatio none → fills container
+/* ── SVG waypoints (viewBox 0 0 100 800) ─────────────── */
 const WP = [
   [50, 52],
   [32, 162],
@@ -105,40 +104,35 @@ function buildPath(pts) {
 }
 const PATH_D = buildPath(WP)
 
-/* ── Aircraft icon (top-down silhouette) ─────────────── */
 function AircraftIcon() {
   return (
     <g>
-      {/* Fuselage */}
       <ellipse cx={0} cy={0} rx={1.5} ry={7.5} fill="white" />
-      {/* Wings */}
       <path d="M -1.2,1 L -9.5,6 L -9.5,7.5 L -1.2,3.2 Z" fill="white" opacity={0.9} />
       <path d="M 1.2,1 L 9.5,6 L 9.5,7.5 L 1.2,3.2 Z" fill="white" opacity={0.9} />
-      {/* Engines */}
       <ellipse cx={-5.5} cy={5} rx={1} ry={2.2} fill="rgba(255,255,255,0.55)" />
       <ellipse cx={5.5} cy={5} rx={1} ry={2.2} fill="rgba(255,255,255,0.55)" />
-      {/* Tail */}
       <path d="M -1,-5.5 L -4.5,-7.5 L -4,-6.5 L -1,-4.5 Z" fill="white" opacity={0.75} />
       <path d="M 1,-5.5 L 4.5,-7.5 L 4,-6.5 L 1,-4.5 Z" fill="white" opacity={0.75} />
     </g>
   )
 }
 
-/* ── Main component ───────────────────────────────────── */
 export default function JourneyFlightPath({ onBook }) {
-  const wrapRef = useRef(null)
-  const pathRef = useRef(null)      // measurement + trail path
-  const trailRef = useRef(null)     // visible animated trail
-  const aircraftRef = useRef(null)  // aircraft <g>
-  const glowRef = useRef(null)      // glow circle behind aircraft
+  const wrapRef    = useRef(null)
+  const pathRef    = useRef(null)   // invisible measurement path
+  const trailRef   = useRef(null)   // animated trail path
+  const aircraftRef= useRef(null)   // aircraft <g> — NEVER set transform in JSX
+  const glowRef    = useRef(null)   // glow circle — NEVER set cx/cy in JSX
+  const pathLenRef = useRef(0)      // path length; use ref to avoid re-renders
   const activeIdxRef = useRef(0)
 
   const [activeIdx, setActiveIdx] = useState(0)
-  const [isMobile, setIsMobile] = useState(false)
-  const [pathLen, setPathLen] = useState(1000)
+  const [isMobile, setIsMobile]   = useState(false)
 
   const { scrollYProgress } = useScroll({ target: wrapRef, offset: ['start start', 'end end'] })
-  const smooth = useSpring(scrollYProgress, { stiffness: 55, damping: 22, restDelta: 0.001 })
+  // Spring ONLY for visual smoothness (aircraft + trail); chapter uses raw scroll
+  const smooth = useSpring(scrollYProgress, { stiffness: 80, damping: 28, restDelta: 0.001 })
 
   /* Detect mobile */
   useEffect(() => {
@@ -148,47 +142,75 @@ export default function JourneyFlightPath({ onBook }) {
     return () => window.removeEventListener('resize', check)
   }, [])
 
-  /* Measure path length after mount */
+  /* Measure path + init DOM state — runs after first render */
   useEffect(() => {
     if (!pathRef.current) return
     const len = pathRef.current.getTotalLength()
-    setPathLen(len)
-    // Init trail hidden
+    pathLenRef.current = len
+
+    // Init chapter from current scroll position (handles page-load mid-scroll)
+    const v = scrollYProgress.get()
+    const idx = Math.min(Math.floor(v * 8), 7)
+    activeIdxRef.current = idx
+    setActiveIdx(idx)
+
+    // Trail: start fully hidden
     if (trailRef.current) {
-      trailRef.current.style.strokeDasharray = String(len)
+      trailRef.current.style.strokeDasharray  = String(len)
       trailRef.current.style.strokeDashoffset = String(len)
-      trailRef.current.style.opacity = '0'
+      trailRef.current.style.opacity          = '0'
+      trailRef.current.style.stroke           = CHAPTERS[0].accent
     }
-    // Init aircraft position
+
+    // Aircraft initial position (top waypoint, pointing down)
     if (aircraftRef.current) {
       const pt = pathRef.current.getPointAtLength(0)
       aircraftRef.current.setAttribute('transform', `translate(${pt.x},${pt.y}) rotate(180)`)
     }
+
+    // Glow initial position
+    if (glowRef.current) {
+      glowRef.current.setAttribute('cx', String(WP[0][0]))
+      glowRef.current.setAttribute('cy', String(WP[0][1]))
+      glowRef.current.setAttribute('fill', CHAPTERS[0].accent)
+    }
   }, [])
 
-  /* Drive aircraft + trail via scroll — pure DOM, zero re-renders */
-  useMotionValueEvent(smooth, 'change', (v) => {
-    // Chapter
+  /* ── Chapter switching: raw scroll (no spring lag) ── */
+  useMotionValueEvent(scrollYProgress, 'change', (v) => {
     const idx = Math.min(Math.floor(v * 8), 7)
     if (idx !== activeIdxRef.current) {
       activeIdxRef.current = idx
       setActiveIdx(idx)
+      // Sync trail + glow color immediately when chapter changes
+      if (trailRef.current) {
+        trailRef.current.style.stroke = CHAPTERS[idx].accent
+      }
+      if (glowRef.current) {
+        glowRef.current.setAttribute('fill', CHAPTERS[idx].accent)
+      }
     }
+  })
 
-    if (!pathRef.current || !pathLen) return
-    const len = v * pathLen
+  /* ── Visual movement: spring-smoothed (aircraft + trail offset) ── */
+  useMotionValueEvent(smooth, 'change', (v) => {
+    const totalLen = pathLenRef.current
+    if (!pathRef.current || totalLen === 0) return
 
-    // Trail
+    const traveled = Math.min(v * totalLen, totalLen)
+
+    // Trail reveal
     if (trailRef.current) {
-      trailRef.current.style.strokeDashoffset = String(pathLen - len)
-      trailRef.current.style.opacity = v < 0.025 ? String(v / 0.025) : '1'
+      trailRef.current.style.strokeDashoffset = String(totalLen - traveled)
+      trailRef.current.style.opacity = v < 0.015 ? String(v / 0.015) : '1'
     }
 
-    // Aircraft
+    // Aircraft position + heading
     if (aircraftRef.current) {
-      const pt = pathRef.current.getPointAtLength(len)
-      const ptN = pathRef.current.getPointAtLength(Math.min(len + 3, pathLen))
+      const pt  = pathRef.current.getPointAtLength(traveled)
+      const ptN = pathRef.current.getPointAtLength(Math.min(traveled + 2, totalLen))
       const angle = Math.atan2(ptN.y - pt.y, ptN.x - pt.x) * (180 / Math.PI) + 90
+      // setAttribute prevents React from overriding on re-render
       aircraftRef.current.setAttribute('transform', `translate(${pt.x},${pt.y}) rotate(${angle})`)
       if (glowRef.current) {
         glowRef.current.setAttribute('cx', String(pt.x))
@@ -204,7 +226,7 @@ export default function JourneyFlightPath({ onBook }) {
 
       {/* ── Sticky viewport ── */}
       <div style={{
-        position: 'sticky', top: 0, height: '100svh', width: '100%',
+        position: 'sticky', top: 0, height: '100dvh', width: '100%',
         overflow: 'hidden', background: 'var(--navy-deep)',
       }}>
 
@@ -213,19 +235,19 @@ export default function JourneyFlightPath({ onBook }) {
           <motion.div
             key={`bg${activeIdx}`}
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            transition={{ duration: 1.1 }}
+            transition={{ duration: 0.9 }}
             style={{ position: 'absolute', inset: 0, zIndex: 0, background: ch.bg }}
           />
         </AnimatePresence>
 
-        {/* Chapter image — 12% opacity overlay */}
+        {/* Chapter image overlay */}
         <AnimatePresence mode="sync">
           <motion.div
             key={`img${activeIdx}`}
-            initial={{ opacity: 0, scale: 1.06 }}
+            initial={{ opacity: 0, scale: 1.05 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
             style={{ position: 'absolute', inset: 0, zIndex: 1 }}
           >
             <img
@@ -237,21 +259,21 @@ export default function JourneyFlightPath({ onBook }) {
         </AnimatePresence>
 
         {/* Gradient vignettes */}
-        <div style={{ position: 'absolute', inset: 0, zIndex: 2, background: 'linear-gradient(to right, rgba(0,8,22,0.88) 0%, rgba(0,8,22,0.18) 55%, transparent 100%)' }} />
-        <div style={{ position: 'absolute', inset: 0, zIndex: 2, background: 'linear-gradient(to bottom, rgba(0,8,22,0.5) 0%, transparent 20%, transparent 80%, rgba(0,8,22,0.65) 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, zIndex: 2, background: 'linear-gradient(to right, rgba(0,8,22,0.9) 0%, rgba(0,8,22,0.2) 55%, transparent 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, zIndex: 2, background: 'linear-gradient(to bottom, rgba(0,8,22,0.5) 0%, transparent 20%, transparent 78%, rgba(0,8,22,0.7) 100%)' }} />
 
-        {/* ── DESKTOP ── */}
+        {/* ── DESKTOP LAYOUT ── */}
         {!isMobile && (
           <div style={{ position: 'relative', zIndex: 10, height: '100%', display: 'grid', gridTemplateColumns: '130px 1fr' }}>
 
             {/* Flight path SVG */}
-            <div style={{ height: '100%', position: 'relative' }}>
+            <div style={{ height: '100%', position: 'relative', overflow: 'visible' }}>
               <svg
                 viewBox="0 0 100 800"
-                style={{ width: '100%', height: '100%' }}
+                style={{ width: '100%', height: '100%', overflow: 'visible' }}
                 preserveAspectRatio="none"
               >
-                {/* Measurement path (invisible, provides getTotalLength) */}
+                {/* Invisible measurement path — getTotalLength source */}
                 <path ref={pathRef} d={PATH_D} fill="none" stroke="none" />
 
                 {/* Dashed background track */}
@@ -262,87 +284,89 @@ export default function JourneyFlightPath({ onBook }) {
                   strokeDasharray="3 10"
                 />
 
-                {/* Animated trail */}
+                {/*
+                  Trail — CRITICAL: do NOT set strokeDasharray or strokeDashoffset in JSX.
+                  They are managed entirely via DOM in the motion value event.
+                  Only stroke color is React-managed (via style attribute, not inline style).
+                */}
                 <path
                   ref={trailRef}
-                  d={PATH_D} fill="none"
-                  stroke={ch.accent}
-                  strokeWidth="1.5"
+                  d={PATH_D}
+                  fill="none"
+                  strokeWidth="1.6"
                   strokeLinecap="round"
-                  style={{ transition: 'stroke 0.6s' }}
                 />
 
                 {/* Waypoints */}
                 {WP.map(([wx, wy], i) => (
                   <g key={i}>
                     {i < activeIdx && (
-                      <circle cx={wx} cy={wy} r={2.5} fill={ch.accent} opacity={0.55}
-                        style={{ transition: 'fill 0.4s' }}
-                      />
+                      <circle cx={wx} cy={wy} r={2.5} fill={ch.accent} opacity={0.5}
+                        style={{ transition: 'fill 0.4s' }} />
                     )}
                     {i === activeIdx && (
                       <>
-                        <circle cx={wx} cy={wy} r={3} fill={ch.accent} style={{ transition: 'fill 0.4s' }} />
-                        {/* Radar pulse via SVG SMIL (no JS, no React) */}
-                        <circle cx={wx} cy={wy} r={3} fill="none" stroke={ch.accent} strokeWidth={0.7}>
-                          <animate attributeName="r" values="3;13;3" dur="2.2s" repeatCount="indefinite" />
-                          <animate attributeName="opacity" values="0.55;0;0.55" dur="2.2s" repeatCount="indefinite" />
+                        <circle cx={wx} cy={wy} r={3.2} fill={ch.accent} style={{ transition: 'fill 0.4s' }} />
+                        <circle cx={wx} cy={wy} r={3.2} fill="none" stroke={ch.accent} strokeWidth={0.7}>
+                          <animate attributeName="r" values="3;14;3" dur="2s" repeatCount="indefinite" />
+                          <animate attributeName="opacity" values="0.6;0;0.6" dur="2s" repeatCount="indefinite" />
                         </circle>
-                        <circle cx={wx} cy={wy} r={3} fill="none" stroke={ch.accent} strokeWidth={0.5}>
-                          <animate attributeName="r" values="3;13;3" dur="2.2s" begin="0.7s" repeatCount="indefinite" />
-                          <animate attributeName="opacity" values="0.4;0;0.4" dur="2.2s" begin="0.7s" repeatCount="indefinite" />
+                        <circle cx={wx} cy={wy} r={3.2} fill="none" stroke={ch.accent} strokeWidth={0.45}>
+                          <animate attributeName="r" values="3;14;3" dur="2s" begin="0.65s" repeatCount="indefinite" />
+                          <animate attributeName="opacity" values="0.4;0;0.4" dur="2s" begin="0.65s" repeatCount="indefinite" />
                         </circle>
                       </>
                     )}
                     {i > activeIdx && (
                       <circle cx={wx} cy={wy} r={2} fill="none"
-                        stroke="rgba(255,255,255,0.18)" strokeWidth={0.8}
-                      />
+                        stroke="rgba(255,255,255,0.15)" strokeWidth={0.8} />
                     )}
-                    {/* Chapter number */}
                     <text
-                      x={wx + 7} y={wy + 4}
-                      fontSize="5.5" fontFamily="var(--font-h)" fontWeight="700"
-                      fill={i <= activeIdx ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.15)'}
-                      style={{ transition: 'fill 0.4s', letterSpacing: '0.02em' }}
+                      x={wx + 6} y={wy + 4}
+                      fontSize="5" fontFamily="var(--font-h)" fontWeight="700"
+                      fill={i <= activeIdx ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.13)'}
+                      style={{ transition: 'fill 0.4s' }}
                     >
                       {CHAPTERS[i].num}
                     </text>
                   </g>
                 ))}
 
-                {/* Aircraft glow */}
+                {/*
+                  CRITICAL: Glow + Aircraft must NOT have cx/cy/transform in JSX.
+                  These attributes are managed by DOM mutations in useMotionValueEvent.
+                  If React declares them in JSX, it overrides our mutations on re-render,
+                  snapping the elements back to their initial position.
+                */}
                 <circle
                   ref={glowRef}
-                  cx={WP[0][0]} cy={WP[0][1]} r={11}
-                  fill={ch.accent} opacity={0.09}
-                  style={{ transition: 'fill 0.6s' }}
+                  r={12}
+                  opacity={0.09}
                 />
 
-                {/* Aircraft — DOM-animated via setAttribute */}
-                <g ref={aircraftRef} transform={`translate(${WP[0][0]},${WP[0][1]}) rotate(180)`}>
+                <g ref={aircraftRef}>
                   <AircraftIcon />
                 </g>
               </svg>
             </div>
 
             {/* Chapter content */}
-            <div style={{ display: 'flex', alignItems: 'center', height: '100%', padding: 'clamp(2rem,5vw,4rem) clamp(2.5rem,6vw,6rem)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', height: '100%', padding: 'clamp(2rem,4vw,4rem) clamp(2rem,5vw,6rem)' }}>
               <AnimatePresence mode="wait">
                 <motion.article
                   key={activeIdx}
-                  initial={{ opacity: 0, x: 48, filter: 'blur(12px)' }}
+                  initial={{ opacity: 0, x: 40, filter: 'blur(10px)' }}
                   animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-                  exit={{ opacity: 0, x: -36, filter: 'blur(8px)' }}
-                  transition={{ duration: 0.52, ease: [0.16, 1, 0.3, 1] }}
+                  exit={{ opacity: 0, x: -28, filter: 'blur(6px)' }}
+                  transition={{ duration: 0.48, ease: [0.16, 1, 0.3, 1] }}
                   style={{ maxWidth: '600px', position: 'relative' }}
                 >
-                  {/* Ghost chapter number */}
+                  {/* Ghost number */}
                   <div aria-hidden style={{
                     position: 'absolute',
                     right: '-1rem', top: '50%', transform: 'translateY(-50%)',
                     fontFamily: 'var(--font-h)',
-                    fontSize: 'clamp(9rem, 20vw, 18rem)',
+                    fontSize: 'clamp(8rem,18vw,16rem)',
                     fontWeight: 900, lineHeight: 1,
                     letterSpacing: '-0.06em',
                     color: 'rgba(255,255,255,0.022)',
@@ -352,33 +376,31 @@ export default function JourneyFlightPath({ onBook }) {
                   </div>
 
                   <div style={{ position: 'relative', zIndex: 1 }}>
-                    {/* Label row */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.75rem' }}>
                       <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.65rem', fontWeight: 800, color: ch.accent, letterSpacing: '0.3em' }}>
                         {ch.num}
                       </span>
-                      <span style={{ height: '1px', width: '2rem', background: 'rgba(255,255,255,0.15)' }} />
-                      <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.6rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.25em', textTransform: 'uppercase' }}>
+                      <span style={{ height: '1px', width: '2rem', background: 'rgba(255,255,255,0.12)' }} />
+                      <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.6rem', fontWeight: 700, color: 'rgba(255,255,255,0.38)', letterSpacing: '0.25em', textTransform: 'uppercase' }}>
                         {ch.label}
                       </span>
                     </div>
 
-                    {/* Title */}
                     <h2 style={{
                       fontFamily: 'var(--font-h)',
-                      fontSize: 'clamp(1.875rem,3.8vw,3.25rem)',
+                      fontSize: 'clamp(1.75rem,3.5vw,3rem)',
                       fontWeight: 800, color: '#fff',
-                      letterSpacing: '-0.03em', lineHeight: 1.05,
+                      letterSpacing: '-0.03em', lineHeight: 1.06,
                       textTransform: 'uppercase', marginBottom: '0.5rem',
                     }}>
                       {ch.title}
                     </h2>
 
-                    <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.9375rem', fontWeight: 300, fontStyle: 'italic', color: ch.accent, marginBottom: '1.75rem' }}>
+                    <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.9375rem', fontWeight: 300, fontStyle: 'italic', color: ch.accent, marginBottom: '1.5rem' }}>
                       {ch.sub}
                     </div>
 
-                    <p style={{ fontFamily: 'var(--font-b)', fontSize: '0.9375rem', lineHeight: 1.75, color: 'rgba(255,255,255,0.62)', maxWidth: '30rem', marginBottom: '2rem' }}>
+                    <p style={{ fontFamily: 'var(--font-b)', fontSize: '0.9375rem', lineHeight: 1.75, color: 'rgba(255,255,255,0.6)', maxWidth: '30rem', marginBottom: '1.75rem' }}>
                       {ch.body}
                     </p>
 
@@ -391,7 +413,8 @@ export default function JourneyFlightPath({ onBook }) {
                             background: 'var(--red)', color: '#fff', border: 'none',
                             borderRadius: '999px', padding: '0.875rem 1.75rem',
                             fontFamily: 'var(--font-h)', fontSize: '0.8rem', fontWeight: 700,
-                            cursor: 'pointer', letterSpacing: '0.05em', transition: 'background 0.2s',
+                            cursor: 'pointer', letterSpacing: '0.05em',
+                            minHeight: '48px', // touch target
                           }}
                           onMouseEnter={e => e.currentTarget.style.background = '#b01a15'}
                           onMouseLeave={e => e.currentTarget.style.background = 'var(--red)'}
@@ -409,7 +432,8 @@ export default function JourneyFlightPath({ onBook }) {
                             borderRadius: '999px', padding: '0.875rem 1.5rem',
                             fontFamily: 'var(--font-h)', fontSize: '0.8rem', fontWeight: 600,
                             textDecoration: 'none', letterSpacing: '0.04em',
-                            border: '1px solid rgba(255,255,255,0.1)', transition: 'background 0.2s',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            minHeight: '48px', // touch target
                           }}
                           onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
                           onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
@@ -422,9 +446,9 @@ export default function JourneyFlightPath({ onBook }) {
                         display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
                         fontFamily: 'var(--font-h)', fontSize: '0.58rem', fontWeight: 700,
                         letterSpacing: '0.25em', textTransform: 'uppercase',
-                        color: 'rgba(255,255,255,0.22)',
+                        color: 'rgba(255,255,255,0.2)',
                       }}>
-                        <span style={{ width: '20px', height: '1px', background: 'rgba(255,255,255,0.15)' }} />
+                        <span style={{ width: '20px', height: '1px', background: 'rgba(255,255,255,0.12)' }} />
                         {activeIdx + 1} of 8
                       </div>
                     )}
@@ -435,29 +459,32 @@ export default function JourneyFlightPath({ onBook }) {
           </div>
         )}
 
-        {/* ── MOBILE ── */}
+        {/* ── MOBILE LAYOUT ── */}
         {isMobile && (
-          <div style={{ position: 'relative', zIndex: 10, height: '100%', display: 'flex', flexDirection: 'column', padding: '5rem 1.5rem 2rem' }}>
+          <div style={{
+            position: 'relative', zIndex: 10, height: '100%',
+            display: 'flex', flexDirection: 'column',
+            padding: '4.5rem 1.25rem 1.5rem',
+            boxSizing: 'border-box',
+          }}>
 
             {/* Horizontal progress track */}
-            <div style={{ position: 'relative', height: '20px', marginBottom: '2rem' }}>
-              {/* Base track */}
-              <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: '1px', background: 'rgba(255,255,255,0.08)', transform: 'translateY(-50%)' }} />
-              {/* Filled track */}
+            <div style={{ position: 'relative', height: '24px', marginBottom: '1.75rem', flexShrink: 0 }}>
+              <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: '1px', background: 'rgba(255,255,255,0.07)', transform: 'translateY(-50%)' }} />
               <div style={{
                 position: 'absolute', top: '50%', left: 0, height: '1px',
                 background: ch.accent,
-                width: `${((activeIdx) / 7) * 100}%`,
+                width: `${(activeIdx / 7) * 100}%`,
                 transform: 'translateY(-50%)',
-                transition: 'width 0.5s cubic-bezier(0.16,1,0.3,1), background 0.5s',
+                transition: 'width 0.45s cubic-bezier(0.16,1,0.3,1), background 0.45s',
               }} />
-              {/* Waypoint dots */}
               {CHAPTERS.map((c, i) => (
                 <div key={i} style={{
-                  position: 'absolute', top: '50%', left: `${(i / 7) * 100}%`,
+                  position: 'absolute', top: '50%',
+                  left: `${(i / 7) * 100}%`,
                   transform: 'translate(-50%, -50%)',
-                  width: i === activeIdx ? '9px' : '5px',
-                  height: i === activeIdx ? '9px' : '5px',
+                  width: i === activeIdx ? '10px' : '5px',
+                  height: i === activeIdx ? '10px' : '5px',
                   borderRadius: '50%',
                   background: i <= activeIdx ? ch.accent : 'rgba(255,255,255,0.15)',
                   boxShadow: i === activeIdx ? `0 0 8px ${ch.accent}` : 'none',
@@ -470,55 +497,76 @@ export default function JourneyFlightPath({ onBook }) {
             <AnimatePresence mode="wait">
               <motion.div
                 key={`m${activeIdx}`}
-                initial={{ opacity: 0, y: 24 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -18 }}
-                transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
-                style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
+                exit={{ opacity: 0, y: -14 }}
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: 0 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
                   <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.65rem', fontWeight: 800, color: ch.accent, letterSpacing: '0.3em' }}>{ch.num}</span>
-                  <span style={{ height: '1px', width: '1.5rem', background: 'rgba(255,255,255,0.15)' }} />
-                  <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.6rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>{ch.label}</span>
+                  <span style={{ height: '1px', width: '1.5rem', background: 'rgba(255,255,255,0.12)' }} />
+                  <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.6rem', fontWeight: 700, color: 'rgba(255,255,255,0.38)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>{ch.label}</span>
                 </div>
+
                 <h2 style={{
-                  fontFamily: 'var(--font-h)', fontSize: 'clamp(1.625rem,7vw,2.25rem)',
-                  fontWeight: 800, color: '#fff', letterSpacing: '-0.03em',
-                  lineHeight: 1.05, textTransform: 'uppercase', marginBottom: '0.5rem',
+                  fontFamily: 'var(--font-h)',
+                  fontSize: 'clamp(1.5rem,6.5vw,2.125rem)',
+                  fontWeight: 800, color: '#fff',
+                  letterSpacing: '-0.03em', lineHeight: 1.05,
+                  textTransform: 'uppercase', marginBottom: '0.5rem',
                 }}>
                   {ch.title}
                 </h2>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.875rem', fontWeight: 300, fontStyle: 'italic', color: ch.accent, marginBottom: '1.25rem' }}>
+
+                <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.875rem', fontWeight: 300, fontStyle: 'italic', color: ch.accent, marginBottom: '1.1rem' }}>
                   {ch.sub}
                 </div>
-                <p style={{ fontFamily: 'var(--font-b)', fontSize: '0.875rem', lineHeight: 1.7, color: 'rgba(255,255,255,0.62)', marginBottom: '1.5rem' }}>
+
+                <p style={{ fontFamily: 'var(--font-b)', fontSize: '0.875rem', lineHeight: 1.7, color: 'rgba(255,255,255,0.6)', marginBottom: '1.5rem' }}>
                   {ch.body}
                 </p>
+
                 {ch.isCTA && (
-                  <button
-                    onClick={onBook}
-                    style={{
-                      display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-                      background: 'var(--red)', color: '#fff', border: 'none',
-                      borderRadius: '999px', padding: '0.875rem 1.5rem',
-                      fontFamily: 'var(--font-h)', fontSize: '0.8rem', fontWeight: 700,
-                      cursor: 'pointer', alignSelf: 'flex-start',
-                    }}
-                  >
-                    Reserve Demo →
-                  </button>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <button
+                      onClick={onBook}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                        background: 'var(--red)', color: '#fff', border: 'none',
+                        borderRadius: '999px', padding: '0.875rem 1.5rem',
+                        fontFamily: 'var(--font-h)', fontSize: '0.825rem', fontWeight: 700,
+                        cursor: 'pointer', minHeight: '52px', width: '100%',
+                      }}
+                    >
+                      Reserve Simulator Demo →
+                    </button>
+                    <a
+                      href="tel:+919953777320"
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                        background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.8)',
+                        borderRadius: '999px', padding: '0.875rem 1.5rem',
+                        fontFamily: 'var(--font-h)', fontSize: '0.825rem', fontWeight: 600,
+                        textDecoration: 'none', border: '1px solid rgba(255,255,255,0.1)',
+                        minHeight: '52px', width: '100%',
+                      }}
+                    >
+                      📞 Call Admissions
+                    </a>
+                  </div>
                 )}
               </motion.div>
             </AnimatePresence>
 
-            {/* Mobile chapter counter */}
-            <div style={{ textAlign: 'center', fontFamily: 'var(--font-h)', fontSize: '0.6rem', letterSpacing: '0.3em', color: 'rgba(255,255,255,0.22)', paddingBottom: '0.5rem' }}>
+            {/* Chapter counter */}
+            <div style={{ textAlign: 'center', fontFamily: 'var(--font-h)', fontSize: '0.58rem', letterSpacing: '0.3em', color: 'rgba(255,255,255,0.2)', paddingBottom: '0.25rem', flexShrink: 0 }}>
               {ch.num} / 08 · {ch.label.toUpperCase()}
             </div>
           </div>
         )}
 
-        {/* Bottom chapter navigator (desktop) */}
+        {/* Bottom chapter dots (desktop only) */}
         {!isMobile && (
           <div style={{
             position: 'absolute', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)',
@@ -530,15 +578,16 @@ export default function JourneyFlightPath({ onBook }) {
                 aria-label={`Go to ${c.label}`}
                 title={c.label}
                 style={{
-                  width: i === activeIdx ? '22px' : '6px',
+                  width: i === activeIdx ? '24px' : '6px',
                   height: '6px', borderRadius: '999px',
                   background: i === activeIdx ? ch.accent : 'rgba(255,255,255,0.18)',
                   border: 'none', padding: 0, cursor: 'pointer',
-                  transition: 'all 0.4s cubic-bezier(0.16,1,0.3,1)',
+                  transition: 'all 0.35s cubic-bezier(0.16,1,0.3,1)',
+                  minHeight: '24px', // touch target via clickable area
                 }}
                 onClick={() => {
                   if (!wrapRef.current) return
-                  const el = wrapRef.current
+                  const el  = wrapRef.current
                   const top = el.getBoundingClientRect().top + window.scrollY
                   const range = el.scrollHeight - window.innerHeight
                   window.scrollTo({ top: top + (i / 7) * range, behavior: 'smooth' })
@@ -548,23 +597,24 @@ export default function JourneyFlightPath({ onBook }) {
           </div>
         )}
 
-        {/* Scroll cue — chapter 1 only */}
+        {/* Scroll cue — first chapter only */}
         <AnimatePresence>
           {activeIdx === 0 && (
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              transition={{ delay: 0.8, duration: 0.6 }}
+              transition={{ delay: 1, duration: 0.6 }}
               style={{
-                position: 'absolute', right: '2.5rem', bottom: '3.5rem', zIndex: 20,
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.45rem',
-                color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font-h)',
+                position: 'absolute', right: '2rem', bottom: '3rem', zIndex: 20,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem',
+                color: 'rgba(255,255,255,0.28)', fontFamily: 'var(--font-h)',
                 fontSize: '0.55rem', letterSpacing: '0.3em', textTransform: 'uppercase',
+                pointerEvents: 'none',
               }}
             >
-              <motion.span animate={{ y: [0, 6, 0] }} transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}>
+              <motion.span animate={{ y: [0, 5, 0] }} transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}>
                 Scroll
               </motion.span>
-              <span style={{ height: '1.5rem', width: '1px', background: 'linear-gradient(to bottom, rgba(255,255,255,0.3), transparent)' }} />
+              <span style={{ height: '1.5rem', width: '1px', background: 'linear-gradient(to bottom, rgba(255,255,255,0.28), transparent)' }} />
             </motion.div>
           )}
         </AnimatePresence>

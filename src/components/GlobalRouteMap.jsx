@@ -180,10 +180,10 @@ export default function GlobalRouteMap() {
         <svg
           viewBox="0 0 100 82"
           preserveAspectRatio="xMidYMid slice"
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.055 }}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.11 }}
         >
           {CONTINENTS.map((d, i) => (
-            <path key={i} d={d} fill="rgba(180,210,255,1)" stroke="rgba(180,210,255,0.5)" strokeWidth="0.25" />
+            <path key={i} d={d} fill="rgba(210,228,255,0.75)" stroke="rgba(220,235,255,0.95)" strokeWidth="0.4" />
           ))}
         </svg>
       </motion.div>

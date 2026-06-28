@@ -76,9 +76,9 @@ export function RouteProgress() {
 }
 
 /* =====================================================================
- * CockpitHUD — Fixed bottom-left instrument cluster, scroll-reactive
- * Desktop: full instrument panel at bottom-left.
- * Mobile: compact aviation pill, repositions above sticky CTA.
+ * CockpitHUD — Atmospheric hero-anchored flight instrument
+ * Absolute-positioned within the hero, fades as hero scrolls away.
+ * Hidden on mobile via CSS — never competes with sticky CTA.
  * ===================================================================*/
 export function CockpitHUD() {
   const { scrollYProgress } = useScroll()
@@ -87,8 +87,7 @@ export function CockpitHUD() {
   const [hdg, setHdg] = useState(90)
   const [spd, setSpd] = useState(220)
   const [phase, setPhase] = useState('PUSHBACK')
-  const [ctaVisible, setCtaVisible] = useState(false)
-  const [isCompact, setIsCompact] = useState(false)
+  const [isVisible, setIsVisible] = useState(true)
 
   useEffect(() => {
     return smooth.on('change', (v) => {
@@ -107,86 +106,34 @@ export function CockpitHUD() {
   }, [smooth])
 
   useEffect(() => {
-    const check = () => {
-      const w = window.innerWidth
-      setIsCompact(w < 1024 && w >= 320)
-    }
-    check()
-    window.addEventListener('resize', check, { passive: true })
-    return () => window.removeEventListener('resize', check)
+    const hero = document.querySelector('#top')
+    if (!hero) return
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { threshold: 0 }
+    )
+    observer.observe(hero)
+    return () => observer.disconnect()
   }, [])
-
-  useEffect(() => {
-    if (!isCompact) return
-    const handleScroll = () => {
-      const scrolled = window.scrollY > 400
-      const footer = document.querySelector('footer')
-      const cta = document.querySelector('#cta')
-      let nearBottom = false
-      const vh = window.innerHeight
-      for (const el of [footer, cta].filter(Boolean)) {
-        const rect = el.getBoundingClientRect()
-        if (rect.top < vh - 60) { nearBottom = true; break }
-      }
-      setCtaVisible(scrolled && !nearBottom)
-    }
-    handleScroll()
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [isCompact])
-
-  const ctaHeight = 64
-  const bottomOffset = isCompact
-    ? (ctaVisible ? ctaHeight + 10 : 16)
-    : 20
 
   return (
     <motion.aside
-      initial={{ opacity: 0, y: 12 }}
-      animate={{
-        opacity: 1,
-        y: 0,
-        bottom: bottomOffset,
-      }}
-      transition={{
-        duration: 0.45,
-        ease: [0.16, 1, 0.3, 1],
-        bottom: { duration: 0.4, ease: [0.16, 1, 0.3, 1] },
-      }}
+      animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 8 }}
+      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], opacity: { duration: 0.35 } }}
       aria-hidden
-      className={`cockpit-hud ${isCompact ? 'compact' : ''}`}
+      className="cockpit-hud"
+      style={{ position: 'absolute', bottom: '1.25rem', left: '1.25rem', pointerEvents: 'none' }}
     >
-      {isCompact ? (
-        <div className="hud-compact" style={{
-          display: 'flex', alignItems: 'center', gap: '0.5rem',
-          fontSize: '0.625rem', color: 'rgba(255,255,255,0.85)',
-          fontFamily: 'var(--font-h)', fontWeight: 700,
-          letterSpacing: '0.02em', fontVariantNumeric: 'tabular-nums',
-          whiteSpace: 'nowrap',
-        }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: 'var(--gold)', fontSize: '0.55rem', textTransform: 'uppercase', letterSpacing: '0.2em' }}>
-            <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--red)', display: 'inline-block' }} />
-            {phase}
-          </span>
-          <span style={{ opacity: 0.25 }}>|</span>
-          <span>✈ {String(hdg).padStart(3, '0')}°</span>
-          <span style={{ opacity: 0.25 }}>·</span>
-          <span>{alt.toLocaleString()} ft</span>
-        </div>
-      ) : (
-        <>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.625rem', letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gold)' }}>
-            <span style={{ position: 'relative', display: 'inline-flex', height: '6px', width: '6px' }}>
-              <span className="animate-ping" style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'var(--red)', opacity: 0.75 }} />
-              <span style={{ position: 'relative', display: 'inline-flex', height: '6px', width: '6px', borderRadius: '50%', background: 'var(--red)' }} />
-            </span>
-            {phase}
-          </div>
-          <HudInstrument label="ALT" value={alt.toLocaleString()} unit="ft" />
-          <HudInstrument label="HDG" value={String(hdg).padStart(3, '0')} unit="°" />
-          <HudInstrument label="SPD" value={String(spd)} unit="kt" />
-        </>
-      )}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.625rem', letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gold)' }}>
+        <span style={{ position: 'relative', display: 'inline-flex', height: '6px', width: '6px' }}>
+          <span className="animate-ping" style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'var(--red)', opacity: 0.75 }} />
+          <span style={{ position: 'relative', display: 'inline-flex', height: '6px', width: '6px', borderRadius: '50%', background: 'var(--red)' }} />
+        </span>
+        {phase}
+      </div>
+      <HudInstrument label="ALT" value={alt.toLocaleString()} unit="ft" />
+      <HudInstrument label="HDG" value={String(hdg).padStart(3, '0')} unit="°" />
+      <HudInstrument label="SPD" value={String(spd)} unit="kt" />
     </motion.aside>
   )
 }

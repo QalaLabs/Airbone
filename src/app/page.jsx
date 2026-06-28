@@ -95,7 +95,7 @@ function FloatingNav({ onBook }) {
           </Link>
 
           {/* Desktop nav links */}
-          <div className="desktop-only-flex" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+          <div className="desktop-only-flex" style={{ alignItems: 'center', gap: '0.25rem' }}>
             {links.map((l) => (
               <Link
                 key={l.href}
@@ -119,7 +119,7 @@ function FloatingNav({ onBook }) {
             onClick={onBook}
             className="desktop-only-inline-flex"
             style={{
-              display: 'inline-flex', alignItems: 'center', gap: '0.375rem',
+              alignItems: 'center', gap: '0.375rem',
               borderRadius: '999px', background: 'var(--navy)', color: '#fff',
               fontSize: '0.8125rem', fontWeight: 500, fontFamily: 'var(--font-h)',
               paddingLeft: '1rem', paddingRight: '0.5rem', paddingTop: '0.5rem', paddingBottom: '0.5rem',
@@ -403,6 +403,8 @@ function HeroChapter({ onBook, on3D }) {
         <span>Scroll</span>
         <span style={{ height: '2rem', width: '1px', background: 'linear-gradient(to bottom, rgba(255,255,255,0.6), transparent)' }} />
       </motion.div>
+
+      <CockpitHUD />
     </section>
   )
 }
@@ -852,6 +854,7 @@ function ChapterDivider({ fromDark = false, toDark = false, chapterNum = '02', c
       >
         Chapter {chapterNum} · {chapterLabel}
       </motion.div>
+
     </div>
   )
 }
@@ -2778,7 +2781,6 @@ export default function HomePage() {
 
       {/* Global FX layers */}
       <RouteProgress />
-      <CockpitHUD />
       <AmbientRadial />
       <PremiumCursor />
 
