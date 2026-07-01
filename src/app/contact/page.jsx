@@ -5,19 +5,19 @@ import LeadForm from '@/components/LeadForm'
 export const metadata = {
   title: 'Contact Airborne Aviation Academy — Dwarka, Delhi | Capt. Navrang Singh',
   description: 'Contact Airborne Aviation Academy, Dwarka Delhi. Led by Capt. Navrang Singh. E-549, Ramphal Chowk, Sector 7. CPL, ATPL, DGCA ground classes. +91 9953 777 320.',
-  alternates: { canonical: 'https://airborneaviation.in/contact/' },
+  alternates: { canonical: 'https://www.airborneaviation.in/contact/' },
   openGraph: {
     title: 'Contact Airborne Aviation Academy — Dwarka, Delhi | Capt. Navrang Singh',
     description: 'Contact Airborne Aviation Academy, Dwarka Delhi. Led by Capt. Navrang Singh. E-549, Ramphal Chowk, Sector 7.',
-    url: 'https://airborneaviation.in/contact/',
+    url: 'https://www.airborneaviation.in/contact/',
     type: 'website',
-    images: [{ url: 'https://airborneaviation.in/footage/hero-cockpit.jpg', width: 1200, height: 630, alt: 'Contact Airborne Aviation Academy' }],
+    images: [{ url: 'https://www.airborneaviation.in/footage/hero-cockpit.jpg', width: 1200, height: 630, alt: 'Contact Airborne Aviation Academy' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Contact Airborne Aviation Academy — Dwarka, Delhi | Capt. Navrang Singh',
     description: 'Contact Airborne Aviation Academy, Dwarka Delhi. Led by Capt. Navrang Singh.',
-    images: ['https://airborneaviation.in/footage/hero-cockpit.jpg'],
+    images: ['https://www.airborneaviation.in/footage/hero-cockpit.jpg'],
   },
 }
 

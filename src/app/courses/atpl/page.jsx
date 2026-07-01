@@ -29,7 +29,7 @@ const courseSchema = {
   },
   coursePrerequisites: 'Valid DGCA CPL',
   educationalCredentialAwarded: 'ATPL Certificate of Completion',
-  url: 'https://airborneaviation.academy/courses/atpl',
+  url: 'https://www.airborneaviation.in/courses/atpl',
 }
 
 const faqSchema = {

@@ -37,7 +37,7 @@ const courseSchema = {
     maximumAttendeeCapacity: 25,
     instructor: { '@type': 'Person', name: 'Capt. Navrang Singh', jobTitle: 'Founder & Chief Ground Instructor' }
   },
-  url: 'https://airborneaviation.in/courses/ground-school',
+  url: 'https://www.airborneaviation.in/courses/ground-school',
 }
 
 const faqSchema = {

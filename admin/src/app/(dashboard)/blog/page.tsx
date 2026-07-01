@@ -233,7 +233,7 @@ export default function BlogPage() {
                     </div>
                     <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 space-y-1">
                       <span className="text-xs font-bold text-white block">Search Engine Snippet Preview</span>
-                      <p className="text-[11px] text-primary underline truncate">{`https://airborneaviation.academy/blog/${editingPost?.slug}`}</p>
+                      <p className="text-[11px] text-primary underline truncate">{`https://www.airborneaviation.in/blog/${editingPost?.slug}`}</p>
                       <p className="text-[11px] text-muted-foreground line-clamp-2 mt-1">{editingPost?.seoDesc ?? `Read ${editingPost?.title} written by expert flight instructors at Airborne Aviation Academy.`}</p>
                     </div>
                   </div>

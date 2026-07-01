@@ -31,7 +31,7 @@ const courseSchema = {
   coursePrerequisites: '10+2 (any stream)',
   courseMode: 'onsite',
   duration: 'P6M',
-  url: 'https://airborneaviation.in/courses/flight-dispatcher',
+  url: 'https://www.airborneaviation.in/courses/flight-dispatcher',
 }
 
 const faqSchema = {

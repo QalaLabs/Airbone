@@ -44,7 +44,7 @@ const courseSchema = {
     instructor: { '@type': 'Person', name: 'Capt. Navrang Singh', jobTitle: 'Founder & Chief Ground Instructor' }
   },
   teaches: ['Air Navigation', 'Aviation Meteorology', 'Air Regulations', 'Technical General', 'Technical Specific (Airbus A320)'],
-  url: 'https://airborneaviation.in/courses/commercial-pilot-license-cpl',
+  url: 'https://www.airborneaviation.in/courses/commercial-pilot-license-cpl',
 }
 
 const faqSchema = {

@@ -387,7 +387,7 @@ export default function CoursesPage() {
                     </div>
                     <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 space-y-1">
                       <span className="text-xs font-bold text-white block">Search Preview</span>
-                      <p className="text-[11px] text-primary underline truncate">{`https://airborneaviation.academy/courses/${selectedCourse?.slug}`}</p>
+                      <p className="text-[11px] text-primary underline truncate">{`https://www.airborneaviation.in/courses/${selectedCourse?.slug}`}</p>
                       <p className="text-[11px] text-muted-foreground line-clamp-2 mt-1">{selectedCourse?.seo?.metaDescription ?? `Enroll in ${selectedCourse?.title} at Airborne Aviation Academy.`}</p>
                     </div>
                   </div>

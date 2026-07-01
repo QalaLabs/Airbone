@@ -15,12 +15,12 @@ import { toast } from "@/components/ui/use-toast";
 import { getInitials } from "@/lib/utils";
 
 const MOCK_USERS = [
-  { id: "usr-1", name: "Capt. Vikram Singh", email: "vikram.singh@airborneaviation.academy", role: "Super Admin", department: "Board / Executive", status: "ACTIVE", lastActive: "Just now", permissions: ["ALL_ACCESS"], activity: ["Updated Course Tuition Fee for CPL Ground School", "Published new blog post on DGCA Exam Tips", "Modified Lead #LD-9204 status to ENROLLED"] },
-  { id: "usr-2", name: "Anjali Sharma", email: "anjali.sharma@airborneaviation.academy", role: "Admissions Team", department: "Admissions", status: "ACTIVE", lastActive: "12 mins ago", permissions: ["LEADS_READ_WRITE", "ADMISSIONS_MOVE_STAGE", "NOTIFICATIONS_SEND"], activity: ["Moved candidate Rajesh Kumar to Fee Payment stage", "Generated invoice for Lead #LD-8810", "Dispatched WhatsApp Fee trigger template"] },
-  { id: "usr-3", name: "Rohan Verma", email: "rohan.verma@airborneaviation.academy", role: "Counsellors", department: "Counseling", status: "ACTIVE", lastActive: "45 mins ago", permissions: ["LEADS_READ_WRITE", "VAPI_LOGS_VIEW"], activity: ["Intercepted Vapi escalation call for Amit Sen", "Logged manual voice call notes for Meera Nair"] },
-  { id: "usr-4", name: "Priya Patel", email: "priya.patel@airborneaviation.academy", role: "Marketing Team", department: "Marketing", status: "ACTIVE", lastActive: "2 hours ago", permissions: ["CMS_PAGES_EDIT", "BLOG_PUBLISH", "NOTIFICATIONS_BROADCAST"], activity: ["Published Winter Intake Landing Page draft", "Updated SEO metadata for A320 Sim Course"] },
-  { id: "usr-5", name: "Siddharth Sen", email: "siddharth.sen@airborneaviation.academy", role: "Content Team", department: "Media & CMS", status: "ACTIVE", lastActive: "Yesterday", permissions: ["CMS_PAGES_EDIT", "MEDIA_LIBRARY_UPLOAD"], activity: ["Uploaded 12 high-res fleet photos to S3 CDN", "Edited FAQ questions for General Eligibility"] },
-  { id: "usr-6", name: "Vikram Malhotra", email: "v.malhotra@airborneaviation.academy", role: "Placement Team", department: "Placements Cell", status: "ACTIVE", lastActive: "3 days ago", permissions: ["PLACEMENTS_MANAGE", "STUDENTS_VIEW"], activity: ["Scheduled Indigo A320 Cadet Pilot Screening Drive", "Shortlisted 18 cadets for simulator evaluation"] },
+  { id: "usr-1", name: "Capt. Vikram Singh", email: "vikram.singh@airborneaviation.in", role: "Super Admin", department: "Board / Executive", status: "ACTIVE", lastActive: "Just now", permissions: ["ALL_ACCESS"], activity: ["Updated Course Tuition Fee for CPL Ground School", "Published new blog post on DGCA Exam Tips", "Modified Lead #LD-9204 status to ENROLLED"] },
+  { id: "usr-2", name: "Anjali Sharma", email: "anjali.sharma@airborneaviation.in", role: "Admissions Team", department: "Admissions", status: "ACTIVE", lastActive: "12 mins ago", permissions: ["LEADS_READ_WRITE", "ADMISSIONS_MOVE_STAGE", "NOTIFICATIONS_SEND"], activity: ["Moved candidate Rajesh Kumar to Fee Payment stage", "Generated invoice for Lead #LD-8810", "Dispatched WhatsApp Fee trigger template"] },
+  { id: "usr-3", name: "Rohan Verma", email: "rohan.verma@airborneaviation.in", role: "Counsellors", department: "Counseling", status: "ACTIVE", lastActive: "45 mins ago", permissions: ["LEADS_READ_WRITE", "VAPI_LOGS_VIEW"], activity: ["Intercepted Vapi escalation call for Amit Sen", "Logged manual voice call notes for Meera Nair"] },
+  { id: "usr-4", name: "Priya Patel", email: "priya.patel@airborneaviation.in", role: "Marketing Team", department: "Marketing", status: "ACTIVE", lastActive: "2 hours ago", permissions: ["CMS_PAGES_EDIT", "BLOG_PUBLISH", "NOTIFICATIONS_BROADCAST"], activity: ["Published Winter Intake Landing Page draft", "Updated SEO metadata for A320 Sim Course"] },
+  { id: "usr-5", name: "Siddharth Sen", email: "siddharth.sen@airborneaviation.in", role: "Content Team", department: "Media & CMS", status: "ACTIVE", lastActive: "Yesterday", permissions: ["CMS_PAGES_EDIT", "MEDIA_LIBRARY_UPLOAD"], activity: ["Uploaded 12 high-res fleet photos to S3 CDN", "Edited FAQ questions for General Eligibility"] },
+  { id: "usr-6", name: "Vikram Malhotra", email: "v.malhotra@airborneaviation.in", role: "Placement Team", department: "Placements Cell", status: "ACTIVE", lastActive: "3 days ago", permissions: ["PLACEMENTS_MANAGE", "STUDENTS_VIEW"], activity: ["Scheduled Indigo A320 Cadet Pilot Screening Drive", "Shortlisted 18 cadets for simulator evaluation"] },
 ];
 
 const AVAILABLE_PERMISSIONS = [
@@ -260,7 +260,7 @@ export default function UsersPage() {
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-muted-foreground">Work Email Address *</label>
-              <Input defaultValue={editingUser?.email} placeholder="e.g. vikram@airborneaviation.academy" type="email" required className="bg-secondary/40 border-white/10 text-xs font-semibold text-white" />
+              <Input defaultValue={editingUser?.email} placeholder="e.g. vikram@airborneaviation.in" type="email" required className="bg-secondary/40 border-white/10 text-xs font-semibold text-white" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">

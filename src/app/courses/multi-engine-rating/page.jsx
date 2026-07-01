@@ -31,7 +31,7 @@ const courseSchema = {
   coursePrerequisites: 'Valid DGCA PPL or CPL',
   courseMode: 'onsite',
   duration: 'P2M',
-  url: 'https://airborneaviation.in/courses/multi-engine-rating',
+  url: 'https://www.airborneaviation.in/courses/multi-engine-rating',
 }
 
 const faqSchema = {

@@ -438,7 +438,7 @@ export default function MediaPage() {
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-muted-foreground">CloudFront CDN Distribution Domain *</label>
-              <Input defaultValue="https://cdn.airborneaviation.academy" required className="bg-secondary/40 border-white/10 text-xs font-mono text-primary font-bold" />
+              <Input defaultValue="https://cdn.airborneaviation.in" required className="bg-secondary/40 border-white/10 text-xs font-mono text-primary font-bold" />
             </div>
             <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 space-y-1">
               <span className="text-xs font-bold text-white block flex items-center gap-1.5">

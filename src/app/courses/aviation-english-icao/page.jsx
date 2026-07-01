@@ -30,7 +30,7 @@ const courseSchema = {
   offers: { '@type': 'Offer', priceCurrency: 'INR', description: '₹50,000–₹1 lakh. Contact for current pricing.' },
   courseMode: 'onsite',
   duration: 'P3M',
-  url: 'https://airborneaviation.in/courses/aviation-english-icao',
+  url: 'https://www.airborneaviation.in/courses/aviation-english-icao',
 }
 
 const faqSchema = {

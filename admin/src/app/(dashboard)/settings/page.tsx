@@ -31,9 +31,9 @@ export default function SettingsPage() {
   const [forceDebugLogs, setForceDebugLogs] = React.useState(false);
 
   // Webhook URLs state
-  const [razorpayWebhook, setRazorpayWebhook] = React.useState("https://api.airborneaviation.academy/v1/webhooks/razorpay");
-  const [vapiWebhook, setVapiWebhook] = React.useState("https://api.airborneaviation.academy/v1/webhooks/vapi");
-  const [whatsappWebhook, setWhatsappWebhook] = React.useState("https://api.airborneaviation.academy/v1/webhooks/whatsapp");
+  const [razorpayWebhook, setRazorpayWebhook] = React.useState("https://api.airborneaviation.in/v1/webhooks/razorpay");
+  const [vapiWebhook, setVapiWebhook] = React.useState("https://api.airborneaviation.in/v1/webhooks/vapi");
+  const [whatsappWebhook, setWhatsappWebhook] = React.useState("https://api.airborneaviation.in/v1/webhooks/whatsapp");
 
   const toggleMask = (id: string) => {
     setEnvVars(prev => prev.map(ev => ev.id === id ? { ...ev, masked: !ev.masked } : ev));

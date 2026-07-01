@@ -29,9 +29,9 @@ const pageSchema = {
   publisher: {
     '@type': 'Organization',
     name: 'Airborne Aviation Academy',
-    url: 'https://airborneaviation.academy',
+    url: 'https://www.airborneaviation.in',
   },
-  url: 'https://airborneaviation.academy/courses/flying-training-india-abroad',
+  url: 'https://www.airborneaviation.in/courses/flying-training-india-abroad',
 }
 
 const faqSchema = {

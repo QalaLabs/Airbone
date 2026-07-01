@@ -31,7 +31,7 @@ const courseSchema = {
   coursePrerequisites: 'Valid DGCA PPL or CPL · 50 hours cross-country as PIC',
   courseMode: 'onsite',
   duration: 'P3M',
-  url: 'https://airborneaviation.in/courses/instrument-rating',
+  url: 'https://www.airborneaviation.in/courses/instrument-rating',
 }
 
 const faqSchema = {

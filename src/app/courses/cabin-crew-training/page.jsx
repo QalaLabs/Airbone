@@ -35,7 +35,7 @@ const courseSchema = {
   ],
   courseMode: 'onsite',
   duration: 'P6M',
-  url: 'https://airborneaviation.in/courses/cabin-crew-training',
+  url: 'https://www.airborneaviation.in/courses/cabin-crew-training',
 }
 
 const faqSchema = {

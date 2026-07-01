@@ -28,7 +28,7 @@ const courseSchema = {
     address: { '@type': 'PostalAddress', streetAddress: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7', addressLocality: 'Dwarka', addressRegion: 'New Delhi', postalCode: '110075' }
   },
   coursePrerequisites: 'Valid DGCA CPL or CPL in progress',
-  url: 'https://airborneaviation.academy/courses/cadet-preparation',
+  url: 'https://www.airborneaviation.in/courses/cadet-preparation',
 }
 
 const faqSchema = {

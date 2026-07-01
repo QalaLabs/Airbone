@@ -25,6 +25,24 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'airborneaviation.academy' }],
+        destination: 'https://www.airborneaviation.in/:path*',
+        permanent: true,
+      },
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'www.airborneaviation.academy' }],
+        destination: 'https://www.airborneaviation.in/:path*',
+        permanent: true,
+      },
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'airborneaviation.in' }],
+        destination: 'https://www.airborneaviation.in/:path*',
+        permanent: true,
+      },
+      {
         source: '/courses/cpl-ground-classes',
         destination: '/courses/commercial-pilot-license-cpl',
         permanent: true,

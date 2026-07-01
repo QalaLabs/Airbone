@@ -12,7 +12,7 @@ const STATIC_COURSE_SLUGS = [
 ]
 
 export default async function sitemap() {
-  const baseUrl = 'https://airborneaviation.academy'
+  const baseUrl = 'https://www.airborneaviation.in'
 
   const staticRoutes = [
     '', '/about', '/courses', '/jobs', '/resources', '/contact',

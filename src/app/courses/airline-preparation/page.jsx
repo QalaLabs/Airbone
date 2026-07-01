@@ -27,7 +27,7 @@ const courseSchema = {
     name: 'Airborne Aviation Academy',
     address: { '@type': 'PostalAddress', streetAddress: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7', addressLocality: 'Dwarka', addressRegion: 'New Delhi', postalCode: '110075' }
   },
-  url: 'https://airborneaviation.academy/courses/airline-preparation',
+  url: 'https://www.airborneaviation.in/courses/airline-preparation',
 }
 
 const faqSchema = {

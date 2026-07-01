@@ -30,7 +30,7 @@ const courseSchema = {
   offers: { '@type': 'Offer', price: '2500000', priceCurrency: 'INR', description: 'Complete PPL flight training through partner FTO' },
   courseMode: 'onsite',
   duration: 'P6M',
-  url: 'https://airborneaviation.in/courses/private-pilot-license',
+  url: 'https://www.airborneaviation.in/courses/private-pilot-license',
 }
 
 const faqSchema = {
