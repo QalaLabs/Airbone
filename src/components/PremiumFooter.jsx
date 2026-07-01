@@ -1,78 +1,10 @@
 'use client'
 
-import { useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { motion } from 'framer-motion'
 
 const MAPS_URL = 'https://maps.app.goo.gl/1CrvhRumCLtog8VL8'
 const MAPS_DIRECTIONS = 'https://www.google.com/maps/dir/?api=1&destination=28.5845678,77.0716207&destination_place_id=0x390d1b3d46bcd1c7:0x53f77b8485d61bbe'
-
-function AirborneWordmark() {
-  const svgRef = useRef(null)
-  const [hovered, setHovered] = useState(false)
-  const [maskPos, setMaskPos] = useState({ cx: '50%', cy: '50%' })
-
-  const handleMouseMove = useCallback((e) => {
-    if (!svgRef.current) return
-    const r = svgRef.current.getBoundingClientRect()
-    setMaskPos({
-      cx: `${((e.clientX - r.left) / r.width) * 100}%`,
-      cy: `${((e.clientY - r.top) / r.height) * 100}%`,
-    })
-  }, [])
-
-  return (
-    <svg
-      ref={svgRef}
-      width="100%"
-      height="100%"
-      viewBox="0 0 1000 170"
-      xmlns="http://www.w3.org/2000/svg"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onMouseMove={handleMouseMove}
-      aria-hidden="true"
-      style={{ display: 'block', userSelect: 'none', cursor: 'default' }}
-    >
-      <defs>
-        <linearGradient id="pf-wm-grad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1000" y2="0">
-          <stop offset="0%"   stopColor="#D8A027" />
-          <stop offset="30%"  stopColor="#DB241E" />
-          <stop offset="60%"  stopColor="#D8A027" />
-          <stop offset="100%" stopColor="#DB241E" />
-        </linearGradient>
-        <motion.radialGradient id="pf-wm-reveal" gradientUnits="userSpaceOnUse" r="28%"
-          initial={{ cx: '50%', cy: '50%' }}
-          animate={maskPos}
-          transition={{ duration: 0, ease: 'easeOut' }}
-        >
-          <stop offset="0%" stopColor="white" />
-          <stop offset="100%" stopColor="black" />
-        </motion.radialGradient>
-        <mask id="pf-wm-mask">
-          <rect x="0" y="0" width="100%" height="100%" fill="url(#pf-wm-reveal)" />
-        </mask>
-      </defs>
-      <text x="500" y="138" textAnchor="middle" fontFamily="Montserrat, var(--font-h), sans-serif"
-        fontWeight="900" fontSize="152" letterSpacing="-6"
-        fill="transparent" stroke="rgba(255,255,255,0.04)" strokeWidth="0.8"
-      >AIRBORNE</text>
-      <motion.text x="500" y="138" textAnchor="middle" fontFamily="Montserrat, var(--font-h), sans-serif"
-        fontWeight="900" fontSize="152" letterSpacing="-6"
-        fill="transparent" stroke="rgba(216,160,39,0.10)" strokeWidth="0.8"
-        initial={{ strokeDashoffset: 6000, strokeDasharray: 6000 }}
-        animate={{ strokeDashoffset: 0, strokeDasharray: 6000 }}
-        transition={{ duration: 4, ease: 'easeInOut', delay: 0.5 }}
-      >AIRBORNE</motion.text>
-      <text x="500" y="138" textAnchor="middle" fontFamily="Montserrat, var(--font-h), sans-serif"
-        fontWeight="900" fontSize="152" letterSpacing="-6"
-        fill="url(#pf-wm-grad)" stroke="transparent" mask="url(#pf-wm-mask)"
-        style={{ opacity: hovered ? 1 : 0, transition: 'opacity 0.2s' }}
-      >AIRBORNE</text>
-    </svg>
-  )
-}
 
 const QUICK_LINKS = [
   { label: 'Home', href: '/' },
@@ -183,23 +115,15 @@ export default function PremiumFooter({ onBookDemo }) {
 
           {/* Brand + Social */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#DB241E', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <svg viewBox="0 0 24 24" fill="#fff" style={{ width: '16px', height: '16px', transform: 'rotate(-45deg)' }}>
-                  <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
-                </svg>
-              </div>
-              <div>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', fontWeight: 900, color: '#fff', letterSpacing: '-0.02em' }}>
-                  AIRB<span style={{ color: '#DB241E' }}>O</span>RNE
-                </div>
-                <div style={{ fontSize: '0.62rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)' }}>
-                  Aviation Academy
-                </div>
-              </div>
+            <div style={{ marginBottom: '1rem' }}>
+              <img
+                src="/logo-white.webp"
+                alt="Airborne Aviation Academy"
+                style={{ height: '48px', width: 'auto', objectFit: 'contain', display: 'block' }}
+              />
             </div>
             <p style={{ fontSize: '0.82rem', lineHeight: '1.7', color: 'rgba(255,255,255,0.45)', maxWidth: '240px', margin: '0 0 1.5rem' }}>
-              DGCA-approved Flying Training Organisation. Ramphal Chowk, Dwarka, New Delhi. Building airline pilots since 2011.
+              Building pilots. Building futures.
             </p>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               {SOCIAL_LINKS.map((s) => (
@@ -306,7 +230,11 @@ export default function PremiumFooter({ onBookDemo }) {
       {/* ── SECTION 4: Wordmark ── */}
       <div className="pf-wordmark-section" aria-hidden="true">
         <div className="pf-wordmark-wrap">
-          <AirborneWordmark />
+          <img
+            src="/logo-white.webp"
+            alt="Airborne Aviation Academy"
+            style={{ height: '120px', width: 'auto', maxWidth: '100%', objectFit: 'contain', display: 'block' }}
+          />
         </div>
       </div>
 
