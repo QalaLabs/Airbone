@@ -128,7 +128,7 @@ export default function ContactPage() {
               borderRadius: '24px', padding: '2rem',
               boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
             }}>
-              <div style={{ marginBottom: '1.5rem' }}>
+              <div style={{ marginBottom: '1rem' }}>
                 <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 800, color: '#FFFFFF', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
                   Airborne Aviation Academy
                 </h3>
@@ -140,13 +140,16 @@ export default function ContactPage() {
                 href={MAPS_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ textDecoration: 'none', display: 'block', marginBottom: '1.5rem', opacity: 1, transition: 'opacity 0.2s' }}
+                style={{ textDecoration: 'none', display: 'block', marginBottom: '0.5rem', opacity: 1, transition: 'opacity 0.2s' }}
               >
                 <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.75)', lineHeight: '1.6', margin: 0 }}>
                   E-549, 2nd Floor, Ramphal Chowk,<br />
                   Sector 7, Dwarka, New Delhi — 110075
                 </p>
               </a>
+              <p style={{ fontSize: '0.78rem', color: '#D8A027', lineHeight: '1.5', margin: '0 0 1.25rem', fontStyle: 'italic' }}>
+                Located just a short walk (approximately 50–100 metres) from Ramphal Chowk Metro Station.
+              </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <a
                   href={MAPS_DIRECTIONS}

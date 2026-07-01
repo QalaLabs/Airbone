@@ -245,6 +245,8 @@ export default function PremiumFooter({ onBookDemo }) {
             {'\u00A9'} {new Date().getFullYear()} Airborne Aviation Private Limited
             <span className="pf-bottom-sep">{'\u00B7'}</span>
             All Rights Reserved.
+            <br />
+            CIN: U85306DL2026PTC465670
           </div>
           <div className="pf-bottom-links">
             <a href="/privacy" className="pf-bottom-link">Privacy Policy</a>
