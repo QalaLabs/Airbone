@@ -263,7 +263,7 @@ export default function ProgramGrid() {
         }}
       />
 
-      <div ref={ref} style={{ maxWidth: '1280px', margin: '0 auto' }}>
+      <div ref={ref} className="container-fluid">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -398,20 +398,8 @@ export default function ProgramGrid() {
       <style>{`
         .program-grid-4x2 {
           display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 1rem;
-        }
-
-        @media (max-width: 1023px) {
-          .program-grid-4x2 {
-            grid-template-columns: repeat(2, 1fr);
-          }
-        }
-
-        @media (max-width: 540px) {
-          .program-grid-4x2 {
-            grid-template-columns: 1fr;
-          }
+          grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+          gap: 1.5rem;
         }
       `}</style>
     </section>

@@ -78,7 +78,7 @@ function FloatingNav({ onBook }) {
         <motion.nav
           animate={{
             marginTop: scrolled ? 12 : 20,
-            maxWidth: scrolled ? '960px' : '1240px',
+            maxWidth: scrolled ? '1280px' : '1560px',
           }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           className="glass-nav"
@@ -320,8 +320,8 @@ function HeroChapter({ onBook, on3D }) {
       </motion.div>
 
       <motion.div
-        className="hero-content-container"
-        style={{ y: textY, opacity: fade, position: 'relative', zIndex: 10, margin: '0 auto', display: 'flex', height: '100%', maxWidth: '1280px', flexDirection: 'column', justifyContent: 'flex-end' }}
+        className="hero-content-container container-fluid"
+        style={{ y: textY, opacity: fade, position: 'relative', zIndex: 10, display: 'flex', height: '100%', flexDirection: 'column', justifyContent: 'flex-end' }}
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -345,7 +345,7 @@ function HeroChapter({ onBook, on3D }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9, duration: 0.8 }}
           className="hero-footer-wrapper"
-          style={{ marginTop: '2.5rem', display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem', maxWidth: '1100px' }}
+          style={{ marginTop: '2.5rem', display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem', width: '100%' }}
         >
           <p style={{ color: 'rgba(255,255,255,0.8)', maxWidth: '28rem', fontSize: '0.9375rem', lineHeight: 1.7, fontFamily: 'var(--font-b)' }}>
             India's most disciplined DGCA ground school for CPL & ATPL. Mentor-led training under
@@ -541,7 +541,7 @@ function ChapterShell({ id, num, kicker, title, body, image, alt, reverse = fals
       }}>
         {numDisplay}
       </div>
-      <div className="responsive-grid-chapters" style={{ maxWidth: '1100px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+      <div className="responsive-grid-chapters container-xl" style={{ position: 'relative', zIndex: 1 }}>
         {/* Image Column */}
         <div style={{ order: reverse ? (isMobile ? 1 : 2) : 1 }}>
           <ChapterImageReveal image={image} alt={alt} imageAccent={imageAccent} isMobile={isMobile} />
@@ -730,7 +730,7 @@ function StartJourneyChapter({ onBook }) {
         textAlign: 'center'
       }}
     >
-      <div style={{ maxWidth: '750px', margin: '0 auto', position: 'relative', zIndex: 10 }}>
+      <div className="container-md" style={{ position: 'relative', zIndex: 10 }}>
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -974,7 +974,7 @@ function FounderSection() {
         }}
       />
 
-      <div className="responsive-grid-founder" style={{ position: 'relative', maxWidth: '1100px', margin: '0 auto' }}>
+      <div className="responsive-grid-founder container-xl" style={{ position: 'relative' }}>
         {/* Left: Text content */}
         <div>
           <div className="chapter-num" style={{ color: 'var(--gold)', marginBottom: '1.5rem' }}>The Mentor</div>
@@ -1298,7 +1298,7 @@ function CoursesSection() {
         }
       ` }} />
 
-      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+      <div className="container-xl">
         <div className="courses-header-grid">
           <div>
             <div className="chapter-num" style={{ color: 'var(--red)', marginBottom: '1rem' }}>The Manifest</div>
@@ -1527,8 +1527,8 @@ function CourseCard({ c, index }) {
 const SUCCESS_STUDENTS = [
   { name: 'Anusha Jain', image: '/success/Anusha%20Jain.jpeg' },
   { name: 'Capt Abdul Salam Khan', image: '/success/Capt%20Abdul%20Salam%20khan.jpeg' },
-  { name: 'Mohd Yunus Bin Wahaj', image: '/success/Mohd%20Yunus%20Bin%20Wahaj.jpeg' },
-  { name: 'Mohit Bhargava', image: '/success/Mohit%20Bhargava.jpeg' },
+  { name: 'Mohit Bhargava', image: '/success/Mohd%20Yunus%20Bin%20Wahaj.jpeg' },
+  { name: 'Mohd Yunus Bin Wahaj', image: '/success/Mohit%20Bhargava.jpeg' },
   { name: 'Samarth', image: '/success/Samarth.jpeg' },
 ]
 
@@ -1579,7 +1579,7 @@ function TestimonialsSection() {
 
   return (
     <section id="stories" style={{ position: 'relative', padding: 'clamp(3.5rem,8vw,10rem) clamp(1.5rem,5vw,4rem)', background: 'var(--paper)' }}>
-      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+      <div className="container-xl">
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem', marginBottom: '3.5rem', flexWrap: 'wrap' }}>
           <div>
             <div className="chapter-num" style={{ color: 'var(--red)', marginBottom: '1rem' }}>The Success Club</div>
@@ -1679,7 +1679,7 @@ function HomepageFAQ() {
         initial={{ opacity: 0, y: 40 }}
         animate={inView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.7 }}
-        style={{ maxWidth: '800px', margin: '0 auto' }}
+        className="container-md"
       >
         <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
           <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.7rem', letterSpacing: '0.3em', textTransform: 'uppercase', color: '#DB241E', fontWeight: 700, display: 'block', marginBottom: '1rem' }}>
@@ -1783,7 +1783,7 @@ function FinalCTA() {
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 40% 50%, rgba(255, 215, 0, 0.12) 0%, transparent 65%)', pointerEvents: 'none' }} />
       </motion.div>
 
-      <div className="cta-content-wrapper" style={{ position: 'relative', maxWidth: '1100px', margin: '0 auto', padding: 'clamp(5rem,10vw,12rem) clamp(1.25rem,5vw,4rem)' }}>
+      <div className="cta-content-wrapper container-xl" style={{ position: 'relative', padding: 'clamp(5rem,10vw,12rem) clamp(1.25rem,5vw,4rem)' }}>
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}

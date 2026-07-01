@@ -13,35 +13,35 @@ const FOUNDERS = [
     name: 'Captain Navrang Singh',
     role: 'Co-founder & Head Mentor',
     image: '/team/navrang_portrait.jpg',
-    bio: 'An active commercial airline captain with 15+ years of teaching expertise. Capt. Navrang specializes in translating highly technical aviation concepts (Air Navigation, Meteorology, Regulations) into practical cockpit understanding. Under his leadership, the academy has maintained the highest first-attempt DGCA examination pass rate in Delhi NCR.',
+    bio: 'Capt. Navrang Singh is the guiding force behind Airborne Aviation Academy and the mentor at the heart of its training vision. With over 15 years of aviation training experience, he is known for simplifying complex concepts, mentoring students personally, and building a culture of clarity, discipline, and real-world readiness across the academy. His career has been a dedicated mission to bridge the gap for aspiring pilots, ensuring that every student learns directly from the visionary driving their success.',
     accent: 'Concept Clarity over rote learning'
   },
   {
     name: 'Deepak Aggarwal',
     role: 'Co-founder & Business Head',
     image: '/team/deepak_portrait.jpg',
-    bio: 'Deepak is the first contact point for aspirants, offering realistic career counseling, financing guidance, and structured study plans. He monitors batch sizing restrictions (capping inputs at 25 per session) to maintain high student-teacher contact ratios.',
+    bio: 'Deepak Aggarwal is the strategic force behind Airborne\'s larger vision. With over two decades of experience in training, regulatory compliance, and high-stakes execution, he is committed to making the journey to the cockpit more transparent, structured, and empowering for aspiring aviation professionals.',
     accent: 'Honest counseling and strict enrollment limits'
   },
   {
     name: 'Piyush Chandra',
     role: 'Head of Operations',
     image: '/team/piyush_portrait.jpg',
-    bio: 'Piyush manages academic scheduling, partner flight school relationships (USA, NZ, SA), and DGCA license conversion pathways. His operational guidance ensures that students experience zero administrative friction when transitioning from foreign training logs back to Indian skies.',
+    bio: 'Piyush Chandra leads the student experience at Airborne, ensuring that every stage of the journey is smooth, responsive, and well-coordinated. From first interaction to day-to-day support, he helps create a transparent and student-focused environment for both aspirants and parents.',
     accent: 'Seamless international flight pathways'
   },
   {
     name: 'Capt. Mukul Mitra Barua',
     role: 'Lead Trainer – Aviation Training & Safety',
     image: '/team/mukul_portrait.jpg',
-    bio: 'An ex-Alliance Air cabin and cockpit crew member with years of flying-side career. Now retired from active flying, he leads training at Airborne in flight safety, aircraft knowledge, Safety Management Systems (SMS), Dangerous Goods Regulations (DGR), and Aviation Security (AVSEC).',
+    bio: 'He brings valuable airline experience and operational insight to Airborne\'s cabin crew division. With a journey spanning cabin crew, commercial flying, and airline operations as a airline pilot, he leads training in flight safety, aircraft knowledge, SMS, DGR, AVSEC, and operational awareness to help students develop the discipline and safety-first mindset expected in aviation. His public profile reflects his aviation background and association with Air India & Alliance Air.',
     accent: 'Building the safety-first crew mindset'
   },
   {
     name: 'Rajeet Khalsa',
     role: 'Lead Trainer – Soft Skills & Professional Readiness',
     image: '/team/rajeet_portrait.jpg',
-    bio: 'Retired AGM (Training) at Air India, where she spent decades training cabin crew for India\'s national carrier. A certified soft skills trainer and image consultant, she brings over 37 years of experience in aviation, communication, grooming, and professional presence.',
+    bio: 'Rajeet Khalsa, a certified soft skills trainer and an image consultant. She brings over 37 years of experience across aviation, training, and personal development. With a distinguished background at Air India and expertise in communication, grooming, confidence building, and personality development, she leads soft skills training at Airborne\'s cabin crew division with a strong focus on professionalism and industry readiness.',
     accent: 'Developing premium professional presence'
   },
   {
@@ -65,6 +65,7 @@ export default function AboutPage() {
     <>
       <Header />
       <main style={{ minHeight: '80vh', background: '#000810', padding: '4rem var(--margin) 6rem var(--margin)' }}>
+        <div className="container-xl">
         
         {/* Hero Section */}
         <div style={{ maxWidth: '800px', marginBottom: '5rem' }}>
@@ -266,6 +267,7 @@ export default function AboutPage() {
             </p>
           </div>
           <LeadForm courseName="General Pilot Training & Counselling" source="About Page" />
+        </div>
         </div>
 
       </main>

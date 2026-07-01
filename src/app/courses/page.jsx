@@ -26,6 +26,7 @@ export default async function CoursesPage() {
     <>
       <Header />
       <main className="course-main-wrapper" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
+        <div className="container-xl">
 
         {/* Header Hero Section */}
         <div style={{ maxWidth: '800px', marginBottom: '4rem' }}>
@@ -286,6 +287,7 @@ export default async function CoursesPage() {
               </tbody>
             </table>
           </div>
+        </div>
         </div>
 
       </main>
