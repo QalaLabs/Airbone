@@ -39,9 +39,9 @@ const DESTINATIONS = [
   { id: 'mct', city: 'MUSCAT', country: 'OMAN', iata: 'MCT', region: 'Middle East', x: 655, y: 285, airline: 'Oman Air', pos: 'First Officer', alumni: 'Deepak Mohan', year: '2023', labelAlign: 'left' },
   
   // Europe
-  { id: 'lhr', city: 'LONDON', country: 'UK', iata: 'LHR', region: 'Europe', x: 499, y: 107, airline: 'Air India', pos: 'First Officer', alumni: 'Nipun Singh', year: '2023', labelAlign: 'right' },
-  { id: 'ams', city: 'AMSTERDAM', country: 'NETHERLANDS', iata: 'AMS', region: 'Europe', x: 513, y: 105, airline: 'KLM', pos: 'First Officer', alumni: 'Vikram Pandey', year: '2022', labelAlign: 'right' },
-  { id: 'fra', city: 'FRANKFURT', country: 'GERMANY', iata: 'FRA', region: 'Europe', x: 524, y: 111, airline: 'Lufthansa', pos: 'Cadet', alumni: 'Shreya Kapoor', year: '2024', labelAlign: 'right' },
+  { id: 'lhr', city: 'LONDON', country: 'UK', iata: 'LHR', region: 'Europe', x: 483, y: 100, airline: 'Air India', pos: 'First Officer', alumni: 'Nipun Singh', year: '2023', labelAlign: 'left' },
+  { id: 'ams', city: 'AMSTERDAM', country: 'NETHERLANDS', iata: 'AMS', region: 'Europe', x: 515, y: 96, airline: 'KLM', pos: 'First Officer', alumni: 'Vikram Pandey', year: '2022', labelAlign: 'right' },
+  { id: 'fra', city: 'FRANKFURT', country: 'GERMANY', iata: 'FRA', region: 'Europe', x: 538, y: 114, airline: 'Lufthansa', pos: 'Cadet', alumni: 'Shreya Kapoor', year: '2024', labelAlign: 'right', labelDy: 9 },
   
   // North America
   { id: 'yvr', city: 'VANCOUVER', country: 'CANADA', iata: 'YVR', region: 'North America', x: 158, y: 113, airline: 'Air India', pos: 'First Officer', alumni: 'Naman Gupta', year: '2024', labelAlign: 'right' },
@@ -333,6 +333,22 @@ export default function GlobalRouteMap() {
   const inView     = useInView(sectionRef, { once: true, amount: 0.15 })
   const [hovered, setHovered]   = useState(null)
   const [tooltip, setTooltip]   = useState(null)
+  const [pinned, setPinned]     = useState(null)
+  const [reducedMotion, setReducedMotion] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  /* Respect prefers-reduced-motion + cut particle density on small screens */
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setReducedMotion(mq.matches)
+    const onMqChange = e => setReducedMotion(e.matches)
+    mq.addEventListener('change', onMqChange)
+    const onResize = () => setIsMobile(window.innerWidth < 769)
+    onResize()
+    window.addEventListener('resize', onResize)
+    return () => { mq.removeEventListener('change', onMqChange); window.removeEventListener('resize', onResize) }
+  }, [])
 
   /* GSAP scroll-driven micro-scale */
   useEffect(() => {
@@ -372,7 +388,11 @@ export default function GlobalRouteMap() {
       dest 
     })
   }
-  function handleLeave() { setHovered(null); setTooltip(null) }
+  function handleLeave() { if (pinned === null) { setHovered(null); setTooltip(null) } }
+  function handleTap(i) {
+    if (pinned === i) { setPinned(null); setHovered(null); setTooltip(null) }
+    else { setPinned(i); handleEnter(i) }
+  }
 
   /* Scroll shifts */
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start end','end start'] })
@@ -409,7 +429,7 @@ export default function GlobalRouteMap() {
       <motion.div aria-hidden style={{ position:'absolute', inset:0, zIndex:2, pointerEvents:'none', x:glx, y:gly, background:'radial-gradient(circle 350px at 71.4% 34%, rgba(219,36,30,0.28) 0%, rgba(219,36,30,0.08) 50%, transparent 100%),radial-gradient(ellipse 50% 50% at 50% 50%, rgba(56,189,248,0.03) 0%, transparent 80%),radial-gradient(circle at center, transparent 30%, #020408 90%)' }}/>
 
       {/* ══ DUST PARTICLES ══ */}
-      {DUST.map(p=>(
+      {!reducedMotion && (isMobile ? DUST.slice(0, 10) : DUST).map(p=>(
         <motion.div key={p.id} aria-hidden style={{ position:'absolute', left:`${p.x}%`, top:`${p.y}%`, width:p.sz, height:p.sz, borderRadius:'50%', background:'rgba(255,255,255,0.3)', zIndex:3, pointerEvents:'none' }}
           animate={{ x:[0,p.dx,0], y:[0,p.dy,0], opacity:[0,0.35,0.15,0] }}
           transition={{ duration:p.dur, delay:p.del, repeat:Infinity, ease:'easeInOut' }}
@@ -417,9 +437,9 @@ export default function GlobalRouteMap() {
       ))}
 
       {/* ── HEADER (Centered, static on top) ── */}
-      <div className="grm-header-wrap container-fluid" style={{ position:'relative', zIndex:20, padding:'4rem clamp(1.25rem,4vw,3.5rem) 0', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div className="grm-header-wrap container-fluid" style={{ position:'relative', zIndex:20, padding:'2.5rem clamp(1.25rem,4vw,3.5rem) 0', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <motion.div initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.7 }}
-          style={{ display:'flex', alignItems:'center', gap:'0.65rem', marginBottom:'0.75rem' }}>
+          style={{ display:'flex', alignItems:'center', gap:'0.65rem', marginBottom:'0.5rem' }}>
           <span style={{ color: '#DB241E', fontWeight: 900, fontSize: '0.85rem' }}>—</span>
           <span style={{ fontFamily:'var(--font-h)', fontSize:'0.62rem', fontWeight:800, letterSpacing:'0.28em', textTransform:'uppercase', color:'#fff' }}>One Headquarters.</span>
           <span style={{ color: '#DB241E', fontWeight: 900, fontSize: '0.85rem' }}>—</span>
@@ -440,9 +460,9 @@ export default function GlobalRouteMap() {
       </div>
 
       {/* ── MAP CONTAINER (Spans full width, positioned relatively behind sidebar) ── */}
-      <motion.div style={{ y:mapScrollY, flex:1, display:'flex', alignItems:'center', position:'relative', zIndex:10, width:'100%', margin:'-2rem auto 0' }} ref={mapWrapRef}>
-        <div className="grm-map-outer container-fluid" style={{ padding:'0 clamp(1.25rem,4vw,3.5rem)', position:'relative' }}>
-          
+      <motion.div className="grm-map-wrap" style={{ y:mapScrollY, flex:1, display:'flex', alignItems:'center', position:'relative', zIndex:10, width:'100%', margin:'-2rem auto 0' }} ref={mapWrapRef}>
+        <div className="grm-map-outer container-fluid" style={{ padding:'0 clamp(1.25rem,4vw,3.5rem)', position:'relative', display:'flex', alignItems:'center', gap:'2rem' }}>
+          <div className="grm-map-canvas" style={{ position:'relative', flex:'1 1 auto', minWidth:0 }}>
           <motion.svg
             ref={svgRef}
             viewBox="0 0 1000 500"
@@ -549,7 +569,7 @@ export default function GlobalRouteMap() {
             />
 
             {/* ─ Satellite City lights ─ */}
-            {CITY_LIGHTS.map((c, idx) => (
+            {(isMobile ? CITY_LIGHTS.filter((_, idx) => idx % 2 === 0) : CITY_LIGHTS).map((c, idx) => (
               <circle
                 key={idx}
                 cx={c.x}
@@ -579,16 +599,18 @@ export default function GlobalRouteMap() {
                     initial={{ pathLength:0, opacity:0 }} animate={inView?{pathLength:1,opacity:1}:{}} transition={{ duration:1.4+i*0.04, delay:0.06*i+0.3, ease:[0.16,1,0.3,1] }}/>
                   
                   {/* Animated plane arrowheads */}
-                  <motion.path
-                    d="M-3,-3 L4.5,0 L-3,3 L-1.5,0 Z"
-                    fill={r.color}
-                    filter="url(#g2-glow-xs)"
-                    initial={{ offsetDistance: '0%', opacity: 0 }}
-                    animate={inView ? { offsetDistance: ['0%', '100%'], opacity: [0, 1, 1, 0] } : {}}
-                    transition={{ duration: 3.5 + (i % 3) * 1.2, delay: 0.05 * i + 0.8, repeat: Infinity, ease: 'linear' }}
-                    style={{ offsetPath: `path('${path}')`, offsetRotate: 'auto' }}
-                  />
-                  
+                  {!reducedMotion && (
+                    <motion.path
+                      d="M-3,-3 L4.5,0 L-3,3 L-1.5,0 Z"
+                      fill={r.color}
+                      filter="url(#g2-glow-xs)"
+                      initial={{ offsetDistance: '0%', opacity: 0 }}
+                      animate={inView ? { offsetDistance: ['0%', '100%'], opacity: [0, 1, 1, 0] } : {}}
+                      transition={{ duration: 3.5 + (i % 3) * 1.2, delay: 0.05 * i + 0.8, repeat: Infinity, ease: 'linear' }}
+                      style={{ offsetPath: `path('${path}')`, offsetRotate: 'auto' }}
+                    />
+                  )}
+
                   {/* Airport Rings */}
                   <motion.circle cx={d.x} cy={d.y} r={hovered===i?R_OUTER*1.25:R_OUTER} fill="none" stroke={r.color} strokeWidth="1.2" strokeOpacity={hovered===i?0.75:0.35}
                     initial={{ scale:0 }} animate={inView?{scale:1}:{}} transition={{ delay:0.05*i+1.0, type:'spring', stiffness:200 }}
@@ -601,14 +623,17 @@ export default function GlobalRouteMap() {
                   {/* Node Dot */}
                   <motion.circle cx={d.x} cy={d.y} r={hovered===i?R_CORE*1.35:R_CORE} fill={hovered===i?r.color:'#fff'} filter={hovered===i?'url(#g2-glow-xs)':''}
                     initial={{ scale:0 }} animate={inView?{scale:1}:{}} transition={{ delay:0.05*i+1.0, type:'spring', stiffness:220 }}
-                    style={{ transformOrigin:`${d.x}px ${d.y}px`, cursor:'pointer', transition:'r 0.2s, fill 0.2s' }}
-                    onMouseEnter={() => handleEnter(i)} onMouseLeave={handleLeave}/>
-                  
+                    style={{ transformOrigin:`${d.x}px ${d.y}px`, cursor:'pointer', transition:'r 0.2s, fill 0.2s', pointerEvents:'none' }}/>
+
+                  {/* Invisible larger hit target — real dot is too small to reliably tap on mobile */}
+                  <circle cx={d.x} cy={d.y} r={14} fill="transparent" style={{ cursor:'pointer' }}
+                    onMouseEnter={() => handleEnter(i)} onMouseLeave={handleLeave} onClick={() => handleTap(i)}/>
+
                   {/* Stacked Labels */}
                   <g style={{ pointerEvents:'none' }}>
                     <motion.text
                       x={d.x + (d.labelAlign === 'left' ? -10 : 10)}
-                      y={d.y - 4}
+                      y={d.y - 4 + (d.labelDy || 0)}
                       textAnchor={d.labelAlign === 'left' ? 'end' : 'start'}
                       fill="#fff"
                       fontSize="7.8"
@@ -623,7 +648,7 @@ export default function GlobalRouteMap() {
                     </motion.text>
                     <motion.text
                       x={d.x + (d.labelAlign === 'left' ? -10 : 10)}
-                      y={d.y + 4}
+                      y={d.y + 4 + (d.labelDy || 0)}
                       textAnchor={d.labelAlign === 'left' ? 'end' : 'start'}
                       fill={r.color}
                       fontSize="4.8"
@@ -639,7 +664,7 @@ export default function GlobalRouteMap() {
                     {d.country && (
                       <motion.text
                         x={d.x + (d.labelAlign === 'left' ? -10 : 10)}
-                        y={d.y + 11}
+                        y={d.y + 11 + (d.labelDy || 0)}
                         textAnchor={d.labelAlign === 'left' ? 'end' : 'start'}
                         fill="rgba(255,255,255,0.4)"
                         fontSize="4.2"
@@ -659,24 +684,32 @@ export default function GlobalRouteMap() {
             })}
 
             {/* ─ Delhi Hub DEL ─ */}
-            <circle cx={HUB.x} cy={HUB.y} r="85" fill="url(#g2-hub-bloom)">
-              <animate attributeName="r"       values="65;110;65"    dur="4.5s"   repeatCount="indefinite"/>
-              <animate attributeName="opacity" values="0.65;0.25;0.65"  dur="4.5s"   repeatCount="indefinite"/>
+            <circle cx={HUB.x} cy={HUB.y} r="85" fill="url(#g2-hub-bloom)" opacity={reducedMotion ? 0.45 : undefined}>
+              {!reducedMotion && (
+                <>
+                  <animate attributeName="r"       values="65;110;65"    dur="4.5s"   repeatCount="indefinite"/>
+                  <animate attributeName="opacity" values="0.65;0.25;0.65"  dur="4.5s"   repeatCount="indefinite"/>
+                </>
+              )}
             </circle>
-            
+
             {HUB_RINGS.map((ring, i) => (
               <circle key={i} cx={HUB.x} cy={HUB.y} r={ring.r0} fill="none" stroke={ring.sc} strokeWidth={ring.sw}>
-                <animate attributeName="r"       values={`${ring.r0};${ring.r1};${ring.r0}`} dur={`${ring.dur}s`} repeatCount="indefinite" begin={ring.begin}/>
-                <animate attributeName="opacity" values="0.55;0;0.55"                          dur={`${ring.dur}s`} repeatCount="indefinite" begin={ring.begin}/>
+                {!reducedMotion && (
+                  <>
+                    <animate attributeName="r"       values={`${ring.r0};${ring.r1};${ring.r0}`} dur={`${ring.dur}s`} repeatCount="indefinite" begin={ring.begin}/>
+                    <animate attributeName="opacity" values="0.55;0;0.55"                          dur={`${ring.dur}s`} repeatCount="indefinite" begin={ring.begin}/>
+                  </>
+                )}
               </circle>
             ))}
-            
+
             <circle cx={HUB.x} cy={HUB.y} r="28" fill="url(#g2-hub-core)" filter="url(#g2-glow-lg)"/>
             <ellipse cx={HUB.x-3} cy={HUB.y-3} rx="6" ry="3" fill="url(#g2-lens)" opacity="0.65" transform={`rotate(-35,${HUB.x},${HUB.y})`}/>
             <circle cx={HUB.x} cy={HUB.y} r="7" fill="#fff" filter="url(#g2-glow-lg)"/>
-            
+
             {/* Outward drifting hub particles */}
-            {Array.from({length:8}, (_,i) => {
+            {!reducedMotion && Array.from({length:8}, (_,i) => {
               const ang = (i/8)*Math.PI*2
               return (
                 <motion.circle key={i} r="1.8" fill={i%2===0?'var(--gold)':'#DB241E'}
@@ -685,10 +718,13 @@ export default function GlobalRouteMap() {
                   transition={{ duration:1.8+i*0.15, delay:i*0.25, repeat:Infinity, repeatDelay:1.2, ease:'easeOut' }}/>
               )
             })}
-            
-            <text x={HUB.x} y={HUB.y+20} textAnchor="middle" fill="#fff" fontSize="12" fontFamily="var(--font-h)" fontWeight="900" letterSpacing="0.06em">DEL</text>
-            <text x={HUB.x} y={HUB.y+31} textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="6" fontFamily="var(--font-h)" fontWeight="700" letterSpacing="0.08em">DWARKA · DELHI</text>
-            <text x={HUB.x} y={HUB.y+39} textAnchor="middle" fill="rgba(255,255,255,0.25)" fontSize="5.2" fontFamily="var(--font-h)" fontWeight="600" letterSpacing="0.08em">INDIA</text>
+
+            {/* Dark halo behind hub text so labels stay legible against the red bloom */}
+            <g style={{ paintOrder:'stroke', stroke:'#02060d', strokeWidth:4, strokeLinejoin:'round' }}>
+              <text x={HUB.x} y={HUB.y+20} textAnchor="middle" fill="#fff" fontSize="12" fontFamily="var(--font-h)" fontWeight="900" letterSpacing="0.06em">DEL</text>
+              <text x={HUB.x} y={HUB.y+31} textAnchor="middle" fill="rgba(255,255,255,0.65)" fontSize="6" fontFamily="var(--font-h)" fontWeight="700" letterSpacing="0.08em">DWARKA · DELHI</text>
+              <text x={HUB.x} y={HUB.y+39} textAnchor="middle" fill="rgba(255,255,255,0.45)" fontSize="5.2" fontFamily="var(--font-h)" fontWeight="600" letterSpacing="0.08em">INDIA</text>
+            </g>
           </motion.svg>
 
           {/* Legend (Bottom-Left) */}
@@ -709,27 +745,26 @@ export default function GlobalRouteMap() {
             }}
             className="grm-legend"
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.55rem', fontFamily: 'var(--font-h)', fontWeight: 800, letterSpacing: '0.12em', color: 'rgba(255,255,255,0.6)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.65rem', fontFamily: 'var(--font-h)', fontWeight: 800, letterSpacing: '0.12em', color: 'rgba(255,255,255,0.6)' }}>
               <span style={{ color: '#DB241E', fontSize: '0.65rem', width: '12px', display: 'inline-block' }}>✈</span>
               INTERNATIONAL ROUTES
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.55rem', fontFamily: 'var(--font-h)', fontWeight: 800, letterSpacing: '0.12em', color: 'rgba(255,255,255,0.6)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.65rem', fontFamily: 'var(--font-h)', fontWeight: 800, letterSpacing: '0.12em', color: 'rgba(255,255,255,0.6)' }}>
               <span style={{ color: '#D8A027', fontSize: '0.65rem', width: '12px', display: 'inline-block' }}>✈</span>
               DOMESTIC ROUTES
             </div>
           </div>
+          </div>
 
-          {/* Floating Alumni Sidebar — positioned absolutely on the right of the map container, overlaying the SVG */}
+          {/* Alumni Sidebar — normal flex column on desktop so it reserves its own space instead of covering map nodes */}
           <motion.aside
             initial={{ opacity:0, x:24 }} animate={inView?{opacity:1,x:0}:{}} transition={{ duration:0.75, delay:0.45, ease:[0.16,1,0.3,1] }}
             className="grm-right-panel"
-            style={{ 
-              position: 'absolute', 
-              right: '2.5rem', 
-              top: '50%',
-              transform: 'translateY(-50%)',
+            style={{
+              position: 'relative',
+              flexShrink: 0,
               width: '290px',
-              background:'rgba(5,10,20,0.65)', 
+              background:'rgba(5,10,20,0.65)',
               backdropFilter:'blur(20px)', 
               WebkitBackdropFilter:'blur(20px)', 
               border:'1px solid rgba(255,255,255,0.08)', 
@@ -750,7 +785,7 @@ export default function GlobalRouteMap() {
               <div key={group.label} style={{ marginBottom:'0.9rem' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:'0.45rem', marginBottom:'0.35rem', paddingBottom:'0.25rem', borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
                   <span style={{ width:'4.5px', height:'4.5px', borderRadius:'50%', background:group.color, display:'block', flexShrink:0, boxShadow:`0 0 5px ${group.color}` }}/>
-                  <span style={{ fontFamily:'var(--font-h)', fontSize:'0.52rem', fontWeight:800, letterSpacing:'0.18em', textTransform:'uppercase', color:group.color }}>{group.label}</span>
+                  <span style={{ fontFamily:'var(--font-h)', fontSize:'0.6rem', fontWeight:800, letterSpacing:'0.18em', textTransform:'uppercase', color:group.color }}>{group.label}</span>
                 </div>
                 
                 {group.items.map((item, ii) => {
@@ -760,8 +795,8 @@ export default function GlobalRouteMap() {
                       style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0.2rem 0.4rem', borderRadius:'4px', transition:'background 0.2s' }}
                       onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,0.03)'}
                       onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-                      <span style={{ fontFamily:'var(--font-h)', fontSize:'0.68rem', fontWeight:600, color:'rgba(255,255,255,0.85)' }}>{item.airline}</span>
-                      <span style={{ fontFamily:'var(--font-h)', fontSize:'0.48rem', letterSpacing:'0.06em', color:'rgba(255,255,255,0.22)' }}>{item.route}</span>
+                      <span style={{ fontFamily:'var(--font-h)', fontSize:'0.75rem', fontWeight:600, color:'rgba(255,255,255,0.85)' }}>{item.airline}</span>
+                      <span style={{ fontFamily:'var(--font-h)', fontSize:'0.56rem', letterSpacing:'0.06em', color:'rgba(255,255,255,0.3)' }}>{item.route}</span>
                     </motion.div>
                   )
                 })}
@@ -774,14 +809,14 @@ export default function GlobalRouteMap() {
             <motion.div initial={{ opacity:0 }} animate={inView?{opacity:1}:{}} transition={{ delay:1.1, duration:0.65 }}
               style={{ padding:'0.75rem', borderRadius:'8px', background:'rgba(216,160,39,0.04)', border:'1px solid rgba(216,160,39,0.12)', boxShadow:'0 0 16px rgba(216,160,39,0.03)' }}>
               <div style={{ display:'flex', alignItems:'center', gap:'0.4rem', marginBottom:'0.25rem' }}>
-                <span style={{ fontSize:'0.55rem' }}>📍</span>
-                <span style={{ fontFamily:'var(--font-h)', fontSize:'0.54rem', fontWeight:900, letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--gold)' }}>Airborne Aviation Academy</span>
+                <span style={{ fontSize:'0.6rem' }}>📍</span>
+                <span style={{ fontFamily:'var(--font-h)', fontSize:'0.6rem', fontWeight:900, letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--gold)' }}>Airborne Aviation Academy</span>
               </div>
-              <div style={{ fontFamily:'var(--font-h)', fontSize:'0.52rem', color:'rgba(255,255,255,0.3)', letterSpacing:'0.04em' }}>Ramphal Chowk · Dwarka · Delhi · India</div>
-              
+              <div style={{ fontFamily:'var(--font-h)', fontSize:'0.58rem', color:'rgba(255,255,255,0.4)', letterSpacing:'0.04em' }}>Ramphal Chowk · Dwarka · Delhi · India</div>
+
               <div style={{ marginTop:'0.5rem', display:'flex', gap:'0.35rem', flexWrap:'wrap' }}>
                 {['50+ Airlines','50+ Countries','DGCA Approved'].map(tag=>(
-                  <span key={tag} style={{ fontFamily:'var(--font-h)', fontSize:'0.42rem', fontWeight:800, letterSpacing:'0.08em', textTransform:'uppercase', color:'rgba(216,160,39,0.75)', padding:'0.15rem 0.4rem', border:'1px solid rgba(216,160,39,0.15)', borderRadius:'999px' }}>{tag}</span>
+                  <span key={tag} style={{ fontFamily:'var(--font-h)', fontSize:'0.48rem', fontWeight:800, letterSpacing:'0.08em', textTransform:'uppercase', color:'rgba(216,160,39,0.75)', padding:'0.15rem 0.4rem', border:'1px solid rgba(216,160,39,0.15)', borderRadius:'999px' }}>{tag}</span>
                 ))}
               </div>
             </motion.div>
@@ -897,7 +932,8 @@ export default function GlobalRouteMap() {
           }
         }
         @media (max-width:1024px) {
-          .grm-map-outer { padding:0 1.25rem 22rem !important; }
+          .grm-map-wrap { margin-top:1.5rem !important; }
+          .grm-map-outer { flex-direction:column !important; padding:0 1.25rem 37rem !important; }
           .grm-right-panel { position:absolute !important; top:auto !important; bottom:0 !important; left:50% !important; right:auto !important; transform:translate(-50%, 0) !important; width:calc(100% - 2.5rem) !important; max-width:360px !important; }
           .grm-stats-strip { grid-template-columns:repeat(2,1fr) !important; }
         }
