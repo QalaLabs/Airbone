@@ -3,11 +3,11 @@
 import { useState, useCallback } from 'react'
 import { triggerToast } from '@/components/Toast'
 import useFormValidation from '@/hooks/useFormValidation'
-import { validateName, validatePhone, validateEmail, validatePincode } from '@/utils/validation'
+import { validateName, validatePhone, validateEmail, validatePincode, validateRequired } from '@/utils/validation'
 import FormField from '@/components/FormField'
 import SubmitButton from '@/components/SubmitButton'
 
-const validators = { name: validateName, phone: validatePhone, email: validateEmail, pincode: validatePincode }
+const validators = { name: validateName, phone: validatePhone, email: validateEmail, pincode: validatePincode, course: validateRequired }
 
 const COURSES = [
   'CPL Ground Classes (₹2,70,000)',
@@ -22,7 +22,7 @@ const COURSES = [
 
 export default function LeadForm({ courseName = '', source = 'Dynamic Page Form' }) {
   const [status, setStatus] = useState('idle')
-  const { values, handleChange, handleBlur, validate, isValid, setValues } = useFormValidation(
+  const { values, errors, touched, handleChange, handleBlur, validate, isValid, setValues } = useFormValidation(
     { name: '', phone: '', email: '', pincode: '', course: courseName || COURSES[0] },
     validators
   )
@@ -82,12 +82,12 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
         July 2026 batches are capped at 25 students. Provide details to receive syllabus PDF.
       </p>
 
-      <FormField id="lead-name" type="text" placeholder="Full Name" dark value={values.name} onChange={(v) => handleChange('name', v)} onBlur={() => handleBlur('name')} required />
-      <FormField id="lead-phone" type="tel" placeholder="Contact Number (e.g. +91...)" dark value={values.phone} onChange={(v) => handleChange('phone', v)} onBlur={() => handleBlur('phone')} required maxLength={10} />
-      <FormField id="lead-email" type="email" placeholder="Email Address" dark value={values.email} onChange={(v) => handleChange('email', v)} onBlur={() => handleBlur('email')} required />
-      <FormField id="lead-pincode" type="text" placeholder="PIN Code / Zip Code" dark value={values.pincode} onChange={(v) => handleChange('pincode', v)} onBlur={() => handleBlur('pincode')} required maxLength={6} />
+      <FormField id="lead-name" type="text" placeholder="Full Name" dark value={values.name} onChange={(v) => handleChange('name', v)} onBlur={() => handleBlur('name')} error={touched.name ? errors.name : null} required />
+      <FormField id="lead-phone" type="tel" placeholder="Contact Number (e.g. +91...)" dark value={values.phone} onChange={(v) => handleChange('phone', v)} onBlur={() => handleBlur('phone')} error={touched.phone ? errors.phone : null} required maxLength={10} />
+      <FormField id="lead-email" type="email" placeholder="Email Address" dark value={values.email} onChange={(v) => handleChange('email', v)} onBlur={() => handleBlur('email')} error={touched.email ? errors.email : null} required />
+      <FormField id="lead-pincode" type="text" placeholder="PIN Code / Zip Code" dark value={values.pincode} onChange={(v) => handleChange('pincode', v)} onBlur={() => handleBlur('pincode')} error={touched.pincode ? errors.pincode : null} required maxLength={6} />
 
-      <FormField id="lead-course" as="select" dark value={values.course} onChange={(v) => handleChange('course', v)} required>
+      <FormField id="lead-course" as="select" dark value={values.course} onChange={(v) => handleChange('course', v)} error={touched.course ? errors.course : null} required>
         {COURSES.map((c) => (
           <option key={c} value={c}>{c}</option>
         ))}

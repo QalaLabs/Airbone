@@ -97,31 +97,24 @@ export default function ContactPage() {
               ))}
             </div>
 
-            <a
-              href={MAPS_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ textDecoration: 'none' }}
-            >
-              <div style={{
-                width: '100%', borderRadius: '24px', overflow: 'hidden',
-                boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
-                background: '#00162e', position: 'relative', isolation: 'isolate',
-              }}>
-                <div style={{ position: 'relative', width: '100%', aspectRatio: '16 / 9', minHeight: '280px' }}>
-                  <iframe
-                    src={MAP_EMBED_URL}
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0, position: 'absolute', inset: 0, }}
-                    allowFullScreen
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    title="Airborne Aviation Academy — Official Google Maps Location"
-                  />
-                </div>
+            <div style={{
+              width: '100%', borderRadius: '24px', overflow: 'hidden',
+              boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
+              background: '#00162e', position: 'relative', isolation: 'isolate',
+            }}>
+              <div style={{ position: 'relative', width: '100%', aspectRatio: '16 / 9', minHeight: '280px' }}>
+                <iframe
+                  src={MAP_EMBED_URL}
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0, position: 'absolute', inset: 0, }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Airborne Aviation Academy — Official Google Maps Location"
+                />
               </div>
-            </a>
+            </div>
 
             <div style={{
               background: '#00162e', border: '1px solid rgba(216,160,39,0.2)',
@@ -148,7 +141,7 @@ export default function ContactPage() {
                 </p>
               </a>
               <p style={{ fontSize: '0.78rem', color: '#D8A027', lineHeight: '1.5', margin: '0 0 1.25rem', fontStyle: 'italic' }}>
-                Located just a short walk (approximately 50–100 metres) from Ramphal Chowk Metro Station.
+                Our Ground Academy and Simulator Centre are located approximately 50 metres from Ramphal Chowk.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <a

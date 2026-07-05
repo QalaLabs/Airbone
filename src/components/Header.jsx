@@ -26,8 +26,9 @@ export default function Header() {
     <>
       <header className="nav scrolled site-header">
         <Link href="/" className="nav-logo" aria-label="Airborne Aviation Academy home">
-          <img src="/logo-white.webp" alt="Airborne Aviation Academy" style={{ height: '42px', width: 'auto', objectFit: 'contain' }} />
+          <img src="/logo-primary.webp" alt="Airborne Aviation Academy" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
         </Link>
+
 
         {/* Desktop nav links */}
         <ul className="nav-links desktop-only" role="list">

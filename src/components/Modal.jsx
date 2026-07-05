@@ -234,7 +234,7 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
 
               <p className="form-legal">
                 By submitting, you consent to being contacted by Airborne Aviation Academy
-                regarding your inquiry. Airborne Aviation Pvt. Ltd. · CIN: U85306DL2026PTC465670
+                regarding your inquiry. Airborne Aviation Pvt. Ltd. · <span style={{ whiteSpace: 'nowrap' }}>CIN: U85306DL2026PTC465670</span>
               </p>
             </form>
           </>

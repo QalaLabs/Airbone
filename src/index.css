@@ -697,6 +697,15 @@ img, video { display: block; max-width: 100%; }
   border-color: var(--gold) !important;
   box-shadow: 0 0 8px var(--gold-glow) !important;
 }
+.modal-input option {
+  background: #ffffff;
+  color: #111111;
+}
+.modal-input-dark option {
+  background: #000f1e;
+  color: #ffffff;
+}
+
 
 /* ── TIMELINE TRACKER ── */
 .timeline {

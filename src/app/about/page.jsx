@@ -20,14 +20,14 @@ const FOUNDERS = [
     name: 'Deepak Aggarwal',
     role: 'Co-founder & Business Head',
     image: '/team/deepak_portrait.jpg',
-    bio: 'Deepak Aggarwal is the strategic force behind Airborne\'s larger vision. With over two decades of experience in training, regulatory compliance, and high-stakes execution, he is committed to making the journey to the cockpit more transparent, structured, and empowering for aspiring aviation professionals.',
+    bio: 'Deepak Aggarwal leads the student experience at Airborne, ensuring that every stage of the journey is smooth, responsive, and well-coordinated. From first interaction to day-to-day support, he helps create a transparent and student-focused environment for both aspirants and parents.',
     accent: 'Honest counseling and strict enrollment limits'
   },
   {
     name: 'Piyush Chandra',
     role: 'Head of Operations',
     image: '/team/piyush_portrait.jpg',
-    bio: 'Piyush Chandra leads the student experience at Airborne, ensuring that every stage of the journey is smooth, responsive, and well-coordinated. From first interaction to day-to-day support, he helps create a transparent and student-focused environment for both aspirants and parents.',
+    bio: 'Piyush Chandra is the strategic force behind Airborne\'s larger vision. With over two decades of experience in training, regulatory compliance, and high-stakes execution, he is committed to making the journey to the cockpit more transparent, structured, and empowering for aspiring aviation professionals.',
     accent: 'Seamless international flight pathways'
   },
   {
@@ -100,7 +100,7 @@ export default function AboutPage() {
             <h2 className="ov-h2" style={{ marginTop: '0.75rem' }}>Core Mentors</h2>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', mdGridTemplateColumns: 'repeat(3, 1fr)', gap: '2.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2.5rem' }}>
             {FOUNDERS.map((founder) => (
               <div 
                 key={founder.name} 
