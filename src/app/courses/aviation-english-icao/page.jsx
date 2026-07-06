@@ -7,7 +7,7 @@ import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
   title: 'Aviation English ICAO Level 4 Delhi | Airborne Aviation',
-  description: 'Achieve ICAO English Level 4 for your DGCA CPL or RTR licence at Airborne Aviation Academy, Dwarka Delhi. Structured aviation English course. Fees ₹50K–1L.',
+  description: 'Achieve ICAO English Level 4 for your DGCA CPL or RTR licence at Airborne Aviation Academy, Dwarka Delhi — 2,500+ students trained. Structured aviation English course. Fees ₹50K–1L.',
   alternates: { canonical: '/courses/aviation-english-icao' },
 }
 
@@ -104,7 +104,7 @@ export default function AviationEnglishPage() {
         </div>
 
         <div className="course-details-layout">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', minWidth: 0, width: '100%' }}>
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>

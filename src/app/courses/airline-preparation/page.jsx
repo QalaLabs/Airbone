@@ -7,7 +7,7 @@ import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
   title: 'Airline GD PI Interview Preparation Delhi | Airborne Aviation',
-  description: 'Airline interview preparation at Airborne, Dwarka. GD, PI, personal development, mock interviews by Rajeet Khalsa. IndiGo, Air India, Akasa-ready.',
+  description: 'Airline interview preparation at Airborne, Dwarka — 2,500+ students trained. GD, PI, personal development, mock interviews by Rajeet Khalsa. IndiGo, Air India, Akasa-ready.',
   alternates: { canonical: '/courses/airline-preparation' },
 }
 
@@ -80,7 +80,7 @@ export default function AirlinePreparationPage() {
 
         <div className="course-details-layout">
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', minWidth: 0, width: '100%' }}>
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
