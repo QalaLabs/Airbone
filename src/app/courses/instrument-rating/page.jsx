@@ -7,7 +7,7 @@ import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
   title: 'Instrument Rating Course Delhi — DGCA Approved | Airborne',
-  description: 'Earn your DGCA Instrument Rating at Airborne Aviation Academy, Dwarka Delhi. ILS, VOR, NDB approach training. PPL/CPL holders. Fees ₹5–8L. Enquire now.',
+  description: 'Earn your DGCA Instrument Rating at Airborne Aviation Academy, Dwarka Delhi — 2,500+ students trained. ILS, VOR, NDB approach training. PPL/CPL holders. Fees ₹5–8L. Enquire now.',
   alternates: { canonical: '/courses/instrument-rating' },
 }
 
@@ -90,7 +90,7 @@ export default function InstrumentRatingPage() {
         </div>
 
         <div className="course-details-layout">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', minWidth: 0, width: '100%' }}>
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>

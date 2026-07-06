@@ -6,7 +6,7 @@ import { fetchPublic, formatFee } from '@/lib/adminApi'
 
 export const metadata = {
   title: 'Aviation Courses Delhi | CPL - ATPL - Cabin Crew | Airborne',
-  description: 'Browse all DGCA-approved aviation courses at Airborne Aviation Academy, Dwarka Delhi. CPL ground school, ATPL, Cabin Crew, A320 SIM, cadet prep. Compare fees and eligibility.',
+  description: 'Browse all DGCA-approved aviation courses at Airborne Aviation Academy, Dwarka Delhi — 2,500+ students trained. CPL ground school, ATPL, Cabin Crew, A320 SIM, cadet prep. Compare fees and eligibility.',
 }
 
 // Revalidate every 60 s so freshly published courses appear quickly

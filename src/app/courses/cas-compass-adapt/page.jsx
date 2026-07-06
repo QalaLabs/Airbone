@@ -7,7 +7,7 @@ import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
   title: 'CAS Compass & ADAPT Test Prep Delhi | Airborne Aviation',
-  description: 'Prepare for the IAF CAS Compass and ADAPT pilot aptitude tests at Airborne, Dwarka. Numerical, spatial, psychomotor, multi-tasking — structured coaching.',
+  description: 'Prepare for the IAF CAS Compass and ADAPT pilot aptitude tests at Airborne, Dwarka — 2,500+ students trained. Numerical, spatial, psychomotor, multi-tasking — structured coaching.',
   alternates: { canonical: '/courses/cas-compass-adapt' },
 }
 
@@ -79,7 +79,7 @@ export default function CASCompassAdaptPage() {
 
         <div className="course-details-layout">
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', minWidth: 0, width: '100%' }}>
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>

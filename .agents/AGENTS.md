@@ -20,3 +20,33 @@
   - Recalculates quality score (max 100).
   - Logs audits and activity items.
   - Queues WhatsApp notifications (`NEW_LEAD`).
+
+## Completed Fixes & Known State (Session: 2026-07-04)
+
+### Frontend Content Corrections
+- **Stats counter** in `GlobalRouteMap.jsx`: `5000+` → `2500+` students.
+- **Homepage FAQ** (`src/app/page.jsx`):
+  - Removed `"minimum 50% in PM"` eligibility requirement.
+  - Changed `"DGCA Class 1 Medical"` → `"DGCA Class 2 Medical"`.
+  - Updated DGCA approval FAQ to clarify Airborne is a specialist ground school, not an FTO.
+- **Contact page** (`src/app/contact/page.jsx`): Updated location blurb to state *"approximately 10 metres from Ramphal Chowk, or less than 1 km from Palam Metro Station and Dwarka Sector 9 Metro Station."*
+
+### Footer Fixes (`src/components/PremiumFooter.jsx`)
+- Replaced bad Unicode en-dash character with a standard dash in the address line.
+- Set LinkedIn href placeholder to `#` (no URL was provided).
+
+### Logo Assets
+- Generated `logo-white.png` and `logo-white.webp` via `scripts/generate-logo-white.py` — navy elements turned white, red elements preserved. Assets saved to `public/images/`.
+
+### Mobile / Responsive CSS (`src/app/index.css`)
+- Added strict `max-width` + `overflow-x: hidden` constraints to `.container-md`, `.container-lg`, `.container-xl`, `.container-fluid`.
+- Added `overflow-x: auto` and `width: 100%` to `.course-table-wrap` for horizontal table scrolling on small screens.
+
+### Course Page Layout Fix (all 15 static course pages)
+- Added `minWidth: 0; width: 100%` to the main flex column inside `.course-details-layout` on all course detail pages to prevent content overflow on mobile.
+- Affected pages: `aviation-english-icao`, `cabin-crew-training`, `cadet-preparation`, `cas-compass-adapt`, `commercial-pilot-license-cpl`, `flight-dispatcher`, `flying-training-india-abroad`, `ground-school`, `instrument-rating`, `multi-engine-rating`, `private-pilot-license` (and any shared dynamic `[slug]` template).
+
+### Build Status
+- `npm run build` passed cleanly: 42 static pages generated, 0 errors.
+- `testimonials` proxy returns `502` in dev when Admin OS is offline — this is expected behaviour (the fail-safe Supabase fallback handles leads; testimonials simply won't render).
+

@@ -7,7 +7,7 @@ import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
   title: 'DGCA CPL Ground School Dwarka Delhi | Airborne Aviation',
-  description: 'Clear all 5 DGCA CPL papers on your first attempt. Mentor-led CPL Ground School in Dwarka, Delhi by Capt. Navrang Singh. ₹2,70,000. July 2026 batch — 25 seats.',
+  description: 'Clear all 5 DGCA CPL papers on your first attempt — 2,500+ students trained. Mentor-led CPL Ground School in Dwarka, Delhi by Capt. Navrang Singh. ₹2,70,000. July 2026 batch — 25 seats.',
   alternates: { canonical: '/courses/commercial-pilot-license-cpl' },
 }
 
@@ -133,7 +133,7 @@ export default function CPLPage() {
         <div className="course-details-layout">
 
           {/* Main Content */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', minWidth: 0, width: '100%' }}>
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>

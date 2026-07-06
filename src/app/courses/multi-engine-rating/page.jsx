@@ -7,7 +7,7 @@ import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
   title: 'Multi-Engine Rating India — DGCA Approved | Airborne Aviation',
-  description: 'Add a DGCA Multi-Engine Rating to your PPL or CPL at Airborne Aviation Academy, Dwarka. Twin-engine aircraft training. PPL/CPL holders. Fees ₹3–5L. Enquire.',
+  description: 'Add a DGCA Multi-Engine Rating to your PPL or CPL at Airborne Aviation Academy, Dwarka — 2,500+ students trained. Twin-engine aircraft training. PPL/CPL holders. Fees ₹3–5L. Enquire.',
   alternates: { canonical: '/courses/multi-engine-rating' },
 }
 
@@ -90,7 +90,7 @@ export default function MultiEngineRatingPage() {
         </div>
 
         <div className="course-details-layout">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', minWidth: 0, width: '100%' }}>
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>

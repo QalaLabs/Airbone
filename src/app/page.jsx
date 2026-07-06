@@ -1660,10 +1660,10 @@ function TestimonialsSection() {
    HOMEPAGE FAQ
 ───────────────────────────────────── */
 const HOME_FAQS = [
-  { q: 'What is the eligibility to join CPL ground school at Airborne?', a: 'Class 12 with Physics and Mathematics (minimum 50% in PM). You must also hold or be eligible for a DGCA Class 1 Medical. Age 17+ at time of first solo flight. No prior aviation experience required.' },
+  { q: 'What is the eligibility to join CPL ground school at Airborne?', a: 'Class 12 with Physics and Mathematics. You must also hold or be eligible for a DGCA Class 2 Medical. Age 17+ at time of first solo flight. No prior aviation experience required.' },
   { q: 'How long is the CPL ground school program?', a: "Airborne's CPL ground school runs 3–6 months for the full DGCA subject battery. Complete CPL with flying takes 12–18 months. Batches are capped at 25 students. Weekend and weekday batches available from our Dwarka, Delhi campus." },
   { q: 'What is the fee for CPL ground school?', a: 'CPL ground school at Airborne is ₹2,70,000. This covers all DGCA subjects, study materials, and viva preparation. Flying training (done at an FTO of your choice) is a separate cost — speak to our admissions team for current FTO tie-up rates.' },
-  { q: 'Is Airborne Aviation Academy DGCA approved?', a: 'Yes. Airborne Aviation Academy is a DGCA-approved ground training organisation. Our curriculum is aligned with the DGCA CPL and ATPL examination syllabus. Capt. Navrang Singh has been the principal mentor since founding in 2009.' },
+  { q: 'Is Airborne Aviation Academy a DGCA-approved flight school?', a: 'Airborne is a specialist ground school and aviation career preparation centre, not a Flying Training Organisation (FTO). Our ground school curriculum is fully aligned with the DGCA CPL and ATPL examination syllabus to prepare students for their written papers.' },
   { q: 'Can I do CPL and ATPL ground school together?', a: 'Yes, and Airborne recommends it. The CPL and ATPL syllabi overlap significantly in Air Navigation, Meteorology, and Technical subjects. Completing both together improves exam efficiency and reduces total preparation time.' },
   { q: 'What airlines have Airborne graduates joined?', a: 'Airborne graduates have joined IndiGo, Air India, Akasa Air, SpiceJet, Air Asia India, Alliance Air, and regional operators. Over 2,500 pilots have trained at Airborne since 2009.' },
 ]

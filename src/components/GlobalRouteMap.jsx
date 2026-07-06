@@ -95,7 +95,7 @@ const STATS = [
     )
   },
   {
-    value: '5000+',
+    value: '2500+',
     label: 'STUDENTS TRAINED',
     desc1: 'From classroom lessons',
     desc2: 'to cockpit success.',
