@@ -1,14 +1,20 @@
 import { fetchPublic } from '@/lib/adminApi'
 
 const STATIC_COURSE_SLUGS = [
-  'cpl-ground-classes',
+  'commercial-pilot-license-cpl',
   'atpl',
   'cadet-preparation',
   'a320-simulator',
   'cas-compass-adapt',
   'airline-preparation',
   'flying-training-india-abroad',
-  'cabin-crew',
+  'cabin-crew-training',
+  'ground-school',
+  'instrument-rating',
+  'multi-engine-rating',
+  'private-pilot-license',
+  'aviation-english-icao',
+  'flight-dispatcher',
 ]
 
 export default async function sitemap() {
@@ -20,6 +26,7 @@ export default async function sitemap() {
     '/blog/how-to-become-pilot-india',
     '/blog/pilot-salary-india',
     '/blog/dgca-ground-school-guide',
+    '/blog/pilot-training-cost-india',
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date().toISOString(),

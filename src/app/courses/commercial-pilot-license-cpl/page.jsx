@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-import LeadForm from '@/components/LeadForm'
+import MultiStepLeadForm from '@/components/MultiStepLeadForm'
 import { getBreadcrumbSchema } from '@/utils/seo'
 import CoursePageFooter from '@/components/CoursePageFooter'
 
@@ -276,7 +276,7 @@ export default function CPLPage() {
                 <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)' }}>👥 Max 25 Students</div>
                 <span className="course-sidebar-note">July 2026 batch now enrolling</span>
               </div>
-              <LeadForm courseName="CPL Ground School" source="Course Detail: commercial-pilot-license-cpl" />
+              <MultiStepLeadForm courseName="CPL Ground School" source="Course Detail: commercial-pilot-license-cpl" courseCategory="pilot" />
             </div>
           </div>
 

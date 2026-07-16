@@ -411,7 +411,7 @@ function Act7Overlay({ visible, onDemo, onApply }) {
               { icon: '📍', label: 'Location', value: 'Dwarka, New Delhi' },
               { icon: '📅', label: 'Next Batch', value: 'July 2026' },
               { icon: '👥', label: 'Batch Size', value: 'Max 25 Students' },
-              { icon: '📞', label: 'Contact', value: '+91 98765 43210' },
+              { icon: '📞', label: 'Contact', value: '+91 9953 777 320' },
             ].map(i => (
               <li key={i.label} className="cta-panel-item">
                 <span className="cta-panel-icon">{i.icon}</span>

@@ -41,6 +41,7 @@ export default function FormField({
           onChange={(e) => onChange(e.target.value)}
           onBlur={onBlur}
           required={required}
+          aria-label={label || placeholder || 'Select option'}
           style={{ background: dark ? '#000810' : undefined, color: dark ? '#fff' : undefined }}
         >
           {children}
@@ -57,6 +58,7 @@ export default function FormField({
           required={required}
           maxLength={maxLength}
           autoComplete="off"
+          aria-label={label || placeholder}
         />
       )}
       {error && (

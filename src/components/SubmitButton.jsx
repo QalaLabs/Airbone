@@ -7,10 +7,15 @@ export default function SubmitButton({
   loadingText = 'Sending...',
   className = '',
   style = {},
+  type = 'submit',
+  onClick,
+  id,
 }) {
   return (
     <button
-      type="submit"
+      type={type}
+      id={id}
+      onClick={onClick}
       disabled={disabled || loading}
       className={className}
       style={{

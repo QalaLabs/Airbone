@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-import LeadForm from '@/components/LeadForm'
+import MultiStepLeadForm from '@/components/MultiStepLeadForm'
 import { getBreadcrumbSchema } from '@/utils/seo'
 import CoursePageFooter from '@/components/CoursePageFooter'
 
@@ -360,7 +360,7 @@ export default function CabinCrewTrainingPage() {
                 <span className="course-sidebar-label">Batch Size</span>
                 <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)' }}>👥 Max 20 Students</div>
               </div>
-              <LeadForm courseName="Cabin Crew Training" source="Course Detail: cabin-crew-training" />
+              <MultiStepLeadForm courseName="Cabin Crew Training" source="Course Detail: cabin-crew-training" courseCategory="cabin-crew" />
             </div>
           </div>
 

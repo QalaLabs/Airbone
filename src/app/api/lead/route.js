@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { rateLimit } from '@/utils/rate-limit'
 import { storeFallbackLead } from '@/utils/fallback-storage'
+import { sendLeadToCRM } from '@/lib/crm'
+import { consumeVerifyToken } from '@/utils/otp-store'
 
 const ADMIN_API_URL = process.env.ADMIN_API_URL ?? 'http://localhost:3001'
 const INTAKE_KEY = process.env.PUBLIC_INTAKE_KEY ?? ''
@@ -146,7 +148,45 @@ export async function POST(req) {
       utmContent: typeof payload.utm_content === 'string' ? payload.utm_content.trim() : undefined,
       referrerUrl: typeof payload.referrer === 'string' ? payload.referrer.trim() : undefined,
       landingPage: typeof payload.landing_page === 'string' ? payload.landing_page.trim() : undefined,
+      pathname: typeof payload.pathname === 'string' ? payload.pathname.trim() : undefined,
+      message: typeof payload.message === 'string' ? payload.message.trim() : undefined,
+      gclid: typeof payload.gclid === 'string' ? payload.gclid.trim() : undefined,
+      fbclid: typeof payload.fbclid === 'string' ? payload.fbclid.trim() : undefined,
+      leadUuid: typeof payload.lead_uuid === 'string' && payload.lead_uuid ? payload.lead_uuid : undefined,
+      // Conditional screening answers (cabin crew / pilot affordability routing).
+      // Advisory only — never used to block a submission, per screening policy.
+      screening: (payload.screening && typeof payload.screening === 'object') ? payload.screening : undefined,
     }
+
+    // Optional — set only by the multi-step OTP-gated form. Consumed once;
+    // absence just means this submission came through a non-OTP form path.
+    const verifyToken = typeof payload.verify_token === 'string' ? payload.verify_token : ''
+    const phoneVerified = verifyToken ? consumeVerifyToken(verifyToken, phone) : false
+    leadData.phoneVerified = phoneVerified
+
+    // Forward to LMSBABA CRM (fire-and-forget, never blocks or fails the response)
+    sendLeadToCRM(
+      {
+        name: leadData.name,
+        email: leadData.email,
+        phone: leadData.phone,
+        pincode: leadData.pincode,
+        course: leadData.course,
+        message: leadData.message,
+        pageUrl: leadData.landingPage,
+        pathname: leadData.pathname,
+        referrer: leadData.referrerUrl,
+        utmSource: leadData.utmSource,
+        utmMedium: leadData.utmMedium,
+        utmCampaign: leadData.utmCampaign,
+        utmTerm: leadData.utmTerm,
+        utmContent: leadData.utmContent,
+        gclid: leadData.gclid,
+        fbclid: leadData.fbclid,
+        leadUuid: leadData.leadUuid,
+      },
+      correlationId
+    )
 
     // Upstream fetch with AbortController timeout protection
     const controller = new AbortController()

@@ -29,6 +29,7 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
 
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault()
+    if (status === 'loading') return // prevent duplicate submission
     if (!validate()) return
     setStatus('loading')
     const urlParams = new URLSearchParams(window.location.search)
@@ -47,22 +48,23 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
         body: JSON.stringify({ ...values, source, utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page })
       })
       if (res.ok) {
-        triggerToast('Lead Captured Successfully', 'Our Dwarka admissions desk will contact you via WhatsApp or Voice within 120 seconds.')
+        setStatus('success')
       } else {
-        triggerToast('Lead Captured', 'Admissions advisor queued.')
+        setStatus('error')
+        triggerToast("We couldn't submit your enquiry", 'Please try again in a few moments or contact us directly via WhatsApp or phone.')
       }
     } catch {
-      triggerToast('Lead Captured', 'Admissions advisor queued.')
+      setStatus('error')
+      triggerToast("We couldn't submit your enquiry", 'Please try again in a few moments or contact us directly via WhatsApp or phone.')
     }
-    setStatus('success')
-  }, [values, source, validate])
+  }, [values, source, validate, status])
 
   if (status === 'success') {
     return (
       <div style={{ background: 'rgba(0, 15, 30, 0.7)', border: '1px solid #D8A027', borderTop: '4px solid #DB241E', padding: 'clamp(1.25rem, 5vw, 2.5rem)', textAlign: 'center', borderRadius: '1px', boxShadow: '0 8px 30px rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)' }}>
         <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', color: '#D8A027', marginBottom: '0.6rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.1em' }}>Enquiry Received</h3>
         <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.6', marginBottom: '1.5rem' }}>
-          Thank you! Your {courseName || 'aviation training'} enquiry has been received. An Airborne admissions counsellor will contact you within 24 hours.
+          Thank you! Your enquiry has been received successfully. Our admissions team will contact you shortly.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
           <a href="tel:+919953777320" className="btn btn-outline" style={{ textDecoration: 'none', fontSize: '0.75rem', padding: '0.6rem 1rem' }}>📞 Call Us</a>
@@ -96,11 +98,17 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
         )}
       </FormField>
 
+      {status === 'error' && (
+        <p role="alert" style={{ fontSize: '0.78rem', color: '#ff4444', lineHeight: '1.5', margin: '0 0 1rem' }}>
+          We couldn't submit your enquiry right now. Please try again in a few moments or contact us directly via WhatsApp or phone.
+        </p>
+      )}
+
       <SubmitButton
         id="lead-submit-btn"
         className="btn btn-primary"
         loading={status === 'loading'}
-        disabled={!isValid}
+        disabled={!isValid || status === 'loading'}
         style={{ width: '100%', justifyContent: 'center' }}
       >
         Apply For Registration →

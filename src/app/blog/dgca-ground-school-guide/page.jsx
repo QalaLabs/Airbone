@@ -160,7 +160,7 @@ export default function DGCAGroundSchoolGuidePage() {
               <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.95rem', fontWeight: 800, color: '#fff', textTransform: 'uppercase', marginBottom: '0.35rem' }}>DGCA CPL Ground School at Airborne</h3>
               <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.55)', fontFamily: 'var(--font-b)', margin: 0 }}>Max 25 students per batch · Taught by Capt. Navrang Singh · 100% first-attempt pass record</p>
             </div>
-            <Link href="/courses/cpl-ground-classes" className="btn btn-ghost" style={{ textDecoration: 'none', flexShrink: 0 }}>View Course →</Link>
+            <Link href="/courses/commercial-pilot-license-cpl" className="btn btn-ghost" style={{ textDecoration: 'none', flexShrink: 0 }}>View Course →</Link>
           </div>
 
           {/* FAQ */}

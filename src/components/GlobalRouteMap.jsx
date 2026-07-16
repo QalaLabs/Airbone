@@ -95,7 +95,7 @@ const STATS = [
     )
   },
   {
-    value: '5000+',
+    value: '2,500+',
     label: 'STUDENTS TRAINED',
     desc1: 'From classroom lessons',
     desc2: 'to cockpit success.',
@@ -460,8 +460,8 @@ export default function GlobalRouteMap() {
       </div>
 
       {/* ── MAP CONTAINER (Spans full width, positioned relatively behind sidebar) ── */}
-      <motion.div className="grm-map-wrap" style={{ y:mapScrollY, flex:1, display:'flex', alignItems:'center', position:'relative', zIndex:10, width:'100%', margin:'-2rem auto 0' }} ref={mapWrapRef}>
-        <div className="grm-map-outer container-fluid" style={{ padding:'0 clamp(1.25rem,4vw,3.5rem)', position:'relative', display:'flex', alignItems:'center', gap:'2rem' }}>
+      <motion.div className="grm-map-wrap" style={{ y:mapScrollY, flex:1, display:'flex', alignItems:'center', position:'relative', zIndex:10, width:'100%', margin: isMobile ? '1rem auto 0' : '-2rem auto 0' }} ref={mapWrapRef}>
+        <div className="grm-map-outer container-fluid" style={{ padding:'0 clamp(1.25rem,4vw,3.5rem)', position:'relative', display:'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'stretch' : 'center', gap:'2rem' }}>
           <div className="grm-map-canvas" style={{ position:'relative', flex:'1 1 auto', minWidth:0 }}>
           <motion.svg
             ref={svgRef}
@@ -763,7 +763,7 @@ export default function GlobalRouteMap() {
             style={{
               position: 'relative',
               flexShrink: 0,
-              width: '290px',
+              width: isMobile ? '100%' : '290px',
               background:'rgba(5,10,20,0.65)',
               backdropFilter:'blur(20px)', 
               WebkitBackdropFilter:'blur(20px)', 

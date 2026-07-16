@@ -2754,7 +2754,7 @@ export default function HomePage() {
   // 3D mode preserved intact
   if (is3dMode) {
     return (
-      <div style={{ position: 'relative', width: '100vw', minHeight: '100vh', background: '#000810' }}>
+      <div style={{ position: 'relative', width: '100%', minHeight: '100vh', background: '#000810' }}>
         <Home3DSection />
         <button
           onClick={() => { setIs3dMode(false); window.history.replaceState({}, '', '/') }}

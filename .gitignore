@@ -53,3 +53,5 @@ yarn.lock
 
 # Agent Workspaces
 .claude/
+.vercel
+.env*

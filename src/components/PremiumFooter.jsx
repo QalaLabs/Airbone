@@ -10,6 +10,7 @@ const QUICK_LINKS = [
   { label: 'Home', href: '/' },
   { label: 'About Us', href: '/about' },
   { label: 'Courses', href: '/courses' },
+  { label: 'How to Become a Pilot', href: '/blog/how-to-become-pilot-india' },
   { label: 'Contact Us', href: '/contact' },
   { label: 'Privacy Policy', href: '/privacy' },
   { label: 'Refund Policy', href: '/refund-policy' },
