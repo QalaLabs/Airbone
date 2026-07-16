@@ -7,7 +7,7 @@ import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
   title: 'ATPL Ground School India All Subjects | Airborne Aviation',
-  description: 'ATPL ground school in Delhi by Airborne Aviation Academy. Complete airline transport pilot license exam prep — all subjects, DGCA-aligned. Enrol now.',
+  description: 'ATPL ground school in Delhi by Airborne Aviation Academy — 2,500+ students trained. Complete airline transport pilot license exam prep — all subjects, DGCA-aligned. Enrol now.',
   alternates: { canonical: '/courses/atpl' },
 }
 
@@ -98,7 +98,7 @@ export default function ATPLPage() {
         <div className="course-details-layout">
 
           {/* Main Content */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', minWidth: 0, width: '100%' }}>
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>

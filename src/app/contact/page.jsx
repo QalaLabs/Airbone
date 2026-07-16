@@ -141,7 +141,7 @@ export default function ContactPage() {
                 </p>
               </a>
               <p style={{ fontSize: '0.78rem', color: '#D8A027', lineHeight: '1.5', margin: '0 0 1.25rem', fontStyle: 'italic' }}>
-                Our Ground Academy and Simulator Centre are located approximately 50 metres from Ramphal Chowk.
+                Located just a short walk (approximately 10 metres) from Ramphal Chowk, or less than 1 km from Palam Metro Station and Dwarka Sector 9 Metro Station.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <a

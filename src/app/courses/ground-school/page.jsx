@@ -111,7 +111,7 @@ export default function GroundSchoolPage() {
 
         <div className="course-details-layout">
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', minWidth: 0, width: '100%' }}>
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>

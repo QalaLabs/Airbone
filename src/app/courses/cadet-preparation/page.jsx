@@ -7,7 +7,7 @@ import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
   title: 'Cadet Pilot Program Prep IndiGo, Air India, Akasa | Airborne',
-  description: 'Prepare for IndiGo, Air India & Akasa cadet pilot programs at Airborne, Dwarka. Aptitude tests, GD-PI, simulator prep — join now.',
+  description: 'Prepare for IndiGo, Air India & Akasa cadet pilot programs at Airborne, Dwarka — 2,500+ students trained. Aptitude tests, GD-PI, simulator prep — join now.',
   alternates: { canonical: '/courses/cadet-preparation' },
 }
 
@@ -81,7 +81,7 @@ export default function CadetPreparationPage() {
 
         <div className="course-details-layout">
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', minWidth: 0, width: '100%' }}>
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>

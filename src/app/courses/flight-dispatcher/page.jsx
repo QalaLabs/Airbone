@@ -7,7 +7,7 @@ import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
   title: 'Flight Dispatcher Course Delhi — DGCA | Airborne Aviation',
-  description: 'Become a licensed Flight Dispatcher at Airborne Aviation Academy, Dwarka Delhi. DGCA-aligned curriculum. 10+2 eligible. 3–6 months. Fees ₹1–2L. Enquire now.',
+  description: 'Become a licensed Flight Dispatcher at Airborne Aviation Academy, Dwarka Delhi — 2,500+ students trained. DGCA-aligned curriculum. 10+2 eligible. 3–6 months. Fees ₹1–2L. Enquire now.',
   alternates: { canonical: '/courses/flight-dispatcher' },
 }
 
@@ -103,7 +103,7 @@ export default function FlightDispatcherPage() {
         </div>
 
         <div className="course-details-layout">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', minWidth: 0, width: '100%' }}>
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>

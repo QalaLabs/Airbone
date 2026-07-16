@@ -7,7 +7,7 @@ import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
   title: 'Cabin Crew Training Delhi — Airline Veterans | Airborne Aviation',
-  description: 'Cabin crew training in Dwarka, Delhi by ex-Alliance Air & Air India AGM trainers. 3 structured pathways. ₹30K–₹54K. Small batches. Book free counselling.',
+  description: 'Cabin crew training in Dwarka, Delhi by ex-Alliance Air & Air India AGM trainers — 2,500+ students trained. 3 structured pathways. ₹30K–₹54K. Small batches. Book free counselling.',
   alternates: { canonical: '/courses/cabin-crew-training' },
 }
 
@@ -146,7 +146,7 @@ export default function CabinCrewTrainingPage() {
         </div>
 
         <div className="course-details-layout">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', minWidth: 0, width: '100%' }}>
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>

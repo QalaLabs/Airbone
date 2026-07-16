@@ -7,7 +7,7 @@ import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
   title: 'Flying Training India vs Abroad — CPL Guide | Airborne Aviation',
-  description: 'Compare flying training in India vs abroad for a DGCA CPL. Cost, timeline, DGCA license conversion, and which path makes more sense. Expert guide by Airborne.',
+  description: 'Compare flying training in India vs abroad for a DGCA CPL. Cost, timeline, DGCA license conversion, and which path makes more sense. Expert guide by Airborne — 2,500+ students trained.',
   alternates: { canonical: '/courses/flying-training-india-abroad' },
 }
 
@@ -98,7 +98,7 @@ export default function FlyingTrainingIndiaAbroadPage() {
 
         <div className="course-details-layout">
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', minWidth: 0, width: '100%' }}>
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>

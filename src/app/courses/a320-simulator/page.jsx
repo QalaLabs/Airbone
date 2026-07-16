@@ -7,7 +7,7 @@ import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
   title: 'Airbus A320 Simulator Training Delhi | Airborne Aviation',
-  description: 'A320 simulator at Airborne Aviation Academy, Dwarka. Airline interview prep, type rating familiarisation, cadet selection practice. Book a session today.',
+  description: 'A320 simulator at Airborne Aviation Academy, Dwarka — 2,500+ students trained. Airline interview prep, type rating familiarisation, cadet selection practice. Book a session today.',
   alternates: { canonical: '/courses/a320-simulator' },
 }
 
@@ -74,7 +74,7 @@ export default function A320SimulatorPage() {
 
         <div className="course-details-layout">
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', minWidth: 0, width: '100%' }}>
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>

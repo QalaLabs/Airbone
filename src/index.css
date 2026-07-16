@@ -44,19 +44,23 @@
   margin-inline: auto !important;
 }
 .container-md {
-  width: min(92vw, 960px) !important;
+  width: 100% !important;
+  max-width: 960px !important;
   margin-inline: auto !important;
 }
 .container-lg {
-  width: min(92vw, 1280px) !important;
+  width: 100% !important;
+  max-width: 1280px !important;
   margin-inline: auto !important;
 }
 .container-xl {
-  width: min(94vw, 1560px) !important;
+  width: 100% !important;
+  max-width: 1560px !important;
   margin-inline: auto !important;
 }
 .container-fluid {
-  width: min(95vw, 1880px) !important;
+  width: 100% !important;
+  max-width: 1880px !important;
   margin-inline: auto !important;
 }
 
@@ -3040,9 +3044,13 @@ html { scroll-behavior: smooth; }
 .course-table-wrap {
   border: 1px solid rgba(0, 39, 76, 0.08);
   border-radius: 6px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  width: 100%;
+  max-width: 100%;
   box-shadow: 0 10px 30px rgba(0, 39, 76, 0.03);
   background: #ffffff;
+  -webkit-overflow-scrolling: touch;
 }
 
 .course-table {
