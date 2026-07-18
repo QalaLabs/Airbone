@@ -71,11 +71,10 @@ export default function AboutPage() {
         <div style={{ maxWidth: '800px', marginBottom: '5rem' }}>
           <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start' }}>Academy Authority</p>
           <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', marginTop: '1rem', textTransform: 'uppercase' }}>
-            Building Captains.
-            <em style={{ color: '#DB241E', fontStyle: 'normal' }}> Transforming Lives.</em>
+            About Airborne Aviation Academy DGCA Approved Pilot Training, Dwarka Delhi
           </h1>
           <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '1.05rem', lineHeight: '1.7', maxWidth: '100%' }}>
-            Located at Ramphal Chowk, Dwarka, Airborne Aviation Academy was established with a singular focus: to strip away the commercial noise of pilot training and return to rigorous, conceptual excellence.
+            Airborne Aviation Academy is a DGCA-compliant Pilot Training Organisation at Ramphal Chowk, Dwarka, New Delhi. Founded by Capt. Navrang Singh in 2009, the academy has trained 2,500+ aviation aspirants now serving at India's leading airlines. Now incorporated as a Private Limited company (2026).
           </p>
         </div>
 

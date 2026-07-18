@@ -6,8 +6,8 @@ import { getBreadcrumbSchema } from '@/utils/seo'
 import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
-  title: 'CAS Compass & ADAPT Test Prep Delhi | Airborne Aviation',
-  description: 'Prepare for the IAF CAS Compass and ADAPT pilot aptitude tests at Airborne, Dwarka — 2,500+ students trained. Numerical, spatial, psychomotor, multi-tasking — structured coaching.',
+  title: 'CASS COMPASS ADAPT Test Prep Delhi | Airborne Aviation',
+  description: 'Practice psychomotor tests on real CASS, COMPASS & ADAPT controls at Airborne Aviation, Dwarka Delhi. 2-week program. Rs 30,000. Available daily. Book your slot now.',
   alternates: { canonical: '/courses/cas-compass-adapt' },
 }
 

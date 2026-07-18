@@ -6,8 +6,8 @@ import { getBreadcrumbSchema } from '@/utils/seo'
 import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
-  title: 'Cadet Pilot Program Prep IndiGo, Air India, Akasa | Airborne',
-  description: 'Prepare for IndiGo, Air India & Akasa cadet pilot programs at Airborne, Dwarka — 2,500+ students trained. Aptitude tests, GD-PI, simulator prep — join now.',
+  title: 'Cadet Pilot Prep Delhi | IndiGo - Air India | Airborne',
+  description: 'Crack IndiGo, Air India & Akasa cadet screening in 6 weeks. CASS, COMPASS, ADAPT, GD & PI prep by Airborne Aviation, Dwarka Delhi. Rs 50,000. Limited seats. Enrol.',
   alternates: { canonical: '/courses/cadet-preparation' },
 }
 

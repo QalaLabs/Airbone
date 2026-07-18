@@ -91,7 +91,7 @@ const STEPS = [
 ]
 
 const FAQS = [
-  { q: 'What subjects are required in Class 12 to become a pilot?', a: 'Physics and Mathematics are mandatory in Class 12 (10+2), with a minimum aggregate of 50% marks.' },
+  { q: 'What subjects are required in Class 12 to become a pilot?', a: 'Physics and Mathematics are mandatory in Class 12 (10+2).' },
   { q: 'What is the minimum age to get a CPL in India?', a: 'You must be at least 18 years old at the time of applying for a CPL. You can begin your Student Pilot License (SPL) at 17.' },
   { q: 'How much does pilot training cost in India?', a: 'Total CPL training in India costs between ₹40–60 lakhs, including ground school (₹1–2L), flying fees, DGCA exam fees, and medical costs. Training abroad can be cheaper on a per-hour basis but requires DGCA conversion.' },
   { q: 'How long does it take to become a commercial pilot in India?', a: 'The complete CPL journey takes 18–36 months depending on flight school availability. Ground school typically runs 12–18 months in parallel.' },

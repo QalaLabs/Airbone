@@ -48,9 +48,14 @@ export default function Header() {
           ))}
         </ul>
 
+        {/* Desktop Phone Callout */}
+        <a href="tel:+919953777320" className="desktop-only" style={{ color: '#FFFFFF', textDecoration: 'none', fontSize: '0.88rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem', opacity: 0.9 }}>
+          <span>📞</span> +91 9953 777 320
+        </a>
+
         {/* Desktop CTA */}
         <Link href="/contact" className="nav-cta desktop-only" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
-          📅 Book Demo
+          Enrol Now
         </Link>
 
         {/* Hamburger Trigger */}

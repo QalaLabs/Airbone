@@ -43,9 +43,9 @@ export class MediaService {
 
     if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY) {
       return {
-        uploadUrl: `http://localhost:3001/api/v1/upload-mock?key=${fileKey}`,
+        uploadUrl: `http://localhost:4000/api/v1/upload-mock?key=${fileKey}`,
         fileKey,
-        fileUrl: `http://localhost:3001/_mock/${fileKey}`,
+        fileUrl: `http://localhost:4000/_mock/${fileKey}`,
       };
     }
 

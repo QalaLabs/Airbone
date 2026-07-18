@@ -6,8 +6,8 @@ import { getBreadcrumbSchema } from '@/utils/seo'
 import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
-  title: 'Airbus A320 Simulator Training Delhi | Airborne Aviation',
-  description: 'A320 simulator at Airborne Aviation Academy, Dwarka — 2,500+ students trained. Airline interview prep, type rating familiarisation, cadet selection practice. Book a session today.',
+  title: 'A320 SIM Training Delhi NCR | Airborne Aviation',
+  description: 'Practice in Delhi NCR\'s premier Airbus A320 FTD Level 5 simulator at Airborne Aviation, Dwarka. Flexible hourly slots. Rs 10,000/hour. Book your SIM session today.',
   alternates: { canonical: '/courses/a320-simulator' },
 }
 

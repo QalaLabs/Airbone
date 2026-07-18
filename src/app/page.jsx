@@ -330,7 +330,7 @@ function HeroChapter({ onBook, on3D }) {
           style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.6875rem', letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: '2rem' }}
         >
           <span style={{ height: '1px', width: '2.5rem', background: 'var(--red)' }} />
-          Dwarka, Delhi · Est. 2009
+          Ab India Bharega Udaan · Dwarka, Delhi · Est. 2009
         </motion.div>
 
         <h1 style={{ fontFamily: 'var(--font-h)', fontWeight: 800, letterSpacing: '-0.045em', lineHeight: 0.92, fontSize: 'clamp(2.2rem,8.5vw,7.5rem)', color: '#fff', maxWidth: '14ch', textShadow: '0 4px 24px rgba(0,0,0,0.9), 0 2px 8px rgba(0,0,0,0.8)' }}>
@@ -2585,7 +2585,7 @@ function PilotCareerOutlook() {
           <div>
             <div style={{ fontSize: '0.6875rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--red)', marginBottom: '1rem', fontWeight: 700 }}>Industry Outlook</div>
             <h2 className="display-xl" style={{ fontSize: 'clamp(2rem, 5vw, 4.5rem)', color: 'var(--navy)', textTransform: 'uppercase', lineHeight: 1.1 }}>
-              Why NOW is the Best Time to <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--red)' }}>Become a Pilot.</span>
+              Why NOW Is the Best Time to <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--red)' }}>Become a Pilot in India.</span>
             </h2>
           </div>
           <p style={{ color: 'rgba(33,33,33,0.7)', fontSize: '1rem', lineHeight: 1.8, fontFamily: 'var(--font-b)', margin: 0 }}>
@@ -2735,6 +2735,75 @@ function PilotCareerOutlook() {
 }
 
 /* ─────────────────────────────────────
+   FOR PARENTS — Parent Reassurance & Tracking
+───────────────────────────────────── */
+function ForParents({ onBook }) {
+  const guarantees = [
+    {
+      icon: '🔔',
+      title: 'Smart Attendance Alerts',
+      desc: 'Real-time WhatsApp/SMS notification to parents when your ward checks in and out of the institute.',
+    },
+    {
+      icon: '📊',
+      title: 'Weekly Performance Reports',
+      desc: 'Direct academic report card sent every Monday tracking ground school attendance, test series scores, and instructor remarks.',
+    },
+    {
+      icon: '🩺',
+      title: 'In-House Class 2 Medical Support',
+      desc: 'On-site medical pre-screening facility to ensure your child meets all DGCA medical standards before financial commitments.',
+    },
+    {
+      icon: '👨‍✈️',
+      title: 'Direct Access to Capt. Navrang',
+      desc: 'Parent counselling calls and face-to-face meetings directly with our founder, not junior administrative staff.',
+    },
+  ]
+
+  return (
+    <section id="for-parents" style={{ position: 'relative', padding: 'clamp(4rem, 8vw, 10rem) clamp(1.5rem, 5vw, 4rem)', background: 'var(--navy)', color: '#fff', borderTop: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+        <div style={{ marginBottom: '4rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.6875rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: '1rem', fontWeight: 700 }}>
+            Parent Reassurance &amp; Student Security
+          </div>
+          <h2 className="display-xl" style={{ fontSize: 'clamp(2rem, 5vw, 4rem)', color: '#fff', textTransform: 'uppercase', lineHeight: 1.1 }}>
+            Your Child's Safety, Progress &amp; Career — <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>Our Priority.</span>
+          </h2>
+          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem', lineHeight: 1.7, maxWidth: '38rem', margin: '1.5rem auto 0', fontFamily: 'var(--font-b)' }}>
+            We understand that sending your ward for pilot training is a major family decision. Airborne Aviation Academy provides full transparency, real-time tracking, and direct access to instructors.
+          </p>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem', marginBottom: '3.5rem' }}>
+          {guarantees.map((item, i) => (
+            <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '2rem 1.5rem', backdropFilter: 'blur(12px)' }}>
+              <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>{item.icon}</div>
+              <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 800, color: '#fff', textTransform: 'uppercase', marginBottom: '0.6rem' }}>{item.title}</h3>
+              <p style={{ fontSize: '0.84rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, fontFamily: 'var(--font-b)', margin: 0 }}>{item.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ textAlign: 'center' }}>
+          <button
+            onClick={onBook}
+            className="btn btn-primary"
+            style={{ padding: '1rem 2.25rem', fontSize: '0.9rem', cursor: 'pointer', borderRadius: '999px' }}
+          >
+            Book a Free Parent Counselling Call
+          </button>
+          <div style={{ marginTop: '0.85rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-b)' }}>
+            Speak directly with our admissions team. Bring your questions on course fees, medicals, and housing.
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ─────────────────────────────────────
    ROOT PAGE — All sections orchestrated
 ───────────────────────────────────── */
 export default function HomePage() {
@@ -2809,6 +2878,7 @@ export default function HomePage() {
 
         <AirborneAdvantage />
         <PilotCareerOutlook />
+        <ForParents onBook={openBooking} />
 
         {/* Founder */}
         <FounderSection />

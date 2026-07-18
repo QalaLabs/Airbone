@@ -6,8 +6,8 @@ import { getBreadcrumbSchema } from '@/utils/seo'
 import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
-  title: 'ATPL Ground School India All Subjects | Airborne Aviation',
-  description: 'ATPL ground school in Delhi by Airborne Aviation Academy — 2,500+ students trained. Complete airline transport pilot license exam prep — all subjects, DGCA-aligned. Enrol now.',
+  title: 'ATPL Ground School Delhi | Airline Exam Prep | Airborne',
+  description: 'Prepare for ATPL exams & oral viva checkouts at Airborne Aviation, Dwarka Delhi. Expert-led 3-month ATPL ground school. Rs 1,50,000. 15 seats available. Enrol now.',
   alternates: { canonical: '/courses/atpl' },
 }
 

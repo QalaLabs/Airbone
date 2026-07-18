@@ -2,7 +2,7 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
-import { fetchPublic, formatFee } from '@/lib/adminApi'
+import { fetchPublic, formatFee, getCourseFeeDisplay } from '@/lib/adminApi'
 
 export const metadata = {
   title: 'Aviation Courses Delhi | CPL - ATPL - Cabin Crew | Airborne',
@@ -32,11 +32,10 @@ export default async function CoursesPage() {
         <div style={{ maxWidth: '800px', marginBottom: '4rem' }}>
           <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start', color: 'var(--red)' }}>Academy Syllabus</p>
           <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', marginTop: '1rem', textTransform: 'uppercase', color: 'var(--navy)' }}>
-            Course Portfolio &amp;
-            <em style={{ color: 'var(--gold)', fontStyle: 'normal' }}> Flight Paths.</em>
+            Pilot Training Courses at Airborne Aviation Academy Dwarka, Delhi
           </h1>
           <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0,39,76,0.75)', fontSize: '1.02rem', lineHeight: '1.7', maxWidth: '100%' }}>
-            From absolute beginner ground training to advanced jet type readiness, our disciplines are structured to build conceptual clarity and meet strict DGCA requirements.
+            Airborne Aviation Academy offers DGCA-approved pilot training courses in Dwarka, New Delhi. CPL, ATPL, PPL, Type Rating, Cabin Crew Training, and DGCA Ground School all taught by experienced airline instructors.
           </p>
         </div>
 
@@ -97,14 +96,12 @@ export default async function CoursesPage() {
               )}
 
               <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                {flagship.fee && (
-                  <div>
-                    <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', display: 'block', marginBottom: '0.2rem' }}>Tuition Fee</span>
-                    <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.6rem', fontWeight: 900, color: 'var(--gold)' }}>
-                      {formatFee(flagship.fee)}
-                    </span>
-                  </div>
-                )}
+                <div>
+                  <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', display: 'block', marginBottom: '0.2rem' }}>Tuition Fee</span>
+                  <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.6rem', fontWeight: 900, color: 'var(--gold)' }}>
+                    {getCourseFeeDisplay(flagship.slug, flagship.fee)}
+                  </span>
+                </div>
                 <div>
                   <Link href={`/courses/${flagship.slug}`} className="btn btn-ghost" style={{ padding: '0.9rem 2rem', textDecoration: 'none' }}>
                     Detailed Curriculum →
@@ -192,7 +189,7 @@ export default async function CoursesPage() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderTop: '1px solid rgba(0, 39, 76, 0.08)', paddingTop: '1.25rem', marginBottom: '1.5rem' }}>
                           <span style={{ fontSize: '0.75rem', color: 'rgba(0, 39, 76, 0.45)' }}>Tuition Rate</span>
                           <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.15rem', fontWeight: 700, color: 'var(--navy)' }}>
-                            {course.slug === 'cabin-crew' ? '₹30K–₹54K' : formatFee(course.fee)}
+                            {getCourseFeeDisplay(course.slug, course.fee)}
                           </span>
                         </div>
                       )}
@@ -256,12 +253,12 @@ export default async function CoursesPage() {
               </thead>
               <tbody>
                 {[
-                  { name: 'Commercial Pilot License (CPL)', slug: 'commercial-pilot-license-cpl', dur: '12–18 months', elig: '10+2 Phys+Maths, 17 yrs', fee: '₹45–55L',    dgca: '✓' },
+                  { name: 'Commercial Pilot License (CPL)', slug: 'commercial-pilot-license-cpl', dur: '8–18 months',  elig: '10+2 Phys+Maths, 17 yrs', fee: '₹55–65L',    dgca: '✓' },
                   { name: 'ATPL Ground School',             slug: 'atpl',                        dur: '4–6 months',   elig: 'CPL holder',               fee: '₹1,50,000', dgca: '✓' },
-                  { name: 'Private Pilot License (PPL)',    slug: 'private-pilot-license',       dur: '3–6 months',   elig: '10+2, 16 yrs',             fee: '₹8–12L',    dgca: '✓' },
-                  { name: 'Instrument Rating',              slug: 'instrument-rating',           dur: '2–3 months',   elig: 'PPL holder',               fee: '₹5–8L',     dgca: '✓' },
+                  { name: 'Private Pilot License (PPL)',    slug: 'private-pilot-license',       dur: '3–6 months',   elig: '10+2, 16 yrs',             fee: '₹22–25L',   dgca: '✓' },
+                  { name: 'Instrument Rating',              slug: 'instrument-rating',           dur: '2–3 months',   elig: 'PPL holder',               fee: '₹3–5L',     dgca: '✓' },
                   { name: 'Multi-Engine Rating',            slug: 'multi-engine-rating',         dur: '1–2 months',   elig: 'PPL/CPL holder',           fee: '₹3–5L',     dgca: '✓' },
-                  { name: 'Airbus A320 Type Rating',        slug: 'a320-simulator',              dur: '2–4 months',   elig: 'CPL + 200 hrs',            fee: '₹10,000/hr', dgca: '✓' },
+                  { name: 'Airbus A320 Type Rating',        slug: 'a320-simulator',              dur: '2–4 months',   elig: 'CPL + 200 hrs',            fee: '₹15–18L',   dgca: '✓' },
                   { name: 'DGCA Ground School',             slug: 'ground-school',               dur: '3–6 months',   elig: 'Any',                      fee: '₹2,70,000', dgca: '✓' },
                   { name: 'Cabin Crew Training',            slug: 'cabin-crew-training',         dur: '3–6 months',   elig: '12th pass, 18–27 yrs',     fee: '₹30K–₹54K', dgca: '—' },
                   { name: 'Aviation English (ICAO L4)',     slug: 'aviation-english-icao',       dur: '1–3 months',   elig: 'Any',                      fee: '₹50K–1L',   dgca: '—' },
