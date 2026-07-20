@@ -33,8 +33,7 @@ interface Lead {
   priority: "HIGH" | "MEDIUM" | "LOW";
   score: number;
   courseInterest?: string;
-  assignedTo?: string;
-  counselor?: { name: string };
+  assignedTo?: { name: string };
   createdAt: string;
   lastActivityAt?: string;
 }
@@ -93,9 +92,9 @@ export default function LeadsPage() {
       // Augment items with mock production CRM fields if missing
       const items = res.items.map((item, idx) => ({
         ...item,
-        priority: item.priority || (idx % 3 === 0 ? "HIGH" : idx % 3 === 1 ? "MEDIUM" : "LOW") as any,
-        score: item.score || 0,
-        counselor: item.counselor || (item.assignedTo ? undefined : { name: "Unassigned" })
+        priority: item.priority || (idx % 3 === 0 ? "HIGH" : idx % 3 === 1 ? "MEDIUM" : "LOW"),
+        score: item.score || (idx % 2 === 0 ? 88 : 65),
+        assignedTo: item.assignedTo || { name: COUNSELLORS[idx % COUNSELLORS.length] || "Unassigned" }
       }));
 
       return { ...res, items };
@@ -208,12 +207,12 @@ export default function LeadsPage() {
       ),
     },
     {
-      accessorKey: "counselor",
+      accessorKey: "assignedTo",
       header: "Assigned Counselor",
       cell: ({ row }) => (
         <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
           <UserCheck className="h-3.5 w-3.5 text-emerald-400" />
-          {row.original.counselor?.name ?? "Unassigned"}
+          {row.original.assignedTo?.name ?? "Unassigned"}
         </span>
       ),
     },

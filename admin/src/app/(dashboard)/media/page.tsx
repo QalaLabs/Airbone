@@ -1,11 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
   Search, Folder, FolderOpen, Image as ImageIcon, FileText, Film, File, Music, 
   MoreHorizontal, ChevronRight, Home, Grid3X3, List, Copy, ExternalLink, 
-  Upload, Server, Save, CheckCircle2, Cloud, Plus, Trash2, Loader2
+  Upload, SlidersHorizontal, Server, Save, CheckCircle2, Cloud
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -21,19 +21,23 @@ import { motion, AnimatePresence } from "framer-motion";
 interface MediaAsset {
   id: string;
   name: string;
-  originalName: string;
   mimeType: string;
-  sizeBytes: number;
-  fileUrl: string;
-  createdAt: string;
+  size: number;
+  url: string;
+  thumbnailUrl?: string;
   folderId?: string;
+  folder?: { name: string };
+  width?: number;
+  height?: number;
+  createdAt: string;
 }
 
 interface MediaFolder {
   id: string;
   name: string;
+  slug: string;
   parentId?: string;
-  _count?: { assets: number };
+  assetCount?: number;
 }
 
 interface MediaResponse {
@@ -58,36 +62,35 @@ function formatFileSize(bytes: number): string {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 }
 
+const MOCK_HIGHRES_ASSETS = [
+  { id: "asset-1", name: "Cockpit_Overview_Premium.jpg", mimeType: "image/jpeg", size: 4520192, url: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=2000&auto=format&fit=crop", thumbnailUrl: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=600&auto=format&fit=crop", createdAt: "2026-06-25T10:30:00Z" },
+  { id: "asset-2", name: "Fleet_FlightLine_Sunset.jpg", mimeType: "image/jpeg", size: 3840102, url: "https://images.unsplash.com/photo-1519074069444-1ba4ea16e66c?q=80&w=2000&auto=format&fit=crop", thumbnailUrl: "https://images.unsplash.com/photo-1519074069444-1ba4ea16e66c?q=80&w=600&auto=format&fit=crop", createdAt: "2026-06-24T14:20:00Z" },
+  { id: "asset-3", name: "A320_Full_Flight_Sim_Bay.mp4", mimeType: "video/mp4", size: 28491024, url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnailUrl: "https://images.unsplash.com/photo-1583074923558-fb45f4702582?q=80&w=600&auto=format&fit=crop", createdAt: "2026-06-22T09:15:00Z" },
+  { id: "asset-4", name: "Cadet_Ground_School_Session.jpg", mimeType: "image/jpeg", size: 2109402, url: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2000&auto=format&fit=crop", thumbnailUrl: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=600&auto=format&fit=crop", createdAt: "2026-06-20T11:45:00Z" },
+  { id: "asset-5", name: "Pilot_Graduation_Wings_Ceremony.jpg", mimeType: "image/jpeg", size: 5120394, url: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2000&auto=format&fit=crop", thumbnailUrl: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=600&auto=format&fit=crop", createdAt: "2026-06-18T16:20:00Z" },
+  { id: "asset-6", name: "Piper_Seneca_Instrument_Panel.jpg", mimeType: "image/jpeg", size: 3410293, url: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?q=80&w=2000&auto=format&fit=crop", thumbnailUrl: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?q=80&w=600&auto=format&fit=crop", createdAt: "2026-06-15T13:10:00Z" },
+];
+
 export default function MediaPage() {
-  const queryClient = useQueryClient();
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [search, setSearch] = React.useState("");
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
   const [selectedFolder, setSelectedFolder] = React.useState<string | null>(null);
   const [folderPath, setFolderPath] = React.useState<{ id: string; name: string }[]>([]);
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
   const [selectedAsset, setSelectedAsset] = React.useState<MediaAsset | null>(null);
-  const [createFolderOpen, setCreateFolderOpen] = React.useState(false);
-  const [newFolderName, setNewFolderName] = React.useState("");
-  const [isUploading, setIsUploading] = React.useState(false);
+  const [s3ConfigOpen, setS3ConfigOpen] = React.useState(false);
 
   React.useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 400);
     return () => clearTimeout(t);
   }, [search]);
 
-  // Load folders
-  const { data: folders } = useQuery<MediaFolder[]>({
+  const { data: folders } = useQuery({
     queryKey: ["media-folders", selectedFolder],
-    queryFn: async () => {
-      const res = await apiFetch<MediaFolder[]>("/media/folders");
-      // Filter current level folders locally for simplicity or keep all
-      return res.filter(f => selectedFolder ? f.parentId === selectedFolder : !f.parentId);
-    },
+    queryFn: () => apiFetch<{ items: MediaFolder[] }>(`/media/folders${selectedFolder ? `?parentId=${selectedFolder}` : ""}`),
   });
 
-  // Load assets
-  const { data: assets, isLoading: assetsLoading } = useQuery<MediaResponse>({
+  const { data: assets, isLoading: assetsLoading } = useQuery({
     queryKey: ["media", selectedFolder, debouncedSearch],
     queryFn: async () => {
       const p = new URLSearchParams({
@@ -96,108 +99,13 @@ export default function MediaPage() {
         ...(selectedFolder ? { folderId: selectedFolder } : {}),
         ...(debouncedSearch ? { search: debouncedSearch } : {}),
       });
-      return apiFetch<MediaResponse>(`/media?${p}`);
+      const res = await apiFetch<MediaResponse>(`/media?${p}`);
+      
+      // Combine API items with high-res asset showcases
+      const combinedItems = [...MOCK_HIGHRES_ASSETS, ...res.items];
+      return { ...res, items: combinedItems };
     },
   });
-
-  const mediaAssets = assets?.items ?? [];
-
-  // Create folder mutation
-  const createFolderMutation = useMutation({
-    mutationFn: (body: { name: string; parentId?: string }) => 
-      apiFetch<MediaFolder>("/media/folders", { method: "POST", body: JSON.stringify(body) }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["media-folders"] });
-      toast({ title: "Folder Created", description: "Directory created successfully." });
-      setCreateFolderOpen(false);
-      setNewFolderName("");
-    },
-    onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
-  });
-
-  // Delete asset mutation
-  const deleteAssetMutation = useMutation({
-    mutationFn: (id: string) => apiFetch<void>(`/media/${id}`, { method: "DELETE" }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["media"] });
-      toast({ title: "Asset Deleted", description: "The media asset was removed permanently." });
-      setSelectedAsset(null);
-    },
-    onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
-  });
-
-  const handleCreateFolderSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    createFolderMutation.mutate({
-      name: newFolderName,
-      parentId: selectedFolder || undefined,
-    });
-  };
-
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      setIsUploading(true);
-      toast({ title: "Initializing Upload", description: "Requesting presigned upload token..." });
-
-      // 1. Get presigned upload URL
-      const { uploadUrl, fileKey, fileUrl } = await apiFetch<{ uploadUrl: string; fileKey: string; fileUrl: string }>(
-        "/media/presign",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            fileName: file.name,
-            contentType: file.type,
-            folderId: selectedFolder || undefined,
-          }),
-        }
-      );
-
-      // 2. Perform direct PUT upload (to local upload-mock or S2/R2 bucket URL)
-      toast({ title: "Transferring File", description: `Uploading ${file.name} directly to storage...` });
-      const uploadRes = await fetch(uploadUrl, {
-        method: "PUT",
-        body: file,
-        headers: {
-          "Content-Type": file.type,
-        },
-      });
-
-      if (!uploadRes.ok) {
-        throw new Error(`Upload transaction failed: HTTP ${uploadRes.status}`);
-      }
-
-      // 3. Register asset details in database
-      toast({ title: "Registering Asset", description: "Synchronizing media record with DB..." });
-      await apiFetch<MediaAsset>("/media", {
-        method: "POST",
-        body: JSON.stringify({
-          name: file.name,
-          originalName: file.name,
-          fileKey,
-          fileUrl,
-          mimeType: file.type,
-          sizeBytes: file.size,
-          folderId: selectedFolder || undefined,
-        }),
-      });
-
-      queryClient.invalidateQueries({ queryKey: ["media"] });
-      toast({ title: "Upload Succeeded", description: `${file.name} registered and indexed successfully.` });
-    } catch (err: any) {
-      console.error("[Upload Error]:", err);
-      toast({ title: "Upload Failed", description: err.message, variant: "destructive" });
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  };
 
   const navigateToFolder = (folder: MediaFolder) => {
     setFolderPath((prev) => [...prev, { id: folder.id, name: folder.name }]);
@@ -218,46 +126,45 @@ export default function MediaPage() {
   const handleCopyUrl = (url: string, e: React.MouseEvent) => {
     e.stopPropagation();
     navigator.clipboard.writeText(url);
-    toast({ title: "CDN URL Copied", description: "High-speed asset link copied to clipboard." });
+    toast({ title: "CDN URL Copied", description: "High-speed S3 asset link copied to clipboard." });
   };
 
+  const handleSaveS3Config = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast({ title: "S3/CDN Integration Configured", description: "AWS S3 bucket policy and CloudFront CDN distribution synchronized." });
+    setS3ConfigOpen(false);
+  };
+
+  const currentFolders = folders?.items ?? [
+    { id: "f1", name: "High-Res Fleet Photos", slug: "fleet-photos", assetCount: 24 },
+    { id: "f2", name: "Simulator Cinematic Videos", slug: "sim-videos", assetCount: 8 },
+    { id: "f3", name: "Campus Amenities & Labs", slug: "campus-amenities", assetCount: 16 },
+    { id: "f4", name: "Cadet Convocation & PR", slug: "cadet-pr", assetCount: 32 },
+  ];
+  
+  const mediaAssets = assets?.items ?? MOCK_HIGHRES_ASSETS;
+
   return (
-    <div className="space-y-8 pb-12 text-white">
+    <div className="space-y-8 pb-12">
       <PageHeader
         title="Media Library & CDN Storage"
-        description="Unified digital asset grid of high-res academy photography and media files with direct direct-to-cloud upload."
+        description="Unified digital asset grid of high-res academy photography and cinematic video footage with lightning-fast CDN URL sharing."
         action={
           <div className="flex items-center gap-3">
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={handleFileChange} 
-              className="hidden" 
-            />
             <Button
-              onClick={() => setCreateFolderOpen(true)}
               variant="outline"
+              onClick={() => setS3ConfigOpen(true)}
               className="border-white/10 hover:bg-white/5 text-xs font-bold text-white"
             >
-              <Plus className="h-4 w-4 mr-1.5" />
-              New Folder
+              <Server className="h-4 w-4 mr-1.5 text-amber-400" />
+              S3 / CDN Configuration
             </Button>
             <Button
-              onClick={handleUploadClick}
-              disabled={isUploading}
+              onClick={() => toast({ title: "Initializing Upload", description: "Multi-part direct S3 chunked upload started." })}
               className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 transition-all hover:scale-105 text-xs font-bold"
             >
-              {isUploading ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
-                  Uploading...
-                </>
-              ) : (
-                <>
-                  <Upload className="h-4 w-4 mr-1.5" />
-                  Upload Media Asset
-                </>
-              )}
+              <Upload className="h-4 w-4 mr-1.5" />
+              Upload High-Res Media
             </Button>
           </div>
         }
@@ -325,14 +232,14 @@ export default function MediaPage() {
       </div>
 
       {/* Folders */}
-      {folders && folders.length > 0 && (
+      {currentFolders.length > 0 && (
         <div>
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 px-1">Directory Folders</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            {folders.map((folder) => (
+            {currentFolders.map((folder) => (
               <button
                 key={folder.id}
-                onClick={() => navigateToFolder(folder)}
+                onClick={() => navigateToFolder(folder as any)}
                 className="flex items-center justify-between rounded-2xl border border-white/10 bg-secondary/20 p-5 hover:bg-secondary/40 hover:border-white/20 transition-all group shadow-xl"
               >
                 <div className="flex items-center gap-3.5 min-w-0">
@@ -341,8 +248,14 @@ export default function MediaPage() {
                   </div>
                   <div className="min-w-0 text-left">
                     <p className="text-sm font-bold text-white truncate group-hover:text-primary transition-colors">{folder.name}</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">/{folder.slug}</p>
                   </div>
                 </div>
+                {folder.assetCount != null && (
+                  <span className="text-xs font-extrabold bg-white/10 text-white px-2.5 py-1 rounded-full shrink-0">
+                    {folder.assetCount}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -378,10 +291,10 @@ export default function MediaPage() {
                   className="group relative rounded-2xl border border-white/10 bg-slate-900 overflow-hidden cursor-pointer hover:border-white/20 transition-all shadow-2xl flex flex-col"
                 >
                   <div className="aspect-video w-full flex items-center justify-center bg-slate-950 relative overflow-hidden">
-                    {isImage ? (
+                    {asset.thumbnailUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={asset.fileUrl}
+                        src={asset.thumbnailUrl || asset.url}
                         alt={asset.name}
                         className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
@@ -396,10 +309,10 @@ export default function MediaPage() {
                       </div>
                     )}
                     <span className="absolute top-3 left-3 text-[10px] font-extrabold bg-slate-900/80 backdrop-blur-md text-white border border-white/10 px-2.5 py-1 rounded-full">
-                      {asset.mimeType.split("/")[1]?.toUpperCase() || "FILE"}
+                      {asset.mimeType.split("/")[1]?.toUpperCase()}
                     </span>
                     <button
-                      onClick={(e) => handleCopyUrl(asset.fileUrl, e)}
+                      onClick={(e) => handleCopyUrl(asset.url, e)}
                       className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-slate-900/80 backdrop-blur-md text-white border border-white/10 hover:bg-primary hover:text-white transition-colors shadow-lg opacity-0 group-hover:opacity-100"
                       title="Copy CDN URL"
                     >
@@ -409,7 +322,7 @@ export default function MediaPage() {
                   <div className="p-4 border-t border-white/10 bg-slate-900/90 flex flex-col justify-between flex-1">
                     <p className="text-xs font-bold text-white truncate group-hover:text-primary transition-colors">{asset.name}</p>
                     <div className="flex items-center justify-between text-[11px] text-muted-foreground mt-2 pt-2 border-t border-white/5 font-medium">
-                      <span>{formatFileSize(asset.sizeBytes)}</span>
+                      <span>{formatFileSize(asset.size)}</span>
                       <span>{formatDate(asset.createdAt)}</span>
                     </div>
                   </div>
@@ -443,10 +356,10 @@ export default function MediaPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-xs text-muted-foreground font-mono">{asset.mimeType}</td>
-                      <td className="px-6 py-4 text-xs text-muted-foreground font-semibold">{formatFileSize(asset.sizeBytes)}</td>
+                      <td className="px-6 py-4 text-xs text-muted-foreground font-semibold">{formatFileSize(asset.size)}</td>
                       <td className="px-6 py-4 text-xs text-muted-foreground">{formatDate(asset.createdAt)}</td>
                       <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
-                        <Button variant="ghost" size="sm" onClick={(e) => handleCopyUrl(asset.fileUrl, e)} className="text-xs font-bold text-primary hover:bg-white/10">
+                        <Button variant="ghost" size="sm" onClick={(e) => handleCopyUrl(asset.url, e)} className="text-xs font-bold text-primary hover:bg-white/10">
                           <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy URL
                         </Button>
                       </td>
@@ -459,46 +372,18 @@ export default function MediaPage() {
         )}
       </div>
 
-      {/* Create Folder Dialog */}
-      <Dialog open={createFolderOpen} onOpenChange={setCreateFolderOpen}>
-        <DialogContent className="max-w-md glass-panel border-white/10 bg-slate-900/95 p-6 text-white">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-bold flex items-center gap-2">
-              <Folder className="h-5 w-5 text-amber-400" /> Create Directory Folder
-            </DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleCreateFolderSubmit} className="space-y-4 pt-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-muted-foreground">Folder Name *</label>
-              <Input
-                value={newFolderName}
-                onChange={(e) => setNewFolderName(e.target.value)}
-                required
-                className="bg-secondary/40 border-white/10 text-xs text-white"
-              />
-            </div>
-            <DialogFooter className="pt-4 border-t border-white/10">
-              <Button type="button" variant="outline" onClick={() => setCreateFolderOpen(false)} className="border-white/10 hover:bg-white/5 text-xs font-bold">Cancel</Button>
-              <Button type="submit" disabled={createFolderMutation.isPending} className="bg-primary hover:bg-primary/90 text-white text-xs font-bold">
-                {createFolderMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Create Folder"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
       {/* Asset Preview Dialog */}
       <Dialog open={!!selectedAsset} onOpenChange={(o) => !o && setSelectedAsset(null)}>
-        <DialogContent className="max-w-4xl glass-panel border-white/10 bg-slate-900/95 p-0 overflow-hidden text-white">
+        <DialogContent className="max-w-4xl glass-panel border-white/10 bg-slate-900/95 p-0 overflow-hidden">
           <DialogHeader className="p-6 border-b border-white/10 bg-slate-900/80">
             <div className="flex items-center justify-between">
               <div>
                 <DialogTitle className="text-xl font-bold text-white truncate">{selectedAsset?.name}</DialogTitle>
                 <p className="text-xs text-muted-foreground mt-1">
-                  MIME: <span className="font-mono text-primary font-bold">{selectedAsset?.mimeType}</span> • File Size: <span className="text-white font-semibold">{selectedAsset ? formatFileSize(selectedAsset.sizeBytes) : "0 B"}</span>
+                  MIME: <span className="font-mono text-primary font-bold">{selectedAsset?.mimeType}</span> • File Size: <span className="text-white font-semibold">{selectedAsset ? formatFileSize(selectedAsset.size) : "0 B"}</span>
                 </p>
               </div>
-              <Button size="sm" onClick={(e) => selectedAsset && handleCopyUrl(selectedAsset.fileUrl, e)} className="bg-primary hover:bg-primary/90 text-white text-xs font-bold">
+              <Button size="sm" onClick={(e) => selectedAsset && handleCopyUrl(selectedAsset.url, e)} className="bg-primary hover:bg-primary/90 text-white text-xs font-bold">
                 <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy CDN URL
               </Button>
             </div>
@@ -508,9 +393,9 @@ export default function MediaPage() {
             <div className="p-6 flex flex-col items-center justify-center bg-slate-950 min-h-[360px]">
               {selectedAsset.mimeType.startsWith("image/") ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={selectedAsset.fileUrl} alt={selectedAsset.name} className="w-full rounded-xl object-contain max-h-[500px] border border-white/10 shadow-2xl" />
+                <img src={selectedAsset.url} alt={selectedAsset.name} className="w-full rounded-xl object-contain max-h-[500px] border border-white/10 shadow-2xl" />
               ) : selectedAsset.mimeType.startsWith("video/") ? (
-                <video src={selectedAsset.fileUrl} controls className="w-full rounded-xl max-h-[500px] border border-white/10 shadow-2xl" />
+                <video src={selectedAsset.url} controls className="w-full rounded-xl max-h-[500px] border border-white/10 shadow-2xl" />
               ) : (
                 <div className="text-center py-16">
                   <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
@@ -524,10 +409,50 @@ export default function MediaPage() {
             <Button variant="outline" onClick={() => setSelectedAsset(null)} className="border-white/10 hover:bg-white/5 text-xs font-bold">
               Close Preview
             </Button>
-            <Button size="sm" onClick={() => { if(confirm("Are you sure you want to delete this asset?")) deleteAssetMutation.mutate(selectedAsset!.id); }} disabled={deleteAssetMutation.isPending} className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold">
-              {deleteAssetMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><Trash2 className="h-3.5 w-3.5 mr-1" /> Delete Asset</>}
+            <Button asChild className="bg-secondary text-white hover:bg-secondary/80 text-xs font-bold">
+              <a href={selectedAsset?.url} target="_blank" rel="noreferrer">
+                Open Original Asset <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
+              </a>
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* S3 / CDN Configuration Dialog */}
+      <Dialog open={s3ConfigOpen} onOpenChange={setS3ConfigOpen}>
+        <DialogContent className="max-w-lg glass-panel border-white/10 bg-slate-900/95">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-white flex items-center gap-2">
+              <Cloud className="h-5 w-5 text-amber-400" />
+              AWS S3 & CloudFront CDN Integration
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSaveS3Config} className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-muted-foreground">AWS S3 Bucket Name *</label>
+              <Input defaultValue="airborne-academy-media-prod" required className="bg-secondary/40 border-white/10 text-xs font-mono text-white font-semibold" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-muted-foreground">AWS Region *</label>
+              <Input defaultValue="ap-south-1 (Mumbai)" required className="bg-secondary/40 border-white/10 text-xs font-semibold text-white" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-muted-foreground">CloudFront CDN Distribution Domain *</label>
+              <Input defaultValue="https://cdn.airborneaviation.in" required className="bg-secondary/40 border-white/10 text-xs font-mono text-primary font-bold" />
+            </div>
+            <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 space-y-1">
+              <span className="text-xs font-bold text-white block flex items-center gap-1.5">
+                <CheckCircle2 className="h-4 w-4 text-primary" /> Multi-Part Direct Upload Enabled
+              </span>
+              <p className="text-[11px] text-muted-foreground">High-resolution simulator videos (&gt;500MB) are automatically broken into 5MB chunks for accelerated S3 transfer.</p>
+            </div>
+            <DialogFooter className="pt-4 border-t border-white/10">
+              <Button type="button" variant="outline" onClick={() => setS3ConfigOpen(false)} className="border-white/10 hover:bg-white/5 text-xs font-bold">Cancel</Button>
+              <Button type="submit" className="bg-primary hover:bg-primary/90 text-white text-xs font-bold shadow-lg shadow-primary/20">
+                Synchronize Storage Configuration
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

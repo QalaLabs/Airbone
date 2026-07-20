@@ -20,7 +20,7 @@ const COURSES = [
   'Private Pilot Licence (PPL)',
 ]
 
-export default function LeadForm({ courseName = '', source = 'Dynamic Page Form' }) {
+export default function LeadForm({ courseName = '', source = 'Dynamic Page Form', successMessage = '' }) {
   const [status, setStatus] = useState('idle')
   const { values, errors, touched, handleChange, handleBlur, validate, isValid, setValues } = useFormValidation(
     { name: '', phone: '', email: '', pincode: '', course: courseName || COURSES[0] },
@@ -60,11 +60,17 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
   }, [values, source, validate, status])
 
   if (status === 'success') {
+    const confirmationText = successMessage || (
+      (values.course || courseName).toLowerCase().includes('cpl')
+        ? 'Thank you for registering your interest in the CPL Ground School program. Our admissions team will reach out shortly with the detailed syllabus, fee schedule, and upcoming batch availability.'
+        : 'Thank you! Your enquiry has been received successfully. Our admissions team will contact you shortly.'
+    )
+
     return (
       <div style={{ background: 'rgba(0, 15, 30, 0.7)', border: '1px solid #D8A027', borderTop: '4px solid #DB241E', padding: 'clamp(1.25rem, 5vw, 2.5rem)', textAlign: 'center', borderRadius: '1px', boxShadow: '0 8px 30px rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)' }}>
         <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', color: '#D8A027', marginBottom: '0.6rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.1em' }}>Enquiry Received</h3>
         <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.6', marginBottom: '1.5rem' }}>
-          Thank you! Your enquiry has been received successfully. Our admissions team will contact you shortly.
+          {confirmationText}
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
           <a href="tel:+919953777320" className="btn btn-outline" style={{ textDecoration: 'none', fontSize: '0.75rem', padding: '0.6rem 1rem' }}>📞 Call Us</a>

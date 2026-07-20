@@ -7,8 +7,17 @@ import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
   title: 'DGCA CPL Ground School Dwarka Delhi | Airborne Aviation',
-  description: 'Clear all 5 DGCA CPL papers on your first attempt — 2,500+ students trained. Mentor-led CPL Ground School in Dwarka, Delhi by Capt. Navrang Singh. ₹2,70,000. July 2026 batch — 25 seats.',
+  description: 'Clear all 5 DGCA CPL papers on your first attempt. Mentor-led CPL Ground School in Dwarka, Delhi by Capt. Navrang Singh.',
   alternates: { canonical: '/courses/commercial-pilot-license-cpl' },
+  openGraph: {
+    title: 'DGCA CPL Ground School Dwarka Delhi | Airborne Aviation',
+    description: 'Clear all 5 DGCA CPL papers on your first attempt. Mentor-led CPL Ground School in Dwarka, Delhi by Capt. Navrang Singh.',
+    url: 'https://www.airborneaviation.in/courses/commercial-pilot-license-cpl',
+  },
+  twitter: {
+    title: 'DGCA CPL Ground School Dwarka Delhi | Airborne Aviation',
+    description: 'Clear all 5 DGCA CPL papers on your first attempt. Mentor-led CPL Ground School in Dwarka, Delhi by Capt. Navrang Singh.',
+  },
 }
 
 const breadcrumbSchema = getBreadcrumbSchema([
@@ -59,7 +68,7 @@ const faqSchema = {
     {
       '@type': 'Question',
       name: 'How much does CPL cost in India?',
-      acceptedAnswer: { '@type': 'Answer', text: 'CPL training in India costs ₹55–65 lakh at DGCA-approved FTOs, covering 200 flying hours, ground school, DGCA exam fees, and medical. Education loans available via SBI, Bank of Baroda, PNB.' }
+      acceptedAnswer: { '@type': 'Answer', text: 'CPL training in India costs ₹65–75 lakh at DGCA-approved FTOs, covering 200 flying hours, ground school, DGCA exam fees, and medical. Education loans available via SBI, Bank of Baroda, PNB.' }
     },
     {
       '@type': 'Question',
@@ -89,16 +98,18 @@ const SUBJECTS = [
 ]
 
 const FEE_ROWS = [
-  { component: 'DGCA Ground School (all subjects)', amount: '₹2.7 lakh' },
-  { component: 'Flying Training (200 hours)', amount: '₹52–62 lakh' },
-  { component: 'DGCA Exam Fees', amount: '₹30,000' },
-  { component: 'DGCA Class 1 & 2 Medical', amount: '₹10,000 approx.' },
-  { component: 'Total (approximate)', amount: '₹55–65 lakh' },
+  { component: 'DGCA Ground School (all subjects)', amount: '₹2,70,000' },
+  { component: 'Flying Training — 200 hours', amount: '₹45–55 lakh' },
+  { component: 'DGCA Exam Fees (6 papers)', amount: '₹25,000–₹40,000' },
+  { component: 'DGCA Class 1 Medical', amount: '₹10,000–₹25,000' },
+  { component: 'Student Pilot License (SPL)', amount: '₹15,000–₹25,000' },
+  { component: 'Simulator Sessions', amount: '₹10,000/hr' },
+  { component: 'Total (approximate)', amount: '₹65–75 lakh' },
 ]
 
 const ELIGIBILITY = [
-  { req: 'Age', detail: 'Minimum 16 years at enrolment and minimum 18 to hold CPL Licence' },
-  { req: 'Education', detail: 'Class 12 with Physics and Mathematics' },
+  { req: 'Age', detail: 'Minimum 17 years at enrolment' },
+  { req: 'Education', detail: 'Class 12 with Physics and Mathematics, minimum 50%' },
   { req: 'Medical', detail: 'DGCA Class 1 Medical Certificate' },
   { req: 'Language', detail: 'Aviation English — ICAO Level 4 minimum' },
   { req: 'Nationality', detail: 'Indian national or eligible foreign national' },
@@ -138,7 +149,7 @@ export default function CPLPage() {
                 📍 Dwarka, Delhi · 3 Months · ₹2,70,000
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
-                Commercial Pilot License (CPL) Course in Delhi DGCA Approved
+                Commercial Pilot License (CPL) Course in Delhi — DGCA Approved
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75', maxWidth: '100%' }}>
                 Airborne Aviation Academy offers a DGCA-approved Commercial Pilot License (CPL) Ground School in Dwarka, Delhi. The CPL Ground School covers all 5 DGCA written examination papers — taught personally by Capt. Navrang Singh, who has maintained a 100% first-attempt pass rate across 2,500+ students since 2009. July 2026 batch now enrolling. 25 seats. ₹2,70,000.

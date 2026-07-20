@@ -6,8 +6,8 @@ import { getBreadcrumbSchema } from '@/utils/seo'
 import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
-  title: 'Airline GD & PI Preparation Delhi | Airborne Aviation',
-  description: 'Master the final stage of airline cadet selection. 4-week GD & PI masterclass led by Rajeet Khalsa, retired Air India AGM (37+ years). Airborne Aviation. Rs 30,000.',
+  title: 'Airline GD PI Interview Preparation Delhi | Airborne Aviation',
+  description: 'Airline interview preparation at Airborne, Dwarka — 2,500+ students trained. GD, PI, personal development, mock interviews by Rajeet Khalsa. IndiGo, Air India, Akasa-ready.',
   alternates: { canonical: '/courses/airline-preparation' },
 }
 

@@ -6,8 +6,8 @@ import { getBreadcrumbSchema } from '@/utils/seo'
 import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
-  title: 'CPL Flying Training India | Partner Schools USA NZ SA',
-  description: 'Complete your 200 CPL flying hours through Airborne Aviation\'s global partner schools in USA, New Zealand & South Africa. Full license conversion support. Rs 50L+. Expert guide by Airborne — 2,500+ students trained.',
+  title: 'Flying Training India vs Abroad — CPL Guide | Airborne Aviation',
+  description: 'Compare flying training in India vs abroad for a DGCA CPL. Cost, timeline, DGCA license conversion, and which path makes more sense. Expert guide by Airborne — 2,500+ students trained.',
   alternates: { canonical: '/courses/flying-training-india-abroad' },
 }
 

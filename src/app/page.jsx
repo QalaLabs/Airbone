@@ -330,7 +330,7 @@ function HeroChapter({ onBook, on3D }) {
           style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.6875rem', letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: '2rem' }}
         >
           <span style={{ height: '1px', width: '2.5rem', background: 'var(--red)' }} />
-          Ab India Bharega Udaan · Dwarka, Delhi · Est. 2009
+          Dwarka, Delhi · Est. 2009
         </motion.div>
 
         <h1 style={{ fontFamily: 'var(--font-h)', fontWeight: 800, letterSpacing: '-0.045em', lineHeight: 0.92, fontSize: 'clamp(2.2rem,8.5vw,7.5rem)', color: '#fff', maxWidth: '14ch', textShadow: '0 4px 24px rgba(0,0,0,0.9), 0 2px 8px rgba(0,0,0,0.8)' }}>
@@ -2180,110 +2180,70 @@ function AirborneAdvantage() {
   const [activeIndex, setActiveIndex] = useState(0)
   const carouselRef = useRef(null)
 
-  // 17 original items for Desktop
-  const desktopItems = [
-    { title: 'Premium Goodies', desc: 'Bag, Keychain, Notebook, Pen, and T-Shirt provided to every student.' },
-    { title: 'Own Your Material', desc: 'Keep all study materials and resources provided during the course.' },
-    { title: 'Elite Infrastructure', desc: '5,000 sq ft state-of-the-art facility at Ramphal Chowk (as of 2024).' },
-    { title: 'Dedicated RTR Lab', desc: 'Simulated RT communication environment for hands-on wireless practice.' },
-    { title: 'Student Library', desc: 'Quiet study spaces open to students even after class hours.' },
-    { title: 'On-Campus Cafeteria', desc: 'Convenient dining and lounge area for student break sessions.' },
-    { title: 'Gender-Specific Washrooms', desc: 'Clean, private facilities for all students.' },
-    { title: 'GD/PI Masterclasses', desc: 'Led by Rajeet Khalsa, retired Air India AGM & Trainer (37+ years exp).' },
-    { title: '1-on-1 Doubt Solving', desc: 'Individual doubt-solving sessions directly with Chief Instructor Capt. Navrang.' },
-    { title: 'Founder-Led Classes', desc: 'All core ground school classes taught directly by Capt. Navrang.' },
-    { title: 'Personalized Pacing', desc: 'Ground school training speed adjusted to match your speed of learning.' },
-    { title: 'Hostel Assistance', desc: 'Support in choosing comfortable student accommodation near the academy.' },
-    { title: 'CPL Test Series', desc: 'Full mock exam battery to ensure first-attempt success in DGCA.' },
-    { title: 'Lifelong Guidance', desc: 'Career support extending past CPL to type rating and airline applications.' },
-    { title: 'In-House Class 2 Medical', desc: 'On-site Class 2 medical facility for pre-screening and advisory.' },
-    { title: 'Smart Attendance', desc: 'Real-time check-in/out attendance notifications sent to parents.' },
-    { title: 'Performance Reports', desc: 'Weekly progress and mock exam reports delivered directly to parents.' },
-  ]
-
-  // 8 premium categories for Mobile
-  const mobileCategories = [
+  // 4 Themed Categories (PDF Section 5.8 Specification)
+  const categorizedBenefits = [
     {
-      title: 'Student Kit & Goodies',
-      desc: 'Academy flight bag, keychain, customized notebook, pen, and Airborne T-shirt provided to every student.',
-      icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="3" y="7" width="18" height="14" rx="2" ry="2" />
-          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-        </svg>
-      )
-    },
-    {
-      title: 'Study Material & Library',
-      desc: 'Retain your own comprehensive reference books/materials, plus access to quiet student library spaces after hours.',
+      category: 'LEARN',
+      subheadline: "World-class instruction by India's most experienced CPL ground school instructor.",
       icon: (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
           <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
         </svg>
-      )
+      ),
+      benefits: [
+        { title: 'Founder-Led Instruction', desc: 'All 5 DGCA papers taught directly by Capt. Navrang — no junior staff on core subjects.' },
+        { title: 'Personalized Pacing', desc: 'Classes paced to your speed, not the average student.' },
+        { title: '1-on-1 Mentorship', desc: '1-on-1 doubt sessions until the concept is clear.' },
+        { title: 'CPL Test Series', desc: 'Full DGCA mock exam series — first-attempt preparation only.' },
+      ]
     },
     {
-      title: 'RTR Lab & Infrastructure',
-      desc: '5,000 sq ft Ramphal Chowk facility with simulated RT communications lab, campus cafeteria, and clean private washrooms.',
-      icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9" />
-          <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5" />
-          <circle cx="12" cy="12" r="2" />
-          <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5" />
-          <path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1" />
-        </svg>
-      )
-    },
-    {
-      title: 'Medical Support',
-      desc: 'In-house Class 2 medical pre-screening and consulting desk to guide your fitness and DGCA medical requirements.',
-      icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-        </svg>
-      )
-    },
-    {
-      title: 'Personal Mentorship',
-      desc: 'Core ground school classes taught directly by Capt. Navrang, with 1-on-1 doubt solving and personalized pacing.',
-      icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 2L2 7l10 5 10-5-10-5z" />
-          <path d="M2 17l10 5 10-5" />
-          <path d="M2 12l10 5 10-5" />
-        </svg>
-      )
-    },
-    {
-      title: 'Career Guidance',
-      desc: 'Lifelong guidance from CPL to type rating, plus interview preparation masterclasses by a retired Air India AGM.',
+      category: 'PREPARE',
+      subheadline: 'Every resource you need to go from theory to cockpit.',
       icon: (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="10" />
           <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
         </svg>
-      )
+      ),
+      benefits: [
+        { title: 'Airbus A320 Simulator', desc: 'In-house Airbus A320 FTD Level 5 simulator for cockpit familiarization.' },
+        { title: 'Dedicated RTR Lab', desc: 'Dedicated RTR Lab — simulated RT communication environment.' },
+        { title: 'Airline Interview Prep', desc: 'GD & PI masterclass by Rajeet Khalsa, retired Air India AGM (37+ years).' },
+        { title: 'Psychomotor Prep', desc: 'CASS / COMPASS / ADAPT psychomotor test preparation.' },
+      ]
     },
     {
-      title: 'Parent Tracking',
-      desc: 'Real-time attendance notifications (check-in/out) and weekly mock exam reports delivered directly to parents.',
-      icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-        </svg>
-      )
-    },
-    {
-      title: 'Hostel Assistance',
-      desc: 'Support in choosing safe, premium, and comfortable hostel or PG accommodation close to the academy.',
+      category: 'YOUR CAMPUS',
+      subheadline: '5,000 sq ft purpose-built aviation training centre, Dwarka.',
       icon: (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
           <polyline points="9 22 9 12 15 12 15 22" />
         </svg>
-      )
+      ),
+      benefits: [
+        { title: 'Student Library', desc: 'Student library — open after class hours.' },
+        { title: 'Campus Cafeteria', desc: 'On-campus cafeteria and lounge area.' },
+        { title: 'Class 2 Medical Desk', desc: 'In-house Class 2 medical pre-screening and advisory.' },
+        { title: 'Hostel Support', desc: 'Hostel assistance for outstation students.' },
+      ]
+    },
+    {
+      category: 'FOR PARENTS',
+      subheadline: 'You invested in this. You deserve to stay informed.',
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+      ),
+      benefits: [
+        { title: 'Smart Attendance', desc: 'Real-time attendance notifications — every check-in and check-out.' },
+        { title: 'Performance Reports', desc: 'Weekly mock exam and progress reports delivered to parents.' },
+        { title: 'Education Loan Support', desc: 'Dedicated loan support via banking partners (SBI, Axis & HDFC).' },
+        { title: 'Parent Counselling Call', desc: 'Pre-enrolment parent counselling call with admissions team.' },
+      ]
     }
   ]
 
@@ -2292,11 +2252,9 @@ function AirborneAdvantage() {
     const container = carouselRef.current
     const scrollLeft = container.scrollLeft
     const containerWidth = container.clientWidth
-    
-    // Card is 76vw + 12px gap
     const cardWidth = containerWidth * 0.76 + 12
     const index = Math.round(scrollLeft / cardWidth)
-    setActiveIndex(Math.min(mobileCategories.length - 1, Math.max(0, index)))
+    setActiveIndex(Math.min(categorizedBenefits.length - 1, Math.max(0, index)))
   }
 
   const scrollToCard = (index) => {
@@ -2471,27 +2429,49 @@ function AirborneAdvantage() {
           </p>
         </div>
 
-        {/* 1. Desktop Layout (17 Items Grid with GlowCard) */}
-        <div className="advantage-desktop-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
-          {desktopItems.map((item, i) => (
+        {/* 1. Desktop Layout (4 Themed Category Cards Grid) */}
+        <div className="advantage-desktop-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))', gap: '1.5rem' }}>
+          {categorizedBenefits.map((cat, i) => (
             <GlowCard 
               key={i} 
               customSize={true}
               glowColor="gold"
               className="h-full"
             >
-              <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', position: 'relative', zIndex: 10 }}>
-                <span style={{ fontSize: '1.25rem', color: 'var(--gold)' }}>✓</span>
-                <div>
-                  <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', fontWeight: 700, color: '#fff', textTransform: 'uppercase', marginBottom: '0.5rem' }}>{item.title}</h3>
-                  <p style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.6, fontFamily: 'var(--font-b)' }}>{item.desc}</p>
+              <div style={{ position: 'relative', zIndex: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                  <div className="advantage-icon-frame" style={{ marginBottom: 0, width: '38px', height: '38px' }}>
+                    {cat.icon}
+                  </div>
+                  <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.125rem', fontWeight: 800, color: 'var(--gold)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                    {cat.category}
+                  </h3>
+                </div>
+                <p style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.5, fontFamily: 'var(--font-b)', marginBottom: '1.25rem' }}>
+                  {cat.subheadline}
+                </p>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.25rem' }}>
+                  {cat.benefits.map((b, j) => (
+                    <div key={j} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                      <span style={{ fontSize: '1.1rem', color: 'var(--gold)', flexShrink: 0, marginTop: '2px' }}>✓</span>
+                      <div>
+                        <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.875rem', fontWeight: 700, color: '#fff', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                          {b.title}
+                        </h4>
+                        <p style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.5, fontFamily: 'var(--font-b)' }}>
+                          {b.desc}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </GlowCard>
           ))}
         </div>
 
-        {/* 2. Mobile Layout (8 Premium Cards Swipe Carousel) */}
+        {/* 2. Mobile Layout (4 Category Cards Swipe Carousel) */}
         <div className="advantage-mobile-layout">
           {/* Animated Swipe Hint */}
           <div className="swipe-hint-container">
@@ -2509,13 +2489,25 @@ function AirborneAdvantage() {
               ref={carouselRef}
               onScroll={handleScroll}
             >
-              {mobileCategories.map((item, idx) => (
+              {categorizedBenefits.map((cat, idx) => (
                 <div key={idx} className="advantage-card-mobile">
                   <div className="advantage-icon-frame">
-                    {item.icon}
+                    {cat.icon}
                   </div>
-                  <h3 className="advantage-mobile-title">{item.title}</h3>
-                  <p className="advantage-mobile-desc">{item.desc}</p>
+                  <h3 className="advantage-mobile-title" style={{ color: 'var(--gold)' }}>{cat.category}</h3>
+                  <p className="advantage-mobile-desc" style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '1.25rem', fontSize: '0.8125rem' }}>{cat.subheadline}</p>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1rem' }}>
+                    {cat.benefits.map((b, j) => (
+                      <div key={j} style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start' }}>
+                        <span style={{ fontSize: '1rem', color: 'var(--gold)', flexShrink: 0 }}>✓</span>
+                        <div>
+                          <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.8125rem', fontWeight: 700, color: '#fff', textTransform: 'uppercase', marginBottom: '0.15rem' }}>{b.title}</h4>
+                          <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.4, fontFamily: 'var(--font-b)' }}>{b.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
@@ -2523,7 +2515,7 @@ function AirborneAdvantage() {
 
           {/* Progress Indicators (Dots) */}
           <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '0.5rem' }}>
-            {mobileCategories.map((_, idx) => (
+            {categorizedBenefits.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => scrollToCard(idx)}
@@ -2585,7 +2577,7 @@ function PilotCareerOutlook() {
           <div>
             <div style={{ fontSize: '0.6875rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--red)', marginBottom: '1rem', fontWeight: 700 }}>Industry Outlook</div>
             <h2 className="display-xl" style={{ fontSize: 'clamp(2rem, 5vw, 4.5rem)', color: 'var(--navy)', textTransform: 'uppercase', lineHeight: 1.1 }}>
-              Why NOW Is the Best Time to <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--red)' }}>Become a Pilot in India.</span>
+              Why NOW is the Best Time to <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--red)' }}>Become a Pilot.</span>
             </h2>
           </div>
           <p style={{ color: 'rgba(33,33,33,0.7)', fontSize: '1rem', lineHeight: 1.8, fontFamily: 'var(--font-b)', margin: 0 }}>
@@ -2735,75 +2727,6 @@ function PilotCareerOutlook() {
 }
 
 /* ─────────────────────────────────────
-   FOR PARENTS — Parent Reassurance & Tracking
-───────────────────────────────────── */
-function ForParents({ onBook }) {
-  const guarantees = [
-    {
-      icon: '🔔',
-      title: 'Smart Attendance Alerts',
-      desc: 'Real-time WhatsApp/SMS notification to parents when your ward checks in and out of the institute.',
-    },
-    {
-      icon: '📊',
-      title: 'Weekly Performance Reports',
-      desc: 'Direct academic report card sent every Monday tracking ground school attendance, test series scores, and instructor remarks.',
-    },
-    {
-      icon: '🩺',
-      title: 'In-House Class 2 Medical Support',
-      desc: 'On-site medical pre-screening facility to ensure your child meets all DGCA medical standards before financial commitments.',
-    },
-    {
-      icon: '👨‍✈️',
-      title: 'Direct Access to Capt. Navrang',
-      desc: 'Parent counselling calls and face-to-face meetings directly with our founder, not junior administrative staff.',
-    },
-  ]
-
-  return (
-    <section id="for-parents" style={{ position: 'relative', padding: 'clamp(4rem, 8vw, 10rem) clamp(1.5rem, 5vw, 4rem)', background: 'var(--navy)', color: '#fff', borderTop: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-        <div style={{ marginBottom: '4rem', textAlign: 'center' }}>
-          <div style={{ fontSize: '0.6875rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: '1rem', fontWeight: 700 }}>
-            Parent Reassurance &amp; Student Security
-          </div>
-          <h2 className="display-xl" style={{ fontSize: 'clamp(2rem, 5vw, 4rem)', color: '#fff', textTransform: 'uppercase', lineHeight: 1.1 }}>
-            Your Child's Safety, Progress &amp; Career — <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>Our Priority.</span>
-          </h2>
-          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem', lineHeight: 1.7, maxWidth: '38rem', margin: '1.5rem auto 0', fontFamily: 'var(--font-b)' }}>
-            We understand that sending your ward for pilot training is a major family decision. Airborne Aviation Academy provides full transparency, real-time tracking, and direct access to instructors.
-          </p>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem', marginBottom: '3.5rem' }}>
-          {guarantees.map((item, i) => (
-            <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '2rem 1.5rem', backdropFilter: 'blur(12px)' }}>
-              <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>{item.icon}</div>
-              <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 800, color: '#fff', textTransform: 'uppercase', marginBottom: '0.6rem' }}>{item.title}</h3>
-              <p style={{ fontSize: '0.84rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, fontFamily: 'var(--font-b)', margin: 0 }}>{item.desc}</p>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ textAlign: 'center' }}>
-          <button
-            onClick={onBook}
-            className="btn btn-primary"
-            style={{ padding: '1rem 2.25rem', fontSize: '0.9rem', cursor: 'pointer', borderRadius: '999px' }}
-          >
-            Book a Free Parent Counselling Call
-          </button>
-          <div style={{ marginTop: '0.85rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-b)' }}>
-            Speak directly with our admissions team. Bring your questions on course fees, medicals, and housing.
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ─────────────────────────────────────
    ROOT PAGE — All sections orchestrated
 ───────────────────────────────────── */
 export default function HomePage() {
@@ -2878,7 +2801,6 @@ export default function HomePage() {
 
         <AirborneAdvantage />
         <PilotCareerOutlook />
-        <ForParents onBook={openBooking} />
 
         {/* Founder */}
         <FounderSection />

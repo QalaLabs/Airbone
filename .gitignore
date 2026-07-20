@@ -51,9 +51,6 @@ next-env.d.ts
 pnpm-lock.yaml
 yarn.lock
 
-# Temporary scratch scripts
-scratch/
-
 # Agent Workspaces
 .claude/
 .vercel

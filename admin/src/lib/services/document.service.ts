@@ -35,9 +35,9 @@ export class DocumentService {
       // Dev-only mock response
       const fileKey = `documents/${Date.now()}-${fileName.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
       return {
-        uploadUrl: `http://localhost:4000/api/v1/upload-mock?key=${encodeURIComponent(fileKey)}`,
+        uploadUrl: `http://localhost:3001/api/v1/upload-mock?key=${encodeURIComponent(fileKey)}`,
         fileKey,
-        fileUrl: `${R2_PUBLIC_URL ?? "http://localhost:4000/_mock"}/${fileKey}`,
+        fileUrl: `${R2_PUBLIC_URL ?? "http://localhost:3001/files"}/${fileKey}`,
       };
     }
 

@@ -43,30 +43,6 @@ export function formatFee(fee) {
   }).format(fee)
 }
 
-// Authoritative course fee display map based on Airborne_Page_Content_v6.md
-export function getCourseFeeDisplay(slug, fee) {
-  const norm = (slug || '').toLowerCase().replace(/^\/courses\//, '').trim()
-
-  if (norm.includes('atpl')) return '₹1,50,000'
-  if (norm.includes('cadet')) return '₹50,000'
-  if (norm.includes('a320') || norm.includes('simulator')) return '₹10,000/hr'
-  if (norm.includes('cas') || norm.includes('compass') || norm.includes('adapt')) return '₹30,000'
-  if (norm.includes('airline-prep') || norm.includes('airline-interview')) return '₹30,000'
-  if (norm.includes('cabin-crew') || norm === 'cabin-crew') return '₹30K–₹54K'
-  if (norm.includes('cpl') || norm.includes('ground-classes') || norm.includes('ground-school')) return '₹2,70,000'
-  if (norm.includes('flying-training')) return '₹52–62 Lakh'
-  if (norm.includes('private-pilot') || norm.includes('ppl')) return '₹22–25 Lakh'
-  if (norm.includes('instrument-rating')) return '₹3–5 Lakh'
-  if (norm.includes('multi-engine')) return '₹3–5 Lakh'
-  if (norm.includes('flight-dispatcher')) return '₹1.5–2.5 Lakh'
-  if (norm.includes('aviation-english')) return '₹25,000'
-
-  if (fee) {
-    return formatFee(fee)
-  }
-  return 'Contact us'
-}
-
 // Format salary range from job
 export function formatSalary(min, max, currency = 'INR') {
   if (!min && !max) return null
