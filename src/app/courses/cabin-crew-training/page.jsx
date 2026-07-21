@@ -6,9 +6,18 @@ import { getBreadcrumbSchema } from '@/utils/seo'
 import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
-  title: 'Cabin Crew Training Delhi — Airline Veterans | Airborne Aviation',
-  description: 'Cabin crew training in Dwarka, Delhi by ex-Alliance Air & Air India AGM trainers — 2,500+ students trained. 3 structured pathways. ₹30K–₹54K. Small batches. Book free counselling.',
+  title: 'Cabin Crew Training Delhi | Scholarship Available | Airborne',
+  description: 'Launch your cabin crew career with Airborne\'s 3-module certified training in Delhi. Batch 1 scholarship available. Grooming, safety & airline placement. Pre-register.',
   alternates: { canonical: '/courses/cabin-crew-training' },
+  openGraph: {
+    title: 'Cabin Crew Training Delhi | Scholarship Available | Airborne',
+    description: 'Launch your cabin crew career with Airborne\'s 3-module certified training in Delhi. Batch 1 scholarship available. Grooming, safety & airline placement. Pre-register.',
+    url: 'https://www.airborneaviation.in/courses/cabin-crew-training',
+  },
+  twitter: {
+    title: 'Cabin Crew Training Delhi | Scholarship Available | Airborne',
+    description: 'Launch your cabin crew career with Airborne\'s 3-module certified training in Delhi. Batch 1 scholarship available. Grooming, safety & airline placement. Pre-register.',
+  },
 }
 
 const breadcrumbSchema = getBreadcrumbSchema([

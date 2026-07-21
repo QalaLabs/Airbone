@@ -6,9 +6,18 @@ import { getBreadcrumbSchema } from '@/utils/seo'
 import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
-  title: 'DGCA Ground School Delhi — CPL & ATPL Classes | Airborne',
+  title: 'DGCA Ground School Delhi | CPL & ATPL Classes | Airborne',
   description: 'Pass your DGCA CPL & ATPL exams with Airborne\'s expert-led ground school in Dwarka, Delhi. All subjects. Taught by airline pilots. Enrol now.',
   alternates: { canonical: '/courses/ground-school' },
+  openGraph: {
+    title: 'DGCA Ground School Delhi | CPL & ATPL Classes | Airborne',
+    description: 'Pass your DGCA CPL & ATPL exams with Airborne\'s expert-led ground school in Dwarka, Delhi. All subjects. Taught by airline pilots. Enrol now.',
+    url: 'https://www.airborneaviation.in/courses/ground-school',
+  },
+  twitter: {
+    title: 'DGCA Ground School Delhi | CPL & ATPL Classes | Airborne',
+    description: 'Pass your DGCA CPL & ATPL exams with Airborne\'s expert-led ground school in Dwarka, Delhi. All subjects. Taught by airline pilots. Enrol now.',
+  },
 }
 
 const breadcrumbSchema = getBreadcrumbSchema([
