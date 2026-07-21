@@ -21,7 +21,7 @@ const MODULES = [
   { id: "testimonials", name: "Testimonials Reviews", category: "Web & Content", shortcut: "G T", href: "/testimonials", icon: Star },
   { id: "users", name: "User Management & RBAC", category: "System", shortcut: "G U", href: "/users", icon: Users },
   { id: "settings", name: "System Settings", category: "System", shortcut: "G E", href: "/settings", icon: Settings },
-  { id: "audit-logs", name: "Audit Logs", category: "System", shortcut: "G X", href: "/audit-logs", icon: ShieldCheck },
+  { id: "audit-logs", name: "Audit Logs", category: "System", shortcut: "G X", href: "/audit", icon: ShieldCheck },
 ];
 
 export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {

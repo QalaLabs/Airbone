@@ -62,7 +62,7 @@ const NAV_GROUPS = [
       { href: "/automations", icon: MessageSquare, label: "Automations" },
       { href: "/users", icon: Building2, label: "User Management" },
       { href: "/settings", icon: Settings, label: "Settings" },
-      { href: "/audit-logs", icon: ShieldCheck, label: "Audit Logs" },
+      { href: "/audit", icon: ShieldCheck, label: "Audit Logs" },
     ]
   }
 ];
