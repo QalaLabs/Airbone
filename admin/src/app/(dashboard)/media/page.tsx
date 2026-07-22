@@ -38,12 +38,6 @@ interface MediaFolder {
   assetCount?: number;
 }
 
-interface MediaResponse {
-  items: MediaAsset[];
-  total: number;
-  totalPages: number;
-}
-
 function getFileIcon(mimeType: string) {
   if (mimeType.startsWith("image/")) return ImageIcon;
   if (mimeType.startsWith("video/")) return Film;
@@ -79,7 +73,7 @@ export default function MediaPage() {
 
   const { data: folders } = useQuery({
     queryKey: ["media-folders", selectedFolder],
-    queryFn: () => apiFetch<{ items: MediaFolder[] }>(`/media/folders${selectedFolder ? `?parentId=${selectedFolder}` : ""}`),
+    queryFn: () => apiFetch<MediaFolder[]>(`/media/folders${selectedFolder ? `?parentId=${selectedFolder}` : ""}`),
   });
 
   const { data: assets, isLoading: assetsLoading, refetch } = useQuery({
@@ -91,7 +85,12 @@ export default function MediaPage() {
         ...(selectedFolder ? { folderId: selectedFolder } : {}),
         ...(debouncedSearch ? { search: debouncedSearch } : {}),
       });
-      return apiFetch<MediaResponse>(`/media?${p}`);
+      // The API responds with { success, data: MediaAsset[], meta }. apiFetch()
+      // only unwraps `.data` (dropping `.meta`), so this fetches directly.
+      const raw = await fetch(`/api/v1/media?${p}`, { credentials: "include" });
+      if (!raw.ok) throw new Error(`HTTP ${raw.status}`);
+      const json = await raw.json() as { data: MediaAsset[]; meta?: { total: number } };
+      return { items: json.data, total: json.meta?.total ?? json.data.length };
     },
   });
 
@@ -190,7 +189,7 @@ export default function MediaPage() {
     setS3ConfigOpen(false);
   };
 
-  const currentFolders = folders?.items ?? [
+  const currentFolders = folders ?? [
     { id: "f1", name: "High-Res Fleet Photos", slug: "fleet-photos", assetCount: 24 },
     { id: "f2", name: "Simulator Cinematic Videos", slug: "sim-videos", assetCount: 8 },
     { id: "f3", name: "Campus Amenities & Labs", slug: "campus-amenities", assetCount: 16 },

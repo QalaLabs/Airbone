@@ -20,6 +20,7 @@ const JOB_SELECT = {
   metadata: true,
   publishedAt: true,
   status: true,
+  isFeatured: true,
 } as const;
 
 export async function GET(req: NextRequest) {
@@ -40,7 +41,7 @@ export async function GET(req: NextRequest) {
         status: "PUBLISHED",
         OR: [{ closesAt: null }, { closesAt: { gte: new Date() } }],
       },
-      orderBy: { publishedAt: "desc" },
+      orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }],
       take: limit,
       select: JOB_SELECT,
     });

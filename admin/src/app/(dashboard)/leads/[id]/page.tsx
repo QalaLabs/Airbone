@@ -113,7 +113,7 @@ export default function LeadDetailPage() {
 
   const { data: activities, isLoading: activitiesLoading } = useQuery({
     queryKey: ["lead", id, "activities"],
-    queryFn: () => apiFetch<{ items: LeadActivity[] }>(`/leads/${id}/activities`),
+    queryFn: () => apiFetch<LeadActivity[]>(`/leads/${id}/activities`),
     enabled: !!id,
   });
 
@@ -307,11 +307,11 @@ export default function LeadDetailPage() {
                     <div className="space-y-4">
                       {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
                     </div>
-                  ) : !activities?.items.length ? (
+                  ) : !activities?.length ? (
                     <p className="text-xs text-muted-foreground text-center py-8 font-semibold">No timeline activities logged yet.</p>
                   ) : (
                     <div className="space-y-4">
-                      {activities.items.map((act) => {
+                      {activities.map((act) => {
                         const Icon = ACTIVITY_ICONS[act.type] ?? FileText;
                         return (
                           <div key={act.id} className="flex gap-4 p-4 rounded-xl bg-secondary/30 border border-white/5 hover:border-white/10 transition-colors">

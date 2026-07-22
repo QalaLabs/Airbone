@@ -36,11 +36,6 @@ interface Admission {
   updatedAt: string;
 }
 
-interface AdmissionsResponse {
-  items: Admission[];
-  total: number;
-}
-
 // Keys must match the real Prisma `AdmissionStage` enum (prisma/schema.prisma)
 // exactly — the board previously used an invented vocabulary that never
 // matched a real admission's stage, and the /stage PATCH route validates
@@ -175,8 +170,12 @@ export default function AdmissionsPage() {
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admissions"],
     queryFn: async () => {
-      const res = await apiFetch<AdmissionsResponse>("/admissions?page=1&limit=200");
-      return res;
+      // The API responds with { success, data: Admission[], meta }. apiFetch() only
+      // unwraps `.data` (dropping `.meta`), so this fetches directly for clarity.
+      const res = await fetch("/api/v1/admissions?page=1&limit=200", { credentials: "include" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json() as { data: Admission[]; meta?: { total: number } };
+      return { data: json.data, total: json.meta?.total ?? json.data.length };
     },
   });
 
@@ -195,7 +194,7 @@ export default function AdmissionsPage() {
     },
   });
 
-  const admissions = data?.items ?? [];
+  const admissions = data?.data ?? [];
 
   const byStage = STAGES.reduce<Record<string, Admission[]>>((acc, s) => {
     acc[s.key] = admissions.filter((a) => a.stage === s.key);

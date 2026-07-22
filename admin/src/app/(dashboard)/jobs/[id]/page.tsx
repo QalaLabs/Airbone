@@ -43,9 +43,8 @@ interface JobApplication {
 }
 
 interface ApplicationsResponse {
-  items: JobApplication[];
+  data: JobApplication[];
   total: number;
-  totalPages: number;
 }
 
 export default function JobDetailPage() {
@@ -211,7 +210,7 @@ export default function JobDetailPage() {
             <CardContent className="p-0">
               <DataTable
                 columns={applicationColumns}
-                data={applications?.items ?? []}
+                data={applications?.data ?? []}
                 loading={appsLoading}
                 emptyTitle="No applications yet"
                 emptyDescription="Applications will appear here once candidates apply."

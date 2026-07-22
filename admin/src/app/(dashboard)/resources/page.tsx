@@ -28,9 +28,8 @@ interface Resource {
 }
 
 interface ResourcesResponse {
-  items: Resource[];
+  data: Resource[];
   total: number;
-  totalPages: number;
 }
 
 const RESOURCE_STATUSES = ["all", "DRAFT", "PUBLISHED", "ARCHIVED"];
@@ -184,9 +183,9 @@ export default function ResourcesPage() {
       {!isError && (
         <DataTable
           columns={columns}
-          data={data?.items ?? []}
+          data={data?.data ?? []}
           loading={isLoading}
-          pageCount={data?.totalPages ?? 0}
+          pageCount={data?.total ? Math.ceil(data.total / pagination.pageSize) : 0}
           pagination={pagination}
           onPaginationChange={setPagination}
           sorting={sorting}

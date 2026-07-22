@@ -35,12 +35,6 @@ interface Course {
   createdAt: string;
 }
 
-interface CoursesResponse {
-  items: Course[];
-  total: number;
-  totalPages: number;
-}
-
 const COURSE_STATUSES = ["all", "DRAFT", "PUBLISHED", "ARCHIVED"];
 
 export default function CoursesPage() {
@@ -67,7 +61,12 @@ export default function CoursesPage() {
         ...(debouncedSearch ? { search: debouncedSearch } : {}),
         ...(statusFilter && statusFilter !== "all" ? { status: statusFilter } : {}),
       });
-      return apiFetch<CoursesResponse>(`/courses?${p}`);
+      // The API responds with { success, data: Course[], meta }. apiFetch() only
+      // unwraps `.data` (dropping `.meta`), so this fetches directly for clarity.
+      const raw = await fetch(`/api/v1/courses?${p}`, { credentials: "include" });
+      if (!raw.ok) throw new Error(`HTTP ${raw.status}`);
+      const json = await raw.json() as { data: Course[]; meta?: { total: number } };
+      return { data: json.data, total: json.meta?.total ?? json.data.length };
     },
   });
 
@@ -264,9 +263,9 @@ export default function CoursesPage() {
         <div className="glass-card rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
           <DataTable
             columns={columns}
-            data={data?.items ?? []}
+            data={data?.data ?? []}
             loading={isLoading}
-            pageCount={data?.totalPages ?? 0}
+            pageCount={data?.total ? Math.ceil(data.total / pagination.pageSize) : 0}
             pagination={pagination}
             onPaginationChange={setPagination}
             emptyTitle="No academic courses found"

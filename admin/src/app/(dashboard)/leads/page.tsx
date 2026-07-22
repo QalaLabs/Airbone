@@ -38,14 +38,6 @@ interface Lead {
   lastActivityAt?: string;
 }
 
-interface LeadListResponse {
-  items: Lead[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
-
 const createLeadSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email"),
@@ -77,11 +69,10 @@ export default function LeadsPage() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  const { data: counselorsRes } = useQuery({
+  const { data: counselorsList = [] } = useQuery({
     queryKey: ["counselors-list"],
-    queryFn: () => apiFetch<{ data: { id: string; name: string }[]; total: number }>("/users?role=ADMISSIONS_COUNSELOR&limit=100"),
+    queryFn: () => apiFetch<{ id: string; name: string }[]>("/users?role=ADMISSIONS_COUNSELOR&limit=100"),
   });
-  const counselorsList = counselorsRes?.data ?? [];
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["leads", pagination.pageIndex, pagination.pageSize, debouncedSearch, statusFilter, priorityFilter, counsellorFilter],
@@ -93,17 +84,26 @@ export default function LeadsPage() {
         ...(statusFilter && statusFilter !== "all" ? { status: statusFilter } : {}),
         ...(counsellorFilter && counsellorFilter !== "all" ? { assignedTo: counsellorFilter } : {}),
       });
-      const res = await apiFetch<LeadListResponse>(`/leads?${params}`);
+      // The API responds with { success, data: Lead[], meta: {total,page,limit,totalPages} }.
+      // apiFetch() only unwraps `.data` (dropping `.meta`), so pagination totals are
+      // fetched directly here rather than assuming a nested { items, total } shape.
+      const res = await fetch(`/api/v1/leads?${params}`, { credentials: "include" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json() as { data: Lead[]; meta?: { total: number; totalPages: number } };
 
       // Priority is derived from the lead's real `score` field (no backing
       // priority column exists) so it reflects actual data, not a placeholder.
-      const items = res.items.map((item) => ({
+      const items = json.data.map((item) => ({
         ...item,
         priority: item.priority || (item.score >= 80 ? "HIGH" : item.score >= 50 ? "MEDIUM" : "LOW"),
         assignedTo: item.assignedTo || { name: "Unassigned" }
       }));
 
-      return { ...res, items };
+      return {
+        items,
+        total: json.meta?.total ?? items.length,
+        totalPages: json.meta?.totalPages ?? 1,
+      };
     },
   });
 
@@ -278,6 +278,7 @@ export default function LeadsPage() {
       ),
     },
   ];
+
 
   return (
     <div className="space-y-6 pb-12">

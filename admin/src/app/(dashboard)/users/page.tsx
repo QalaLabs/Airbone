@@ -40,11 +40,6 @@ interface SystemUser {
   campus?: { name: string } | null;
 }
 
-interface UsersResponse {
-  data: SystemUser[];
-  total: number;
-}
-
 export default function UsersPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = React.useState("");
@@ -52,12 +47,11 @@ export default function UsersPage() {
   const [newUserOpen, setNewUserOpen] = React.useState(false);
   const [deactivateTarget, setDeactivateTarget] = React.useState<SystemUser | null>(null);
 
-  const { data, isLoading, error } = useQuery({
+  const { data: users = [], isLoading, error } = useQuery({
     queryKey: ["users", search],
-    queryFn: () => apiFetch<UsersResponse>(`/users?${search ? `search=${encodeURIComponent(search)}&` : ""}limit=100`),
+    queryFn: () => apiFetch<SystemUser[]>(`/users?${search ? `search=${encodeURIComponent(search)}&` : ""}limit=100`),
   });
 
-  const users = data?.data ?? [];
 
   const inviteMutation = useMutation({
     mutationFn: (body: { email: string; name: string; role: string }) =>

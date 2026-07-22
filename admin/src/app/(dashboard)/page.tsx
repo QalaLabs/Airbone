@@ -26,7 +26,7 @@ interface DashboardLead {
 export default function DashboardPage() {
   const { data: leads } = useQuery({
     queryKey: ["leads", "dashboard"],
-    queryFn: () => apiFetch<{ items: DashboardLead[]; total: number }>("/leads?page=1&limit=8"),
+    queryFn: () => apiFetch<DashboardLead[]>("/leads?page=1&limit=8"),
   });
 
   const { data: stats } = useQuery({
@@ -58,7 +58,7 @@ export default function DashboardPage() {
     { title: "Placement Applications", value: String(stats?.placementsCount ?? 0), change: "3 Airlines recruiting", isPos: true, icon: Briefcase, color: "text-sky-500", bg: "bg-sky-500/10" },
   ];
 
-  const recentLeads = leads?.items ?? [
+  const recentLeads = leads ?? [
     { id: "1", name: "Captain Vikram Singh", email: "vikram@flying.club", status: "NEW", createdAt: new Date().toISOString(), phone: "+91 98765 43210", courseInterest: "DGCA CPL Ground School" },
     { id: "2", name: "Ananya Sharma", email: "ananya.s@aviation.in", status: "CONTACTED", createdAt: new Date(Date.now() - 3600000).toISOString(), phone: "+91 98234 56789", courseInterest: "Cadet Pilot Program" },
     { id: "3", name: "Rohan Verma", email: "rohan.v@gmail.com", status: "INTERESTED", createdAt: new Date(Date.now() - 7200000).toISOString(), phone: "+91 98111 22334", courseInterest: "A320 Type Rating" },

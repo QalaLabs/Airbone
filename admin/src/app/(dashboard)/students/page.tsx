@@ -12,7 +12,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { apiFetch } from "@/lib/api";
 import { formatDate, getInitials } from "@/lib/utils";
 
 interface Student {
@@ -28,12 +27,6 @@ interface Student {
   createdAt: string;
   course?: { title: string };
   campus?: { name: string };
-}
-
-interface StudentsResponse {
-  items: Student[];
-  total: number;
-  totalPages: number;
 }
 
 const STUDENT_STATUSES = ["all", "ACTIVE", "GRADUATED", "DROPPED", "SUSPENDED", "ON_HOLD"];
@@ -66,7 +59,17 @@ export default function StudentsPage() {
         ...(debouncedSearch ? { search: debouncedSearch } : {}),
         ...(statusFilter && statusFilter !== "all" ? { status: statusFilter } : {}),
       });
-      return apiFetch<StudentsResponse>(`/students?${p}`);
+      // The API responds with { success, data: Student[], meta: {total,totalPages} }.
+      // apiFetch() only unwraps `.data` (dropping `.meta`), so this fetches directly
+      // to preserve real pagination totals rather than assuming a nested shape.
+      const res = await fetch(`/api/v1/students?${p}`, { credentials: "include" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json() as { data: Student[]; meta?: { total: number; totalPages: number } };
+      return {
+        items: json.data,
+        total: json.meta?.total ?? json.data.length,
+        totalPages: json.meta?.totalPages ?? 1,
+      };
     },
   });
 

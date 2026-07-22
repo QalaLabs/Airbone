@@ -65,7 +65,9 @@ export default function PlacementsPage() {
   const [joiningDate, setJoiningDate] = React.useState("");
   const [notes, setNotes] = React.useState("");
 
-  // Queries
+  // Queries. HiringPartner/Placement/Job services each return { data, total } as a
+  // single object, so ok() double-wraps it and apiFetch's one-level unwrap lands
+  // back on { data, total } — unlike /students, which needs the flat-array fetch below.
   const { data: partnersRes } = useQuery({
     queryKey: ["hiring-partners"],
     queryFn: () => apiFetch<{ data: HiringPartner[]; total: number }>("/hiring-partners?page=1&limit=100"),
@@ -84,11 +86,10 @@ export default function PlacementsPage() {
   });
   const jobs = jobsRes?.data ?? [];
 
-  const { data: studentsRes } = useQuery({
+  const { data: studentsList = [] } = useQuery({
     queryKey: ["students-for-placements"],
-    queryFn: () => apiFetch<{ items: StudentLite[]; total: number }>("/students?page=1&limit=100"),
+    queryFn: () => apiFetch<StudentLite[]>("/students?page=1&limit=100"),
   });
-  const studentsList = studentsRes?.items ?? [];
 
   // Mappers
   const currentPartners = partners.map(p => ({

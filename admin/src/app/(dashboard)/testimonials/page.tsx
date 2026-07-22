@@ -33,9 +33,8 @@ interface Testimonial {
 }
 
 interface TestimonialsResponse {
-  items: Testimonial[];
+  data: Testimonial[];
   total: number;
-  totalPages: number;
 }
 
 const TESTIMONIAL_STATUSES = ["all", "PENDING", "APPROVED", "REJECTED"];
@@ -192,7 +191,7 @@ export default function TestimonialsPage() {
     },
   ];
 
-  const pendingCount = data?.items.filter((t) => t.status === "PENDING").length ?? 0;
+  const pendingCount = data?.data.filter((t) => t.status === "PENDING").length ?? 0;
 
   return (
     <div className="space-y-5">
@@ -246,9 +245,9 @@ export default function TestimonialsPage() {
       {!isError && (
         <DataTable
           columns={columns}
-          data={data?.items ?? []}
+          data={data?.data ?? []}
           loading={isLoading}
-          pageCount={data?.totalPages ?? 0}
+          pageCount={data?.total ? Math.ceil(data.total / pagination.pageSize) : 0}
           pagination={pagination}
           onPaginationChange={setPagination}
           sorting={sorting}

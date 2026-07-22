@@ -31,9 +31,8 @@ interface Job {
 }
 
 interface JobsResponse {
-  items: Job[];
+  data: Job[];
   total: number;
-  totalPages: number;
 }
 
 const JOB_STATUSES = ["all", "DRAFT", "PUBLISHED", "CLOSED", "ARCHIVED"];
@@ -187,9 +186,9 @@ export default function JobsPage() {
       {!isError && (
         <DataTable
           columns={columns}
-          data={data?.items ?? []}
+          data={data?.data ?? []}
           loading={isLoading}
-          pageCount={data?.totalPages ?? 0}
+          pageCount={data?.total ? Math.ceil(data.total / pagination.pageSize) : 0}
           pagination={pagination}
           onPaginationChange={setPagination}
           sorting={sorting}

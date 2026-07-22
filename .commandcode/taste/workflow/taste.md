@@ -1,0 +1,11 @@
+# workflow
+- Always audit the existing codebase first before making any changes; understand what works before modifying. Confidence: 0.90
+- Implement changes module-by-module in focused passes, not scattered across the whole project. Confidence: 0.85
+- Run build, TypeScript, and lint validation after every completed module; fix issues immediately. Confidence: 0.85
+- Do NOT add new features beyond the explicitly specified scope. Confidence: 0.80
+- When wiring live APIs to replace mock data, preserve existing UI/UX exactly — do not change styling, animations, layout, spacing, typography, or components. Confidence: 0.80
+- Always add loading states, error states, and empty states when replacing mock data with API calls. Confidence: 0.80
+- Do NOT redesign, do NOT restart, do NOT rebuild — improve and elevate what already exists. Confidence: 0.85
+- Always start with a full audit before implementing any fixes or changes. Confidence: 0.85
+- After implementation, provide structured output: files modified, root cause fixed, build/TypeScript/lint status. Confidence: 0.70
+- Keep Git changes minimal — avoid unnecessary diffs or rewriting working code. Confidence: 0.70

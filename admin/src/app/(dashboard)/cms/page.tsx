@@ -30,11 +30,6 @@ interface PageModel {
   version: number;
 }
 
-interface PagesResponse {
-  items: PageModel[];
-  total: number;
-}
-
 export default function CMSPage() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = React.useState("pages");
@@ -57,8 +52,12 @@ export default function CMSPage() {
         limit: "100",
         ...(debouncedSearch ? { search: debouncedSearch } : {}),
       });
-      const res = await apiFetch<PagesResponse>(`/pages?${p}`);
-      return res;
+      // The API responds with { success, data: PageModel[], meta }. apiFetch() only
+      // unwraps `.data` (dropping `.meta`), so this fetches directly for clarity.
+      const raw = await fetch(`/api/v1/pages?${p}`, { credentials: "include" });
+      if (!raw.ok) throw new Error(`HTTP ${raw.status}`);
+      const json = await raw.json() as { data: PageModel[]; meta?: { total: number } };
+      return { data: json.data, total: json.meta?.total ?? json.data.length };
     },
     enabled: activeTab === "pages",
   });
@@ -117,7 +116,7 @@ export default function CMSPage() {
     }
   };
 
-  const pagesList = data?.items ?? [];
+  const pagesList = data?.data ?? [];
 
   return (
     <div className="space-y-8 pb-12">
