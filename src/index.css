@@ -2913,6 +2913,11 @@ html { scroll-behavior: smooth; }
   position: relative;
 }
 
+.course-main-wrapper.courses-listing {
+  background-color: var(--navy-deep) !important;
+  color: rgba(255,255,255,0.85) !important;
+}
+
 .course-breadcrumb {
   display: flex;
   gap: 0.5rem;
@@ -3220,21 +3225,21 @@ html { scroll-behavior: smooth; }
 }
 
 .course-page-card {
-  background: #ffffff;
-  border: 1px solid rgba(0, 39, 76, 0.08);
+  background: var(--navy-95);
+  border: 1px solid rgba(255,255,255,0.08);
   border-radius: 12px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   transition: transform 0.3s var(--easeC), box-shadow 0.3s var(--easeC), border-color 0.3s var(--easeC);
-  box-shadow: 0 4px 20px rgba(0, 39, 76, 0.02);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
   overflow: hidden;
 }
 
 .course-page-card:hover {
   transform: translateY(-6px);
   border-color: var(--gold);
-  box-shadow: 0 15px 40px rgba(0, 39, 76, 0.08);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.5);
 }
 
 /* ── PILOT JOURNEY EXPERIENCE STORYTELLING REDESIGN ── */

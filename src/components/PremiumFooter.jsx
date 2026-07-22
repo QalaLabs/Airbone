@@ -10,7 +10,7 @@ const QUICK_LINKS = [
   { label: 'Home', href: '/' },
   { label: 'About Us', href: '/about' },
   { label: 'Courses', href: '/courses' },
-  { label: 'How to Become a Pilot', href: '/blog/how-to-become-pilot-india' },
+  { label: 'Step-by-step guide to becoming a pilot after Class 12', href: '/blog/how-to-become-pilot-india' },
   { label: 'Contact Us', href: '/contact' },
   { label: 'Privacy Policy', href: '/privacy' },
   { label: 'Refund Policy', href: '/refund-policy' },
@@ -39,7 +39,7 @@ const CONTACT_INFO = [
   { icon: '\u{1F4DE}', label: 'Phone', href: 'tel:+919953777320', value: '+91 9953 777 320' },
   { icon: '\u{1F4AC}', label: 'WhatsApp', href: 'https://wa.me/919953777320', value: '+91 9953 777 320' },
   { icon: '\u2709', label: 'Email', href: 'mailto:info@airborneaviation.in', value: 'info@airborneaviation.in' },
-  { icon: '\u{1F558}', label: 'Office Hours', value: 'Mon \u2013 Sat \u00B7 9:30 AM \u2013 6:00 PM' },
+  { icon: '\u{1F558}', label: 'Office Hours', value: 'Monday to Saturday, 9:30 AM \u2013 6:00 PM (Closed on Sundays)' },
 ]
 
 export default function PremiumFooter({ onBookDemo }) {
@@ -85,7 +85,7 @@ export default function PremiumFooter({ onBookDemo }) {
                 <line x1="8" y1="2" x2="8" y2="6"/>
                 <line x1="3" y1="10" x2="21" y2="10"/>
               </svg>
-              Book Free Demo
+              Enrol Now
             </button>
           </div>
         </div>

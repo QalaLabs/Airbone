@@ -99,12 +99,12 @@ const SUBJECTS = [
 
 const FEE_ROWS = [
   { component: 'DGCA Ground School (all subjects)', amount: '₹2,70,000' },
-  { component: 'Flying Training — 200 hours', amount: '₹45–55 lakh' },
-  { component: 'DGCA Exam Fees (6 papers)', amount: '₹25,000–₹40,000' },
+  { component: 'Flying Training — 200 hours', amount: '₹52–62 lakh' },
+  { component: 'DGCA Exam Fees (5 papers)', amount: '₹30,000' },
   { component: 'DGCA Class 1 Medical', amount: '₹10,000–₹25,000' },
   { component: 'Student Pilot License (SPL)', amount: '₹15,000–₹25,000' },
   { component: 'Simulator Sessions', amount: '₹10,000/hr' },
-  { component: 'Total (approximate)', amount: '₹65–75 lakh' },
+  { component: 'Total (approximate)', amount: '₹55–65 lakh' },
 ]
 
 const ELIGIBILITY = [
@@ -255,7 +255,7 @@ export default function CPLPage() {
                 {[
                   { q: 'What DGCA exams are required for CPL?', a: 'Six DGCA examinations: Air Navigation, Aviation Meteorology, Air Regulations, Technical General, Technical Specific, and RTR. Each paper requires minimum 70% to pass.' },
                   { q: 'How much does CPL Ground School cost at Airborne?', a: '₹2,70,000 covering all 5 DGCA theoretical papers taught directly by Capt. Navrang Singh. All subjects included — no separate fees per paper.' },
-                  { q: 'How much does the full CPL cost in India?', a: 'CPL training in India costs ₹65–75 lakh at DGCA-approved FTOs, covering 200 flying hours, ground school, DGCA exam fees, and medical. Education loans available via SBI, Bank of Baroda, PNB.' },
+                  { q: 'How much does the full CPL cost in India?', a: 'CPL training in India costs ₹55–65 lakh at DGCA-approved FTOs, covering 200 flying hours, ground school, DGCA exam fees, and medical. Education loans available via SBI, Bank of Baroda, PNB.' },
                   { q: 'What is the batch size?', a: 'Strictly capped at 25 students per session to maintain high contact ratios and personalised pacing.' },
                   { q: 'How long does CPL Ground School take?', a: 'Approximately 3 months for the complete 5-subject ground school curriculum. Weekend and weekday batches available.' },
                 ].map((faq, i) => (
