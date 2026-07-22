@@ -36,11 +36,22 @@ const AVAILABLE_PERMISSIONS = [
   { key: "PLACEMENTS_MANAGE", label: "Placements & Recruitment Drives", desc: "Schedule airline hiring drives and track cadet interview shortlists." },
 ];
 
+interface SystemUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  department: string;
+  status: string;
+  permissions: string[];
+  activity: string[];
+}
+
 export default function UsersPage() {
   const [activeTab, setActiveTab] = React.useState("users");
   const [search, setSearch] = React.useState("");
-  const [selectedUser, setSelectedUser] = React.useState<any | null>(null);
-  const [editingUser, setEditingUser] = React.useState<any | null>(null);
+  const [selectedUser, setSelectedUser] = React.useState<SystemUser | null>(null);
+  const [editingUser, setEditingUser] = React.useState<SystemUser | null>(null);
   const [newUserOpen, setNewUserOpen] = React.useState(false);
 
   const handleSaveUser = (e: React.FormEvent) => {

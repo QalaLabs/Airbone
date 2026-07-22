@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ColumnDef, type PaginationState } from "@tanstack/react-table";
-import { Plus, Search, Filter, MoreHorizontal, Eye, CheckSquare, Trash2, UserCheck, Sparkles, SlidersHorizontal, ArrowUpDown } from "lucide-react";
+import { Plus, Search, Filter, MoreHorizontal, Eye, CheckSquare, Trash2, UserCheck, Sparkles, SlidersHorizontal, ArrowUpDown, ChevronDown, AlertCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -59,16 +59,16 @@ const createLeadSchema = z.object({
 type CreateLeadForm = z.infer<typeof createLeadSchema>;
 
 const LEAD_SOURCES = ["WEBSITE", "GOOGLE_ADS", "FACEBOOK_ADS", "ORGANIC", "REFERRAL", "WHATSAPP", "VOICE_AI", "OTHER"];
-const LEAD_STATUSES = ["", "NEW", "CONTACTED", "INTERESTED", "NOT_INTERESTED", "FOLLOW_UP", "COUNSELED", "CONVERTED", "LOST"];
+const LEAD_STATUSES = ["all", "NEW", "CONTACTED", "INTERESTED", "NOT_INTERESTED", "FOLLOW_UP", "COUNSELED", "CONVERTED", "LOST"];
 const COUNSELLORS = ["Anjali Verma", "Priya Sharma", "Vikram Singh", "Rahul Gupta", "Unassigned"];
 
 export default function LeadsPage() {
   const queryClient = useQueryClient();
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 20 });
   const [search, setSearch] = React.useState("");
-  const [statusFilter, setStatusFilter] = React.useState("");
-  const [priorityFilter, setPriorityFilter] = React.useState("");
-  const [counsellorFilter, setCounsellorFilter] = React.useState("");
+  const [statusFilter, setStatusFilter] = React.useState("all");
+  const [priorityFilter, setPriorityFilter] = React.useState("all");
+  const [counsellorFilter, setCounsellorFilter] = React.useState("all");
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
   const [createOpen, setCreateOpen] = React.useState(false);
   const [selectedLeadIds, setSelectedLeadIds] = React.useState<string[]>([]);
@@ -78,14 +78,14 @@ export default function LeadsPage() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["leads", pagination.pageIndex, pagination.pageSize, debouncedSearch, statusFilter, priorityFilter, counsellorFilter],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: String(pagination.pageIndex + 1),
         limit: String(pagination.pageSize),
         ...(debouncedSearch ? { search: debouncedSearch } : {}),
-        ...(statusFilter ? { status: statusFilter } : {}),
+        ...(statusFilter && statusFilter !== "all" ? { status: statusFilter } : {}),
       });
       const res = await apiFetch<LeadListResponse>(`/leads?${params}`);
       
@@ -289,7 +289,7 @@ export default function LeadsPage() {
               </SelectTrigger>
               <SelectContent className="glass-panel border-white/10 text-xs">
                 {LEAD_STATUSES.map((s) => (
-                  <SelectItem key={s} value={s}>{s || "All Statuses"}</SelectItem>
+                  <SelectItem key={s} value={s}>{s === "all" ? "All Statuses" : s.replace(/_/g, " ")}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -300,7 +300,7 @@ export default function LeadsPage() {
                 <SelectValue placeholder="Priority" />
               </SelectTrigger>
               <SelectContent className="glass-panel border-white/10 text-xs">
-                <SelectItem value="">All Priorities</SelectItem>
+                <SelectItem value="all">All Priorities</SelectItem>
                 <SelectItem value="HIGH">High Priority</SelectItem>
                 <SelectItem value="MEDIUM">Medium Priority</SelectItem>
                 <SelectItem value="LOW">Low Priority</SelectItem>
@@ -313,7 +313,7 @@ export default function LeadsPage() {
                 <SelectValue placeholder="Counselor" />
               </SelectTrigger>
               <SelectContent className="glass-panel border-white/10 text-xs">
-                <SelectItem value="">All Counselors</SelectItem>
+                <SelectItem value="all">All Counselors</SelectItem>
                 {COUNSELLORS.map((c) => (
                   <SelectItem key={c} value={c}>{c}</SelectItem>
                 ))}
@@ -329,14 +329,14 @@ export default function LeadsPage() {
               <CheckSquare className="h-4 w-4 text-primary" />
               {selectedLeadIds.length} lead(s) selected
             </span>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button size="sm" className="bg-primary hover:bg-primary/90 text-white text-xs font-bold py-1 px-3 h-8">
-                    Bulk Assign Counselor
+                  <Button size="sm" variant="outline" className="text-xs font-bold border-white/10 py-1 px-3 h-8">
+                    Assign Counselor <ChevronDown className="ml-1 h-3.5 w-3.5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="glass-panel border-white/10 w-48">
+                <DropdownMenuContent className="glass-panel border-white/10 text-xs">
                   <DropdownMenuLabel className="text-xs font-bold text-muted-foreground">Select Counselor</DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-white/10" />
                   {COUNSELLORS.filter(c => c !== "Unassigned").map((c) => (
@@ -355,18 +355,39 @@ export default function LeadsPage() {
       </div>
 
       {/* Main CRM Data Table */}
-      <div className="glass-card rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
-        <DataTable
-          columns={columns}
-          data={data?.items ?? []}
-          loading={isLoading}
-          pageCount={data?.totalPages ?? 0}
-          pagination={pagination}
-          onPaginationChange={setPagination}
-          emptyTitle="No leads found in CRM queue"
-          emptyDescription="Try clearing your filters or add a new lead to get started."
-        />
-      </div>
+      {isError && (
+        <div className="flex flex-col items-center justify-center p-12 rounded-2xl border border-rose-500/20 bg-rose-500/10 text-center space-y-4">
+          <AlertCircle className="h-12 w-12 text-rose-400" />
+          <div>
+            <h3 className="text-base font-bold text-white">Failed to Load Leads</h3>
+            <p className="text-xs text-muted-foreground mt-1 font-mono">{error?.message || "Internal server error"}</p>
+          </div>
+          <Button onClick={() => refetch()} variant="outline" className="border-white/10 text-xs font-bold hover:bg-white/5">
+            Retry Loading
+          </Button>
+        </div>
+      )}
+
+      {!isError && (
+        <div className="glass-card rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+          <DataTable
+            columns={columns}
+            data={
+              (data?.items ?? []).filter((item) => {
+                if (priorityFilter && priorityFilter !== "all" && item.priority !== priorityFilter) return false;
+                if (counsellorFilter && counsellorFilter !== "all" && item.assignedTo?.name !== counsellorFilter) return false;
+                return true;
+              })
+            }
+            loading={isLoading}
+            pageCount={data?.totalPages ?? 0}
+            pagination={pagination}
+            onPaginationChange={setPagination}
+            emptyTitle="No leads found in CRM queue"
+            emptyDescription="Try clearing your filters or add a new lead to get started."
+          />
+        </div>
+      )}
 
       {/* Create Lead Dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>

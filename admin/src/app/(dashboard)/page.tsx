@@ -12,13 +12,24 @@ import { apiFetch } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { formatDate } from "@/lib/utils";
+import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 
+interface DashboardLead {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  status: string;
+  courseInterest?: string;
+  createdAt: string;
+}
+
 export default function DashboardPage() {
-  const { data: leads, isLoading: leadsLoading } = useQuery({
+  const { data: leads } = useQuery({
     queryKey: ["leads", "dashboard"],
-    queryFn: () => apiFetch<{ items: any[]; total: number }>("/leads?page=1&limit=8"),
+    queryFn: () => apiFetch<{ items: DashboardLead[]; total: number }>("/leads?page=1&limit=8"),
   });
 
   const STAT_CARDS = [
@@ -241,9 +252,9 @@ export default function DashboardPage() {
                 <h2 className="text-lg font-bold text-white tracking-tight">Recent Activity Feed</h2>
                 <p className="text-xs text-muted-foreground mt-0.5">Real-time telemetry of incoming student applications and webhooks</p>
               </div>
-              <a href="/leads" className="text-xs font-bold text-primary hover:underline bg-primary/10 px-3 py-1.5 rounded-xl border border-primary/20">
+              <Link href="/leads" className="text-xs font-bold text-primary hover:underline bg-primary/10 px-3 py-1.5 rounded-xl border border-primary/20">
                 View All Leads →
-              </a>
+              </Link>
             </div>
 
             <div className="mt-4 space-y-3">

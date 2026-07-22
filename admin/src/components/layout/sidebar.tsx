@@ -16,12 +16,17 @@ import {
   ChevronRight,
   Plane,
   Globe,
-  Layout,
-  MessageSquare,
   PieChart,
   Settings,
   ShieldCheck,
-  Building2
+  Building2,
+  TrendingUp,
+  Handshake,
+  GitFork,
+  Send,
+  CalendarDays,
+  BarChart3,
+  Plug,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -33,7 +38,20 @@ const NAV_GROUPS = [
     label: "Core Analytics",
     items: [
       { href: "/", icon: LayoutDashboard, label: "Dashboard" },
-      { href: "/analytics", icon: PieChart, label: "Analytics & Reports" },
+      { href: "/crm/analytics", icon: PieChart, label: "Analytics & Reports" },
+    ]
+  },
+  {
+    label: "Sales CRM",
+    items: [
+      { href: "/crm/dashboard", icon: TrendingUp, label: "CRM Dashboard" },
+      { href: "/crm/leads", icon: Users, label: "Leads" },
+      { href: "/crm/pipeline", icon: GitFork, label: "Pipeline" },
+      { href: "/crm/deals", icon: Handshake, label: "Deals" },
+      { href: "/crm/outreach", icon: Send, label: "Outreach" },
+      { href: "/crm/meetings", icon: CalendarDays, label: "Meetings" },
+      { href: "/crm/analytics", icon: BarChart3, label: "Analytics" },
+      { href: "/crm/integrations", icon: Plug, label: "Integrations" },
     ]
   },
   {
@@ -49,7 +67,6 @@ const NAV_GROUPS = [
     label: "Website & CMS",
     items: [
       { href: "/cms", icon: Globe, label: "Website CMS" },
-      { href: "/page-builder", icon: Layout, label: "Page Builder" },
       { href: "/courses", icon: BookOpen, label: "Course Manager" },
       { href: "/blog", icon: FileText, label: "Blog & Resources" },
       { href: "/testimonials", icon: Star, label: "Testimonials", badge: true },
@@ -59,7 +76,6 @@ const NAV_GROUPS = [
   {
     label: "System & Config",
     items: [
-      { href: "/automations", icon: MessageSquare, label: "Automations" },
       { href: "/users", icon: Building2, label: "User Management" },
       { href: "/settings", icon: Settings, label: "Settings" },
       { href: "/audit", icon: ShieldCheck, label: "Audit Logs" },

@@ -20,10 +20,22 @@ const MOCK_CALL_LOGS = [
   { id: "call-104", candidate: "Suresh Patel", phone: "+91 98221 15566", duration: "0m 35s", timestamp: "4 hours ago", status: "USER_HUNGUP", successScore: "30%", transcript: "Vapi: Hello Suresh, welcome to Airborne Aviation...\n\nSuresh: Can you call me back later? I am driving right now.\n\nVapi: Of course, Suresh. Have a safe drive. I will arrange a callback for this evening.", recordingUrl: "https://actions.google.com/sounds/v1/communication/incoming_call_ringtone.ogg" },
 ];
 
+interface VapiCall {
+  id: string;
+  candidate: string;
+  phone: string;
+  duration: string;
+  timestamp: string;
+  status: string;
+  successScore: string;
+  transcript: string;
+  recordingUrl: string;
+}
+
 export default function VapiPage() {
   const [activeTab, setActiveTab] = React.useState("logs");
   const [search, setSearch] = React.useState("");
-  const [selectedCall, setSelectedCall] = React.useState<any | null>(null);
+  const [selectedCall, setSelectedCall] = React.useState<VapiCall | null>(null);
   const [playingCallId, setPlayingCallId] = React.useState<string | null>(null);
 
   // Vapi Assistant Config state

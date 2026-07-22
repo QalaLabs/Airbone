@@ -8,48 +8,116 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Textarea } from "@/components/ui/textarea";
 import { 
   Globe, FileText, HelpCircle, Plane, Building2, ImageIcon, Megaphone, 
-  Search, Plus, Eye, CheckCircle2, Edit2, SlidersHorizontal, Sparkles, ExternalLink
+  Search, Plus, Eye, CheckCircle2, Edit2, SlidersHorizontal, Sparkles, ExternalLink, Loader2, AlertCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "@/components/ui/use-toast";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiFetch } from "@/lib/api";
 
-const MOCK_PAGES = [
-  { id: 1, title: "Academy Homepage", slug: "/", lastModified: "2 hours ago", status: "LIVE", views: "14,289", author: "Super Admin" },
-  { id: 2, title: "About Us & Vision", slug: "/about", lastModified: "3 days ago", status: "LIVE", views: "3,120", author: "Content Team" },
-  { id: 3, title: "Cadet Pilot Program (Indigo/AI)", slug: "/courses/cadet-preparation", lastModified: "Yesterday", status: "LIVE", views: "8,940", author: "Marketing Team" },
-  { id: 4, title: "Airborne Fleet & Tech", slug: "/fleet", lastModified: "5 days ago", status: "DRAFT", views: "—", author: "Super Admin" },
-  { id: 5, title: "Winter Intake Landing Page", slug: "/intake-2026", lastModified: "1 week ago", status: "SCHEDULED", views: "—", author: "Marketing Team" },
-];
+interface PageModel {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  status: "DRAFT" | "PUBLISHED" | "SCHEDULED" | "ARCHIVED";
+  seoTitle: string | null;
+  seoDesc: string | null;
+  createdAt: string;
+  updatedAt: string;
+  creator?: { name: string };
+  publisher?: { name: string };
+  version: number;
+}
 
-const MOCK_FAQS = [
-  { id: 1, question: "What is the minimum age to enroll in the DGCA CPL Ground School?", answer: "Candidates must be at least 17 years of age and have completed 10+2 with Physics and Mathematics.", category: "General Eligibility", status: "LIVE" },
-  { id: 2, question: "Does Airborne guarantee placement with Indigo or Air India?", answer: "We have dedicated placement cells and screening drives with Indigo, Air India, and Akasa. Over 88% of our cadets successfully clear the airline selection process.", category: "Placements", status: "LIVE" },
-  { id: 3, question: "Are accommodation and hostel facilities available at Delhi Campus?", answer: "Yes, fully furnished air-conditioned cadet housing is available within 15 minutes of our simulator training bay.", category: "Campus Facilities", status: "DRAFT" },
-];
-
-const MOCK_FLEET = [
-  { id: 1, model: "Cessna 172 Skyhawk (Garmin G1000)", type: "Single Engine Trainer", count: 12, base: "Delhi / Aligarh Flight Line", status: "LIVE" },
-  { id: 2, model: "Piper PA-34 Seneca V", type: "Multi Engine Instrument Trainer", count: 4, base: "Delhi / Aligarh Flight Line", status: "LIVE" },
-  { id: 3, model: "Airbus A320 Full Flight Simulator", type: "Level D Simulator Bay", count: 2, base: "Delhi Simulator Operations HQ", status: "LIVE" },
-];
-
-const MOCK_CAMPUS = [
-  { id: 1, facility: "Full Flight Simulator Bay", description: "Equipped with state-of-the-art A320 and B737 fixed-base and full motion training devices.", location: "Delhi Simulator Operations HQ", status: "LIVE" },
-  { id: 2, facility: "Advanced DGCA Ground Navigation Labs", description: "Smart classrooms featuring interactive visualizer panels and real-time weather radar feeds.", location: "Delhi Main Campus", status: "LIVE" },
-  { id: 3, facility: "Cadet Residential Complex", description: "Air-conditioned premium housing with dedicated study lounges and aviation library.", location: "South Delhi Annex", status: "LIVE" },
-];
+interface PagesResponse {
+  items: PageModel[];
+  total: number;
+}
 
 export default function CMSPage() {
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = React.useState("pages");
   const [previewMode, setPreviewMode] = React.useState(false);
   const [search, setSearch] = React.useState("");
-  const [editItem, setEditItem] = React.useState<any | null>(null);
+  const [debouncedSearch, setDebouncedSearch] = React.useState("");
+  const [editItem, setEditItem] = React.useState<Partial<PageModel> | null>(null);
 
-  const handleSaveContent = (e: React.FormEvent) => {
+  React.useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 400);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  // Fetch CMS Pages from backend Page API
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ["cms-pages", debouncedSearch],
+    queryFn: async () => {
+      const p = new URLSearchParams({
+        page: "1",
+        limit: "100",
+        ...(debouncedSearch ? { search: debouncedSearch } : {}),
+      });
+      const res = await apiFetch<PagesResponse>(`/pages?${p}`);
+      return res;
+    },
+    enabled: activeTab === "pages",
+  });
+
+  // Mutate: Create Page
+  const createMutation = useMutation({
+    mutationFn: (body: Partial<PageModel>) => 
+      apiFetch<PageModel>("/pages", { method: "POST", body: JSON.stringify(body) }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cms-pages"] });
+      toast({ title: "Page Created Successfully", description: "The new static page has been registered in the CMS." });
+      setEditItem(null);
+    },
+    onError: (err) => {
+      toast({ title: "Error Creating Page", description: err.message, variant: "destructive" });
+    }
+  });
+
+  // Mutate: Update Page
+  const updateMutation = useMutation({
+    mutationFn: ({ id, body }: { id: string; body: Partial<PageModel> }) => 
+      apiFetch<PageModel>(`/pages/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cms-pages"] });
+      toast({ title: "Page Saved Successfully", description: "CMS contents updated and static generation cache invalidated." });
+      setEditItem(null);
+    },
+    onError: (err) => {
+      toast({ title: "Error Saving Page", description: err.message, variant: "destructive" });
+    }
+  });
+
+  const handleSaveContent = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    toast({ title: "Content Saved to CMS", description: "Website CDN and static generation cache invalidated successfully." });
-    setEditItem(null);
+    const formData = new FormData(e.currentTarget);
+    const title = formData.get("title") as string;
+    const slug = formData.get("slug") as string;
+    const description = formData.get("description") as string;
+    const seoTitle = formData.get("seoTitle") as string;
+    const seoDesc = formData.get("seoDesc") as string;
+    const status = formData.get("status") as PageModel["status"];
+
+    const payload = {
+      title,
+      slug: slug || undefined,
+      description: description || null,
+      seoTitle: seoTitle || null,
+      seoDesc: seoDesc || null,
+      status: status || "DRAFT",
+    };
+
+    if (editItem?.id) {
+      updateMutation.mutate({ id: editItem.id, body: payload });
+    } else {
+      createMutation.mutate(payload);
+    }
   };
+
+  const pagesList = data?.items ?? [];
 
   return (
     <div className="space-y-8 pb-12">
@@ -70,7 +138,7 @@ export default function CMSPage() {
               <Eye className="h-4 w-4" />
               <span>{previewMode ? "Exit Live Preview" : "Real-Time Preview Mode"}</span>
             </button>
-            <Button onClick={() => setEditItem({ title: "New Custom Page", slug: "/new-page", status: "DRAFT" })} className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 transition-all hover:scale-105">
+            <Button onClick={() => setEditItem({ title: "", slug: "", description: "", seoTitle: "", seoDesc: "", status: "DRAFT" })} className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 transition-all hover:scale-105">
               <Plus className="h-4 w-4 mr-2" />
               Create New Entry
             </Button>
@@ -131,185 +199,157 @@ export default function CMSPage() {
                 <h3 className="text-base font-bold text-white flex items-center gap-2">
                   <Globe className="h-5 w-5 text-primary" /> Global Public Pages Directory
                 </h3>
-                <Input placeholder="Search public landing pages..." className="bg-secondary/40 border-white/10 text-xs font-semibold w-64" />
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                  <Input 
+                    placeholder="Search public landing pages..." 
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9 bg-secondary/40 border-white/10 text-xs font-semibold w-64" 
+                  />
+                </div>
               </div>
 
-              <div className="space-y-3 pt-2">
-                {MOCK_PAGES.map((pg) => (
-                  <div key={pg.id} className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-white/5 hover:border-white/10 transition-colors">
-                    <div className="flex items-center gap-4 min-w-0">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary border border-primary/30 font-bold text-sm">
-                        <FileText className="h-5 w-5" />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-bold text-white truncate">{pg.title}</p>
-                          <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${pg.status === "LIVE" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : pg.status === "SCHEDULED" ? "bg-blue-500/20 text-blue-400 border-blue-500/30" : "bg-amber-500/20 text-amber-400 border-amber-500/30"}`}>
-                            {pg.status}
-                          </span>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">Route Slug: <span className="font-mono text-white font-medium">{pg.slug}</span> • Last Updated: {pg.lastModified} • Maintained by {pg.author}</p>
-                      </div>
-                    </div>
+              {isLoading && (
+                <div className="flex flex-col items-center justify-center py-20 space-y-3">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <p className="text-xs text-muted-foreground font-semibold">Loading CMS Pages...</p>
+                </div>
+              )}
 
-                    <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-xs font-semibold text-muted-foreground bg-secondary px-3 py-1 rounded-lg border border-white/5 hidden sm:inline-block">
-                        {pg.views} views
-                      </span>
-                      <Button size="sm" onClick={() => setEditItem(pg)} className="bg-primary/20 hover:bg-primary/30 text-white border border-primary/30 text-xs font-bold py-1 px-3 h-8">
-                        <Edit2 className="h-3 w-3 mr-1.5" /> Edit CMS Data
-                      </Button>
-                    </div>
+              {isError && (
+                <div className="flex flex-col items-center justify-center py-16 text-center space-y-4 rounded-xl border border-rose-500/20 bg-rose-500/10">
+                  <AlertCircle className="h-10 w-10 text-rose-400" />
+                  <div>
+                    <h4 className="text-sm font-bold text-white">Error Loading CMS Pages</h4>
+                    <p className="text-xs text-muted-foreground mt-1 font-mono">{error?.message || "Internal Server Error"}</p>
                   </div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        )}
+                  <Button onClick={() => refetch()} variant="outline" size="sm" className="border-white/10 text-xs font-bold">
+                    Retry Loading
+                  </Button>
+                </div>
+              )}
 
-        {activeTab === "faqs" && (
-          <motion.div key="faqs" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-6">
-            <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-4">
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <HelpCircle className="h-5 w-5 text-primary" /> Frequently Asked Questions (FAQ) Manager
-                </h3>
-                <Button size="sm" onClick={() => setEditItem({ question: "New Custom FAQ Question?", answer: "Standard answer contents...", status: "DRAFT" })} className="bg-primary hover:bg-primary/90 text-white text-xs font-bold py-1 px-3 h-8">
-                  <Plus className="h-3 w-3 mr-1" /> Add FAQ Entry
-                </Button>
-              </div>
+              {!isLoading && !isError && pagesList.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-20 text-center space-y-2 border-2 border-dashed border-white/5 rounded-xl">
+                  <p className="text-sm font-bold text-white">No CMS Pages Registered</p>
+                  <p className="text-xs text-muted-foreground">Click "Create New Entry" to build your first landing page.</p>
+                </div>
+              )}
 
-              <div className="space-y-4 pt-2">
-                {MOCK_FAQS.map((fq) => (
-                  <div key={fq.id} className="p-5 rounded-2xl bg-secondary/30 border border-white/5 space-y-3 hover:border-white/10 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-extrabold bg-primary/20 text-primary border border-primary/30 px-3 py-1 rounded-full">
-                        {fq.category}
-                      </span>
-                      <div className="flex items-center gap-3">
-                        <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${fq.status === "LIVE" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : "bg-amber-500/20 text-amber-400 border-amber-500/30"}`}>
-                          {fq.status}
-                        </span>
-                        <Button size="sm" onClick={() => setEditItem(fq)} variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-white">
-                          <Edit2 className="h-3.5 w-3.5" />
+              {!isLoading && !isError && pagesList.length > 0 && (
+                <div className="space-y-3 pt-2">
+                  {pagesList.map((pg) => (
+                    <div key={pg.id} className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-white/5 hover:border-white/10 transition-colors">
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary border border-primary/30 font-bold text-sm">
+                          <FileText className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-bold text-white truncate">{pg.title}</p>
+                            <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${pg.status === "PUBLISHED" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : pg.status === "SCHEDULED" ? "bg-blue-500/20 text-blue-400 border-blue-500/30" : "bg-amber-500/20 text-amber-400 border-amber-500/30"}`}>
+                              {pg.status}
+                            </span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">Route Slug: <span className="font-mono text-white font-medium">/{pg.slug}</span> • Version: v{pg.version} • Updated: {new Date(pg.updatedAt).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 shrink-0">
+                        <Button size="sm" onClick={() => setEditItem(pg)} className="bg-primary/20 hover:bg-primary/30 text-white border border-primary/30 text-xs font-bold py-1 px-3 h-8">
+                          <Edit2 className="h-3 w-3 mr-1.5" /> Edit CMS Data
                         </Button>
                       </div>
                     </div>
-                    <h4 className="text-sm font-bold text-white tracking-tight">{fq.question}</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed font-medium">{fq.answer}</p>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* FAQs Tab - Feature Under Development fallback */}
+        {activeTab === "faqs" && (
+          <motion.div key="faqs" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-6">
+            <div className="glass-card rounded-2xl p-8 border border-white/10 text-center py-16">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 mx-auto shadow-xl">
+                <HelpCircle className="h-8 w-8" />
+              </div>
+              <div className="space-y-1 max-w-md mx-auto mt-6">
+                <h3 className="text-lg font-bold text-white tracking-tight">FAQ Manager Not Available</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed mt-2">
+                  The FAQ database schema and endpoints are currently not configured in the core database server. FAQs are statically managed via the web app code config.
+                </p>
               </div>
             </div>
           </motion.div>
         )}
 
+        {/* Fleet Tab - Feature Under Development fallback */}
         {activeTab === "fleet" && (
           <motion.div key="fleet" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-6">
-            <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-4">
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <Plane className="h-5 w-5 text-primary" /> Airborne Academy Fleet Showcase
-                </h3>
-                <Button size="sm" onClick={() => setEditItem({ model: "New Aircraft Trainer", type: "Flight Line", status: "DRAFT" })} className="bg-primary hover:bg-primary/90 text-white text-xs font-bold py-1 px-3 h-8">
-                  <Plus className="h-3 w-3 mr-1" /> Add Aircraft / Sim
-                </Button>
+            <div className="glass-card rounded-2xl p-8 border border-white/10 text-center py-16">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 mx-auto shadow-xl">
+                <Plane className="h-8 w-8" />
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-                {MOCK_FLEET.map((fl) => (
-                  <div key={fl.id} className="glass-card rounded-2xl p-5 border border-white/5 space-y-4 hover:border-white/10 transition-colors flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between border-b border-white/5 pb-3">
-                        <span className="text-xs font-bold text-muted-foreground">{fl.type}</span>
-                        <span className="text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full">
-                          {fl.status}
-                        </span>
-                      </div>
-                      <h4 className="text-base font-bold text-white tracking-tight mt-3">{fl.model}</h4>
-                      <div className="mt-4 p-3 rounded-xl bg-secondary/30 border border-white/5 text-center">
-                        <span className="text-[10px] font-bold text-muted-foreground block uppercase">Active Units</span>
-                        <span className="text-xl font-extrabold text-white mt-0.5 block">{fl.count} Aircraft</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between pt-4 border-t border-white/5 text-xs text-muted-foreground font-semibold">
-                      <span>Base: {fl.base}</span>
-                      <Button size="sm" onClick={() => setEditItem(fl)} variant="ghost" className="h-7 w-7 p-0 text-primary hover:text-white">
-                        <Edit2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+              <div className="space-y-1 max-w-md mx-auto mt-6">
+                <h3 className="text-lg font-bold text-white tracking-tight">Fleet Showcase Not Available</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed mt-2">
+                  No database engine backing is deployed for aircraft assets in this admin build. Ground simulators and plane specifications are statically pre-rendered for production CDN.
+                </p>
               </div>
             </div>
           </motion.div>
         )}
 
+        {/* Campus Tab - Feature Under Development fallback */}
         {activeTab === "campus" && (
           <motion.div key="campus" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-6">
-            <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-4">
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-primary" /> Campus Facilities & Amenities
-                </h3>
-                <Button size="sm" onClick={() => setEditItem({ facility: "New Facility Structure", description: "Facility details...", status: "DRAFT" })} className="bg-primary hover:bg-primary/90 text-white text-xs font-bold py-1 px-3 h-8">
-                  <Plus className="h-3 w-3 mr-1" /> Add Facility Entry
-                </Button>
+            <div className="glass-card rounded-2xl p-8 border border-white/10 text-center py-16">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 mx-auto shadow-xl">
+                <Building2 className="h-8 w-8" />
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-                {MOCK_CAMPUS.map((cp) => (
-                  <div key={cp.id} className="glass-card rounded-2xl p-5 border border-white/5 space-y-4 hover:border-white/10 transition-colors flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between border-b border-white/5 pb-3">
-                        <span className="text-xs font-bold text-muted-foreground">{cp.location}</span>
-                        <span className="text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full">
-                          {cp.status}
-                        </span>
-                      </div>
-                      <h4 className="text-base font-bold text-white tracking-tight mt-3">{cp.facility}</h4>
-                      <p className="text-xs text-muted-foreground mt-2 leading-relaxed font-medium">{cp.description}</p>
-                    </div>
-                    <div className="flex items-center justify-end pt-4 border-t border-white/5">
-                      <Button size="sm" onClick={() => setEditItem(cp)} variant="ghost" className="h-7 text-xs font-bold text-primary hover:text-white">
-                        <Edit2 className="h-3 w-3 mr-1.5" /> Edit Information
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+              <div className="space-y-1 max-w-md mx-auto mt-6">
+                <h3 className="text-lg font-bold text-white tracking-tight">Campus Facilities Manager Not Available</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed mt-2">
+                  Facilities editing is locked under active migration. Base simulator coordinates and cadet housing are controlled via site config.
+                </p>
               </div>
             </div>
           </motion.div>
         )}
 
+        {/* Public Media Gallery redirection */}
         {activeTab === "gallery" && (
           <motion.div key="gallery" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-6">
-            <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-6 text-center py-16">
+            <div className="glass-card rounded-2xl p-6 border border-white/10 text-center py-16">
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/20 text-primary border border-primary/30 mx-auto shadow-xl">
                 <ImageIcon className="h-8 w-8" />
               </div>
-              <div className="space-y-1 max-w-md mx-auto">
+              <div className="space-y-1 max-w-md mx-auto mt-6">
                 <h3 className="text-lg font-bold text-white tracking-tight">Media Gallery Cloud Synchronizer</h3>
-                <p className="text-xs text-muted-foreground">The public gallery is currently linked to the Media Library microservice. You can upload high-resolution fleet and campus photos directly via the Media module.</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">The public gallery is linked to the Media Library microservice. You can upload high-resolution fleet and campus photos directly via the Media module.</p>
               </div>
-              <Button asChild className="bg-primary hover:bg-primary/90 text-white text-xs font-bold shadow-lg shadow-primary/20">
+              <Button asChild className="bg-primary hover:bg-primary/90 text-white text-xs font-bold shadow-lg shadow-primary/20 mt-6">
                 <a href="/media">Open Media Library →</a>
               </Button>
             </div>
           </motion.div>
         )}
 
+        {/* News tab redirection */}
         {activeTab === "news" && (
           <motion.div key="news" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-6">
-            <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-6 text-center py-16">
+            <div className="glass-card rounded-2xl p-6 border border-white/10 text-center py-16">
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 mx-auto shadow-xl">
                 <Megaphone className="h-8 w-8" />
               </div>
-              <div className="space-y-1 max-w-md mx-auto">
+              <div className="space-y-1 max-w-md mx-auto mt-6">
                 <h3 className="text-lg font-bold text-white tracking-tight">News & Public Announcements Bulletin</h3>
-                <p className="text-xs text-muted-foreground">Manage press releases, DGCA exam top ranker announcements, and cadet intake alerts via the unified Blog & Resources microservice.</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">Manage press releases, DGCA exam top ranker announcements, and cadet intake alerts via the unified Blog & Resources microservice.</p>
               </div>
-              <Button asChild className="bg-primary hover:bg-primary/90 text-white text-xs font-bold shadow-lg shadow-primary/20">
+              <Button asChild className="bg-primary hover:bg-primary/90 text-white text-xs font-bold shadow-lg shadow-primary/20 mt-6">
                 <a href="/blog">Open Blog & Resources Module →</a>
               </Button>
             </div>
@@ -317,51 +357,50 @@ export default function CMSPage() {
         )}
       </AnimatePresence>
 
-      {/* Edit Content Modal */}
+      {/* Edit/Create Content Modal */}
       <Dialog open={!!editItem} onOpenChange={(o) => !o && setEditItem(null)}>
         <DialogContent className="max-w-xl glass-panel border-white/10 bg-slate-900/95">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold text-white flex items-center gap-2">
               <Edit2 className="h-5 w-5 text-primary" />
-              Edit CMS Static Contents
+              {editItem?.id ? "Edit CMS Static Page" : "Create New CMS Page"}
             </DialogTitle>
           </DialogHeader>
           {editItem && (
             <form onSubmit={handleSaveContent} className="space-y-4 pt-2">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-muted-foreground">Content Display Title / Question / Header *</label>
-                <Input defaultValue={editItem.title || editItem.question || editItem.model || editItem.facility} required className="bg-secondary/40 border-white/10 text-xs font-semibold text-white" />
+                <label className="text-xs font-bold text-muted-foreground">Content Display Title *</label>
+                <Input name="title" defaultValue={editItem.title || ""} required className="bg-secondary/40 border-white/10 text-xs font-semibold text-white" />
               </div>
-              {editItem.slug && (
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-muted-foreground">Public URL Slug *</label>
-                  <Input defaultValue={editItem.slug} required className="bg-secondary/40 border-white/10 text-xs font-mono text-primary font-bold" />
-                </div>
-              )}
-              {editItem.answer && (
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-muted-foreground">FAQ Answer Content</label>
-                  <Textarea defaultValue={editItem.answer} rows={4} className="bg-secondary/40 border-white/10 text-xs font-medium text-white leading-relaxed" />
-                </div>
-              )}
-              {editItem.description && (
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-muted-foreground">Facility Description</label>
-                  <Textarea defaultValue={editItem.description} rows={4} className="bg-secondary/40 border-white/10 text-xs font-medium text-white leading-relaxed" />
-                </div>
-              )}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-muted-foreground">Public URL Slug * (e.g. "about-us")</label>
+                <Input name="slug" defaultValue={editItem.slug || ""} required className="bg-secondary/40 border-white/10 text-xs font-mono text-primary font-bold" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-muted-foreground">Page Description</label>
+                <Textarea name="description" defaultValue={editItem.description || ""} rows={3} className="bg-secondary/40 border-white/10 text-xs font-medium text-white leading-relaxed" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-muted-foreground">SEO Meta Title tag</label>
+                <Input name="seoTitle" defaultValue={editItem.seoTitle || ""} className="bg-secondary/40 border-white/10 text-xs font-semibold text-white" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-muted-foreground">SEO Meta Description tag</label>
+                <Textarea name="seoDesc" defaultValue={editItem.seoDesc || ""} rows={2} className="bg-secondary/40 border-white/10 text-xs font-medium text-white leading-relaxed" />
+              </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-muted-foreground">Publishing Status</label>
-                <select className="flex h-9 w-full rounded-lg border border-white/10 bg-secondary/60 px-3 py-1 text-xs font-bold text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary">
-                  <option value="LIVE" className="bg-slate-900 text-emerald-400">LIVE (PUBLISHED TO CDN)</option>
-                  <option value="DRAFT" className="bg-slate-900 text-amber-400">DRAFT (STAGING ONLY)</option>
+                <select name="status" defaultValue={editItem.status || "DRAFT"} className="flex h-9 w-full rounded-lg border border-white/10 bg-secondary/60 px-3 py-1 text-xs font-bold text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary">
+                  <option value="PUBLISHED" className="bg-slate-900 text-emerald-400">PUBLISHED (LIVE)</option>
+                  <option value="DRAFT" className="bg-slate-900 text-amber-400">DRAFT (IN PROGRESS)</option>
                   <option value="SCHEDULED" className="bg-slate-900 text-blue-400">SCHEDULED PUBLICATION</option>
+                  <option value="ARCHIVED" className="bg-slate-900 text-rose-400">ARCHIVED</option>
                 </select>
               </div>
               <DialogFooter className="pt-4 border-t border-white/10">
                 <Button type="button" variant="outline" onClick={() => setEditItem(null)} className="border-white/10 hover:bg-white/5 text-xs font-bold">Cancel</Button>
-                <Button type="submit" className="bg-primary hover:bg-primary/90 text-white text-xs font-bold shadow-lg shadow-primary/20">
-                  Save & Invalidate CDN Cache
+                <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="bg-primary hover:bg-primary/90 text-white text-xs font-bold shadow-lg shadow-primary/20">
+                  {createMutation.isPending || updateMutation.isPending ? "Saving..." : "Save Page"}
                 </Button>
               </DialogFooter>
             </form>

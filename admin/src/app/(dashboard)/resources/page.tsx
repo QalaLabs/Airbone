@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { type ColumnDef, type PaginationState } from "@tanstack/react-table";
-import { Search, MoreHorizontal, ExternalLink } from "lucide-react";
+import { type ColumnDef, type PaginationState, type SortingState } from "@tanstack/react-table";
+import { Search, MoreHorizontal, ExternalLink, AlertCircle, Loader2 } from "lucide-react";
 import { DataTable } from "@/components/shared/data-table";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PageHeader } from "@/components/shared/page-header";
@@ -33,14 +33,15 @@ interface ResourcesResponse {
   totalPages: number;
 }
 
-const RESOURCE_STATUSES = ["", "DRAFT", "PUBLISHED", "ARCHIVED"];
-const RESOURCE_TYPES = ["", "PDF", "VIDEO", "DOCUMENT", "LINK", "IMAGE", "OTHER"];
+const RESOURCE_STATUSES = ["all", "DRAFT", "PUBLISHED", "ARCHIVED"];
+const RESOURCE_TYPES = ["all", "PDF", "VIDEO", "DOCUMENT", "LINK", "IMAGE", "OTHER"];
 
 export default function ResourcesPage() {
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 20 });
+  const [sorting, setSorting] = React.useState<SortingState>([{ id: "createdAt", desc: true }]);
   const [search, setSearch] = React.useState("");
-  const [statusFilter, setStatusFilter] = React.useState("");
-  const [typeFilter, setTypeFilter] = React.useState("");
+  const [statusFilter, setStatusFilter] = React.useState("all");
+  const [typeFilter, setTypeFilter] = React.useState("all");
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
 
   React.useEffect(() => {
@@ -48,15 +49,20 @@ export default function ResourcesPage() {
     return () => clearTimeout(t);
   }, [search]);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["resources", pagination, debouncedSearch, statusFilter, typeFilter],
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ["resources", pagination, sorting, debouncedSearch, statusFilter, typeFilter],
     queryFn: () => {
+      const sortField = sorting[0]?.id ?? "createdAt";
+      const sortDirection = sorting[0]?.desc ? "desc" : "asc";
+
       const p = new URLSearchParams({
         page: String(pagination.pageIndex + 1),
         limit: String(pagination.pageSize),
+        sortBy: sortField,
+        sortDir: sortDirection,
         ...(debouncedSearch ? { search: debouncedSearch } : {}),
-        ...(statusFilter ? { status: statusFilter } : {}),
-        ...(typeFilter ? { type: typeFilter } : {}),
+        ...(statusFilter && statusFilter !== "all" ? { status: statusFilter } : {}),
+        ...(typeFilter && typeFilter !== "all" ? { type: typeFilter } : {}),
       });
       return apiFetch<ResourcesResponse>(`/resources?${p}`);
     },
@@ -146,7 +152,7 @@ export default function ResourcesPage() {
           </SelectTrigger>
           <SelectContent>
             {RESOURCE_STATUSES.map((s) => (
-              <SelectItem key={s} value={s}>{s || "All Statuses"}</SelectItem>
+              <SelectItem key={s} value={s}>{s === "all" ? "All Statuses" : s.replace(/_/g, " ")}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -156,22 +162,39 @@ export default function ResourcesPage() {
           </SelectTrigger>
           <SelectContent>
             {RESOURCE_TYPES.map((t) => (
-              <SelectItem key={t} value={t}>{t || "All Types"}</SelectItem>
+              <SelectItem key={t} value={t}>{t === "all" ? "All Types" : t.replace(/_/g, " ")}</SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
 
-      <DataTable
-        columns={columns}
-        data={data?.items ?? []}
-        loading={isLoading}
-        pageCount={data?.totalPages ?? 0}
-        pagination={pagination}
-        onPaginationChange={setPagination}
-        emptyTitle="No resources found"
-        emptyDescription="Upload your first resource to get started."
-      />
+      {isError && (
+        <div className="flex flex-col items-center justify-center p-12 rounded-2xl border border-rose-500/20 bg-rose-500/10 text-center space-y-4">
+          <AlertCircle className="h-12 w-12 text-rose-400" />
+          <div>
+            <h3 className="text-base font-bold text-white">Failed to Load Resources</h3>
+            <p className="text-xs text-muted-foreground mt-1 font-mono">{error?.message || "Internal server error"}</p>
+          </div>
+          <Button onClick={() => refetch()} variant="outline" className="border-white/10 text-xs font-bold hover:bg-white/5">
+            Retry Loading
+          </Button>
+        </div>
+      )}
+
+      {!isError && (
+        <DataTable
+          columns={columns}
+          data={data?.items ?? []}
+          loading={isLoading}
+          pageCount={data?.totalPages ?? 0}
+          pagination={pagination}
+          onPaginationChange={setPagination}
+          sorting={sorting}
+          onSortingChange={setSorting}
+          emptyTitle="No resources found"
+          emptyDescription="Upload your first resource to get started."
+        />
+      )}
     </div>
   );
 }

@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { type ColumnDef, type PaginationState } from "@tanstack/react-table";
-import { Search, CheckCircle, XCircle, Star, MoreHorizontal } from "lucide-react";
+import { type ColumnDef, type PaginationState, type SortingState } from "@tanstack/react-table";
+import { Search, CheckCircle, XCircle, Star, MoreHorizontal, AlertCircle, Loader2 } from "lucide-react";
 import { DataTable } from "@/components/shared/data-table";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PageHeader } from "@/components/shared/page-header";
@@ -39,13 +39,14 @@ interface TestimonialsResponse {
   totalPages: number;
 }
 
-const TESTIMONIAL_STATUSES = ["", "PENDING", "APPROVED", "REJECTED"];
+const TESTIMONIAL_STATUSES = ["all", "PENDING", "APPROVED", "REJECTED"];
 
 export default function TestimonialsPage() {
   const queryClient = useQueryClient();
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 20 });
+  const [sorting, setSorting] = React.useState<SortingState>([{ id: "createdAt", desc: true }]);
   const [search, setSearch] = React.useState("");
-  const [statusFilter, setStatusFilter] = React.useState("");
+  const [statusFilter, setStatusFilter] = React.useState("all");
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
   const [reviewDialog, setReviewDialog] = React.useState<{ open: boolean; id: string; action: "APPROVED" | "REJECTED" } | null>(null);
   const [reviewNotes, setReviewNotes] = React.useState("");
@@ -55,14 +56,19 @@ export default function TestimonialsPage() {
     return () => clearTimeout(t);
   }, [search]);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["testimonials", pagination, debouncedSearch, statusFilter],
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ["testimonials", pagination, sorting, debouncedSearch, statusFilter],
     queryFn: () => {
+      const sortField = sorting[0]?.id ?? "createdAt";
+      const sortDirection = sorting[0]?.desc ? "desc" : "asc";
+
       const p = new URLSearchParams({
         page: String(pagination.pageIndex + 1),
         limit: String(pagination.pageSize),
+        sortBy: sortField,
+        sortDir: sortDirection,
         ...(debouncedSearch ? { search: debouncedSearch } : {}),
-        ...(statusFilter ? { status: statusFilter } : {}),
+        ...(statusFilter && statusFilter !== "all" ? { status: statusFilter } : {}),
       });
       return apiFetch<TestimonialsResponse>(`/testimonials?${p}`);
     },
@@ -219,22 +225,39 @@ export default function TestimonialsPage() {
           </SelectTrigger>
           <SelectContent>
             {TESTIMONIAL_STATUSES.map((s) => (
-              <SelectItem key={s} value={s}>{s || "All Statuses"}</SelectItem>
+              <SelectItem key={s} value={s}>{s === "all" ? "All Statuses" : s.replace(/_/g, " ")}</SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
 
-      <DataTable
-        columns={columns}
-        data={data?.items ?? []}
-        loading={isLoading}
-        pageCount={data?.totalPages ?? 0}
-        pagination={pagination}
-        onPaginationChange={setPagination}
-        emptyTitle="No testimonials found"
-        emptyDescription="Testimonials submitted by students will appear here."
-      />
+      {isError && (
+        <div className="flex flex-col items-center justify-center p-12 rounded-2xl border border-rose-500/20 bg-rose-500/10 text-center space-y-4">
+          <AlertCircle className="h-12 w-12 text-rose-400" />
+          <div>
+            <h3 className="text-base font-bold text-white">Failed to Load Testimonials</h3>
+            <p className="text-xs text-muted-foreground mt-1 font-mono">{error?.message || "Internal server error"}</p>
+          </div>
+          <Button onClick={() => refetch()} variant="outline" className="border-white/10 text-xs font-bold hover:bg-white/5">
+            Retry Loading
+          </Button>
+        </div>
+      )}
+
+      {!isError && (
+        <DataTable
+          columns={columns}
+          data={data?.items ?? []}
+          loading={isLoading}
+          pageCount={data?.totalPages ?? 0}
+          pagination={pagination}
+          onPaginationChange={setPagination}
+          sorting={sorting}
+          onSortingChange={setSorting}
+          emptyTitle="No testimonials found"
+          emptyDescription="Testimonials submitted by students will appear here."
+        />
+      )}
 
       {/* Review Dialog */}
       <Dialog open={reviewDialog?.open ?? false} onOpenChange={(o) => !o && setReviewDialog(null)}>

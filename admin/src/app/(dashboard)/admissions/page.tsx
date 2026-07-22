@@ -15,7 +15,7 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, User, Calendar, FileText, ChevronDown, ShieldCheck, FileSearch, HeartPulse, Award, Landmark, GraduationCap, CheckCircle2, AlertCircle, Download, ExternalLink } from "lucide-react";
+import { GripVertical, User, Calendar, FileText, ChevronDown, ShieldCheck, FileSearch, Award, Landmark, GraduationCap, CheckCircle2, AlertCircle, Download, ExternalLink } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { apiFetch } from "@/lib/api";
@@ -45,12 +45,19 @@ interface AdmissionsResponse {
   total: number;
 }
 
+// Keys must match the real Prisma `AdmissionStage` enum (prisma/schema.prisma)
+// exactly — the board previously used an invented vocabulary that never
+// matched a real admission's stage, and the /stage PATCH route validates
+// against this enum, so a mismatched key always failed.
 const STAGES = [
-  { key: "DOCUMENT_VERIFICATION", label: "Document Verification", color: "border-blue-500/50 text-blue-400", bg: "bg-blue-500/10", icon: FileSearch },
-  { key: "MEDICAL_ASSESSMENT", label: "Medical Assessment", color: "border-amber-500/50 text-amber-400", bg: "bg-amber-500/10", icon: HeartPulse },
-  { key: "DGCA_APPROVAL", label: "DGCA Approval", color: "border-purple-500/50 text-purple-400", bg: "bg-purple-500/10", icon: Award },
+  { key: "ENQUIRY", label: "Enquiry", color: "border-slate-500/50 text-slate-400", bg: "bg-slate-500/10", icon: User },
+  { key: "DOCUMENT_COLLECTION", label: "Document Collection", color: "border-blue-500/50 text-blue-400", bg: "bg-blue-500/10", icon: FileSearch },
+  { key: "VERIFICATION", label: "Verification", color: "border-amber-500/50 text-amber-400", bg: "bg-amber-500/10", icon: ShieldCheck },
+  { key: "OFFER_LETTER", label: "Offer Letter", color: "border-purple-500/50 text-purple-400", bg: "bg-purple-500/10", icon: Award },
   { key: "FEE_PAYMENT", label: "Fee Payment", color: "border-emerald-500/50 text-emerald-400", bg: "bg-emerald-500/10", icon: Landmark },
-  { key: "BATCH_ALLOCATION", label: "Batch Allocation", color: "border-teal-500/50 text-teal-400", bg: "bg-teal-500/10", icon: GraduationCap },
+  { key: "ENROLLED", label: "Enrolled", color: "border-teal-500/50 text-teal-400", bg: "bg-teal-500/10", icon: GraduationCap },
+  { key: "DROPPED", label: "Dropped", color: "border-rose-500/50 text-rose-400", bg: "bg-rose-500/10", icon: AlertCircle },
+  { key: "CANCELLED", label: "Cancelled", color: "border-red-500/50 text-red-400", bg: "bg-red-500/10", icon: AlertCircle },
 ];
 
 interface AdmissionCardProps {
@@ -169,19 +176,11 @@ export default function AdmissionsPage() {
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
   );
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admissions"],
     queryFn: async () => {
       const res = await apiFetch<AdmissionsResponse>("/admissions?page=1&limit=200");
-      // Map existing stages or mock to the new premium Kanban stages
-      const mappedItems = res.items.map((item, idx) => {
-        let stage = item.stage;
-        if (!STAGES.some(s => s.key === stage)) {
-          stage = STAGES[idx % STAGES.length]?.key || "APPLIED";
-        }
-        return { ...item, stage };
-      });
-      return { ...res, items: mappedItems };
+      return res;
     },
   });
 
@@ -253,6 +252,29 @@ export default function AdmissionsPage() {
               <Skeleton className="h-[500px] w-full rounded-b-2xl mt-0" />
             </div>
           ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="space-y-6 pb-12">
+        <PageHeader
+          title="Admissions Workflow Kanban"
+          description="Visual pipeline tracker from document verification to airline cadet batch allocation."
+        />
+        <div className="flex flex-col items-center justify-center p-12 rounded-2xl border border-rose-500/20 bg-rose-500/10 text-center space-y-4">
+          <AlertCircle className="h-12 w-12 text-rose-400" />
+          <div>
+            <h3 className="text-base font-bold text-white">Failed to Load Admissions Pipeline</h3>
+            <p className="text-xs text-muted-foreground mt-1 font-mono">
+              {error instanceof Error ? error.message : "An error occurred while loading admissions."}
+            </p>
+          </div>
+          <Button onClick={() => refetch()} variant="outline" className="border-white/10 text-xs font-bold hover:bg-white/5">
+            Retry Loading
+          </Button>
         </div>
       </div>
     );

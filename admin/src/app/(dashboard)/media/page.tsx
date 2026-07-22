@@ -239,7 +239,7 @@ export default function MediaPage() {
             {currentFolders.map((folder) => (
               <button
                 key={folder.id}
-                onClick={() => navigateToFolder(folder as any)}
+                onClick={() => navigateToFolder(folder as unknown as MediaFolder)}
                 className="flex items-center justify-between rounded-2xl border border-white/10 bg-secondary/20 p-5 hover:bg-secondary/40 hover:border-white/20 transition-all group shadow-xl"
               >
                 <div className="flex items-center gap-3.5 min-w-0">

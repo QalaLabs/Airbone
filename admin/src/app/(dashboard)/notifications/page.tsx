@@ -27,10 +27,20 @@ const MOCK_WEBHOOK_LOGS = [
   { id: "wh-104", recipient: "Suresh Patel (+91 98221 15566)", template: "Fee Payment Link Trigger", channel: "WhatsApp", timestamp: "1 hour ago", status: "FAILED", latency: "—", error: "User opted out of promotional messages" },
 ];
 
+interface NotificationTemplate {
+  id?: string;
+  name: string;
+  type: string;
+  code: string;
+  subject: string;
+  body: string;
+  status: string;
+}
+
 export default function NotificationsPage() {
   const [activeTab, setActiveTab] = React.useState("templates");
   const [search, setSearch] = React.useState("");
-  const [editingTemplate, setEditingTemplate] = React.useState<any | null>(null);
+  const [editingTemplate, setEditingTemplate] = React.useState<NotificationTemplate | null>(null);
   const [broadcastOpen, setBroadcastOpen] = React.useState(false);
   const [broadcastTarget, setBroadcastTarget] = React.useState("ALL_ACTIVE_LEADS");
   const [broadcastMessage, setBroadcastMessage] = React.useState("");

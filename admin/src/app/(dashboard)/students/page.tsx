@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { type ColumnDef, type PaginationState } from "@tanstack/react-table";
-import { Search, Eye, MoreHorizontal, GraduationCap, Plane, Calendar, ShieldAlert, ShieldCheck, CheckCircle2, DollarSign, FileText, User, BookOpen, AlertCircle, HeartPulse, Sparkles } from "lucide-react";
+import { type ColumnDef, type PaginationState, type SortingState } from "@tanstack/react-table";
+import { Search, Eye, MoreHorizontal, GraduationCap, Plane, Calendar, ShieldAlert, ShieldCheck, CheckCircle2, DollarSign, FileText, User, BookOpen, AlertCircle, HeartPulse, Sparkles, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { DataTable } from "@/components/shared/data-table";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -20,22 +20,22 @@ import { motion } from "framer-motion";
 
 interface Student {
   id: string;
-  studentId: string;
+  firstName: string;
+  lastName: string;
   name: string;
   email: string;
   phone: string;
   status: string;
-  batch: string;
-  attendanceRate: string;
-  groundSchoolStatus: string;
-  flyingHours: string;
-  dgcaExams: string;
-  medicalExpiry: string;
-  paymentOutstanding: string;
-  course?: { title: string };
-  campus?: { name: string };
-  enrolledAt?: string;
+  studentId: string;
+  batch?: string;
   avatarUrl?: string;
+  course?: { title: string };
+  attendanceRate?: string;
+  groundSchoolStatus?: string;
+  flyingHours?: string;
+  dgcaExams?: string;
+  medicalExpiry?: string;
+  paymentOutstanding?: string;
 }
 
 interface StudentsResponse {
@@ -44,7 +44,7 @@ interface StudentsResponse {
   totalPages: number;
 }
 
-const STUDENT_STATUSES = ["", "ACTIVE", "INACTIVE", "GRADUATED", "DROPPED"];
+const STUDENT_STATUSES = ["all", "ACTIVE", "GRADUATED", "DROPPED", "SUSPENDED", "ON_HOLD"];
 
 const MOCK_CADETS_AUGMENT = [
   { batch: "BATCH-2026-A", attendanceRate: "98%", groundSchoolStatus: "COMPLETED", flyingHours: "185 / 200 hrs", dgcaExams: "5/5 Cleared", medicalExpiry: "12 Dec 2026", paymentOutstanding: "₹0 (Fully Paid)" },
@@ -55,8 +55,9 @@ const MOCK_CADETS_AUGMENT = [
 
 export default function StudentsPage() {
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 20 });
+  const [sorting, setSorting] = React.useState<SortingState>([{ id: "createdAt", desc: true }]);
   const [search, setSearch] = React.useState("");
-  const [statusFilter, setStatusFilter] = React.useState("");
+  const [statusFilter, setStatusFilter] = React.useState("all");
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
   const [selectedStudent, setSelectedStudent] = React.useState<Student | null>(null);
 
@@ -65,14 +66,20 @@ export default function StudentsPage() {
     return () => clearTimeout(t);
   }, [search]);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["students", pagination, debouncedSearch, statusFilter],
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ["students", pagination, sorting, debouncedSearch, statusFilter],
     queryFn: async () => {
+      const sortField = sorting[0]?.id ?? "createdAt";
+      const sortDirection = sorting[0]?.desc ? "desc" : "asc";
+      const mappedSortField = sortField === "name" ? "firstName" : sortField;
+
       const p = new URLSearchParams({
         page: String(pagination.pageIndex + 1),
         limit: String(pagination.pageSize),
+        sortBy: mappedSortField,
+        sortDir: sortDirection,
         ...(debouncedSearch ? { search: debouncedSearch } : {}),
-        ...(statusFilter ? { status: statusFilter } : {}),
+        ...(statusFilter && statusFilter !== "all" ? { status: statusFilter } : {}),
       });
       const res = await apiFetch<StudentsResponse>(`/students?${p}`);
       
@@ -132,27 +139,27 @@ export default function StudentsPage() {
       accessorKey: "groundSchoolStatus",
       header: "Ground School",
       cell: ({ row }) => (
-        <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${row.original.groundSchoolStatus === "COMPLETED" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : "bg-amber-500/20 text-amber-400 border-amber-500/30"}`}>
-          {row.original.groundSchoolStatus.replace("_", " ")}
+        <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${(row.original.groundSchoolStatus ?? "IN_PROGRESS") === "COMPLETED" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : "bg-amber-500/20 text-amber-400 border-amber-500/30"}`}>
+          {(row.original.groundSchoolStatus ?? "IN_PROGRESS").replace("_", " ")}
         </span>
       ),
     },
     {
       accessorKey: "flyingHours",
       header: "Flying Hours",
-      cell: ({ row }) => <span className="text-xs font-mono font-bold text-sky-400 flex items-center gap-1"><Plane className="h-3 w-3" /> {row.original.flyingHours}</span>,
+      cell: ({ row }) => <span className="text-xs font-mono font-bold text-sky-400 flex items-center gap-1"><Plane className="h-3 w-3" /> {row.original.flyingHours ?? "0 / 200 hrs"}</span>,
     },
     {
       accessorKey: "dgcaExams",
       header: "DGCA Clearances",
-      cell: ({ row }) => <span className="text-xs font-bold text-purple-400">{row.original.dgcaExams}</span>,
+      cell: ({ row }) => <span className="text-xs font-bold text-purple-400">{row.original.dgcaExams ?? "0/5 Cleared"}</span>,
     },
     {
       accessorKey: "medicalExpiry",
       header: "Medical Expiry",
       cell: ({ row }) => (
         <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-          <HeartPulse className="h-3 w-3 text-rose-400" /> {row.original.medicalExpiry}
+          <HeartPulse className="h-3 w-3 text-rose-400" /> {row.original.medicalExpiry ?? "—"}
         </span>
       ),
     },
@@ -160,8 +167,8 @@ export default function StudentsPage() {
       accessorKey: "paymentOutstanding",
       header: "Outstanding Fee",
       cell: ({ row }) => (
-        <span className={`text-xs font-bold ${row.original.paymentOutstanding.includes("Fully Paid") ? "text-emerald-400" : "text-rose-400"}`}>
-          {row.original.paymentOutstanding}
+        <span className={`text-xs font-bold ${(row.original.paymentOutstanding ?? "Fully Paid").includes("Fully Paid") ? "text-emerald-400" : "text-rose-400"}`}>
+          {row.original.paymentOutstanding ?? "₹0 (Fully Paid)"}
         </span>
       ),
     },
@@ -211,24 +218,41 @@ export default function StudentsPage() {
           </SelectTrigger>
           <SelectContent className="glass-panel border-white/10 text-xs">
             {STUDENT_STATUSES.map((s) => (
-              <SelectItem key={s} value={s}>{s || "All Statuses"}</SelectItem>
+              <SelectItem key={s} value={s}>{s === "all" ? "All Statuses" : s.replace(/_/g, " ")}</SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
 
-      <div className="glass-card rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
-        <DataTable
-          columns={columns}
-          data={data?.items ?? []}
-          loading={isLoading}
-          pageCount={data?.totalPages ?? 0}
-          pagination={pagination}
-          onPaginationChange={setPagination}
-          emptyTitle="No active cadets found"
-          emptyDescription="Cadets will appear here upon completion of admissions batch allocation."
-        />
-      </div>
+      {isError && (
+        <div className="flex flex-col items-center justify-center p-12 rounded-2xl border border-rose-500/20 bg-rose-500/10 text-center space-y-4">
+          <AlertCircle className="h-12 w-12 text-rose-400" />
+          <div>
+            <h3 className="text-base font-bold text-white">Failed to Load Cadets</h3>
+            <p className="text-xs text-muted-foreground mt-1 font-mono">{error?.message || "Internal server error"}</p>
+          </div>
+          <Button onClick={() => refetch()} variant="outline" className="border-white/10 text-xs font-bold hover:bg-white/5">
+            Retry Loading
+          </Button>
+        </div>
+      )}
+
+      {!isError && (
+        <div className="glass-card rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+          <DataTable
+            columns={columns}
+            data={data?.items ?? []}
+            loading={isLoading}
+            pageCount={data?.totalPages ?? 0}
+            pagination={pagination}
+            onPaginationChange={setPagination}
+            sorting={sorting}
+            onSortingChange={setSorting}
+            emptyTitle="No active cadets found"
+            emptyDescription="Cadets will appear here upon completion of admissions batch allocation."
+          />
+        </div>
+      )}
 
       {/* Detailed Cadet Academic & Financial Dossier Modal */}
       <Dialog open={!!selectedStudent} onOpenChange={(o) => !o && setSelectedStudent(null)}>
@@ -268,24 +292,24 @@ export default function StudentsPage() {
                 <div className="p-4 rounded-xl bg-secondary/30 border border-white/5 space-y-1">
                   <span className="text-xs font-semibold text-muted-foreground">Ground School</span>
                   <div className="text-sm font-bold text-emerald-400 flex items-center gap-1.5">
-                    <CheckCircle2 className="h-4 w-4" /> {selectedStudent.groundSchoolStatus.replace("_", " ")}
+                    <CheckCircle2 className="h-4 w-4" /> {(selectedStudent.groundSchoolStatus ?? "IN_PROGRESS").replace("_", " ")}
                   </div>
                 </div>
                 <div className="p-4 rounded-xl bg-secondary/30 border border-white/5 space-y-1">
                   <span className="text-xs font-semibold text-muted-foreground">Logged Flying Hours</span>
                   <div className="text-sm font-bold text-sky-400 flex items-center gap-1.5">
-                    <Plane className="h-4 w-4" /> {selectedStudent.flyingHours}
+                    <Plane className="h-4 w-4" /> {selectedStudent.flyingHours ?? "0 / 200 hrs"}
                   </div>
                 </div>
                 <div className="p-4 rounded-xl bg-secondary/30 border border-white/5 space-y-1">
                   <span className="text-xs font-semibold text-muted-foreground">DGCA Exam Clearances</span>
                   <div className="text-sm font-bold text-purple-400 flex items-center gap-1.5">
-                    <Sparkles className="h-4 w-4" /> {selectedStudent.dgcaExams}
+                    <Sparkles className="h-4 w-4" /> {selectedStudent.dgcaExams ?? "0/5 Cleared"}
                   </div>
                 </div>
                 <div className="p-4 rounded-xl bg-secondary/30 border border-white/5 space-y-1">
                   <span className="text-xs font-semibold text-muted-foreground">Overall Attendance</span>
-                  <div className="text-sm font-bold text-white">{selectedStudent.attendanceRate}</div>
+                  <div className="text-sm font-bold text-white">{selectedStudent.attendanceRate ?? "100%"}</div>
                 </div>
               </div>
 
@@ -329,8 +353,8 @@ export default function StudentsPage() {
                     <div className="p-4 rounded-xl bg-slate-900/80 border border-white/5 flex items-center justify-between">
                       <div>
                         <span className="text-xs text-muted-foreground font-semibold block">Total Outstanding Balance</span>
-                        <span className={`text-lg font-extrabold mt-0.5 block ${selectedStudent.paymentOutstanding.includes("Fully Paid") ? "text-emerald-400" : "text-rose-400"}`}>
-                          {selectedStudent.paymentOutstanding}
+                        <span className={`text-lg font-extrabold mt-0.5 block ${(selectedStudent.paymentOutstanding ?? "Fully Paid").includes("Fully Paid") ? "text-emerald-400" : "text-rose-400"}`}>
+                          {selectedStudent.paymentOutstanding ?? "₹0 (Fully Paid)"}
                         </span>
                       </div>
                       <Button size="sm" className="bg-primary hover:bg-primary/90 text-white text-xs font-bold">
@@ -343,7 +367,7 @@ export default function StudentsPage() {
                       {[
                         { tranche: "Tranche 1 (Admission Registration)", amount: "₹2,50,000", status: "PAID", date: "15 Jan 2026" },
                         { tranche: "Tranche 2 (Ground School Tuition)", amount: "₹4,00,000", status: "PAID", date: "15 Mar 2026" },
-                        { tranche: "Tranche 3 (Flight Training Phase 1)", amount: "₹5,00,000", status: selectedStudent.paymentOutstanding.includes("Fully Paid") ? "PAID" : "OVERDUE", date: "15 May 2026" },
+                        { tranche: "Tranche 3 (Flight Training Phase 1)", amount: "₹5,00,000", status: (selectedStudent.paymentOutstanding ?? "Fully Paid").includes("Fully Paid") ? "PAID" : "OVERDUE", date: "15 May 2026" },
                       ].map((tr, i) => (
                         <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-white/5 text-xs">
                           <div>
