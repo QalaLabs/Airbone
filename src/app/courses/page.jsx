@@ -51,28 +51,28 @@ export default async function CoursesPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }} />
       <Header />
-      <main className="course-main-wrapper" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
+      <main className="course-main-wrapper courses-listing" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
         <div className="container-xl">
 
         {/* Header Hero Section */}
         <div style={{ maxWidth: '800px', marginBottom: '4rem' }}>
           <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start', color: 'var(--red)' }}>Academy Syllabus</p>
-          <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', marginTop: '1rem', textTransform: 'uppercase', color: 'var(--navy)' }}>
-            Course Portfolio &amp;
-            <em style={{ color: 'var(--gold)', fontStyle: 'normal' }}> Flight Paths.</em>
+          <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', marginTop: '1rem', textTransform: 'uppercase', color: '#fff' }}>
+            Pilot Training Courses at
+            <em style={{ color: 'var(--gold)', fontStyle: 'normal' }}> Airborne Aviation Academy Dwarka, Delhi</em>
           </h1>
-          <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0,39,76,0.75)', fontSize: '1.02rem', lineHeight: '1.7', maxWidth: '100%' }}>
-            From absolute beginner ground training to advanced jet type readiness, our disciplines are structured to build conceptual clarity and meet strict DGCA requirements.
+          <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '1.02rem', lineHeight: '1.7', maxWidth: '100%' }}>
+            Airborne Aviation Academy, Dwarka, Delhi offers DGCA-approved pilot training programs — from CPL ground school and ATPL exam prep to A320 simulator and cadet selection coaching. Every course is mentor-led and structured to meet strict DGCA requirements.
           </p>
         </div>
 
         {/* Empty state */}
         {courses.length === 0 && (
-          <div style={{ padding: '6rem 2rem', textAlign: 'center', background: '#ffffff', border: '1px dashed rgba(0,39,76,0.18)', borderRadius: '6px', boxShadow: '0 4px 20px rgba(0,39,76,0.02)' }}>
-            <p style={{ color: 'rgba(0,39,76,0.5)', fontSize: '1rem', marginBottom: '1rem' }}>
+          <div style={{ padding: '6rem 2rem', textAlign: 'center', background: 'var(--navy-95)', border: '1px dashed rgba(255,255,255,0.12)', borderRadius: '6px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '1rem', marginBottom: '1rem' }}>
               Course catalog is being updated.
             </p>
-            <p style={{ color: 'rgba(0,39,76,0.4)', fontSize: '0.875rem' }}>
+            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.875rem' }}>
               Contact us at <a href="tel:+919953777320" style={{ color: 'var(--gold)' }}>+91 9953 777 320</a> for current batch information.
             </p>
           </div>
@@ -160,7 +160,7 @@ export default async function CoursesPage() {
           <>
             <div style={{ marginBottom: '2.5rem' }}>
               <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start', color: 'var(--red)' }}>Supporting Programs</p>
-              <h2 className="ov-h2" style={{ marginTop: '0.5rem', color: 'var(--navy)' }}>Simulator &amp; Cadet Preparation Packages</h2>
+              <h2 className="ov-h2" style={{ marginTop: '0.5rem', color: '#fff' }}>Simulator &amp; Cadet Preparation Packages</h2>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem' }}>
@@ -198,26 +198,26 @@ export default async function CoursesPage() {
                         )}
                       </div>
 
-                      <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.15rem', fontWeight: 800, color: 'var(--navy)', marginBottom: '0.8rem', textTransform: 'uppercase', lineHeight: '1.3' }}>
+                      <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.15rem', fontWeight: 800, color: '#fff', marginBottom: '0.8rem', textTransform: 'uppercase', lineHeight: '1.3' }}>
                         <Link href={`/courses/${course.slug}`} style={{ color: 'inherit', textDecoration: 'none' }}>
                           {course.title}
                         </Link>
                       </h3>
 
-                      <p style={{ fontSize: '0.85rem', color: 'rgba(0, 39, 76, 0.7)', lineHeight: '1.6', marginBottom: '1rem', fontFamily: 'var(--font-b)' }}>
+                      <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.6', marginBottom: '1rem', fontFamily: 'var(--font-b)' }}>
                         {course.subtitle ?? ''}
                       </p>
 
-                      <p style={{ fontSize: '0.75rem', color: 'rgba(0, 39, 76, 0.55)', fontFamily: 'var(--font-b)', marginBottom: '1.5rem' }}>
+                      <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.55)', fontFamily: 'var(--font-b)', marginBottom: '1.5rem' }}>
                         <strong>Eligibility:</strong> {(course.slug === 'cabin-crew' || course.slug === 'cabin-crew-training') ? '10+2 Pass, 17–26 yrs' : (course.eligibility || 'Class 12 or above')}
                       </p>
                     </div>
 
                     <div>
                       {course.fee && (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderTop: '1px solid rgba(0, 39, 76, 0.08)', paddingTop: '1.25rem', marginBottom: '1.5rem' }}>
-                          <span style={{ fontSize: '0.75rem', color: 'rgba(0, 39, 76, 0.45)' }}>Tuition Rate</span>
-                          <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.15rem', fontWeight: 700, color: 'var(--navy)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.25rem', marginBottom: '1.5rem' }}>
+                          <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)' }}>Tuition Rate</span>
+                          <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.15rem', fontWeight: 700, color: 'var(--gold)' }}>
                             {course.slug === 'cabin-crew' ? '₹30K–₹54K' : formatFee(course.fee)}
                           </span>
                         </div>
@@ -226,7 +226,7 @@ export default async function CoursesPage() {
                       <Link
                         href={`/courses/${course.slug}`}
                         className="btn btn-ghost"
-                        style={{ width: '100%', justifyContent: 'center', padding: '0.75rem 1rem', textDecoration: 'none', textAlign: 'center', display: 'block', background: 'rgba(0, 39, 76, 0.04)', color: 'var(--navy)', borderColor: 'rgba(0, 39, 76, 0.15)' }}
+                        style={{ width: '100%', justifyContent: 'center', padding: '0.75rem 1rem', textDecoration: 'none', textAlign: 'center', display: 'block', background: 'rgba(255,255,255,0.06)', color: 'var(--gold)', borderColor: 'rgba(216,160,39,0.3)' }}
                       >
                         View Curriculum →
                       </Link>
@@ -239,10 +239,10 @@ export default async function CoursesPage() {
         )}
 
         {/* Course Comparison Table */}
-        <div style={{ marginTop: '5rem', borderTop: '1px solid rgba(0, 39, 76, 0.08)', paddingTop: '4rem' }}>
+        <div style={{ marginTop: '5rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '4rem' }}>
           <div style={{ marginBottom: '2.5rem' }}>
             <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start', color: 'var(--red)' }}>At a Glance</p>
-            <h2 className="ov-h2" style={{ marginTop: '0.5rem', textTransform: 'uppercase', color: 'var(--navy)' }}>All Courses at Airborne</h2>
+            <h2 className="ov-h2" style={{ marginTop: '0.5rem', textTransform: 'uppercase', color: '#fff' }}>All Courses at Airborne</h2>
           </div>
 
           <style dangerouslySetInnerHTML={{ __html: `
@@ -250,7 +250,7 @@ export default async function CoursesPage() {
               transition: background 0.2s;
             }
             .compare-course-link {
-              color: var(--navy);
+              color: rgba(255,255,255,0.85);
               text-decoration: none;
               border-bottom: 1px solid rgba(216,160,39,0.35);
               transition: color 0.2s, border-color 0.2s;
@@ -259,13 +259,33 @@ export default async function CoursesPage() {
               padding-bottom: 1px;
             }
             .compare-course-link:hover {
-              color: var(--red);
+              color: var(--gold);
               border-color: var(--red);
             }
             .compare-course-link:focus-visible {
               outline: 2px solid #D8A027;
               outline-offset: 3px;
               border-radius: 2px;
+            }
+            .courses-listing .course-table-wrap {
+              background: var(--navy-95) !important;
+              border-color: rgba(255,255,255,0.1) !important;
+              box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+            }
+            .courses-listing .course-table th {
+              background: rgba(255,255,255,0.05) !important;
+              color: rgba(255,255,255,0.8) !important;
+              border-bottom-color: rgba(255,255,255,0.1) !important;
+            }
+            .courses-listing .course-table td {
+              color: rgba(255,255,255,0.7) !important;
+              border-bottom-color: rgba(255,255,255,0.06) !important;
+            }
+            .courses-listing .course-table tr:nth-child(even) {
+              background: rgba(255,255,255,0.02) !important;
+            }
+            .courses-listing .course-table tr:hover {
+              background: rgba(216,160,39,0.08) !important;
             }
           `}} />
 
@@ -282,10 +302,10 @@ export default async function CoursesPage() {
               </thead>
               <tbody>
                 {[
-                  { name: 'Commercial Pilot License (CPL)', slug: 'commercial-pilot-license-cpl', dur: '12–18 months', elig: '10+2 Phys+Maths, 17 yrs', fee: '₹45–55L',    dgca: '✓' },
+                  { name: 'Commercial Pilot License (CPL)', slug: 'commercial-pilot-license-cpl', dur: '12–18 months', elig: '10+2 Phys+Maths, 17 yrs', fee: '₹55–65L',    dgca: '✓' },
                   { name: 'ATPL Ground School',             slug: 'atpl',                        dur: '4–6 months',   elig: 'CPL holder',               fee: '₹1,50,000', dgca: '✓' },
-                  { name: 'Private Pilot License (PPL)',    slug: 'private-pilot-license',       dur: '3–6 months',   elig: '10+2, 16 yrs',             fee: '₹8–12L',    dgca: '✓' },
-                  { name: 'Instrument Rating',              slug: 'instrument-rating',           dur: '2–3 months',   elig: 'PPL holder',               fee: '₹5–8L',     dgca: '✓' },
+                  { name: 'Private Pilot License (PPL)',    slug: 'private-pilot-license',       dur: '3–6 months',   elig: '10+2, 16 yrs',             fee: '₹25L',      dgca: '✓' },
+                  { name: 'Instrument Rating',              slug: 'instrument-rating',           dur: '2–3 months',   elig: 'PPL holder',               fee: '₹3–5L',     dgca: '✓' },
                   { name: 'Multi-Engine Rating',            slug: 'multi-engine-rating',         dur: '1–2 months',   elig: 'PPL/CPL holder',           fee: '₹3–5L',     dgca: '✓' },
                   { name: 'Airbus A320 Type Rating',        slug: 'a320-simulator',              dur: '2–4 months',   elig: 'CPL + 200 hrs',            fee: '₹10,000/hr', dgca: '✓' },
                   { name: 'DGCA Ground School',             slug: 'ground-school',               dur: '3–6 months',   elig: 'Any',                      fee: '₹2,70,000', dgca: '✓' },
@@ -307,7 +327,7 @@ export default async function CoursesPage() {
                     <td style={{ padding: '1.2rem 1.5rem' }}>{row.dur}</td>
                     <td style={{ padding: '1.2rem 1.5rem' }}>{row.elig}</td>
                     <td style={{ padding: '1.2rem 1.5rem', fontWeight: 700, color: 'var(--gold)' }}>{row.fee}</td>
-                    <td style={{ padding: '1.2rem 1.5rem', textAlign: 'center', fontWeight: 900, color: row.dgca === '✓' ? 'var(--red)' : 'rgba(0, 39, 76, 0.25)', fontSize: row.dgca === '✓' ? '1.1rem' : '0.9rem' }}>{row.dgca}</td>
+                    <td style={{ padding: '1.2rem 1.5rem', textAlign: 'center', fontWeight: 900, color: row.dgca === '✓' ? 'var(--red)' : 'rgba(255,255,255,0.25)', fontSize: row.dgca === '✓' ? '1.1rem' : '0.9rem' }}>{row.dgca}</td>
                   </tr>
                 ))}
               </tbody>

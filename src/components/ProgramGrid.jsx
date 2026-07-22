@@ -7,18 +7,27 @@ import Link from 'next/link'
 const PROGRAMS = [
   {
     id: 'cpl',
-    title: 'CPL Ground School',
-    tag: 'Ground School',
-    desc: 'Complete DGCA CPL exam preparation across all subjects. Mentor-led batches of 25 with 15+ years of teaching excellence.',
+    title: 'Commercial Pilot License (CPL)',
+    tag: 'Flying Training',
+    desc: 'The CPL is the foundation of an airline career. Covers 200 flying hours, all DGCA ground school subjects, and placement support with partner airlines. Duration: 8–18 months.',
     price: '₹2,70,000',
-    href: '/courses/cpl-ground-classes',
+    href: '/courses/commercial-pilot-license-cpl',
     accent: 'var(--red)',
+  },
+  {
+    id: 'dgca-ground-school',
+    title: 'DGCA Ground School',
+    tag: 'Ground School',
+    desc: 'Intensive ground school covering all DGCA CPL subjects: Air Navigation, Meteorology, Air Regulations, Technical General & Specific, and RTR(A). Taught by Capt. Navrang Singh personally.',
+    price: '₹2,70,000',
+    href: '/courses/ground-school',
+    accent: 'var(--gold)',
   },
   {
     id: 'atpl',
     title: 'ATPL Ground School',
     tag: 'Ground School',
-    desc: 'Airline Transport Pilot License exam preparation covering DGCA subjects, viva, and mock interviews.',
+    desc: 'The highest pilot qualification. Our ATPL ground classes in Dwarka prepare CPL holders for DGCA ATPL exams and airline upgrade requirements.',
     price: '₹1,50,000',
     href: '/courses/atpl',
     accent: 'var(--gold)',
@@ -46,7 +55,7 @@ const PROGRAMS = [
     title: 'Cadet Preparation',
     tag: 'Cadet Selection',
     desc: 'IndiGo, Air India, and Akasa cadet pilot program preparation. Aptitude tests, group discussions, and simulator screening.',
-    price: '₹50,000',
+    price: '₹45,000',
     href: '/courses/cadet-preparation',
     accent: 'var(--red)',
   },
@@ -70,11 +79,11 @@ const PROGRAMS = [
   },
   {
     id: 'cabin-crew',
-    title: 'Cabin Crew',
+    title: 'Cabin Crew Training',
     tag: 'Hospitality',
-    desc: 'Full cabin crew and hospitality training programme for aviation service careers. Grooming, SOPs, and airline interface.',
-    price: 'On Request',
-    href: '/courses/cabin-crew',
+    desc: 'Three structured pathways for cabin crew aspirants led by ex-Alliance Air and retired Air India AGM trainers. From finishing batch (3 months, scholarship available) to full foundation (6 months).',
+    price: '₹30,000',
+    href: '/courses/cabin-crew-training',
     accent: 'var(--gold)',
   },
 ]
@@ -306,7 +315,7 @@ export default function ProgramGrid() {
                 maxWidth: '20ch',
               }}
             >
-              Eight programs.{' '}
+              Pilot Training Programs{' '}
               <span
                 style={{
                   fontStyle: 'italic',
@@ -314,7 +323,7 @@ export default function ProgramGrid() {
                   color: 'var(--gold)',
                 }}
               >
-                One finish line.
+                at Airborne Aviation Academy
               </span>
             </h2>
           </div>

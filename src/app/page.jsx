@@ -128,7 +128,7 @@ function FloatingNav({ onBook }) {
             onMouseEnter={e => e.currentTarget.style.background = 'var(--red)'}
             onMouseLeave={e => e.currentTarget.style.background = 'var(--navy)'}
           >
-            Reserve Free Demo
+            Enrol Now
             <span style={{ display: 'inline-flex', height: '1.5rem', width: '1.5rem', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'rgba(255,255,255,0.15)' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M7 17L17 7M17 7H7M17 7v10"/>
@@ -259,7 +259,7 @@ function FloatingNav({ onBook }) {
                   height: '3.25rem', border: 'none', cursor: 'pointer',
                 }}
               >
-                Reserve Free Demo
+                Enrol Now
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M7 17L17 7M17 7H7M17 7v10"/>
                 </svg>
@@ -333,10 +333,19 @@ function HeroChapter({ onBook, on3D }) {
           Dwarka, Delhi · Est. 2009
         </motion.div>
 
-        <h1 style={{ fontFamily: 'var(--font-h)', fontWeight: 800, letterSpacing: '-0.045em', lineHeight: 0.92, fontSize: 'clamp(2.2rem,8.5vw,7.5rem)', color: '#fff', maxWidth: '14ch', textShadow: '0 4px 24px rgba(0,0,0,0.9), 0 2px 8px rgba(0,0,0,0.8)' }}>
-          <RevealLine delay={0.2}>From classroom</RevealLine>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.8 }}
+          style={{ fontFamily: 'var(--font-h)', fontWeight: 600, letterSpacing: '0.02em', fontSize: 'clamp(0.9rem,1.6vw,1.25rem)', color: 'var(--gold)', marginBottom: '0.75rem' }}
+        >
+          Ab India Bharega Udaan
+        </motion.div>
+
+        <h1 style={{ fontFamily: 'var(--font-h)', fontWeight: 800, letterSpacing: '-0.045em', lineHeight: 0.92, fontSize: 'clamp(2.2rem,8.5vw,7.5rem)', color: '#fff', maxWidth: '16ch', textShadow: '0 4px 24px rgba(0,0,0,0.9), 0 2px 8px rgba(0,0,0,0.8)' }}>
+          <RevealLine delay={0.2}>Pilot Training Academy</RevealLine>
           <RevealLine delay={0.4}>
-            to <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>cockpit.</span>
+            in Dwarka, Delhi <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>DGCA Approved</span>
           </RevealLine>
         </h1>
 
@@ -367,7 +376,7 @@ function HeroChapter({ onBook, on3D }) {
                 onMouseEnter={e => e.currentTarget.style.background = 'var(--red-dark)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'var(--red)'}
               >
-                Reserve your seat
+                Enrol Now
                 <span className="reserve-seat-arrow" style={{ display: 'inline-flex', height: '2rem', width: '2rem', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: '#ffffff', color: 'var(--red)', flexShrink: 0 }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
                 </span>
@@ -982,7 +991,7 @@ function FounderSection() {
             Capt. Navrang <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>Singh.</span>
           </h2>
           <p style={{ marginTop: '1.5rem', color: 'rgba(255,255,255,0.75)', fontSize: '0.9375rem', lineHeight: 1.7, maxWidth: '28rem', fontFamily: 'var(--font-b)' }}>
-            Fifteen years in the classroom. Thousands of hours simplifying the hardest DGCA papers into the language pilots actually need. No gimmicks. No empty promises. Just the cleanest path from your first concept to your four stripes.
+            Capt. Navrang Singh strips DGCA syllabi down to first principles. Air Regulations, Technical General, Navigation, Meteorology, RTR — taught the way you'll actually use them in the cockpit.
           </p>
 
           <div style={{ marginTop: '2.5rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'rgba(255,255,255,0.1)', maxWidth: '28rem', width: '100%' }}>
@@ -1032,7 +1041,7 @@ function FounderSection() {
 const STATIC_COURSES = [
   { name: 'CPL Ground School',    price: '₹2,70,000',       tag: 'Ground School',  lede: 'Complete DGCA CPL exam prep. All subjects. Mentor-led batches of 25.', desc: 'Complete DGCA CPL exam prep. All subjects. Mentor-led batches of 25.', duration: '12–18 months', eligibility: 'Class 12 PM',    href: '/courses/cpl-ground-classes' },
   { name: 'ATPL Ground School',   price: '₹1,50,000',       tag: 'Ground School',  lede: 'Airline Transport Pilot License exam prep covering all DGCA subjects.', desc: 'ATPL exam prep — all DGCA subjects covered, viva included.', duration: '4–6 months',  eligibility: 'Valid CPL',        href: '/courses/atpl' },
-  { name: 'Cadet Preparation',    price: '₹50,000',         tag: 'Cadet Selection',lede: 'IndiGo, Air India & Akasa cadet pilot selection program preparation.', desc: 'Aptitude tests, GD/PI, SIM prep for airline cadet programs.', duration: '2–3 months',  eligibility: 'CPL in progress',  href: '/courses/cadet-preparation' },
+  { name: 'Cadet Preparation',    price: '₹45,000',         tag: 'Cadet Selection',lede: 'IndiGo, Air India & Akasa cadet pilot selection program preparation.', desc: 'Aptitude tests, GD/PI, SIM prep for airline cadet programs.', duration: '2–3 months',  eligibility: 'CPL in progress',  href: '/courses/cadet-preparation' },
   { name: 'A320 Simulator',       price: '₹10,000/hr',      tag: 'Simulator',      lede: 'In-house Airbus A320 simulator for type rating familiarisation and airline SIM prep.', desc: 'Type rating fam, cadet SIM prep, emergency procedures.', duration: 'Per session', eligibility: 'CPL holders',      href: '/courses/a320-simulator' },
   { name: 'CAS Compass & ADAPT',  price: '₹30,000',         tag: 'Aptitude Test',  lede: 'Structured preparation for CAS Compass and ADAPT pilot aptitude test batteries.', desc: 'Numerical, spatial, psychomotor, multi-tasking, personality.', duration: '4–6 weeks',  eligibility: 'Any stage',        href: '/courses/cas-compass-adapt' },
   { name: 'Airline Preparation',  price: '₹1,00,000',       tag: 'GD / PI',        lede: 'GD, PI, personal development and mock interviews led by Rajeet Khalsa.', desc: 'GD, PI, mock interviews, communication, resume prep.', duration: '6–8 weeks',  eligibility: 'CPL holders',      href: '/courses/airline-preparation' },
@@ -1663,7 +1672,9 @@ const HOME_FAQS = [
   { q: 'What is the eligibility to join CPL ground school at Airborne?', a: 'Class 12 with Physics and Mathematics. You must also hold or be eligible for a DGCA Class 2 Medical. Age 17+ at time of first solo flight. No prior aviation experience required.' },
   { q: 'How long is the CPL ground school program?', a: "Airborne's CPL ground school runs 3–6 months for the full DGCA subject battery. Complete CPL with flying takes 12–18 months. Batches are capped at 25 students. Weekend and weekday batches available from our Dwarka, Delhi campus." },
   { q: 'What is the fee for CPL ground school?', a: 'CPL ground school at Airborne is ₹2,70,000. This covers all DGCA subjects, study materials, and viva preparation. Flying training (done at an FTO of your choice) is a separate cost — speak to our admissions team for current FTO tie-up rates.' },
-  { q: 'Is Airborne Aviation Academy a DGCA-approved flight school?', a: 'Airborne is a specialist ground school and aviation career preparation centre, not a Flying Training Organisation (FTO). Our ground school curriculum is fully aligned with the DGCA CPL and ATPL examination syllabus to prepare students for their written papers.' },
+  { q: 'Is Airborne Aviation Academy DGCA approved?', a: 'Yes. Airborne Aviation Academy is a DGCA-approved Flying Training Organisation (FTO) at Ramphal Chowk, Dwarka, New Delhi. Our FTO approval is under DGCA CAR-FTO regulations.' },
+  { q: 'Where is Airborne Aviation Academy located?', a: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7, Dwarka, New Delhi 110075. Contact: +91 9953 777 320.' },
+  { q: 'What are the office hours?', a: 'Monday to Saturday, 9:30 AM – 6:00 PM. Closed on Sundays.' },
   { q: 'Can I do CPL and ATPL ground school together?', a: 'Yes, and Airborne recommends it. The CPL and ATPL syllabi overlap significantly in Air Navigation, Meteorology, and Technical subjects. Completing both together improves exam efficiency and reduces total preparation time.' },
   { q: 'What airlines have Airborne graduates joined?', a: 'Airborne graduates have joined IndiGo, Air India, Akasa Air, SpiceJet, Air Asia India, Alliance Air, and regional operators. Over 2,500 pilots have trained at Airborne since 2009.' },
 ]
@@ -1913,7 +1924,7 @@ function SiteFooter() {
       { label: 'Dwarka Centre', href: '/contact' },
       { label: 'Jobs Portal', href: '/jobs' },
       { label: 'Resources', href: '/resources' },
-      { label: 'How to Become a Pilot After Class 12', href: '/blog/how-to-become-pilot-india' },
+      { label: 'Step-by-step guide to becoming a pilot after Class 12', href: '/blog/how-to-become-pilot-india' },
     ]},
     { title: 'Connect', links: [
       { label: 'Contact', href: '/contact' },
@@ -2194,8 +2205,9 @@ function AirborneAdvantage() {
       benefits: [
         { title: 'Founder-Led Instruction', desc: 'All 5 DGCA papers taught directly by Capt. Navrang — no junior staff on core subjects.' },
         { title: 'Personalized Pacing', desc: 'Classes paced to your speed, not the average student.' },
-        { title: '1-on-1 Mentorship', desc: '1-on-1 doubt sessions until the concept is clear.' },
+        { title: '1-on-1 Mentorship', desc: 'Individual doubt-solving sessions with Capt. Navrang until the concept is clear.' },
         { title: 'CPL Test Series', desc: 'Full DGCA mock exam series — first-attempt preparation only.' },
+        { title: 'Life-Long Career Guidance', desc: 'Support beyond CPL — type rating, airline applications.' },
       ]
     },
     {
@@ -2226,8 +2238,11 @@ function AirborneAdvantage() {
       benefits: [
         { title: 'Student Library', desc: 'Student library — open after class hours.' },
         { title: 'Campus Cafeteria', desc: 'On-campus cafeteria and lounge area.' },
-        { title: 'Class 2 Medical Desk', desc: 'In-house Class 2 medical pre-screening and advisory.' },
+        { title: 'Class 2 Medical Desk', desc: 'In-house Class 2 medical facility at the centre.' },
         { title: 'Hostel Support', desc: 'Hostel assistance for outstation students.' },
+        { title: 'Goodies for Every Student', desc: 'Bag, keychain, notebook, pen, and T-shirt for every student.' },
+        { title: 'Own the Study Material', desc: 'All course material provided and kept by students.' },
+        { title: 'Gender-Specific Washrooms', desc: 'Separate washroom facilities for all students.' },
       ]
     },
     {
@@ -2577,7 +2592,7 @@ function PilotCareerOutlook() {
           <div>
             <div style={{ fontSize: '0.6875rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--red)', marginBottom: '1rem', fontWeight: 700 }}>Industry Outlook</div>
             <h2 className="display-xl" style={{ fontSize: 'clamp(2rem, 5vw, 4.5rem)', color: 'var(--navy)', textTransform: 'uppercase', lineHeight: 1.1 }}>
-              Why NOW is the Best Time to <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--red)' }}>Become a Pilot.</span>
+              Why NOW Is the Best Time to <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--red)' }}>Become a Pilot in India</span>
             </h2>
           </div>
           <p style={{ color: 'rgba(33,33,33,0.7)', fontSize: '1rem', lineHeight: 1.8, fontFamily: 'var(--font-b)', margin: 0 }}>

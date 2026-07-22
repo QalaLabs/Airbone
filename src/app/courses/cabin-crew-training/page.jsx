@@ -59,7 +59,7 @@ const faqSchema = {
     {
       '@type': 'Question',
       name: 'What is the cabin crew course fee at Airborne?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Batch 1 scholarship (first 20 students): P1 level = ₹5,000 (uniform + goodies only) | P2 level = ₹35,000 total | P3 level = ₹65,000 total. P1 (worth ₹54,000) is free for all Batch 1 students. Regular pricing after Batch 1: P1 = ₹54,000, P2 = ₹30,000, P3 = ₹30,000.' }
+      acceptedAnswer: { '@type': 'Answer', text: 'Batch 1 scholarship (first 20 students): P1 level = ₹5,000 (uniform + goodies only) | P2 level = ₹35,000 total | P3 level = ₹59,000 total (₹54,000 + ₹5,000). P1 (worth ₹54,000) is free for all Batch 1 students. Regular pricing after Batch 1: P1 = ₹54,000, P2 = ₹30,000, P3 = ₹30,000.' }
     },
     {
       '@type': 'Question',
@@ -106,7 +106,7 @@ const PATHWAYS = [
     duration: '6 Months',
     classTime: '90 Minutes',
     regular: '₹30,000',
-    scholarship: '₹65,000 (P3 + P2 + P1 free)',
+    scholarship: '₹59,000 (P3 + P2 + P1 free)',
     best: 'Beginners needing complete foundation',
     focus: ['Communication foundation', 'Hospitality standards', 'Grooming basics', 'Professional readiness', 'Zero-to-selection journey'],
   },
@@ -210,7 +210,7 @@ export default function CabinCrewTrainingPage() {
                   {[
                     { level: 'P1 Level (near-selection)', fee: '₹5,000', note: 'Uniform + goodies only' },
                     { level: 'P2 Level (communication gaps)', fee: '₹35,000', note: 'P2 + P1 (P1 free)' },
-                    { level: 'P3 Level (needs foundation)', fee: '₹65,000', note: 'P3 + P2 + P1 (P1 free)' },
+                    { level: 'P3 Level (needs foundation)', fee: '₹59,000', note: 'P3 + P2 + P1 (P1 free) — ₹54,000 + ₹5,000' },
                   ].map((row, i) => (
                     <div key={i} style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(216,160,39,0.15)', borderRadius: '4px', padding: '1rem', textAlign: 'center' }}>
                       <div style={{ fontSize: '0.75rem', color: 'rgba(0, 39, 76, 0.55)', marginBottom: '0.4rem' }}>{row.level}</div>
@@ -338,7 +338,7 @@ export default function CabinCrewTrainingPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
                 {[
                   { q: 'Who teaches the cabin crew program at Airborne?', a: 'Capt. Mukul Mitra Barua (ex-cabin & cockpit crew, Alliance Air) and Rajeet Khalsa (retired AGM Training, Air India, 37+ years). Not generalist coaches — real airline industry professionals.' },
-                  { q: 'What is the cabin crew course fee?', a: 'Batch 1 scholarship (first 20 students): P1 level = ₹5,000 | P2 level = ₹35,000 | P3 level = ₹65,000. P1 (worth ₹54,000) is free for all Batch 1 students. Regular pricing after Batch 1: P1 = ₹54,000, P2 = ₹30,000, P3 = ₹30,000.' },
+                  { q: 'What is the cabin crew course fee?', a: 'Batch 1 scholarship (first 20 students): P1 level = ₹5,000 | P2 level = ₹35,000 | P3 level = ₹59,000 (₹54,000 + ₹5,000). P1 (worth ₹54,000) is free for all Batch 1 students. Regular pricing after Batch 1: P1 = ₹54,000, P2 = ₹30,000, P3 = ₹30,000.' },
                   { q: 'Can boys join the cabin crew program?', a: 'Yes. The program is open to all candidates meeting eligibility criteria. Airlines hire male cabin crew across domestic and international carriers.' },
                   { q: 'Does Airborne guarantee cabin crew placement?', a: 'No institute can guarantee airline selection. Airborne provides structured interview preparation, resume coaching, mock interviews, and career guidance. Final selection rests with the airline.' },
                   { q: 'Why are your fees higher than other institutes?', a: 'Because this is airline-standard training — taught by actual airline professionals, not generalist coaches. Compare trainers, structure, and outcomes — not just price.' },
