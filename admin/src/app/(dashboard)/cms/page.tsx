@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { 
-  Globe, FileText, HelpCircle, Plane, Building2, ImageIcon, Megaphone, 
-  Search, Plus, Eye, CheckCircle2, Edit2, SlidersHorizontal, Sparkles, ExternalLink, Loader2, AlertCircle
+  Globe, FileText, HelpCircle, Plane, Building2, ImageIcon, Megaphone,
+  Search, Plus, Eye, Edit2, Sparkles, Loader2, AlertCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "@/components/ui/use-toast";
@@ -233,7 +233,7 @@ export default function CMSPage() {
               {!isLoading && !isError && pagesList.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-20 text-center space-y-2 border-2 border-dashed border-white/5 rounded-xl">
                   <p className="text-sm font-bold text-white">No CMS Pages Registered</p>
-                  <p className="text-xs text-muted-foreground">Click "Create New Entry" to build your first landing page.</p>
+                  <p className="text-xs text-muted-foreground">Click &quot;Create New Entry&quot; to build your first landing page.</p>
                 </div>
               )}
 
@@ -373,7 +373,7 @@ export default function CMSPage() {
                 <Input name="title" defaultValue={editItem.title || ""} required className="bg-secondary/40 border-white/10 text-xs font-semibold text-white" />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-muted-foreground">Public URL Slug * (e.g. "about-us")</label>
+                <label className="text-xs font-bold text-muted-foreground">Public URL Slug * (e.g. &quot;about-us&quot;)</label>
                 <Input name="slug" defaultValue={editItem.slug || ""} required className="bg-secondary/40 border-white/10 text-xs font-mono text-primary font-bold" />
               </div>
               <div className="space-y-1.5">

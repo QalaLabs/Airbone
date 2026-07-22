@@ -61,6 +61,7 @@ const NAV_GROUPS = [
       { href: "/admissions", icon: GraduationCap, label: "Admissions" },
       { href: "/students", icon: Users, label: "Student Management" },
       { href: "/placements", icon: Briefcase, label: "Placements" },
+      { href: "/jobs", icon: Briefcase, label: "Careers & Jobs" },
     ]
   },
   {
@@ -68,7 +69,8 @@ const NAV_GROUPS = [
     items: [
       { href: "/cms", icon: Globe, label: "Website CMS" },
       { href: "/courses", icon: BookOpen, label: "Course Manager" },
-      { href: "/blog", icon: FileText, label: "Blog & Resources" },
+      { href: "/blog", icon: FileText, label: "Blog" },
+      { href: "/resources", icon: FileText, label: "Resources" },
       { href: "/testimonials", icon: Star, label: "Testimonials", badge: true },
       { href: "/media", icon: ImageIcon, label: "Media Library" },
     ]

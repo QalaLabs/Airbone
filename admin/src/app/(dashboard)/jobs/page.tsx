@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { type ColumnDef, type PaginationState, type SortingState } from "@tanstack/react-table";
-import { Search, MoreHorizontal, Eye, Briefcase, AlertCircle, Loader2 } from "lucide-react";
+import { Search, MoreHorizontal, Eye, Briefcase, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { DataTable } from "@/components/shared/data-table";
 import { StatusBadge } from "@/components/shared/status-badge";

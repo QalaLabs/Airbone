@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Search, Command, ArrowRight, CornerDownLeft, FileText, Users, GraduationCap, BookOpen, Briefcase, Settings, Star, ShieldCheck, Activity, Globe, Layout, Image as ImageIcon, MessageSquare, PieChart } from "lucide-react";
+import { Search, Command, CornerDownLeft, FileText, Users, GraduationCap, BookOpen, Briefcase, Settings, Star, ShieldCheck, Activity, Globe, Layout, Image as ImageIcon, MessageSquare, PieChart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const MODULES = [

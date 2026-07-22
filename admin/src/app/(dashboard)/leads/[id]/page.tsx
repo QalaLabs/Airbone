@@ -4,9 +4,9 @@ import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import {
-  ArrowLeft, Mail, Phone, Calendar, User, Globe, MessageSquare,
-  CheckCircle, PhoneCall, Clock, FileText, Edit2, Link2, Sparkles, 
-  Bot, ShieldCheck, Download, Paperclip, Plus, Send, Landmark, CreditCard, Activity
+  ArrowLeft, Mail, Phone, Calendar, User, MessageSquare,
+  PhoneCall, Clock, FileText, Sparkles,
+  Bot, ShieldCheck, Download, Paperclip, Plus, Send, Landmark, CreditCard
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/status-badge";

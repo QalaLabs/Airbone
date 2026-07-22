@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/db/client";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const org = await prisma.organization.findFirst({
       where: { slug: process.env.PUBLIC_ORG_SLUG ?? "airborne-aviation" },

@@ -1,37 +1,55 @@
 "use client";
 
 import * as React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { apiFetch } from "@/lib/api";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { 
-  History, Download, Search, Filter, ShieldCheck, User, 
-  Clock, Globe, CheckCircle2, Lock, Cpu, Database
+  History, Download, Search, Filter, ShieldCheck,
+  Clock, Globe, Lock, Cpu, Database
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "@/components/ui/use-toast";
 
-const MOCK_AUDIT_TRAIL = [
-  { id: "aud-201", actionType: "FEE_TRANCHE_UPDATE", user: "Capt. Vikram Singh", email: "vikram.singh@airborneaviation.in", timestamp: "2026-06-26 10:42:15", ipAddress: "103.82.91.42 (Delhi, IN)", description: "Updated Course Tuition Fee for CPL Ground School to ₹4,50,000", integrityHash: "sha256:8f9a3e2b1c4d7e8f9a0b1c2d3e4f5a6b", module: "Courses" },
-  { id: "aud-202", actionType: "STAGE_PROMOTED", user: "Anjali Sharma", email: "anjali.sharma@airborneaviation.in", timestamp: "2026-06-26 10:35:10", ipAddress: "122.161.45.12 (Noida, IN)", description: "Moved candidate Rajesh Kumar (LD-9204) to Fee Payment stage", integrityHash: "sha256:1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", module: "Admissions" },
-  { id: "aud-203", actionType: "WHATSAPP_DISPATCH", user: "Anjali Sharma", email: "anjali.sharma@airborneaviation.in", timestamp: "2026-06-26 10:31:05", ipAddress: "122.161.45.12 (Noida, IN)", description: "Triggered Fee Payment Link template to +91 9876543210", integrityHash: "sha256:5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b", module: "Notifications" },
-  { id: "aud-204", actionType: "VAPI_ESCALATION", user: "Rohan Verma", email: "rohan.verma@airborneaviation.in", timestamp: "2026-06-26 09:55:22", ipAddress: "115.112.14.88 (Gurgaon, IN)", description: "Claimed Vapi Voice AI escalation for candidate Amit Sen", integrityHash: "sha256:9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f", module: "Vapi AI" },
-  { id: "aud-205", actionType: "PAGE_PUBLISHED", user: "Priya Patel", email: "priya.patel@airborneaviation.in", timestamp: "2026-06-26 09:12:44", ipAddress: "103.21.124.9 (Mumbai, IN)", description: "Published Winter Intake Landing Page draft in CMS", integrityHash: "sha256:3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d", module: "CMS" },
-  { id: "aud-206", actionType: "MEDIA_UPLOADED", user: "Siddharth Sen", email: "siddharth.sen@airborneaviation.in", timestamp: "2026-06-25 18:44:30", ipAddress: "182.65.112.4 (Delhi, IN)", description: "Uploaded 12 high-res fleet photos to S3 CDN bucket", integrityHash: "sha256:7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b", module: "Media Library" },
-  { id: "aud-207", actionType: "DRIVE_SCHEDULED", user: "Vikram Malhotra", email: "v.malhotra@airborneaviation.in", timestamp: "2026-06-25 14:20:11", ipAddress: "103.82.91.42 (Delhi, IN)", description: "Scheduled Indigo A320 Cadet Pilot Screening Drive", integrityHash: "sha256:4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c", module: "Placements" },
-  { id: "aud-208", actionType: "SYSTEM_RESTART", user: "Capt. Vikram Singh", email: "vikram.singh@airborneaviation.in", timestamp: "2026-06-25 08:00:00", ipAddress: "103.82.91.42 (Delhi, IN)", description: "Applied rolling zero-downtime container environment synchronization", integrityHash: "sha256:0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c", module: "System Config" },
-];
+interface AuditLog {
+  id: string;
+  actionType: string;
+  user: string;
+  email: string;
+  timestamp: string;
+  ipAddress: string;
+  description: string;
+  integrityHash: string;
+  module: string;
+}
 
 export default function AuditPage() {
   const [search, setSearch] = React.useState("");
   const [actionFilter, setActionFilter] = React.useState("ALL");
-  const [selectedAudit, setSelectedAudit] = React.useState<any | null>(null);
+  const [selectedAudit, setSelectedAudit] = React.useState<AuditLog | null>(null);
+
+  const { data: auditLogs } = useQuery({
+    queryKey: ["audit-trail", search, actionFilter],
+    queryFn: () => {
+      const p = new URLSearchParams({
+        page: "1",
+        limit: "100",
+        ...(search ? { search } : {}),
+        ...(actionFilter && actionFilter !== "ALL" ? { module: actionFilter } : {}),
+      });
+      return apiFetch<AuditLog[]>(`/audit?${p}`);
+    },
+  });
+
+  const filteredAudits = auditLogs ?? [];
 
   const handleCsvExport = () => {
     // Generate CSV string
     const headers = ["ID,Action Type,User,Email,Timestamp,IP Address,Description,Integrity Hash,Module"];
-    const rows = MOCK_AUDIT_TRAIL.map(a => `"${a.id}","${a.actionType}","${a.user}","${a.email}","${a.timestamp}","${a.ipAddress}","${a.description}","${a.integrityHash}","${a.module}"`);
+    const rows = filteredAudits.map(a => `"${a.id}","${a.actionType}","${a.user}","${a.email}","${a.timestamp}","${a.ipAddress}","${a.description}","${a.integrityHash}","${a.module}"`);
     const csvContent = "data:text/csv;charset=utf-8," + [headers, ...rows].join("\n");
     
     const encodedUri = encodeURI(csvContent);
@@ -44,16 +62,6 @@ export default function AuditPage() {
 
     toast({ title: "CSV Export Generated", description: "Cryptographically verified audit trail downloaded successfully." });
   };
-
-  const filteredAudits = MOCK_AUDIT_TRAIL.filter(aud => {
-    const matchAct = actionFilter === "ALL" || aud.actionType.includes(actionFilter) || aud.module === actionFilter;
-    const matchSearch = aud.actionType.toLowerCase().includes(search.toLowerCase()) || 
-                        aud.user.toLowerCase().includes(search.toLowerCase()) || 
-                        aud.ipAddress.toLowerCase().includes(search.toLowerCase()) || 
-                        aud.description.toLowerCase().includes(search.toLowerCase()) ||
-                        aud.timestamp.includes(search);
-    return matchAct && matchSearch;
-  });
 
   return (
     <div className="space-y-8 pb-12">

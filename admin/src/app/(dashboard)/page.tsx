@@ -3,17 +3,14 @@
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { 
-  Users, GraduationCap, BookOpen, Star, TrendingUp, FileText, Briefcase, 
-  PhoneCall, MessageSquare, DollarSign, Calendar, Clock, UserCheck, 
-  ArrowUpRight, ArrowDownRight, Activity, Zap, Bell, CheckCircle2, AlertCircle, Plus 
+  Users, GraduationCap, Star, TrendingUp, Briefcase,
+  PhoneCall, MessageSquare, DollarSign, Calendar, Clock, UserCheck,
+  ArrowUpRight, ArrowDownRight, Activity, Zap, Bell, CheckCircle2, AlertCircle, Plus
 } from "lucide-react";
-import { PageHeader } from "@/components/shared/page-header";
 import { apiFetch } from "@/lib/api";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
-import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 
 interface DashboardLead {
@@ -32,17 +29,33 @@ export default function DashboardPage() {
     queryFn: () => apiFetch<{ items: DashboardLead[]; total: number }>("/leads?page=1&limit=8"),
   });
 
+  const { data: stats } = useQuery({
+    queryKey: ["dashboard-stats"],
+    queryFn: () => apiFetch<{
+      leadsCount: number;
+      leadsToday: number;
+      leadsThisWeek: number;
+      leadsThisMonth: number;
+      leadsFollowUp: number;
+      studentsCount: number;
+      admissionsCount: number;
+      placementsCount: number;
+      activeCounsellors: number;
+      revenue: number;
+    }>("/dashboard/stats"),
+  });
+
   const STAT_CARDS = [
-    { title: "Today's Leads", value: "48", change: "+12% vs yesterday", isPos: true, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
-    { title: "This Week", value: "312", change: "+8% vs last week", isPos: true, icon: Calendar, color: "text-indigo-500", bg: "bg-indigo-500/10" },
-    { title: "Monthly Leads", value: "1,248", change: "+24% vs last month", isPos: true, icon: TrendingUp, color: "text-purple-500", bg: "bg-purple-500/10" },
-    { title: "Admissions", value: "84", change: "+15% vs last month", isPos: true, icon: GraduationCap, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-    { title: "Revenue", value: "₹42.8L", change: "+18% vs target", isPos: true, icon: DollarSign, color: "text-amber-500", bg: "bg-amber-500/10" },
-    { title: "Pending Follow Ups", value: "19", change: "-5% urgent queue", isPos: false, icon: Clock, color: "text-rose-500", bg: "bg-rose-500/10" },
+    { title: "Today's Leads", value: String(stats?.leadsToday ?? 0), change: "+12% vs yesterday", isPos: true, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
+    { title: "This Week", value: String(stats?.leadsThisWeek ?? 0), change: "+8% vs last week", isPos: true, icon: Calendar, color: "text-indigo-500", bg: "bg-indigo-500/10" },
+    { title: "Monthly Leads", value: String(stats?.leadsThisMonth ?? 0), change: "+24% vs last month", isPos: true, icon: TrendingUp, color: "text-purple-500", bg: "bg-purple-500/10" },
+    { title: "Admissions", value: String(stats?.admissionsCount ?? 0), change: "+15% vs last month", isPos: true, icon: GraduationCap, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+    { title: "Revenue", value: stats ? `₹${(stats.revenue / 100000).toFixed(1)}L` : "₹0.0L", change: "+18% vs target", isPos: true, icon: DollarSign, color: "text-amber-500", bg: "bg-amber-500/10" },
+    { title: "Pending Follow Ups", value: String(stats?.leadsFollowUp ?? 0), change: "-5% urgent queue", isPos: false, icon: Clock, color: "text-rose-500", bg: "bg-rose-500/10" },
     { title: "Voice AI Calls", value: "892", change: "94% connection rate", isPos: true, icon: PhoneCall, color: "text-cyan-500", bg: "bg-cyan-500/10" },
     { title: "WhatsApp Conversations", value: "1,420", change: "88% read rate", isPos: true, icon: MessageSquare, color: "text-emerald-400", bg: "bg-emerald-400/10" },
-    { title: "Active Counsellors", value: "12 / 12", change: "100% online", isPos: true, icon: UserCheck, color: "text-teal-500", bg: "bg-teal-500/10" },
-    { title: "Placement Applications", value: "156", change: "3 Airlines recruiting", isPos: true, icon: Briefcase, color: "text-sky-500", bg: "bg-sky-500/10" },
+    { title: "Active Counsellors", value: stats ? `${stats.activeCounsellors} / ${stats.activeCounsellors}` : "12 / 12", change: "100% online", isPos: true, icon: UserCheck, color: "text-teal-500", bg: "bg-teal-500/10" },
+    { title: "Placement Applications", value: String(stats?.placementsCount ?? 0), change: "3 Airlines recruiting", isPos: true, icon: Briefcase, color: "text-sky-500", bg: "bg-sky-500/10" },
   ];
 
   const recentLeads = leads?.items ?? [

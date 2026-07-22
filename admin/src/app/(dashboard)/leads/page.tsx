@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ColumnDef, type PaginationState } from "@tanstack/react-table";
-import { Plus, Search, Filter, MoreHorizontal, Eye, CheckSquare, Trash2, UserCheck, Sparkles, SlidersHorizontal, ArrowUpDown, ChevronDown, AlertCircle, Loader2 } from "lucide-react";
+import { Plus, Search, Filter, MoreHorizontal, Eye, CheckSquare, Trash2, UserCheck, Sparkles, SlidersHorizontal, ChevronDown, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -60,7 +60,6 @@ type CreateLeadForm = z.infer<typeof createLeadSchema>;
 
 const LEAD_SOURCES = ["WEBSITE", "GOOGLE_ADS", "FACEBOOK_ADS", "ORGANIC", "REFERRAL", "WHATSAPP", "VOICE_AI", "OTHER"];
 const LEAD_STATUSES = ["all", "NEW", "CONTACTED", "INTERESTED", "NOT_INTERESTED", "FOLLOW_UP", "COUNSELED", "CONVERTED", "LOST"];
-const COUNSELLORS = ["Anjali Verma", "Priya Sharma", "Vikram Singh", "Rahul Gupta", "Unassigned"];
 
 export default function LeadsPage() {
   const queryClient = useQueryClient();
@@ -78,6 +77,12 @@ export default function LeadsPage() {
     return () => clearTimeout(timer);
   }, [search]);
 
+  const { data: counselorsRes } = useQuery({
+    queryKey: ["counselors-list"],
+    queryFn: () => apiFetch<{ data: { id: string; name: string }[]; total: number }>("/users?role=ADMISSIONS_COUNSELOR&limit=100"),
+  });
+  const counselorsList = counselorsRes?.data ?? [];
+
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["leads", pagination.pageIndex, pagination.pageSize, debouncedSearch, statusFilter, priorityFilter, counsellorFilter],
     queryFn: async () => {
@@ -86,15 +91,16 @@ export default function LeadsPage() {
         limit: String(pagination.pageSize),
         ...(debouncedSearch ? { search: debouncedSearch } : {}),
         ...(statusFilter && statusFilter !== "all" ? { status: statusFilter } : {}),
+        ...(counsellorFilter && counsellorFilter !== "all" ? { assignedTo: counsellorFilter } : {}),
       });
       const res = await apiFetch<LeadListResponse>(`/leads?${params}`);
-      
-      // Augment items with mock production CRM fields if missing
-      const items = res.items.map((item, idx) => ({
+
+      // Priority is derived from the lead's real `score` field (no backing
+      // priority column exists) so it reflects actual data, not a placeholder.
+      const items = res.items.map((item) => ({
         ...item,
-        priority: item.priority || (idx % 3 === 0 ? "HIGH" : idx % 3 === 1 ? "MEDIUM" : "LOW"),
-        score: item.score || (idx % 2 === 0 ? 88 : 65),
-        assignedTo: item.assignedTo || { name: COUNSELLORS[idx % COUNSELLORS.length] || "Unassigned" }
+        priority: item.priority || (item.score >= 80 ? "HIGH" : item.score >= 50 ? "MEDIUM" : "LOW"),
+        assignedTo: item.assignedTo || { name: "Unassigned" }
       }));
 
       return { ...res, items };
@@ -117,9 +123,29 @@ export default function LeadsPage() {
     onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
-  const handleBulkAssign = (counselorName: string) => {
-    toast({ title: "Bulk Assignment Successful", description: `${selectedLeadIds.length} leads assigned to ${counselorName}.` });
-    setSelectedLeadIds([]);
+  const assignMutation = useMutation({
+    mutationFn: ({ leadId, counselorId }: { leadId: string; counselorId: string }) =>
+      apiFetch(`/leads/${leadId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ assignedTo: counselorId }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["leads"] });
+    },
+  });
+
+  const handleBulkAssign = async (counselorId: string, counselorName: string) => {
+    try {
+      await Promise.all(
+        selectedLeadIds.map(leadId =>
+          assignMutation.mutateAsync({ leadId, counselorId })
+        )
+      );
+      toast({ title: "Bulk Assignment Successful", description: `${selectedLeadIds.length} leads assigned to ${counselorName}.` });
+      setSelectedLeadIds([]);
+    } catch (err: unknown) {
+      toast({ title: "Assignment Failed", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
+    }
   };
 
   const columns: ColumnDef<Lead>[] = [
@@ -314,8 +340,8 @@ export default function LeadsPage() {
               </SelectTrigger>
               <SelectContent className="glass-panel border-white/10 text-xs">
                 <SelectItem value="all">All Counselors</SelectItem>
-                {COUNSELLORS.map((c) => (
-                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                {counselorsList.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -339,9 +365,9 @@ export default function LeadsPage() {
                 <DropdownMenuContent className="glass-panel border-white/10 text-xs">
                   <DropdownMenuLabel className="text-xs font-bold text-muted-foreground">Select Counselor</DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-white/10" />
-                  {COUNSELLORS.filter(c => c !== "Unassigned").map((c) => (
-                    <DropdownMenuItem key={c} onClick={() => handleBulkAssign(c)} className="cursor-pointer text-xs hover:bg-white/5">
-                      {c}
+                  {counselorsList.map((c) => (
+                    <DropdownMenuItem key={c.id} onClick={() => handleBulkAssign(c.id, c.name)} className="cursor-pointer text-xs hover:bg-white/5">
+                      {c.name}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>

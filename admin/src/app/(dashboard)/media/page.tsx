@@ -1,11 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import {
-  Search, Folder, FolderOpen, Image as ImageIcon, FileText, Film, File, Music, 
-  MoreHorizontal, ChevronRight, Home, Grid3X3, List, Copy, ExternalLink, 
-  Upload, SlidersHorizontal, Server, Save, CheckCircle2, Cloud
+  Search, FolderOpen, Image as ImageIcon, FileText, Film, File, Music,
+  ChevronRight, Home, Grid3X3, List, Copy, ExternalLink,
+  Upload, Server, CheckCircle2, Cloud
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,10 +13,8 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch } from "@/lib/api";
 import { formatDate, cn } from "@/lib/utils";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/use-toast";
-import { motion, AnimatePresence } from "framer-motion";
 
 interface MediaAsset {
   id: string;
@@ -62,16 +60,10 @@ function formatFileSize(bytes: number): string {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 }
 
-const MOCK_HIGHRES_ASSETS = [
-  { id: "asset-1", name: "Cockpit_Overview_Premium.jpg", mimeType: "image/jpeg", size: 4520192, url: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=2000&auto=format&fit=crop", thumbnailUrl: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=600&auto=format&fit=crop", createdAt: "2026-06-25T10:30:00Z" },
-  { id: "asset-2", name: "Fleet_FlightLine_Sunset.jpg", mimeType: "image/jpeg", size: 3840102, url: "https://images.unsplash.com/photo-1519074069444-1ba4ea16e66c?q=80&w=2000&auto=format&fit=crop", thumbnailUrl: "https://images.unsplash.com/photo-1519074069444-1ba4ea16e66c?q=80&w=600&auto=format&fit=crop", createdAt: "2026-06-24T14:20:00Z" },
-  { id: "asset-3", name: "A320_Full_Flight_Sim_Bay.mp4", mimeType: "video/mp4", size: 28491024, url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnailUrl: "https://images.unsplash.com/photo-1583074923558-fb45f4702582?q=80&w=600&auto=format&fit=crop", createdAt: "2026-06-22T09:15:00Z" },
-  { id: "asset-4", name: "Cadet_Ground_School_Session.jpg", mimeType: "image/jpeg", size: 2109402, url: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2000&auto=format&fit=crop", thumbnailUrl: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=600&auto=format&fit=crop", createdAt: "2026-06-20T11:45:00Z" },
-  { id: "asset-5", name: "Pilot_Graduation_Wings_Ceremony.jpg", mimeType: "image/jpeg", size: 5120394, url: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2000&auto=format&fit=crop", thumbnailUrl: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=600&auto=format&fit=crop", createdAt: "2026-06-18T16:20:00Z" },
-  { id: "asset-6", name: "Piper_Seneca_Instrument_Panel.jpg", mimeType: "image/jpeg", size: 3410293, url: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?q=80&w=2000&auto=format&fit=crop", thumbnailUrl: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?q=80&w=600&auto=format&fit=crop", createdAt: "2026-06-15T13:10:00Z" },
-];
+const MOCK_HIGHRES_ASSETS: MediaAsset[] = [];
 
 export default function MediaPage() {
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [search, setSearch] = React.useState("");
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
   const [selectedFolder, setSelectedFolder] = React.useState<string | null>(null);
@@ -90,7 +82,7 @@ export default function MediaPage() {
     queryFn: () => apiFetch<{ items: MediaFolder[] }>(`/media/folders${selectedFolder ? `?parentId=${selectedFolder}` : ""}`),
   });
 
-  const { data: assets, isLoading: assetsLoading } = useQuery({
+  const { data: assets, isLoading: assetsLoading, refetch } = useQuery({
     queryKey: ["media", selectedFolder, debouncedSearch],
     queryFn: async () => {
       const p = new URLSearchParams({
@@ -99,13 +91,76 @@ export default function MediaPage() {
         ...(selectedFolder ? { folderId: selectedFolder } : {}),
         ...(debouncedSearch ? { search: debouncedSearch } : {}),
       });
-      const res = await apiFetch<MediaResponse>(`/media?${p}`);
-      
-      // Combine API items with high-res asset showcases
-      const combinedItems = [...MOCK_HIGHRES_ASSETS, ...res.items];
-      return { ...res, items: combinedItems };
+      return apiFetch<MediaResponse>(`/media?${p}`);
     },
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => apiFetch(`/media/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      toast({ title: "Asset Deleted", description: "Media record successfully deleted from library." });
+      refetch();
+      setSelectedAsset(null);
+    },
+    onError: (err: unknown) => {
+      toast({ title: "Delete Failed", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
+    }
+  });
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      toast({ title: "Initializing Upload", description: "Requesting presigned storage upload token..." });
+      
+      const { uploadUrl, fileKey, fileUrl } = await apiFetch<{ uploadUrl: string; fileKey: string; fileUrl: string }>("/media/presign", {
+        method: "POST",
+        body: JSON.stringify({
+          fileName: file.name,
+          contentType: file.type,
+          size: file.size,
+        }),
+      });
+
+      toast({ title: "Uploading File", description: `Sending binary stream (${(file.size / 1024 / 1024).toFixed(1)}MB)...` });
+
+      const uploadRes = await fetch(uploadUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Type": file.type,
+        },
+        body: file,
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error(`Upload storage failed: ${uploadRes.statusText}`);
+      }
+
+      toast({ title: "Registering Asset", description: "Saving database media record..." });
+
+      await apiFetch("/media", {
+        method: "POST",
+        body: JSON.stringify({
+          name: file.name,
+          mimeType: file.type,
+          size: file.size,
+          url: fileUrl,
+          fileKey,
+          folderId: selectedFolder || undefined,
+        }),
+      });
+
+      toast({ title: "Upload Successful", description: `File "${file.name}" has been successfully added.` });
+      refetch();
+    } catch (err: unknown) {
+      toast({ title: "Upload Failed", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
+    }
+  };
 
   const navigateToFolder = (folder: MediaFolder) => {
     setFolderPath((prev) => [...prev, { id: folder.id, name: folder.name }]);
@@ -160,12 +215,18 @@ export default function MediaPage() {
               S3 / CDN Configuration
             </Button>
             <Button
-              onClick={() => toast({ title: "Initializing Upload", description: "Multi-part direct S3 chunked upload started." })}
+              onClick={handleUploadClick}
               className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 transition-all hover:scale-105 text-xs font-bold"
             >
               <Upload className="h-4 w-4 mr-1.5" />
               Upload High-Res Media
             </Button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={onFileChange}
+              style={{ display: "none" }}
+            />
           </div>
         }
       />
@@ -282,7 +343,6 @@ export default function MediaPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {mediaAssets.map((asset) => {
               const Icon = getFileIcon(asset.mimeType);
-              const isImage = asset.mimeType.startsWith("image/");
               const isVideo = asset.mimeType.startsWith("video/");
               return (
                 <div
@@ -406,6 +466,18 @@ export default function MediaPage() {
           )}
 
           <DialogFooter className="p-6 border-t border-white/10 bg-slate-900/80">
+            <Button
+              variant="destructive"
+              disabled={deleteMutation.isPending}
+              onClick={() => {
+                if (selectedAsset && confirm("Are you sure you want to delete this media asset?")) {
+                  deleteMutation.mutate(selectedAsset.id);
+                }
+              }}
+              className="text-xs font-bold mr-auto bg-rose-600 hover:bg-rose-700 text-white"
+            >
+              Delete Asset
+            </Button>
             <Button variant="outline" onClick={() => setSelectedAsset(null)} className="border-white/10 hover:bg-white/5 text-xs font-bold">
               Close Preview
             </Button>

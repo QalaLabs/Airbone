@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ColumnDef, type PaginationState } from "@tanstack/react-table";
-import { Search, Globe, MoreHorizontal, Eye, Plus, BookOpen, Users, Calendar, DollarSign, SearchCode, CheckCircle2, SlidersHorizontal, Save, GraduationCap, Loader2, AlertCircle, Trash2 } from "lucide-react";
+import { Search, Globe, MoreHorizontal, Eye, Plus, BookOpen, Calendar, DollarSign, SearchCode, Save, AlertCircle, Trash2 } from "lucide-react";
 import { DataTable } from "@/components/shared/data-table";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PageHeader } from "@/components/shared/page-header";
@@ -15,7 +15,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { apiFetch } from "@/lib/api";
-import { formatDate } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -32,9 +31,7 @@ interface Course {
   status: "DRAFT" | "PUBLISHED" | "SCHEDULED" | "ARCHIVED";
   seoTitle?: string;
   seoDesc?: string;
-  syllabus?: string[];
-  batches?: { name: string; instructor: string; schedule: string }[];
-  feeBreakdown?: { tranche: string; amount: number }[];
+  curriculum?: { module: string; topics: string[] }[];
   createdAt: string;
 }
 
@@ -45,19 +42,6 @@ interface CoursesResponse {
 }
 
 const COURSE_STATUSES = ["all", "DRAFT", "PUBLISHED", "ARCHIVED"];
-
-const MOCK_COURSES_AUGMENT = [
-  {
-    syllabus: ["Module 1: Basic Aerodynamics & Principles of Flight", "Module 2: Air Navigation & Flight Planning", "Module 3: Aviation Meteorology & Weather Charts", "Module 4: Air Regulations & ATC Procedures"],
-    batches: [{ name: "Alpha Morning Batch", instructor: "Capt. Vikram Singh", schedule: "Mon-Fri, 08:00 - 12:00" }, { name: "Bravo Evening Batch", instructor: "Capt. Anjali Sharma", schedule: "Mon-Fri, 14:00 - 18:00" }],
-    feeBreakdown: [{ tranche: "Registration & Kits", amount: 150000 }, { tranche: "Ground Tuition Fee", amount: 250000 }, { tranche: "Examination & DGCA Processing", amount: 100000 }],
-  },
-  {
-    syllabus: ["Phase 1: Airline Prep & Cognitive Testing", "Phase 2: Group Discussion & Interview Simulation", "Phase 3: Fixed Base Simulator Screening Orientation"],
-    batches: [{ name: "Cadet Weekend Express", instructor: "Capt. Rahul Verma", schedule: "Sat-Sun, 09:00 - 16:00" }],
-    feeBreakdown: [{ tranche: "Screening Assessment Fee", amount: 50000 }, { tranche: "Airline Prep Tuition", amount: 150000 }],
-  }
-];
 
 export default function CoursesPage() {
   const queryClient = useQueryClient();
@@ -83,14 +67,7 @@ export default function CoursesPage() {
         ...(debouncedSearch ? { search: debouncedSearch } : {}),
         ...(statusFilter && statusFilter !== "all" ? { status: statusFilter } : {}),
       });
-      const res = await apiFetch<CoursesResponse>(`/courses?${p}`);
-      
-      const items = res.items.map((item, idx) => ({
-        ...item,
-        ...MOCK_COURSES_AUGMENT[idx % MOCK_COURSES_AUGMENT.length]
-      }));
-
-      return { ...res, items };
+      return apiFetch<CoursesResponse>(`/courses?${p}`);
     },
   });
 
@@ -318,7 +295,7 @@ export default function CoursesPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label>Duration (e.g. "6 Months")</Label>
+                <Label>Duration (e.g. &quot;6 Months&quot;)</Label>
                 <Input name="duration" placeholder="e.g. 6 Months" className="bg-secondary/40 border-white/10 text-xs text-white" />
               </div>
               <div className="space-y-1.5">
@@ -405,16 +382,23 @@ export default function CoursesPage() {
                     <h3 className="text-sm font-bold text-white uppercase tracking-wider">Curriculum Modules</h3>
                   </div>
                   <div className="space-y-3">
-                    {(selectedCourse?.syllabus ?? ["Module 1: General Aviation Foundations"]).map((mod, i) => (
-                      <div key={i} className="p-4 rounded-xl bg-secondary/30 border border-white/5 flex items-center justify-between group hover:border-white/10 transition-colors">
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs font-extrabold bg-secondary px-2.5 py-1 rounded border border-white/5 text-muted-foreground">
-                            0{i + 1}
-                          </span>
-                          <span className="text-xs font-semibold text-white">{mod}</span>
+                    {selectedCourse?.curriculum && selectedCourse.curriculum.length > 0 ? (
+                      selectedCourse.curriculum.map((mod, i) => (
+                        <div key={i} className="p-4 rounded-xl bg-secondary/30 border border-white/5 space-y-2 group hover:border-white/10 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs font-extrabold bg-secondary px-2.5 py-1 rounded border border-white/5 text-muted-foreground">
+                              0{i + 1}
+                            </span>
+                            <span className="text-xs font-semibold text-white">{mod.module}</span>
+                          </div>
+                          {mod.topics.length > 0 && (
+                            <p className="text-[11px] text-muted-foreground pl-9">{mod.topics.join(", ")}</p>
+                          )}
                         </div>
-                      </div>
-                    ))}
+                      ))
+                    ) : (
+                      <p className="text-xs text-muted-foreground py-4 text-center">No curriculum modules added yet.</p>
+                    )}
                   </div>
                 </motion.div>
               )}
@@ -422,49 +406,30 @@ export default function CoursesPage() {
               {activeTab === "batches" && (
                 <motion.div key="batches" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-4">
                   <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Active Batch Schedules & Instructors</h3>
+                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Batch Scheduling & Instructors</h3>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {(selectedCourse?.batches ?? [{ name: "Standard Alpha Batch", instructor: "Capt. Vikram Singh", schedule: "Mon-Fri, 09:00 - 13:00" }]).map((b, i) => (
-                      <div key={i} className="p-5 rounded-2xl bg-secondary/30 border border-white/5 space-y-3 hover:border-white/10 transition-colors">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-white">{b.name}</span>
-                          <span className="text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full">
-                            ACTIVE
-                          </span>
-                        </div>
-                        <div className="space-y-1 text-xs">
-                          <div className="flex items-center gap-1.5 text-muted-foreground">
-                            <GraduationCap className="h-3.5 w-3.5 text-primary" /> Instructor: <span className="text-white font-semibold">{b.instructor}</span>
-                          </div>
-                          <div className="flex items-center gap-1.5 text-muted-foreground">
-                            <Calendar className="h-3.5 w-3.5 text-amber-400" /> Schedule: <span className="text-white font-semibold">{b.schedule}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <p className="text-xs text-muted-foreground py-4 text-center">
+                    Batch scheduling is not yet tracked in this system.
+                  </p>
                 </motion.div>
               )}
 
               {activeTab === "fees" && (
                 <motion.div key="fees" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-4">
                   <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Tuition Installments & Tranche Breakdown</h3>
+                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Tuition Fee</h3>
                   </div>
-                  <div className="space-y-3">
-                    {(selectedCourse?.feeBreakdown ?? [{ tranche: "Complete Course Tuition", amount: 450000 }]).map((f, i) => (
-                      <div key={i} className="p-4 rounded-xl bg-secondary/30 border border-white/5 flex items-center justify-between">
-                        <div className="space-y-1">
-                          <span className="text-xs font-bold text-white block">{f.tranche}</span>
-                          <span className="text-[10px] text-muted-foreground block">Required before starting corresponding training phase</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs font-mono font-bold text-emerald-400">{new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(f.amount)}</span>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="p-4 rounded-xl bg-secondary/30 border border-white/5 flex items-center justify-between">
+                    <span className="text-xs font-bold text-white">Total Course Fee</span>
+                    <span className="text-sm font-mono font-bold text-emerald-400">
+                      {selectedCourse?.fee != null
+                        ? new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(selectedCourse.fee)
+                        : "Not set"}
+                    </span>
                   </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Per-installment tranche breakdown is not yet tracked in this system.
+                  </p>
                 </motion.div>
               )}
 

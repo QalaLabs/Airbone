@@ -5,7 +5,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   DndContext,
   type DragEndEvent,
-  type DragOverEvent,
   DragOverlay,
   type DragStartEvent,
   PointerSensor,
@@ -15,9 +14,8 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, User, Calendar, FileText, ChevronDown, ShieldCheck, FileSearch, Award, Landmark, GraduationCap, CheckCircle2, AlertCircle, Download, ExternalLink } from "lucide-react";
+import { GripVertical, User, Calendar, ShieldCheck, FileSearch, Award, Landmark, GraduationCap, AlertCircle, ExternalLink } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
-import { StatusBadge } from "@/components/shared/status-badge";
 import { apiFetch } from "@/lib/api";
 import { formatDate, cn } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
@@ -26,8 +24,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { motion } from "framer-motion";
 
 interface Admission {
   id: string;
@@ -237,7 +233,31 @@ export default function AdmissionsPage() {
 
   const handleVerificationSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    toast({ title: "Verification Form Saved", description: `Application marked as ${verificationStatus}.` });
+    if (!selectedAdmission) return;
+    
+    let targetStage: string;
+    if (verificationStatus === "APPROVED") {
+      if (selectedAdmission.stage === "VERIFICATION") targetStage = "OFFER_LETTER";
+      else if (selectedAdmission.stage === "DOCUMENT_COLLECTION") targetStage = "VERIFICATION";
+      else if (selectedAdmission.stage === "ENQUIRY") targetStage = "DOCUMENT_COLLECTION";
+      else if (selectedAdmission.stage === "OFFER_LETTER") targetStage = "FEE_PAYMENT";
+      else if (selectedAdmission.stage === "FEE_PAYMENT") targetStage = "ENROLLED";
+      else return;
+    } else if (verificationStatus === "FLAGGED") {
+      if (selectedAdmission.stage === "VERIFICATION") targetStage = "DOCUMENT_COLLECTION";
+      else if (selectedAdmission.stage === "DOCUMENT_COLLECTION") targetStage = "ENQUIRY";
+      else if (selectedAdmission.stage === "OFFER_LETTER") targetStage = "VERIFICATION";
+      else if (selectedAdmission.stage === "FEE_PAYMENT") targetStage = "OFFER_LETTER";
+      else return;
+    } else {
+      targetStage = "CANCELLED";
+    }
+
+    updateStageMutation.mutate({
+      id: selectedAdmission.id,
+      stage: targetStage,
+      notes: remarks || undefined,
+    });
     setSelectedAdmission(null);
   };
 

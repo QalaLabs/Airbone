@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { PageHeader } from "@/components/shared/page-header";
-import { Megaphone, AlertCircle } from "lucide-react";
+import { Megaphone } from "lucide-react";
 
 export default function BlogPage() {
   return (

@@ -34,7 +34,16 @@ export default function StudentDetailPage() {
 
   const { data: student, isLoading } = useQuery({
     queryKey: ["student", id],
-    queryFn: () => apiFetch<Student>(`/students/${id}`),
+    queryFn: async () => {
+      const res = await apiFetch<Record<string, unknown>>(`/students/${id}`);
+      const firstName = (res.firstName as string) || "";
+      const lastName = (res.lastName as string) || "";
+      return {
+        ...res,
+        name: (res.name as string) || `${firstName} ${lastName}`.trim() || "Unknown Student",
+        studentId: (res.studentId as string) || (res.studentCode as string) || "—",
+      } as Student;
+    },
     enabled: !!id,
   });
 

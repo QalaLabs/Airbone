@@ -1,13 +1,14 @@
 "use client";
 
 import * as React from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiFetch } from "@/lib/api";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { 
-  Settings, Key, Globe, Eye, EyeOff, CheckCircle2, AlertTriangle, 
-  Save, Shield, Link2, RefreshCw, Lock
+import {
+  Key, Globe, Eye, EyeOff, AlertTriangle,
+  Save, Shield, Link2, RefreshCw
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "@/components/ui/use-toast";
@@ -22,6 +23,7 @@ const INITIAL_ENV_VARS = [
 ];
 
 export default function SettingsPage() {
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = React.useState("env");
   const [envVars, setEnvVars] = React.useState(INITIAL_ENV_VARS);
   
@@ -35,18 +37,99 @@ export default function SettingsPage() {
   const [vapiWebhook, setVapiWebhook] = React.useState("https://api.airborneaviation.in/v1/webhooks/vapi");
   const [whatsappWebhook, setWhatsappWebhook] = React.useState("https://api.airborneaviation.in/v1/webhooks/whatsapp");
 
+  const { data: org } = useQuery({
+    queryKey: ["org-settings"],
+    queryFn: () => apiFetch<{ settings?: Record<string, unknown> }>("/organizations"),
+  });
+
+  const updateOrgMutation = useMutation({
+    mutationFn: (body: Record<string, unknown>) => apiFetch("/organizations", { method: "PATCH", body: JSON.stringify(body) }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["org-settings"] });
+      toast({ title: "Settings Saved", description: "Organization settings updated successfully." });
+    },
+    onError: (err: unknown) => {
+      toast({ title: "Update Failed", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
+    }
+  });
+
+  React.useEffect(() => {
+    if (org?.settings) {
+      const s = org.settings;
+      if (s.envVars) setEnvVars(s.envVars as typeof INITIAL_ENV_VARS);
+      if (typeof s.maintenanceMode === "boolean") setMaintenanceMode(s.maintenanceMode);
+      if (typeof s.applicationIntake === "boolean") setApplicationIntake(s.applicationIntake);
+      if (typeof s.forceDebugLogs === "boolean") setForceDebugLogs(s.forceDebugLogs);
+      if (typeof s.razorpayWebhook === "string") setRazorpayWebhook(s.razorpayWebhook);
+      if (typeof s.vapiWebhook === "string") setVapiWebhook(s.vapiWebhook);
+      if (typeof s.whatsappWebhook === "string") setWhatsappWebhook(s.whatsappWebhook);
+    }
+  }, [org]);
+
   const toggleMask = (id: string) => {
     setEnvVars(prev => prev.map(ev => ev.id === id ? { ...ev, masked: !ev.masked } : ev));
   };
 
   const handleSaveEnv = (e: React.FormEvent) => {
     e.preventDefault();
-    toast({ title: "Environment Config Synchronized", description: "Enqueued zero-downtime rolling restart across production containers." });
+    const form = e.currentTarget as HTMLFormElement;
+    const inputs = Array.from(form.querySelectorAll("input"));
+    const updatedEnv = envVars.map((ev, i) => ({
+      ...ev,
+      value: inputs[i]?.value ?? ev.value
+    }));
+    setEnvVars(updatedEnv);
+    updateOrgMutation.mutate({
+      settings: {
+        ...(org?.settings ?? {}),
+        envVars: updatedEnv,
+      }
+    });
+  };
+
+  const handleToggleIntake = () => {
+    const newVal = !applicationIntake;
+    setApplicationIntake(newVal);
+    updateOrgMutation.mutate({
+      settings: {
+        ...(org?.settings ?? {}),
+        applicationIntake: newVal,
+      }
+    });
+  };
+
+  const handleToggleMaintenance = () => {
+    const newVal = !maintenanceMode;
+    setMaintenanceMode(newVal);
+    updateOrgMutation.mutate({
+      settings: {
+        ...(org?.settings ?? {}),
+        maintenanceMode: newVal,
+      }
+    });
+  };
+
+  const handleToggleDebugLogs = () => {
+    const newVal = !forceDebugLogs;
+    setForceDebugLogs(newVal);
+    updateOrgMutation.mutate({
+      settings: {
+        ...(org?.settings ?? {}),
+        forceDebugLogs: newVal,
+      }
+    });
   };
 
   const handleSaveWebhooks = (e: React.FormEvent) => {
     e.preventDefault();
-    toast({ title: "Webhook Destinations Saved", description: "Razorpay, Vapi, and Meta WhatsApp endpoints successfully updated." });
+    updateOrgMutation.mutate({
+      settings: {
+        ...(org?.settings ?? {}),
+        razorpayWebhook,
+        vapiWebhook,
+        whatsappWebhook,
+      }
+    });
   };
 
   return (
@@ -171,33 +254,33 @@ export default function SettingsPage() {
                     <p className="text-xs text-muted-foreground mt-1">When toggled off, new candidate registrations are suspended and show a waiting list form.</p>
                   </div>
                   <button 
-                    onClick={() => { setApplicationIntake(!applicationIntake); toast({ title: `Intake Status: ${!applicationIntake ? "OPEN" : "CLOSED"}` }); }} 
+                    onClick={handleToggleIntake} 
                     className={`flex h-8 w-14 items-center rounded-full p-1 transition-colors ${applicationIntake ? "bg-primary" : "bg-secondary"}`}
                   >
                     <div className={`h-6 w-6 rounded-full bg-white transition-transform ${applicationIntake ? "translate-x-6" : "translate-x-0"}`} />
                   </button>
                 </div>
-
+ 
                 <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-white/5">
                   <div>
                     <h4 className="text-sm font-bold text-white">System Maintenance Mode</h4>
                     <p className="text-xs text-muted-foreground mt-1">Puts the public academy website into emergency maintenance mode (HTTP 503 response).</p>
                   </div>
                   <button 
-                    onClick={() => { setMaintenanceMode(!maintenanceMode); toast({ title: `Maintenance Mode: ${!maintenanceMode ? "ACTIVE" : "DISABLED"}` }); }} 
+                    onClick={handleToggleMaintenance} 
                     className={`flex h-8 w-14 items-center rounded-full p-1 transition-colors ${maintenanceMode ? "bg-rose-600" : "bg-secondary"}`}
                   >
                     <div className={`h-6 w-6 rounded-full bg-white transition-transform ${maintenanceMode ? "translate-x-6" : "translate-x-0"}`} />
                   </button>
                 </div>
-
+ 
                 <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-white/5">
                   <div>
                     <h4 className="text-sm font-bold text-white">Force Verbose Debug Logging</h4>
                     <p className="text-xs text-muted-foreground mt-1">Increases stdout log verbosity for database transactions and webhook payloads.</p>
                   </div>
                   <button 
-                    onClick={() => { setForceDebugLogs(!forceDebugLogs); toast({ title: `Verbose Logs: ${!forceDebugLogs ? "ENABLED" : "DISABLED"}` }); }} 
+                    onClick={handleToggleDebugLogs} 
                     className={`flex h-8 w-14 items-center rounded-full p-1 transition-colors ${forceDebugLogs ? "bg-primary" : "bg-secondary"}`}
                   >
                     <div className={`h-6 w-6 rounded-full bg-white transition-transform ${forceDebugLogs ? "translate-x-6" : "translate-x-0"}`} />

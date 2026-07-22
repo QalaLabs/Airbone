@@ -1,9 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, MapPin, Briefcase, Clock, Building2, Users, MoreHorizontal } from "lucide-react";
+import { ArrowLeft, MapPin, Briefcase, Clock, Users, MoreHorizontal } from "lucide-react";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -63,16 +63,6 @@ export default function JobDetailPage() {
     queryKey: ["job-applications", id],
     queryFn: () => apiFetch<ApplicationsResponse>(`/job-applications?jobId=${id}&page=1&limit=50`),
     enabled: !!id,
-  });
-
-  const updateStatusMutation = useMutation({
-    mutationFn: (status: string) =>
-      apiFetch(`/job-applications/${status}/status`, { method: "PATCH", body: JSON.stringify({ status }) }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["job-applications", id] });
-      toast({ title: "Application status updated" });
-    },
-    onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
   const applicationColumns: ColumnDef<JobApplication>[] = [
