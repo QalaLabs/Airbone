@@ -68,12 +68,14 @@ export async function generateMetadata({ params }) {
     return {
       title: custom.title,
       description: custom.description,
+      alternates: { canonical: `/courses/${slug}` },
     }
   }
 
   return {
     title: `${course.title} | Airborne Aviation Academy`,
     description: course.subtitle ?? `${course.title} — details, syllabus, and batch information.`,
+    alternates: { canonical: `/courses/${slug}` },
   }
 }
 
@@ -209,7 +211,7 @@ export default async function CourseDetailPage({ params }) {
                   Eligibility Requirements
                 </h2>
                 <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: 0 }}>
-                  {course.slug === 'cabin-crew' ? '12th pass or above, 18–27 years of age, basic English ability' : course.eligibility}
+                  {course.slug === 'cabin-crew' ? '10+2 Pass, 17–26 Years of age, basic English ability' : course.eligibility}
                 </p>
               </div>
             )}

@@ -289,8 +289,8 @@ export default function CabinCrewTrainingPage() {
               </h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
                 {[
-                  { label: 'Qualification', value: '12th pass or above (any stream)' },
-                  { label: 'Age', value: '18 to 27 years at time of joining' },
+                  { label: 'Qualification', value: '10+2 Pass' },
+                  { label: 'Age', value: '17–26 Years' },
                   { label: 'English', value: 'Basic English (improvement built into training)' },
                   { label: 'Physical', value: 'General airline grooming standards' },
                 ].map((e, i) => (

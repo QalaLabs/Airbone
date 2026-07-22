@@ -27,7 +27,7 @@ async function main() {
       category: "Ground School",
       duration: "3–4 Months",
       eligibility: "12th Pass with Physics and Mathematics (minimum 50% marks)",
-      fee: 54000.00,
+      fee: 270000.00,
       seoTitle: "CPL Ground Classes Delhi — DGCA CPL Prep | Airborne",
       seoDesc: "DGCA CPL ground classes in Dwarka, Delhi. Led by Capt. Navrang Singh. Complete preparation for Air Navigation, Meteorology, Regulations, Technical, and RTR exams.",
       seoKeywords: ["CPL ground classes", "DGCA CPL training", "pilot ground school delhi", "RTR exam prep"],

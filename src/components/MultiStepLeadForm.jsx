@@ -84,7 +84,7 @@ function ProgressIndicator({ step, total }) {
  *  - 'pilot' (default) -> budget affordability routing
  * Screening answers are advisory only and never block submission.
  */
-export default function MultiStepLeadForm({ courseName = '', source = 'Multi-Step Form', courseCategory = 'pilot' }) {
+export default function MultiStepLeadForm({ courseName = '', source = 'Multi-Step Form', courseCategory = 'pilot', successMessage = '' }) {
   const [step, setStep] = useState(0)
   const [status, setStatus] = useState('idle')
   const [otp, setOtp] = useState('')
@@ -204,7 +204,9 @@ export default function MultiStepLeadForm({ courseName = '', source = 'Multi-Ste
       <div style={{ ...cardStyle, textAlign: 'center' }}>
         <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', color: '#D8A027', marginBottom: '0.6rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.1em' }}>Enquiry Received</h3>
         <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.6', marginBottom: '1.5rem' }}>
-          Thank you! Your enquiry has been received successfully. Our admissions team will contact you shortly.
+          {successMessage || (courseName
+            ? `Thank you! Your enquiry for ${courseName} has been received successfully. Our admissions team will contact you shortly.`
+            : 'Thank you! Your enquiry has been received successfully. Our admissions team will contact you shortly.')}
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
           <a href="tel:+919953777320" className="btn btn-outline" style={{ textDecoration: 'none', fontSize: '0.75rem', padding: '0.6rem 1rem' }}>📞 Call Us</a>

@@ -1,6 +1,7 @@
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
+import { getBreadcrumbSchema, getLocalBusinessSchema } from '@/utils/seo'
 
 export const metadata = {
   title: 'Contact Airborne Aviation Academy — Dwarka, Delhi | Capt. Navrang Singh',
@@ -36,9 +37,17 @@ const CONTACT = [
   { label: 'Registered Office', value: 'B-104, Himachal Apartment, Sector 5, Dwarka, New Delhi — 110078' },
 ]
 
+const breadcrumbSchema = getBreadcrumbSchema([
+  { name: 'Home', path: '/' },
+  { name: 'Contact', path: '/contact' },
+])
+const contactSchema = getLocalBusinessSchema()
+
 export default function ContactPage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(contactSchema) }} />
       <Header />
       <main style={{ minHeight: '80vh', background: '#000810', padding: '4rem var(--margin) 6rem var(--margin)' }}>
         <div className="container-xl">
