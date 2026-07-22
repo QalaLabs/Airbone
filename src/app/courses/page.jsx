@@ -218,7 +218,7 @@ export default async function CoursesPage() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.25rem', marginBottom: '1.5rem' }}>
                           <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)' }}>Tuition Rate</span>
                           <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.15rem', fontWeight: 700, color: 'var(--gold)' }}>
-                            {course.slug === 'cabin-crew' ? '₹30K–₹54K' : formatFee(course.fee)}
+                            {course.slug === 'cabin-crew' ? '₹30K–₹54K' : course.slug === 'atpl' ? '₹1,50,000' : formatFee(course.fee)}
                           </span>
                         </div>
                       )}
