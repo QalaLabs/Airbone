@@ -288,16 +288,19 @@ export default function MultiStepLeadForm({ courseName = '', source = 'Multi-Ste
               {screening.height && Number(screening.height) < 157 && (
                 <p style={{ fontSize: '0.75rem', color: '#D8A027', marginBottom: '1rem' }}>Note: minimum height guidance for cabin crew is 157cm — our counsellor will discuss this with you.</p>
               )}
+              {screening.height && screening.weight && Number(screening.height) > 0 && (Number(screening.weight) / ((Number(screening.height) / 100) ** 2)) > 25 && (
+                <p style={{ fontSize: '0.75rem', color: '#D8A027', marginBottom: '1rem' }}>Note: BMI guidance for cabin crew is typically ≤25 — our counsellor will discuss fitness requirements with you. This does not block your enquiry.</p>
+              )}
             </>
           ) : (
             <>
               <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)', marginBottom: '1.25rem', lineHeight: 1.6 }}>
                 This helps us recommend the right path and financing options for you.
               </p>
-              <YesNo label="Are you able to comfortably afford the full training cost at this time?" value={screening.canAfford} onChange={(v) => setScreening((s) => ({ ...s, canAfford: v }))} />
+              <YesNo label="Are you able to comfortably afford the full training cost at this time?" value={screening.canAfford} onChange={(v) => setScreening((s) => ({ ...s, canAfford: v, priority: v === 'No' ? 'financing' : 'standard' }))} />
               {screening.canAfford === 'No' && (
                 <p style={{ fontSize: '0.78rem', color: '#D8A027', marginBottom: '1rem', lineHeight: 1.6 }}>
-                  No problem — our admissions team will reach out with EMI and education loan guidance options.
+                  No problem — we&apos;ll mark this as a financing-priority enquiry. Our admissions team will reach out with EMI and education loan guidance options.
                 </p>
               )}
             </>

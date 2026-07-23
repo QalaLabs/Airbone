@@ -6,16 +6,16 @@ import { getBreadcrumbSchema } from '@/utils/seo'
 import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
-  title: 'DGCA CPL Ground School Dwarka Delhi | Airborne Aviation',
+  title: 'CPL Course Delhi Commercial Pilot License | Airborne Aviation',
   description: 'Clear all 5 DGCA CPL papers on your first attempt. Mentor-led CPL Ground School in Dwarka, Delhi by Capt. Navrang Singh.',
   alternates: { canonical: '/courses/commercial-pilot-license-cpl' },
   openGraph: {
-    title: 'DGCA CPL Ground School Dwarka Delhi | Airborne Aviation',
+    title: 'CPL Course Delhi Commercial Pilot License | Airborne Aviation',
     description: 'Clear all 5 DGCA CPL papers on your first attempt. Mentor-led CPL Ground School in Dwarka, Delhi by Capt. Navrang Singh.',
     url: 'https://www.airborneaviation.in/courses/commercial-pilot-license-cpl',
   },
   twitter: {
-    title: 'DGCA CPL Ground School Dwarka Delhi | Airborne Aviation',
+    title: 'CPL Course Delhi Commercial Pilot License | Airborne Aviation',
     description: 'Clear all 5 DGCA CPL papers on your first attempt. Mentor-led CPL Ground School in Dwarka, Delhi by Capt. Navrang Singh.',
   },
 }
@@ -285,7 +285,12 @@ export default function CPLPage() {
                 <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)' }}>👥 Max 25 Students</div>
                 <span className="course-sidebar-note">July 2026 batch now enrolling</span>
               </div>
-              <MultiStepLeadForm courseName="CPL Ground School" source="Course Detail: commercial-pilot-license-cpl" courseCategory="pilot" />
+              <MultiStepLeadForm
+                courseName="CPL Ground School"
+                source="Course Detail: commercial-pilot-license-cpl"
+                courseCategory="pilot"
+                successMessage="Thank you! Your CPL Ground School enquiry has been received. An Airborne admissions counsellor will contact you shortly."
+              />
             </div>
           </div>
 

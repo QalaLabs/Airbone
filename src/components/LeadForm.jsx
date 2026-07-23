@@ -62,7 +62,7 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
   if (status === 'success') {
     const confirmationText = successMessage || (
       (values.course || courseName).toLowerCase().includes('cpl')
-        ? 'Thank you for registering your interest in the CPL Ground School program. Our admissions team will reach out shortly with the detailed syllabus, fee schedule, and upcoming batch availability.'
+        ? 'Thank you! Your CPL Ground School enquiry has been received. An Airborne admissions counsellor will contact you shortly.'
         : 'Thank you! Your enquiry has been received successfully. Our admissions team will contact you shortly.'
     )
 

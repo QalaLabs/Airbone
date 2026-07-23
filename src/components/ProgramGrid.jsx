@@ -55,7 +55,7 @@ const PROGRAMS = [
     title: 'Cadet Preparation',
     tag: 'Cadet Selection',
     desc: 'IndiGo, Air India, and Akasa cadet pilot program preparation. Aptitude tests, group discussions, and simulator screening.',
-    price: '₹45,000',
+    price: '₹50,000',
     href: '/courses/cadet-preparation',
     accent: 'var(--red)',
   },

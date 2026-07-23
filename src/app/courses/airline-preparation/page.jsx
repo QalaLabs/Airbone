@@ -6,8 +6,8 @@ import { getBreadcrumbSchema } from '@/utils/seo'
 import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
-  title: 'Airline GD PI Interview Preparation Delhi | Airborne Aviation',
-  description: 'Airline interview preparation at Airborne, Dwarka — 2,500+ students trained. GD, PI, personal development, mock interviews by Rajeet Khalsa. IndiGo, Air India, Akasa-ready.',
+  title: 'Airline Interview Prep Delhi | GD/PI & Personality | Airborne',
+  description: 'Structured airline interview prep at Airborne, Dwarka. GD/PI coaching and personality development by retired Air India AGM with 37+ years experience. Book now.',
   alternates: { canonical: '/courses/airline-preparation' },
 }
 
@@ -20,8 +20,8 @@ const breadcrumbSchema = getBreadcrumbSchema([
 const courseSchema = {
   '@context': 'https://schema.org',
   '@type': 'Course',
-  name: 'GD/PI & Airline Interview Preparation',
-  description: 'Structured airline interview preparation covering group discussion, personal interview, personal development, communication skills, resume crafting, and mock interviews.',
+  name: 'Airline Preparation | GD/PI, Personality Development & Interview Coaching',
+  description: 'Structured airline interview preparation covering group discussion, personal interview, personality development, communication & diction, resume & application, and mock interview rounds.',
   provider: {
     '@type': 'EducationalOrganization',
     name: 'Airborne Aviation Academy',
@@ -36,24 +36,24 @@ const faqSchema = {
   mainEntity: [
     {
       '@type': 'Question',
-      name: 'Who trains the airline interview preparation module at Airborne?',
-      acceptedAnswer: { '@type': 'Answer', text: 'The module is led by Rajeet Khalsa, a certified soft-skills trainer with airline HR experience. Rajeet has prepared hundreds of CPL holders for IndiGo, Air India, Akasa Air, and SpiceJet selection panels.' }
+      name: 'How long is the airline preparation course?',
+      acceptedAnswer: { '@type': 'Answer', text: '4–6 weeks for intensive preparation, with ongoing mock sessions available. Duration is adjusted based on how soon the candidate has an actual interview.' }
     },
     {
       '@type': 'Question',
-      name: 'What makes airline interviews different from normal job interviews?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Airline selection panels assess CRM (Crew Resource Management) principles, situational judgement, composure under pressure, and cultural fit with the airline. Standard job interview prep does not cover these. Airborne\'s program is aviation-specific — every scenario, role-play, and mock interview is calibrated to actual airline interview formats.' }
+      name: 'Is this only for pilots?',
+      acceptedAnswer: { '@type': 'Answer', text: 'Open to both pilot and cabin crew candidates. GD/PI formats are adjusted for the specific role. Cabin crew candidates are also covered under the Cabin Crew Training pathways.' }
     }
   ]
 }
 
 const MODULES = [
-  { module: 'Group Discussion (GD)', detail: 'Topic types used by IndiGo, Air India & Akasa. Speaking strategy, listening, leadership signals, time management within GD.' },
-  { module: 'Personal Interview (PI)', detail: 'Question bank from real airline panels. CRM principles, situational questions, "tell me about a time when..." frameworks.' },
-  { module: 'Personal Development', detail: 'Grooming standards, posture, body language, uniform protocol, eye contact, and composure under high-pressure assessment.' },
-  { module: 'Communication Skills', detail: 'Phonetics, aviation English, ICAO phraseology for interview context, clarity of expression, technical vocabulary confidence.' },
-  { module: 'Resume & Document Prep', detail: 'Airline-format logbook summary, CPL document checklist, medical certificate presentation, licence endorsement formatting.' },
-  { module: 'Mock Interviews', detail: 'Structured mock sessions with Rajeet Khalsa. Video recorded, scored against airline rubric, full written debrief provided.' },
+  { module: 'Group Discussion (GD)', detail: 'Topic selection strategy, structure, timed mock GDs with panel feedback, aviation and current affairs topics used by IndiGo/Air India.' },
+  { module: 'Personal Interview (PI)', detail: 'Airline-specific questions, technical and HR round prep, common pitfalls, handling difficult questions.' },
+  { module: 'Personality Development', detail: 'Professional presence, body language, first impression, interview confidence, handling difficult scenarios.' },
+  { module: 'Communication & Diction', detail: 'English fluency, clarity, voice modulation, aviation phraseology in non-technical contexts.' },
+  { module: 'Resume & Application', detail: 'Aviation resume format, what airlines look for, covering letter strategy.' },
+  { module: 'Mock Interview Rounds', detail: 'Full-length recorded mock interviews with debrief — airline-panel-style feedback by ex-industry professionals.' },
 ]
 
 export default function AirlinePreparationPage() {
@@ -87,27 +87,25 @@ export default function AirlinePreparationPage() {
                 📍 Dwarka, Delhi · ₹1,00,000
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
-                GD/PI & Airline Interview Preparation — IndiGo, Air India & Akasa
+                Airline Preparation | GD/PI, Personality Development & Interview Coaching
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
-                Getting a CPL is the qualifying step. Getting hired is a different skill. Airborne's airline interview preparation program — led by Rajeet Khalsa — prepares pilots for the GD, PI, and final selection rounds at India's top carriers. Every module is calibrated to actual airline interview formats, not generic HR coaching.
+                Airborne Aviation Academy offers structured airline interview preparation for CPL holders and cadet program applicants. The program covers Group Discussion (GD), Personal Interview (PI), Personality Development (PD), and aviation communication — led by Rajeet Khalsa, retired AGM (Training) at Air India with 37+ years of experience.
               </p>
             </div>
 
-            {/* Trainer */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                Your Trainer — Rajeet Khalsa
+                Why Airline Interview Preparation Matters
               </h2>
               <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: 0 }}>
-                Rajeet Khalsa is a certified soft-skills and personal development trainer with deep airline HR experience. At Airborne, Rajeet leads all GD/PI preparation, mock interview sessions, and personal development coaching. Students trained by Rajeet have successfully cleared selection panels at IndiGo, Air India, Akasa Air, and SpiceJet.
+                Having a CPL does not guarantee an airline seat. Every airline — IndiGo, Air India, Akasa Air, SpiceJet — runs a multi-round selection process where communication, personality, and situational judgement are assessed alongside technical competence. Candidates who have never trained for GD/PI consistently underperform in airline assessments, even when technically qualified.
               </p>
             </div>
 
-            {/* Modules */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                What's Covered — 6 Modules
+                What The Program Covers
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {MODULES.map((m, i) => (
@@ -119,15 +117,23 @@ export default function AirlinePreparationPage() {
               </div>
             </div>
 
-            {/* FAQ */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                Frequently Asked Questions
+                Your Trainer | Rajeet Khalsa
+              </h2>
+              <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: 0 }}>
+                Rajeet Khalsa retired as AGM (Training) at Air India after 37+ years. A certified soft skills trainer and image consultant who trained cabin crew and airline professionals for India&apos;s national carrier. At Airborne, Rajeet runs GD/PI and personality modules — sessions built on real airline selection formats.
+              </p>
+            </div>
+
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
+                FAQs
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
                 {[
-                  { q: 'Who trains the airline interview preparation module at Airborne?', a: 'The module is led by Rajeet Khalsa, a certified soft-skills trainer with airline HR experience. Rajeet has prepared hundreds of CPL holders for IndiGo, Air India, Akasa Air, and SpiceJet selection panels.' },
-                  { q: 'What makes airline interviews different from normal job interviews?', a: "Airline selection panels assess CRM (Crew Resource Management) principles, situational judgement, composure under pressure, and cultural fit with the airline. Standard job interview prep does not cover these. Airborne's program is aviation-specific — every scenario, role-play, and mock interview is calibrated to actual airline interview formats." },
+                  { q: 'How long is the airline preparation course?', a: '4–6 weeks for intensive preparation, with ongoing mock sessions available. Duration is adjusted based on how soon the candidate has an actual interview.' },
+                  { q: 'Is this only for pilots?', a: 'Open to both pilot and cabin crew candidates. GD/PI formats are adjusted for the specific role. Cabin crew candidates are also covered under the Cabin Crew Training pathways.' },
                 ].map((faq, i) => (
                   <div key={i} className="course-faq-item">
                     <h3 className="course-faq-q">{faq.q}</h3>
@@ -146,7 +152,7 @@ export default function AirlinePreparationPage() {
                 <div className="course-sidebar-price">₹1,00,000</div>
                 <span className="course-sidebar-note">GD + PI + Mock Interviews + PD</span>
               </div>
-              <LeadForm courseName="GD/PI & Airline Interview Preparation" source="Course Detail: airline-preparation" />
+              <LeadForm courseName="Airline Preparation | GD/PI & Interview Coaching" source="Course Detail: airline-preparation" />
             </div>
           </div>
 

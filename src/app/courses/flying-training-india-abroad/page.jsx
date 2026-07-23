@@ -6,8 +6,8 @@ import { getBreadcrumbSchema } from '@/utils/seo'
 import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
-  title: 'Flying Training India vs Abroad — CPL Guide | Airborne Aviation',
-  description: 'Compare flying training in India vs abroad for a DGCA CPL. Cost, timeline, DGCA license conversion, and which path makes more sense. Expert guide by Airborne — 2,500+ students trained.',
+  title: 'Flying Training India vs Abroad | Cost & DGCA Guide | Airborne',
+  description: 'Compare flying training in India vs abroad. DGCA requirements, cost comparison, license conversion guide, and which countries are recognised. Free counselling.',
   alternates: { canonical: '/courses/flying-training-india-abroad' },
 }
 
@@ -20,7 +20,7 @@ const breadcrumbSchema = getBreadcrumbSchema([
 const pageSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
-  headline: 'Flying Training in India vs Abroad — Which Is Better for a DGCA CPL?',
+  headline: 'Flying Training in India vs Abroad | Complete Guide for 2026',
   description: 'A structured comparison of CPL flight training in India versus abroad, covering cost, timeline, DGCA license conversion, and airline hiring outcomes.',
   author: {
     '@type': 'Organization',
@@ -40,31 +40,31 @@ const faqSchema = {
   mainEntity: [
     {
       '@type': 'Question',
-      name: 'Can I convert a foreign CPL to a DGCA CPL?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Yes. DGCA allows conversion of foreign CPLs under the bilateral agreement framework. The process requires passing DGCA written examinations in all subjects, completing 200 hours on Indian-registered aircraft (in most cases), and holding a valid foreign CPL from an ICAO contracting state. The conversion process typically takes 12–18 months and requires a significant additional cost outlay after you return to India.' }
+      name: 'Is it cheaper to do pilot training in India or abroad?',
+      acceptedAnswer: { '@type': 'Answer', text: 'Direct training cost can be lower in Philippines/USA (₹35–45L vs ₹65–75L). However, once conversion costs (₹5–15L), living expenses abroad, and additional 12–18 months before airline entry are added, India-trained CPL holders often reach their first airline seat faster and at lower total cost.' }
     },
     {
       '@type': 'Question',
-      name: 'Is flying training abroad cheaper than India?',
-      acceptedAnswer: { '@type': 'Answer', text: 'On headline flight cost per hour, some countries (Philippines, South Africa, USA) can be cheaper than India. However, total cost including living expenses, forex risk, return flights, DGCA conversion costs, and the additional 200 hours on Indian aircraft often makes the total spend higher than training in India from the start. The decision should be based on total-cost-of-ownership, not per-hour rate.' }
+      name: 'Does DGCA recognise FAA or EASA pilot licenses?',
+      acceptedAnswer: { '@type': 'Answer', text: 'DGCA does not directly accept FAA or EASA CPL for commercial operations in India. Pilots trained abroad must clear DGCA CPL written examinations and pass a DGCA Skill Test to receive an Indian CPL.' }
     },
     {
       '@type': 'Question',
-      name: 'Do Indian airlines prefer India-trained pilots?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Indian airlines evaluate pilots on licence validity, flight hours, medical status, and aptitude test scores — not training country. However, pilots with DGCA CPL (India) and 200+ hours on Indian-registered aircraft can apply to cadet programs immediately. Pilots returning with a foreign CPL must first complete conversion before applying.' }
+      name: 'Can I do DGCA ground school while flying abroad?',
+      acceptedAnswer: { '@type': 'Answer', text: 'Yes. Airborne offers DGCA ground school for students completing flying hours abroad or between training phases. Completing DGCA exams before returning to India reduces total conversion time significantly.' }
     }
   ]
 }
 
 const COMPARISON = [
-  { param: 'Total Cost (indicative)', india: '₹35–60 lakhs (CPL + IR + ground)', abroad: '₹55–90 lakhs (training + living + conversion)' },
-  { param: 'Duration', india: '18–24 months', abroad: '12–18 months (training only) + 12–18 months conversion' },
-  { param: 'DGCA CPL direct?', india: 'Yes — train and get DGCA CPL directly', abroad: 'No — foreign CPL first, then conversion required' },
-  { param: 'Airline eligibility (India)', india: 'Immediately after CPL + 200 hrs', abroad: 'After conversion completion + 200 hrs on Indian aircraft' },
-  { param: 'Weather / flying days', india: 'Monsoon disruption risk (varies by ATO location)', abroad: 'Varies — Philippines, USA, South Africa have high flying days' },
-  { param: 'Forex risk', india: 'None — INR fees', abroad: 'High — USD/EUR/ZAR exposure' },
-  { param: 'Ground school (DGCA)', india: 'Done during training — integrated', abroad: 'Must be re-done in India for DGCA conversion' },
-  { param: 'Support network', india: 'Family proximity, no visa dependency', abroad: 'Isolated environment; visa complications possible' },
+  { param: 'Total Cost', india: '₹55–65 lakh (CPL)', abroad: '₹35–65 lakh depending on country' },
+  { param: 'Duration', india: '18–24 months', abroad: '12–18 months training + 12–18 months conversion' },
+  { param: 'DGCA CPL Direct', india: 'Yes — issued directly by DGCA', abroad: 'No — requires conversion to DGCA CPL' },
+  { param: 'Airline Eligibility', india: 'Immediately after CPL + required hours', abroad: 'After conversion + DGCA Skill Test' },
+  { param: 'Weather', india: 'Variable — monsoon disruptions', abroad: 'Generally more consistent (Philippines, USA)' },
+  { param: 'Forex Risk', india: 'None — INR fees', abroad: 'High — USD/EUR exposure' },
+  { param: 'Ground School', india: 'Integrated during training', abroad: 'DGCA exams required for conversion' },
+  { param: 'Support Network', india: 'Family proximity, no visa dependency', abroad: 'Isolated environment; visa complications possible' },
 ]
 
 const DECISION = [
@@ -105,7 +105,7 @@ export default function FlyingTrainingIndiaAbroadPage() {
                 Expert Guide — Airborne Aviation Academy
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
-                Flying Training in India vs Abroad — Which Path Is Right for You?
+                Flying Training in India vs Abroad | Complete Guide for 2026
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
                 The India vs abroad debate is one of the most common questions Airborne's admissions team receives. The answer depends on your budget, timeline, and final career goal — not on where your batchmate trained. This guide lays out the actual comparison based on 2025–26 data, including DGCA conversion requirements you will need if you train outside India.
@@ -115,7 +115,7 @@ export default function FlyingTrainingIndiaAbroadPage() {
             {/* India vs Abroad Table */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                India vs Abroad — Full Comparison
+                India vs Abroad — Key Comparison
               </h2>
               <div style={{ border: '1px solid rgba(0, 39, 76, 0.08)', borderRadius: '8px', overflow: 'hidden', overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem', fontFamily: 'var(--font-b)', minWidth: '600px' }}>
@@ -142,18 +142,17 @@ export default function FlyingTrainingIndiaAbroadPage() {
             {/* DGCA License Conversion */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                DGCA License Conversion — What It Actually Involves
+                DGCA License Conversion — What Pilots Trained Abroad Must Know
               </h2>
               <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', marginBottom: '1rem' }}>
-                If you train abroad, you return with a foreign CPL (FAA, EASA, CAA Philippines, etc.). To fly commercially in India, you must convert it to a DGCA CPL. The conversion process includes:
+                If you train abroad, you return with a foreign CPL (FAA, EASA, CAAP Philippines, CASA Australia, Transport Canada, UK CAA, CAA NZ). To fly commercially in India, you must convert it to a DGCA CPL. Conversion typically takes 6–18 months and includes:
               </p>
               <ul className="course-list">
                 {[
-                  'Pass DGCA written exams in all subjects (Air Navigation, Air Regulations, Meteorology, Technical General, Technical Specific, RTR)',
-                  'Complete 200 hours on Indian-registered aircraft (requirement varies by bilateral agreement)',
-                  'Pass DGCA skill test (flight check with DGCA-approved examiner)',
-                  'Hold valid DGCA Class 1 Medical throughout conversion period',
-                  'Timeline: 12–18 months post-return · additional cost: ₹15–25 lakhs',
+                  'Full DGCA CPL written examinations (6 papers)',
+                  'DGCA Skill Test (flight check)',
+                  'Valid DGCA Class 1 Medical',
+                  'Timeline: 6–18 months · conversion costs typically ₹5–15 lakh (excluding living / additional hours)',
                 ].map((item, i) => (
                   <li key={i} style={{ fontSize: '0.88rem', color: 'rgba(0, 39, 76, 0.65)', lineHeight: '1.6' }}>{item}</li>
                 ))}
@@ -163,7 +162,7 @@ export default function FlyingTrainingIndiaAbroadPage() {
             {/* Which Is Better Decision Table */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                Which Is Better — Decision Guide
+                Which Is Better — Training in India or Abroad?
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0', border: '1px solid rgba(0, 39, 76, 0.08)', borderRadius: '8px', overflow: 'hidden' }}>
                 {DECISION.map((d, i) => (
@@ -179,7 +178,7 @@ export default function FlyingTrainingIndiaAbroadPage() {
             {/* How Airborne Helps */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                How Airborne Helps — Whichever Path You Choose
+                How Airborne Aviation Helps
               </h2>
               <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: '0 0 1rem 0' }}>
                 If you train in India, Airborne provides CPL ground school, DGCA exam prep, and airline placement preparation from the same campus. If you train abroad and return for conversion, Airborne offers DGCA conversion ground school — all subjects covered in structured batches — plus the 200-hour Indian aircraft coordination through our partner ATOs.
@@ -192,13 +191,13 @@ export default function FlyingTrainingIndiaAbroadPage() {
             {/* FAQ */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                Frequently Asked Questions
+                FAQs — Flying Training India vs Abroad
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
                 {[
-                  { q: 'Can I convert a foreign CPL to a DGCA CPL?', a: 'Yes. DGCA allows conversion of foreign CPLs under the bilateral agreement framework. The process requires passing DGCA written examinations in all subjects, completing 200 hours on Indian-registered aircraft (in most cases), and holding a valid foreign CPL from an ICAO contracting state. The conversion process typically takes 12–18 months and requires a significant additional cost outlay after you return to India.' },
-                  { q: 'Is flying training abroad cheaper than India?', a: 'On headline flight cost per hour, some countries (Philippines, South Africa, USA) can be cheaper than India. However, total cost including living expenses, forex risk, return flights, DGCA conversion costs, and the additional 200 hours on Indian aircraft often makes the total spend higher than training in India from the start. The decision should be based on total-cost-of-ownership, not per-hour rate.' },
-                  { q: 'Do Indian airlines prefer India-trained pilots?', a: 'Indian airlines evaluate pilots on licence validity, flight hours, medical status, and aptitude test scores — not training country. However, pilots with DGCA CPL (India) and 200+ hours on Indian-registered aircraft can apply to cadet programs immediately. Pilots returning with a foreign CPL must first complete conversion before applying.' },
+                  { q: 'Is it cheaper to do pilot training in India or abroad?', a: 'Direct training cost can be lower in Philippines/USA (₹35–45L vs ₹65–75L). However, once conversion costs (₹5–15L), living expenses abroad, and additional 12–18 months before airline entry are added, India-trained CPL holders often reach their first airline seat faster and at lower total cost.' },
+                  { q: 'Does DGCA recognise FAA or EASA pilot licenses?', a: 'DGCA does not directly accept FAA or EASA CPL for commercial operations in India. Pilots trained abroad must clear DGCA CPL written examinations and pass a DGCA Skill Test to receive an Indian CPL.' },
+                  { q: 'Can I do DGCA ground school while flying abroad?', a: 'Yes. Airborne offers DGCA ground school for students completing flying hours abroad or between training phases. Completing DGCA exams before returning to India reduces total conversion time significantly.' },
                 ].map((faq, i) => (
                   <div key={i} className="course-faq-item">
                     <h3 className="course-faq-q">{faq.q}</h3>

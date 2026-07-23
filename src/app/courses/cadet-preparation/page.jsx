@@ -124,7 +124,7 @@ export default function CadetPreparationPage() {
             {/* FAQ */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                Frequently Asked Questions
+                FAQs
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
                 {[
@@ -148,7 +148,11 @@ export default function CadetPreparationPage() {
                 <div className="course-sidebar-price">₹50,000</div>
                 <span className="course-sidebar-note">Aptitude prep, GD/PI, SIM familiarisation</span>
               </div>
-              <LeadForm courseName="Cadet Pilot Program Preparation" source="Course Detail: cadet-preparation" />
+              <LeadForm
+                courseName="Cadet Pilot Program Preparation"
+                source="Course Detail: cadet-preparation"
+                successMessage="Your enquiry has been received."
+              />
             </div>
           </div>
 

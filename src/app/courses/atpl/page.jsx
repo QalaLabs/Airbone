@@ -6,17 +6,17 @@ import { getBreadcrumbSchema } from '@/utils/seo'
 import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
-  title: 'ATPL Ground School Delhi | Airline Exam Prep | Airborne',
-  description: 'Prepare for ATPL exams & oral viva checkouts at Airborne Aviation, Dwarka Delhi. Expert-led 3-month ATPL ground school. ₹1,50,000. 15 seats available. Enrol now.',
+  title: 'ATPL Ground School India | All Subjects | Airborne Aviation',
+  description: 'ATPL ground school in Delhi by Airborne Aviation Academy. Complete airline transport pilot license exam prep — all subjects, DGCA-aligned. Enrol now.',
   alternates: { canonical: '/courses/atpl' },
   openGraph: {
-    title: 'ATPL Ground School Delhi | Airline Exam Prep | Airborne',
-    description: 'Prepare for ATPL exams & oral viva checkouts at Airborne Aviation, Dwarka Delhi. Expert-led 3-month ATPL ground school. ₹1,50,000. 15 seats available. Enrol now.',
+    title: 'ATPL Ground School India | All Subjects | Airborne Aviation',
+    description: 'ATPL ground school in Delhi by Airborne Aviation Academy. Complete airline transport pilot license exam prep — all subjects, DGCA-aligned. Enrol now.',
     url: 'https://www.airborneaviation.in/courses/atpl',
   },
   twitter: {
-    title: 'ATPL Ground School Delhi | Airline Exam Prep | Airborne',
-    description: 'Prepare for ATPL exams & oral viva checkouts at Airborne Aviation, Dwarka Delhi. Expert-led 3-month ATPL ground school. ₹1,50,000. 15 seats available. Enrol now.',
+    title: 'ATPL Ground School India | All Subjects | Airborne Aviation',
+    description: 'ATPL ground school in Delhi by Airborne Aviation Academy. Complete airline transport pilot license exam prep — all subjects, DGCA-aligned. Enrol now.',
   },
 }
 
@@ -193,7 +193,7 @@ export default function ATPLPage() {
             {/* FAQ */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                Frequently Asked Questions
+                FAQs — ATPL Ground School
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
                 {[

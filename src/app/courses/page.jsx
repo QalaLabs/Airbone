@@ -6,7 +6,7 @@ import { fetchPublic, formatFee } from '@/lib/adminApi'
 import { getBreadcrumbSchema } from '@/utils/seo'
 
 export const metadata = {
-  title: 'Aviation Courses Delhi | CPL - ATPL - Cabin Crew | Airborne',
+  title: 'Pilot Training Courses in Delhi CPL, ATPL, Cabin Crew | Airborne',
   description: 'Browse all DGCA-approved aviation courses at Airborne Aviation Academy, Dwarka Delhi — 2,500+ students trained. CPL ground school, ATPL, Cabin Crew, A320 SIM, cadet prep. Compare fees and eligibility.',
 }
 
@@ -150,7 +150,11 @@ export default async function CoursesPage() {
 
             {/* Lead Form */}
             <div>
-              <LeadForm courseName={flagship.title} source="Flagship Featured Banner" />
+              <LeadForm
+                courseName={flagship.title}
+                source="Flagship Featured Banner"
+                successMessage="Your enquiry has been received."
+              />
             </div>
           </div>
         )}

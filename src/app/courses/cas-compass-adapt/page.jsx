@@ -6,8 +6,8 @@ import { getBreadcrumbSchema } from '@/utils/seo'
 import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
-  title: 'CAS Compass & ADAPT Test Prep Delhi | Airborne Aviation',
-  description: 'Prepare for the IAF CAS Compass and ADAPT pilot aptitude tests at Airborne, Dwarka — 2,500+ students trained. Numerical, spatial, psychomotor, multi-tasking — structured coaching.',
+  title: 'CAS Compass & ADAPT Test Preparation | Pilot Aptitude | Airborne',
+  description: 'Prepare for DGCA CAS Compass and ADAPT pilot aptitude screening tests at Airborne Aviation Academy, Dwarka. Structured preparation for cadet pilot selection.',
   alternates: { canonical: '/courses/cas-compass-adapt' },
 }
 
@@ -20,8 +20,8 @@ const breadcrumbSchema = getBreadcrumbSchema([
 const courseSchema = {
   '@context': 'https://schema.org',
   '@type': 'Course',
-  name: 'CAS Compass & ADAPT Test Preparation',
-  description: 'Structured preparation for the CAS Compass and ADAPT pilot aptitude tests. Covers numerical, spatial, multi-tasking, psychomotor, and personality components.',
+  name: 'CAS Compass & ADAPT Pilot Aptitude Test Preparation',
+  description: 'Structured preparation for CAS Compass and ADAPT pilot aptitude screening tests. Covers numerical, spatial, multi-tasking, psychomotor, and personality assessment.',
   provider: {
     '@type': 'EducationalOrganization',
     name: 'Airborne Aviation Academy',
@@ -36,23 +36,23 @@ const faqSchema = {
   mainEntity: [
     {
       '@type': 'Question',
-      name: 'What is the CAS Compass test for pilots?',
-      acceptedAnswer: { '@type': 'Answer', text: 'The CAS Compass (Computer Adaptive System — Cognitive Assessment) is used to test pilot aptitude for commercial airline and defence selection. It covers numerical reasoning, spatial awareness, psychomotor coordination, and multi-tasking ability. Scores are used to predict a candidate\'s adaptability to flight training.' }
+      name: 'Can aptitude test scores be improved with preparation?',
+      acceptedAnswer: { '@type': 'Answer', text: 'Performance on timed tests improves substantially with familiarity and practice under time pressure. Structured preparation reduces first-exposure anxiety and helps candidates perform closer to their actual ability ceiling.' }
     },
     {
       '@type': 'Question',
-      name: 'What is the ADAPT test?',
-      acceptedAnswer: { '@type': 'Answer', text: 'ADAPT (Aptitude for Pilot Training) is a standardised battery of cognitive tests used in airline cadet selection. It measures the same core domains as CAS Compass — numerical, spatial, psychomotor — but with different interface and scoring mechanics. Airborne\'s preparation covers both systems.' }
+      name: 'Which airlines use CAS Compass or ADAPT?',
+      acceptedAnswer: { '@type': 'Answer', text: "Several Indian airlines use aptitude screening tools in cadet and direct entry selection. Airborne's preparation covers cognitive, spatial, and psychomotor components common across all major airline aptitude test formats." }
     }
   ]
 }
 
 const PREP_MODULES = [
-  { domain: 'Numerical Reasoning', what: 'Speed arithmetic, sequences, data interpretation under time pressure', how: 'Timed drill sets mirroring actual test interface' },
-  { domain: 'Spatial Awareness', what: 'Mental rotation, block counting, map reading, 3D orientation', how: 'Structured visual-spatial practice with progressive difficulty' },
-  { domain: 'Multi-Tasking', what: 'Simultaneous task tracking (visual + auditory), dual-channel monitoring', how: 'Simulator-based multi-task drills with debrief' },
-  { domain: 'Psychomotor Coordination', what: 'Joystick/yoke tracking, compensatory tracking tasks', how: 'Hardware-based tracking exercises on-campus' },
-  { domain: 'Personality & Situational Judgement', what: 'Airline personality fit, decision-making under stress', how: 'Scenario-based Q&A with Rajeet Khalsa debrief' },
+  { domain: 'Numerical Reasoning', what: 'Speed and accuracy with numbers under time pressure', how: 'Timed drill sessions with difficulty progression' },
+  { domain: 'Spatial Reasoning', what: '3D visualisation and instrument reading', how: 'Flight instrument interpretation exercises' },
+  { domain: 'Multi-Tasking', what: 'Managing multiple information streams simultaneously', how: 'Dual-task exercises under time pressure' },
+  { domain: 'Psychomotor Coordination', what: 'Hand-eye coordination for flight controls', how: 'Tracking and joystick coordination tasks' },
+  { domain: 'Personality Assessment', what: 'Temperament and cockpit suitability', how: 'Awareness coaching (not gaming the test)' },
 ]
 
 export default function CASCompassAdaptPage() {
@@ -86,43 +86,40 @@ export default function CASCompassAdaptPage() {
                 📍 Dwarka, Delhi · ₹30,000
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
-                CAS Compass & ADAPT Pilot Aptitude Test Preparation
+                CAS Compass & ADAPT Pilot Aptitude Test Preparation | Dwarka, Delhi
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
                 Airborne Aviation Academy offers structured preparation for the CAS Compass and ADAPT pilot aptitude test batteries used in airline and cadet selection. Our program covers all five domains — numerical, spatial, multi-tasking, psychomotor, and personality — with timed drills, hardware practice, and expert debrief.
               </p>
             </div>
 
-            {/* What Is CAS Compass */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                What Is the CAS Compass Test?
+                What Is The ADAPT Test?
               </h2>
               <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: 0 }}>
-                CAS Compass (Computer Adaptive System — Cognitive Assessment) is a standardised pilot aptitude battery used in airline cadet and commercial pilot selection in India and internationally. The test adapts difficulty to your performance in real time, making familiarisation with the interface and response strategy critical to your score. Airlines including IndiGo and Air India use CAS-based aptitude screens.
+                ADAPT (Automated Dynamic Aptitude Profile Test) is a computerised pilot aptitude test battery assessing cognitive fitness, multi-tasking ability, spatial reasoning, and decision-making under pressure. Airlines use ADAPT scores as part of cadet and direct entry selection.
               </p>
             </div>
 
-            {/* What Is ADAPT */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                What Is the ADAPT Test?
+                What Is The CAS Compass Test?
               </h2>
               <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: 0 }}>
-                ADAPT (Aptitude for Pilot Training) is a parallel aptitude battery covering the same cognitive domains as CAS Compass but with a different interface and scoring structure. Used across airline cadet programs globally, ADAPT measures raw cognitive capacity for flight training — not flying skill. Preparation strategy is domain-specific and platform-aware.
+                CAS Compass is an aviation-specific psychometric assessment evaluating cognitive ability, procedural learning, instrument interpretation, and suitability for pilot training — used by several Indian and international airline cadet programs as a first-round screening tool.
               </p>
             </div>
 
-            {/* Preparation Table */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                What Airborne Covers — By Domain
+                What Airborne Prepares You For
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0', border: '1px solid rgba(0, 39, 76, 0.08)', borderRadius: '8px', overflow: 'hidden' }}>
                 <div style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', padding: '0.75rem 1.5rem', display: 'grid', gridTemplateColumns: '1fr 1.5fr 1.2fr', gap: '1rem' }}>
-                  <div style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(0, 39, 76, 0.45)' }}>Domain</div>
-                  <div style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(0, 39, 76, 0.45)' }}>What It Tests</div>
-                  <div style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(0, 39, 76, 0.45)' }}>How We Prepare You</div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(0, 39, 76, 0.45)' }}>Test Component</div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(0, 39, 76, 0.45)' }}>Skill Tested</div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(0, 39, 76, 0.45)' }}>Preparation Method</div>
                 </div>
                 {PREP_MODULES.map((m, i) => (
                   <div key={i} style={{ background: i % 2 === 0 ? 'rgba(0, 39, 76, 0.02)' : 'transparent', borderTop: '1px solid rgba(0, 39, 76, 0.05)', padding: '1.25rem 1.5rem', display: 'grid', gridTemplateColumns: '1fr 1.5fr 1.2fr', gap: '1rem', alignItems: 'start' }}>
@@ -134,15 +131,14 @@ export default function CASCompassAdaptPage() {
               </div>
             </div>
 
-            {/* FAQ */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                Frequently Asked Questions
+                FAQs
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
                 {[
-                  { q: 'What is the CAS Compass test for pilots?', a: "The CAS Compass (Computer Adaptive System — Cognitive Assessment) tests pilot aptitude for commercial airline and defence selection. It covers numerical reasoning, spatial awareness, psychomotor coordination, and multi-tasking ability. Scores predict a candidate's adaptability to flight training." },
-                  { q: 'What is the ADAPT test?', a: "ADAPT (Aptitude for Pilot Training) is a standardised battery of cognitive tests used in airline cadet selection. It measures the same core domains as CAS Compass — numerical, spatial, psychomotor — but with different interface and scoring mechanics. Airborne's preparation covers both systems." },
+                  { q: 'Can aptitude test scores be improved with preparation?', a: 'Performance on timed tests improves substantially with familiarity and practice under time pressure. Structured preparation reduces first-exposure anxiety and helps candidates perform closer to their actual ability ceiling.' },
+                  { q: 'Which airlines use CAS Compass or ADAPT?', a: "Several Indian airlines use aptitude screening tools in cadet and direct entry selection. Airborne's preparation covers cognitive, spatial, and psychomotor components common across all major airline aptitude test formats." },
                 ].map((faq, i) => (
                   <div key={i} className="course-faq-item">
                     <h3 className="course-faq-q">{faq.q}</h3>

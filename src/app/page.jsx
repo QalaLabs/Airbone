@@ -294,28 +294,36 @@ function RevealLine({ children, delay = 0 }) {
   )
 }
 
-function HeroChapter({ onBook, on3D }) {
+function HeroChapter({ onBook }) {
   const ref = useRef(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
-  const yBg = useTransform(scrollYProgress, [0, 1], ['0%', '30%'])
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 1.15])
-  const fade = useTransform(scrollYProgress, [0, 0.7], [1, 0])
-  const textY = useTransform(scrollYProgress, [0, 1], ['0%', '-30%'])
+  const yBg = useTransform(scrollYProgress, [0, 1], ['0%', '22%'])
+  const scale = useTransform(scrollYProgress, [0, 1], [1, 1.08])
+  const fade = useTransform(scrollYProgress, [0, 0.75], [1, 0])
+  const textY = useTransform(scrollYProgress, [0, 1], ['0%', '-18%'])
 
   return (
-    <section id="top" ref={ref} style={{ position: 'relative', height: '100svh', minHeight: '640px', width: '100%', overflow: 'hidden', background: 'var(--navy-deep)' }}>
-      <motion.div style={{ y: yBg, scale, position: 'absolute', inset: 0 }}>
+    <section
+      id="top"
+      ref={ref}
+      className="hero-section"
+      style={{ position: 'relative', height: '100svh', minHeight: '640px', width: '100%', overflow: 'hidden', background: 'var(--navy-deep)' }}
+    >
+      <motion.div className="hero-parallax-bg" style={{ y: yBg, scale, position: 'absolute', inset: 0, willChange: 'transform' }}>
         <Image
           src="/footage/hero-cockpit.jpg"
-          alt="Sunrise from a commercial cockpit above the clouds"
+          alt="Sunrise from a commercial cockpit above the clouds — Airborne Aviation Academy"
           fill
           priority
           fetchPriority="high"
-          style={{ objectFit: 'cover' }}
+          quality={82}
+          style={{ objectFit: 'cover', objectPosition: 'center 40%' }}
           sizes="100vw"
         />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,8,22,0.5) 0%, rgba(0,8,22,0.4) 40%, rgba(0,8,22,0.98) 100%)' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,8,22,0.6), transparent, transparent)' }} />
+        {/* Readability stack: base wash + left rail + bottom fade */}
+        <div className="hero-overlay-base" aria-hidden />
+        <div className="hero-overlay-rail" aria-hidden />
+        <div className="hero-overlay-bottom" aria-hidden />
         <HeroLayers />
       </motion.div>
 
@@ -324,93 +332,71 @@ function HeroChapter({ onBook, on3D }) {
         style={{ y: textY, opacity: fade, position: 'relative', zIndex: 10, display: 'flex', height: '100%', flexDirection: 'column', justifyContent: 'flex-end' }}
       >
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.8 }}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.6875rem', letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: '2rem' }}
+          transition={{ delay: 0.25, duration: 0.7 }}
+          className="hero-eyebrow"
         >
-          <span style={{ height: '1px', width: '2.5rem', background: 'var(--red)' }} />
-          Dwarka, Delhi · Est. 2009
+          <span className="hero-eyebrow-rule" aria-hidden />
+          <span>Airborne Aviation · Dwarka, Delhi · Est. 2009</span>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.8 }}
-          style={{ fontFamily: 'var(--font-h)', fontWeight: 600, letterSpacing: '0.02em', fontSize: 'clamp(0.9rem,1.6vw,1.25rem)', color: 'var(--gold)', marginBottom: '0.75rem' }}
-        >
-          Ab India Bharega Udaan
-        </motion.div>
-
-        <h1 style={{ fontFamily: 'var(--font-h)', fontWeight: 800, letterSpacing: '-0.045em', lineHeight: 0.92, fontSize: 'clamp(2.2rem,8.5vw,7.5rem)', color: '#fff', maxWidth: '16ch', textShadow: '0 4px 24px rgba(0,0,0,0.9), 0 2px 8px rgba(0,0,0,0.8)' }}>
-          <RevealLine delay={0.2}>Pilot Training Academy</RevealLine>
+        <h1 className="hero-headline">
+          <RevealLine delay={0.2}>From Classroom</RevealLine>
           <RevealLine delay={0.4}>
-            in Dwarka, Delhi <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>DGCA Approved</span>
+            To <span className="hero-headline-accent">Cockpit</span>
           </RevealLine>
         </h1>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9, duration: 0.8 }}
-          className="hero-footer-wrapper"
-          style={{ marginTop: '2.5rem', display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem', width: '100%' }}
+          transition={{ delay: 0.55, duration: 0.7 }}
+          className="hero-tagline"
         >
-          <p style={{ color: 'rgba(255,255,255,0.8)', maxWidth: '28rem', fontSize: '0.9375rem', lineHeight: 1.7, fontFamily: 'var(--font-b)' }}>
-            India's most disciplined DGCA ground school for CPL & ATPL. Mentor-led training under
+          Ab India Bharega Udaan
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.85, duration: 0.75 }}
+          className="hero-footer-wrapper"
+        >
+          <p className="hero-support">
+            India&apos;s most disciplined DGCA ground school for CPL &amp; ATPL. Mentor-led training under
             Capt. Navrang Singh — clearing exams, building careers, restarting dreams.
           </p>
 
-          <div className="hero-btn-container" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div className="hero-btn-container">
             <Magnetic>
               <button
+                type="button"
                 onClick={onBook}
                 className="reserve-seat-btn"
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-                  borderRadius: '999px', background: 'var(--red)', color: '#fff',
-                  paddingLeft: '1.5rem', paddingRight: '0.5rem', paddingTop: '0.5rem', paddingBottom: '0.5rem',
-                  fontSize: '0.875rem', fontWeight: 500, fontFamily: 'var(--font-h)',
-                  border: 'none', cursor: 'pointer', transition: 'background 0.2s',
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = 'var(--red-dark)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'var(--red)'}
+                aria-label="Enrol now at Airborne Aviation"
               >
                 Enrol Now
-                <span className="reserve-seat-arrow" style={{ display: 'inline-flex', height: '2rem', width: '2rem', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: '#ffffff', color: 'var(--red)', flexShrink: 0 }}>
+                <span className="reserve-seat-arrow" aria-hidden>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
                 </span>
               </button>
             </Magnetic>
-            {/*
-            <button
-              onClick={on3D}
-              className="desktop-only-inline-flex"
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-                borderRadius: '999px', background: 'rgba(255,255,255,0.1)', color: '#fff',
-                padding: '0.625rem 1.25rem', fontSize: '0.875rem', fontWeight: 500, fontFamily: 'var(--font-h)',
-                border: 'none', cursor: 'pointer', transition: 'background 0.2s',
-                backdropFilter: 'blur(8px)',
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-            >
-              ✦ Enter 3D Cockpit
-            </button>
-            */}
+            <a href="#courses" className="hero-secondary-cta">
+              Explore Courses
+            </a>
           </div>
         </motion.div>
       </motion.div>
 
-      {/* Scroll cue */}
       <motion.div
+        className="hero-scroll-cue"
         animate={{ y: [0, 8, 0] }}
         transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ position: 'absolute', bottom: '1.5rem', left: '50%', translateX: '-50%', zIndex: 10, color: 'rgba(255,255,255,0.6)', fontSize: '0.625rem', letterSpacing: '0.3em', textTransform: 'uppercase', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}
+        aria-hidden
       >
         <span>Scroll</span>
-        <span style={{ height: '2rem', width: '1px', background: 'linear-gradient(to bottom, rgba(255,255,255,0.6), transparent)' }} />
+        <span className="hero-scroll-line" />
       </motion.div>
 
       <CockpitHUD />
@@ -429,7 +415,7 @@ function BoardingStrip() {
     { value: 100, suffix: '%', label: 'Mentor-led batches' },
   ]
   return (
-    <section style={{ position: 'relative', marginTop: '-3.5rem', zIndex: 20, padding: '0 clamp(1.5rem,5vw,4rem)' }}>
+    <section className="boarding-strip-wrap" style={{ position: 'relative', zIndex: 20, padding: '0 clamp(1.5rem,5vw,4rem)' }}>
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -1041,7 +1027,7 @@ function FounderSection() {
 const STATIC_COURSES = [
   { name: 'CPL Ground School',    price: '₹2,70,000',       tag: 'Ground School',  lede: 'Complete DGCA CPL exam prep. All subjects. Mentor-led batches of 25.', desc: 'Complete DGCA CPL exam prep. All subjects. Mentor-led batches of 25.', duration: '12–18 months', eligibility: 'Class 12 PM',    href: '/courses/cpl-ground-classes' },
   { name: 'ATPL Ground School',   price: '₹1,50,000',       tag: 'Ground School',  lede: 'Airline Transport Pilot License exam prep covering all DGCA subjects.', desc: 'ATPL exam prep — all DGCA subjects covered, viva included.', duration: '4–6 months',  eligibility: 'Valid CPL',        href: '/courses/atpl' },
-  { name: 'Cadet Preparation',    price: '₹45,000',         tag: 'Cadet Selection',lede: 'IndiGo, Air India & Akasa cadet pilot selection program preparation.', desc: 'Aptitude tests, GD/PI, SIM prep for airline cadet programs.', duration: '2–3 months',  eligibility: 'CPL in progress',  href: '/courses/cadet-preparation' },
+  { name: 'Cadet Preparation',    price: '₹50,000',         tag: 'Cadet Selection',lede: 'IndiGo, Air India & Akasa cadet pilot selection program preparation.', desc: 'Aptitude tests, GD/PI, SIM prep for airline cadet programs.', duration: '2–3 months',  eligibility: 'CPL in progress',  href: '/courses/cadet-preparation' },
   { name: 'A320 Simulator',       price: '₹10,000/hr',      tag: 'Simulator',      lede: 'In-house Airbus A320 simulator for type rating familiarisation and airline SIM prep.', desc: 'Type rating fam, cadet SIM prep, emergency procedures.', duration: 'Per session', eligibility: 'CPL holders',      href: '/courses/a320-simulator' },
   { name: 'CAS Compass & ADAPT',  price: '₹30,000',         tag: 'Aptitude Test',  lede: 'Structured preparation for CAS Compass and ADAPT pilot aptitude test batteries.', desc: 'Numerical, spatial, psychomotor, multi-tasking, personality.', duration: '4–6 weeks',  eligibility: 'Any stage',        href: '/courses/cas-compass-adapt' },
   { name: 'Airline Preparation',  price: '₹1,00,000',       tag: 'GD / PI',        lede: 'GD, PI, personal development and mock interviews led by Rajeet Khalsa.', desc: 'GD, PI, mock interviews, communication, resume prep.', duration: '6–8 weeks',  eligibility: 'CPL holders',      href: '/courses/airline-preparation' },
@@ -2797,7 +2783,7 @@ export default function HomePage() {
       {/* Page sections */}
       <main>
         {/* Hero */}
-        <HeroChapter onBook={openBooking} on3D={() => setIs3dMode(true)} />
+        <HeroChapter onBook={openBooking} />
 
         {/* Stats strip */}
         <BoardingStrip />

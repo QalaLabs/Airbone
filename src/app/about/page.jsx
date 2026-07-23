@@ -235,13 +235,12 @@ export default function AboutPage() {
         {/* Academy Values */}
         <div style={{ background: '#00162e', border: '1px solid rgba(255,255,255,0.08)', padding: '3.5rem var(--margin)', borderRadius: '1px', marginBottom: '5rem' }}>
           <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.4rem', fontWeight: 800, color: '#FFFFFF', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '2rem' }}>
-            Why Serious Aspirants Choose Airborne
+            Why Students and Parents Choose Airborne
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '2rem' }}>
             {[
-              { title: 'Zero Rote Learning', text: 'We do not sell test answer booklets. We build structural concept clarity. Understanding lift coefficients and hydraulic logic saves lives and secures airline cockpit roles.' },
-              { title: 'In-House A320 Simulator', text: 'Unlike theoretical classes, our students spend training hours in our Dwarka FTD simulator. Practicing cockpit layouts bridges the gap between ground schooling and aircraft type check-rides.' },
-              { title: 'International Integrity', text: 'We coordinate flight programs with foreign schools, handling validation, medical clearances, and flight hours. We guarantee complete, verified conversion support.' }
+              { title: 'Transparent Fees With No Mid-Course Surprises', text: 'Full fee breakdown provided before enrolment. Flying hours, ground school, DGCA exams and medical costs are clearly communicated upfront. No hidden mid-course charges.' },
+              { title: 'Instructor Continuity – Same Teacher, Start to Finish', text: 'Students are mentored by the same instructor throughout the journey. Capt. Navrang leads ground school from Day 1 to CPL issue — continuity that rotating part-time instructors cannot match.' },
             ].map((v) => (
               <div key={v.title}>
                 <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.95rem', fontWeight: 800, color: '#D8A027', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
