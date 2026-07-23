@@ -3,11 +3,11 @@
 import { useState, useCallback, useMemo } from 'react'
 import { triggerToast } from '@/components/Toast'
 import useFormValidation from '@/hooks/useFormValidation'
-import { validateName, validatePhone, validateEmail, validateRequired } from '@/utils/validation'
+import { validateName, validatePhone, validateEmail, validatePincode, validateRequired } from '@/utils/validation'
 import FormField from '@/components/FormField'
 import SubmitButton from '@/components/SubmitButton'
 
-const validators = { name: validateName, phone: validatePhone, email: validateEmail, course: validateRequired }
+const validators = { name: validateName, phone: validatePhone, email: validateEmail, pincode: validatePincode, course: validateRequired }
 
 function genUuid() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
@@ -34,6 +34,41 @@ function YesNo({ label, value, onChange, name }) {
               fontWeight: 700,
               textTransform: 'uppercase',
               letterSpacing: '0.05em',
+              borderRadius: '2px',
+              cursor: 'pointer',
+              border: value === opt ? '1px solid #D8A027' : '1px solid rgba(255,255,255,0.15)',
+              background: value === opt ? 'rgba(216,160,39,0.15)' : 'transparent',
+              color: value === opt ? '#D8A027' : 'rgba(255,255,255,0.6)',
+              transition: 'all 0.2s',
+            }}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function ChoiceGroup({ label, value, onChange, options }) {
+  return (
+    <div style={{ marginBottom: '1.1rem' }}>
+      <span style={{ display: 'block', fontSize: '0.82rem', color: 'rgba(255,255,255,0.8)', marginBottom: '0.5rem', fontFamily: 'var(--font-b)' }}>{label}</span>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }} role="radiogroup" aria-label={label}>
+        {options.map((opt) => (
+          <button
+            key={opt}
+            type="button"
+            role="radio"
+            aria-checked={value === opt}
+            onClick={() => onChange(opt)}
+            style={{
+              padding: '0.55rem 0.85rem',
+              fontSize: '0.72rem',
+              fontFamily: 'var(--font-h)',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
               borderRadius: '2px',
               cursor: 'pointer',
               border: value === opt ? '1px solid #D8A027' : '1px solid rgba(255,255,255,0.15)',
@@ -95,7 +130,7 @@ export default function MultiStepLeadForm({ courseName = '', source = 'Multi-Ste
   const leadUuid = useMemo(() => genUuid(), [])
 
   const { values, errors, touched, handleChange, handleBlur, validate, isValid } = useFormValidation(
-    { name: '', phone: '', email: '', course: courseName },
+    { name: '', phone: '', email: '', pincode: '', course: courseName },
     validators
   )
 
@@ -227,14 +262,14 @@ export default function MultiStepLeadForm({ courseName = '', source = 'Multi-Ste
       {step === 0 && (
         <>
           <FormField id="msf-name" label="Full Name" type="text" placeholder="Full Name" dark value={values.name} onChange={(v) => handleChange('name', v)} onBlur={() => handleBlur('name')} error={touched.name ? errors.name : null} required />
-          <FormField id="msf-phone" label="Contact Number" type="tel" placeholder="Contact Number (10 digits)" dark value={values.phone} onChange={(v) => handleChange('phone', v)} onBlur={() => handleBlur('phone')} error={touched.phone ? errors.phone : null} required maxLength={10} />
-          <FormField id="msf-email" label="Email Address" type="email" placeholder="Email Address" dark value={values.email} onChange={(v) => handleChange('email', v)} onBlur={() => handleBlur('email')} error={touched.email ? errors.email : null} required />
+          <FormField id="msf-phone" label="Phone Number" type="tel" placeholder="Contact Number (10 digits)" dark value={values.phone} onChange={(v) => handleChange('phone', v)} onBlur={() => handleBlur('phone')} error={touched.phone ? errors.phone : null} required maxLength={10} />
+          <FormField id="msf-email" label="Email" type="email" placeholder="Email Address" dark value={values.email} onChange={(v) => handleChange('email', v)} onBlur={() => handleBlur('email')} error={touched.email ? errors.email : null} required />
+          <FormField id="msf-pincode" label="PIN Code" type="text" placeholder="PIN Code" dark value={values.pincode} onChange={(v) => handleChange('pincode', v)} onBlur={() => handleBlur('pincode')} error={touched.pincode ? errors.pincode : null} required maxLength={6} />
           <SubmitButton id="msf-next-0" type="button" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={goNext}>
             Continue →
           </SubmitButton>
         </>
       )}
-      {step === 0 && null}
 
       {/* Step 1: OTP */}
       {step === 1 && (
@@ -297,11 +332,33 @@ export default function MultiStepLeadForm({ courseName = '', source = 'Multi-Ste
               <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)', marginBottom: '1.25rem', lineHeight: 1.6 }}>
                 This helps us recommend the right path and financing options for you.
               </p>
-              <YesNo label="Are you able to comfortably afford the full training cost at this time?" value={screening.canAfford} onChange={(v) => setScreening((s) => ({ ...s, canAfford: v, priority: v === 'No' ? 'financing' : 'standard' }))} />
+              <YesNo
+                label="Total cost for the CPL program is approximately ₹80 Lakh, inclusive of Flying Training (at FTO). Given this fee structure, would you be prepared to meet the financial commitment required for this course?"
+                value={screening.canAfford}
+                onChange={(v) => setScreening((s) => ({ ...s, canAfford: v, priority: v === 'No' ? 'financing' : 'standard' }))}
+              />
               {screening.canAfford === 'No' && (
                 <p style={{ fontSize: '0.78rem', color: '#D8A027', marginBottom: '1rem', lineHeight: 1.6 }}>
                   No problem — we&apos;ll mark this as a financing-priority enquiry. Our admissions team will reach out with EMI and education loan guidance options.
                 </p>
+              )}
+              <ChoiceGroup
+                label="Which CPL path are you considering?"
+                value={screening.cplPath}
+                onChange={(v) => setScreening((s) => ({ ...s, cplPath: v }))}
+                options={['Conventional CPL', 'Cadet Pilot Program']}
+              />
+              <ChoiceGroup
+                label="When are you planning to join?"
+                value={screening.joinTimeline}
+                onChange={(v) => setScreening((s) => ({ ...s, joinTimeline: v }))}
+                options={['Within a week', 'Within a month', '3–6 months', 'Just exploring']}
+              />
+              <YesNo label="Have you considered any other academy?" value={screening.otherAcademy} onChange={(v) => setScreening((s) => ({ ...s, otherAcademy: v }))} />
+              <FormField id="msf-city" label="Current City" type="text" placeholder="Current City" dark value={screening.city || ''} onChange={(v) => setScreening((s) => ({ ...s, city: v }))} />
+              <YesNo label="Are you comfortable relocating to Delhi?" value={screening.relocate} onChange={(v) => setScreening((s) => ({ ...s, relocate: v }))} />
+              {screening.relocate === 'No' && (
+                <YesNo label="Are you comfortable with online classes?" value={screening.onlineOk} onChange={(v) => setScreening((s) => ({ ...s, onlineOk: v }))} />
               )}
             </>
           )}
@@ -321,6 +378,7 @@ export default function MultiStepLeadForm({ courseName = '', source = 'Multi-Ste
             <div><strong style={{ color: '#fff' }}>Name:</strong> {values.name}</div>
             <div><strong style={{ color: '#fff' }}>Phone:</strong> +91 {values.phone} ✓ verified</div>
             <div><strong style={{ color: '#fff' }}>Email:</strong> {values.email}</div>
+            <div><strong style={{ color: '#fff' }}>PIN Code:</strong> {values.pincode}</div>
             <div><strong style={{ color: '#fff' }}>Course:</strong> {values.course}</div>
           </div>
           {status === 'error' && (

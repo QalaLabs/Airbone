@@ -238,7 +238,15 @@ export default async function CourseDetailPage({ params }) {
                   Course Tuition Fee
                 </span>
                 <div className="course-sidebar-price">
-                  {course.slug === 'cabin-crew' ? '₹30K–₹54K' : (course.fee ? formatFee(course.fee) : 'Contact us')}
+                  {(course.slug === 'cabin-crew' || course.slug === 'cabin-crew-training')
+                    ? '₹30K–₹54K'
+                    : course.slug === 'cadet-preparation'
+                      ? '₹50,000'
+                      : (course.slug === 'a320-simulator' || course.slug === 'airbus-a320-sim-training')
+                        ? '₹10,000/hr'
+                        : course.slug === 'atpl'
+                          ? '₹1,50,000'
+                          : (course.fee ? formatFee(course.fee) : 'Contact us')}
                 </div>
                 <span className="course-sidebar-note">
                   *Excluding external licensing exam/viva processing fees.

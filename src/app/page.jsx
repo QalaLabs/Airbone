@@ -382,7 +382,7 @@ function HeroChapter({ onBook }) {
                 </span>
               </button>
             </Magnetic>
-            <a href="#courses" className="hero-secondary-cta">
+            <a href="/courses" className="hero-secondary-cta">
               Explore Courses
             </a>
           </div>
@@ -2224,7 +2224,7 @@ function AirborneAdvantage() {
       benefits: [
         { title: 'Student Library', desc: 'Student library — open after class hours.' },
         { title: 'Campus Cafeteria', desc: 'On-campus cafeteria and lounge area.' },
-        { title: 'Class 2 Medical Desk', desc: 'In-house Class 2 medical facility at the centre.' },
+        { title: 'Class 2 Medical Desk', desc: 'In-house Class II medical facility at the centre.' },
         { title: 'Hostel Support', desc: 'Hostel assistance for outstation students.' },
         { title: 'Goodies for Every Student', desc: 'Bag, keychain, notebook, pen, and T-shirt for every student.' },
         { title: 'Own the Study Material', desc: 'All course material provided and kept by students.' },
@@ -2240,7 +2240,7 @@ function AirborneAdvantage() {
         </svg>
       ),
       benefits: [
-        { title: 'Smart Attendance', desc: 'Real-time attendance notifications — every check-in and check-out.' },
+        { title: 'Smart Attendance', desc: 'Attendance notifications to parents when ward checks in/out of the institute.' },
         { title: 'Performance Reports', desc: 'Weekly mock exam and progress reports delivered to parents.' },
         { title: 'Education Loan Support', desc: 'Dedicated loan support via banking partners (SBI, Axis & HDFC).' },
         { title: 'Parent Counselling Call', desc: 'Pre-enrolment parent counselling call with admissions team.' },

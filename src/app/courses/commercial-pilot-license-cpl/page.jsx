@@ -232,10 +232,10 @@ export default function CPLPage() {
               </h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                 {[
-                  { icon: '🎯', title: '100% First-Attempt Pass Rate', body: 'Maintained across 2,500+ students over 15 years.' },
-                  { icon: '👨‍✈️', title: 'Founder Teaches Every Class', body: 'Capt. Navrang Singh personally leads each session — no junior staff.' },
+                  { icon: '👨‍✈️', title: 'Founder Teaches Every Class', body: 'All five DGCA papers personally taught by Capt. Navrang Singh — no junior staff on core subjects.' },
                   { icon: '📚', title: 'First-Principles Approach', body: 'No question banks. DGCA syllabi taught from fundamentals up.' },
-                  { icon: '🏫', title: 'Small Batches — Max 25', body: 'Individual attention and personalised pacing for every student.' },
+                  { icon: '🏫', title: 'Small Batches — Max 25', body: 'Training paced according to each student\'s learning speed.' },
+                  { icon: '🎯', title: '1-on-1 Doubt Sessions', body: 'Individual doubt-solving sessions with Capt. Navrang Singh until concepts are clear.' },
                 ].map((c, i) => (
                   <div key={i} style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', border: '1px solid rgba(0, 39, 76, 0.08)', padding: '1.5rem', borderRadius: '4px' }}>
                     <div style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}>{c.icon}</div>
@@ -289,7 +289,7 @@ export default function CPLPage() {
                 courseName="CPL Ground School"
                 source="Course Detail: commercial-pilot-license-cpl"
                 courseCategory="pilot"
-                successMessage="Thank you! Your CPL Ground School enquiry has been received. An Airborne admissions counsellor will contact you shortly."
+                successMessage="Thank you! Your CPL Ground School enquiry has been received. An Airborne admissions counsellor will contact you within 24 hours."
               />
             </div>
           </div>
