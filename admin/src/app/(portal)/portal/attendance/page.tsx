@@ -3,7 +3,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import { ClipboardCheck, BarChart3 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import {
+  PortalPageHeader,
+  GlassCard,
+  SectionLabel,
+  EmptyState,
+  MotionSection,
+  Stagger,
+  StatTile,
+  ProgressBar,
+  StatusPill,
+} from "@/components/portal/portal-ui";
+import { CardSkeleton } from "@/components/portal/portal-skeleton";
 
 interface MePayload {
   attendance: Array<{
@@ -23,11 +34,11 @@ interface AttendanceBreakdown {
   bySubject: Array<{ subject: string; percent: number; total: number; present: number }>;
 }
 
-const STATUS_STYLE: Record<string, string> = {
-  PRESENT: "bg-emerald-500/15 text-emerald-400",
-  LATE: "bg-amber-500/15 text-amber-400",
-  ABSENT: "bg-red-500/15 text-red-400",
-  EXCUSED: "bg-blue-500/15 text-blue-400",
+const STATUS_TONE: Record<string, "success" | "warning" | "danger" | "neutral"> = {
+  PRESENT: "success",
+  LATE: "warning",
+  ABSENT: "danger",
+  EXCUSED: "neutral",
 };
 
 function formatMonth(key: string) {
@@ -52,132 +63,131 @@ export default function PortalAttendancePage() {
   const present = breakdown?.overallPresent ?? records.filter((r) => r.status === "PRESENT" || r.status === "LATE").length;
   const total = breakdown?.overallTotal ?? records.length;
 
+  if (isLoading) {
+    return (
+      <div className="space-y-6" aria-busy="true">
+        <CardSkeleton className="h-20" />
+        <div className="grid gap-3 sm:grid-cols-3">
+          {[0, 1, 2].map((i) => <CardSkeleton key={i} className="h-24" />)}
+        </div>
+        <CardSkeleton className="h-64" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-white">Attendance</h1>
-        <p className="mt-1 text-sm text-white/50">Your lecture attendance history and breakdown</p>
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-center">
-          <p className="text-3xl font-bold text-white">{percent}%</p>
-          <p className="mt-1 text-xs text-white/50">Overall attendance</p>
-        </div>
-        <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-center">
-          <p className="text-3xl font-bold text-white">{present}</p>
-          <p className="mt-1 text-xs text-white/50">Sessions attended</p>
-        </div>
-        <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-center">
-          <p className="text-3xl font-bold text-white">{total}</p>
-          <p className="mt-1 text-xs text-white/50">Total sessions</p>
-        </div>
-      </div>
-
-      <div className="overflow-hidden rounded-full bg-white/10 h-2">
-        <div
-          className={cn("h-full rounded-full transition-all", percent >= 75 ? "bg-emerald-500" : percent >= 50 ? "bg-amber-500" : "bg-red-500")}
-          style={{ width: `${percent}%` }}
+      <MotionSection>
+        <PortalPageHeader
+          eyebrow="Flight log"
+          title="Attendance"
+          description="Your lecture attendance history and breakdown"
         />
-      </div>
-      {percent < 75 && (
-        <p className="text-xs text-amber-400">
-          Your attendance is below 75%. Please attend sessions regularly to remain eligible for assessments.
-        </p>
-      )}
+      </MotionSection>
+
+      <MotionSection delay={0.05}>
+        <Stagger className="grid gap-3 sm:grid-cols-3">
+          <StatTile icon={ClipboardCheck} label="Overall attendance" value={`${percent}%`} accent={percent >= 75} />
+          <StatTile icon={ClipboardCheck} label="Sessions attended" value={present} />
+          <StatTile icon={ClipboardCheck} label="Total sessions" value={total} />
+        </Stagger>
+      </MotionSection>
+
+      <MotionSection delay={0.1}>
+        <GlassCard soft className="space-y-3">
+          <ProgressBar value={percent} />
+          {percent < 75 && (
+            <p className="text-xs text-[var(--ab-gold)]">
+              Your attendance is below 75%. Please attend sessions regularly to remain eligible for assessments.
+            </p>
+          )}
+        </GlassCard>
+      </MotionSection>
 
       {!loadingBreakdown && breakdown && (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <section className="rounded-xl border border-white/10 bg-white/[0.03] p-4 space-y-3">
-            <h2 className="flex items-center gap-2 text-sm font-semibold text-white">
-              <BarChart3 className="h-4 w-4 text-[#c8102e]" />
-              Monthly breakdown
-            </h2>
-            {breakdown.monthly.length === 0 ? (
-              <p className="text-xs text-white/40">No monthly data yet.</p>
-            ) : (
-              <div className="space-y-2">
-                {breakdown.monthly.map((m) => (
-                  <div key={m.month} className="flex items-center gap-3">
-                    <span className="w-20 shrink-0 text-xs text-white/50">{formatMonth(m.month)}</span>
-                    <div className="flex-1 h-1.5 overflow-hidden rounded-full bg-white/10">
-                      <div className="h-full rounded-full bg-[#c8102e]" style={{ width: `${m.percent}%` }} />
+        <MotionSection delay={0.15}>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <GlassCard soft className="space-y-3">
+              <SectionLabel icon={BarChart3}>Monthly breakdown</SectionLabel>
+              {breakdown.monthly.length === 0 ? (
+                <p className="text-xs text-white/40">No monthly data yet.</p>
+              ) : (
+                <div className="space-y-3">
+                  {breakdown.monthly.map((m) => (
+                    <div key={m.month} className="flex items-center gap-3">
+                      <span className="w-20 shrink-0 text-xs text-white/50">{formatMonth(m.month)}</span>
+                      <ProgressBar value={m.percent} className="flex-1" />
+                      <span className="w-16 shrink-0 text-right text-xs text-white/60">
+                        {m.percent}% ({m.present}/{m.total})
+                      </span>
                     </div>
-                    <span className="text-xs text-white/60 w-16 text-right">{m.percent}% ({m.present}/{m.total})</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          <section className="rounded-xl border border-white/10 bg-white/[0.03] p-4 space-y-3">
-            <h2 className="flex items-center gap-2 text-sm font-semibold text-white">
-              <BarChart3 className="h-4 w-4 text-[#c8102e]" />
-              By subject
-            </h2>
-            {breakdown.bySubject.length === 0 ? (
-              <p className="text-xs text-white/40">No subject data yet.</p>
-            ) : (
-              <div className="space-y-2">
-                {breakdown.bySubject.map((s) => (
-                  <div key={s.subject} className="flex items-center gap-3">
-                    <span className="w-24 shrink-0 truncate text-xs text-white/50">{s.subject}</span>
-                    <div className="flex-1 h-1.5 overflow-hidden rounded-full bg-white/10">
-                      <div className="h-full rounded-full bg-emerald-500" style={{ width: `${s.percent}%` }} />
-                    </div>
-                    <span className="text-xs text-white/60 w-16 text-right">{s.percent}%</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-        </div>
-      )}
-
-      {isLoading && (
-        <div className="space-y-2">
-          {[1,2,3].map((i) => <div key={i} className="h-14 animate-pulse rounded-xl bg-white/[0.03]" />)}
-        </div>
-      )}
-
-      {!isLoading && (
-        <div className="overflow-hidden rounded-xl border border-white/10">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-white/10 bg-white/[0.03] text-xs uppercase tracking-wide text-white/40">
-              <tr>
-                <th className="px-4 py-3">Session</th>
-                <th className="px-4 py-3">Date</th>
-                <th className="px-4 py-3">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {records.length === 0 && (
-                <tr>
-                  <td colSpan={3} className="px-4 py-10 text-center">
-                    <ClipboardCheck className="mx-auto h-8 w-8 text-white/15" />
-                    <p className="mt-2 text-sm text-white/40">No attendance sessions logged yet.</p>
-                  </td>
-                </tr>
+                  ))}
+                </div>
               )}
-              {records.map((a) => (
-                <tr key={a.id} className="border-t border-white/5 hover:bg-white/[0.02]">
-                  <td className="px-4 py-3 text-white/80">{a.session?.title ?? "—"}</td>
-                  <td className="px-4 py-3 text-white/50 text-xs">
-                    {a.session?.heldAt
-                      ? new Date(a.session.heldAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
-                      : "—"}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={cn("rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase", STATUS_STYLE[a.status] ?? "text-white/50")}>
-                      {a.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            </GlassCard>
+
+            <GlassCard soft className="space-y-3">
+              <SectionLabel icon={BarChart3}>By subject</SectionLabel>
+              {breakdown.bySubject.length === 0 ? (
+                <p className="text-xs text-white/40">No subject data yet.</p>
+              ) : (
+                <div className="space-y-3">
+                  {breakdown.bySubject.map((s) => (
+                    <div key={s.subject} className="flex items-center gap-3">
+                      <span className="w-24 shrink-0 truncate text-xs text-white/50">{s.subject}</span>
+                      <ProgressBar value={s.percent} className="flex-1" />
+                      <span className="w-12 shrink-0 text-right text-xs text-white/60">{s.percent}%</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </GlassCard>
+          </div>
+        </MotionSection>
       )}
+
+      <MotionSection delay={0.2}>
+        {records.length === 0 ? (
+          <EmptyState
+            icon={ClipboardCheck}
+            title="No attendance sessions logged yet"
+            description="Your attendance records will appear here after sessions are held."
+          />
+        ) : (
+          <GlassCard soft className="!p-0 overflow-hidden">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-white/10 bg-white/[0.03] text-xs uppercase tracking-wide text-white/40">
+                <tr>
+                  <th className="px-4 py-3" scope="col">Session</th>
+                  <th className="px-4 py-3" scope="col">Date</th>
+                  <th className="px-4 py-3" scope="col">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {records.map((a) => (
+                  <tr key={a.id} className="border-t border-white/5 hover:bg-white/[0.02]">
+                    <td className="px-4 py-3 text-white/80">{a.session?.title ?? "—"}</td>
+                    <td className="px-4 py-3 text-xs text-white/50">
+                      {a.session?.heldAt
+                        ? new Date(a.session.heldAt).toLocaleDateString("en-IN", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "—"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusPill tone={STATUS_TONE[a.status] ?? "neutral"}>{a.status}</StatusPill>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </GlassCard>
+        )}
+      </MotionSection>
     </div>
   );
 }

@@ -91,8 +91,8 @@ export function QuizModal({ moduleId, courseId, onClose, onPass }: QuizModalProp
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-        <div className="flex items-center gap-2 text-white">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div className="ab-glass flex items-center gap-2 px-6 py-4 text-white">
           <Loader2 className="h-5 w-5 animate-spin" />
           <span>Loading assessment…</span>
         </div>
@@ -102,14 +102,14 @@ export function QuizModal({ moduleId, courseId, onClose, onPass }: QuizModalProp
 
   if (isError || !quiz) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-        <div className="rounded-2xl border border-red-500/30 bg-[#0a1a30] p-8 text-center max-w-sm w-full">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div className="ab-glass w-full max-w-sm p-8 text-center border-red-500/30">
           <AlertCircle className="mx-auto h-10 w-10 text-red-400" />
           <p className="mt-3 font-semibold text-white">Failed to load assessment</p>
           <button
             type="button"
             onClick={onClose}
-            className="mt-4 rounded-lg bg-white/10 px-5 py-2 text-sm text-white hover:bg-white/20"
+            className="ab-btn ab-btn-ghost mt-4 px-5 py-2 text-sm"
           >
             Close
           </button>
@@ -120,17 +120,17 @@ export function QuizModal({ moduleId, courseId, onClose, onPass }: QuizModalProp
 
   if (quiz.attemptsRemaining <= 0 && !submitted) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-        <div className="w-full max-w-md rounded-2xl border border-white/15 bg-[#0a1a30] p-8 text-center">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div className="ab-glass w-full max-w-md p-8 text-center">
           <AlertCircle className="mx-auto h-10 w-10 text-amber-400" />
-          <h2 className="mt-3 text-lg font-semibold text-white">No attempts remaining</h2>
+          <h2 className="mt-3 ab-display text-lg text-white">No attempts remaining</h2>
           <p className="mt-2 text-sm text-white/60">
             You have used all {quiz.module.maxAttempts} attempt{quiz.module.maxAttempts !== 1 ? "s" : ""} for this module.
           </p>
           <button
             type="button"
             onClick={onClose}
-            className="mt-5 rounded-lg bg-white/10 px-5 py-2 text-sm text-white hover:bg-white/20"
+            className="ab-btn ab-btn-ghost mt-5 px-5 py-2 text-sm"
           >
             Close
           </button>
@@ -144,9 +144,9 @@ export function QuizModal({ moduleId, courseId, onClose, onPass }: QuizModalProp
       role="dialog"
       aria-modal="true"
       aria-labelledby="quiz-modal-title"
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/85 p-4 pt-8"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/85 backdrop-blur-sm p-4 pt-8"
     >
-      <div className="w-full max-w-2xl rounded-2xl border border-white/15 bg-[#0a1a30] shadow-2xl mb-8">
+      <div className="ab-glass mb-8 w-full max-w-2xl !p-0 shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
           <div>
@@ -232,7 +232,7 @@ export function QuizModal({ moduleId, courseId, onClose, onPass }: QuizModalProp
                                 ? "border-red-500/60 bg-red-500/15 text-red-200"
                                 : "border-white/10 text-white/60"
                             : chosen
-                              ? "border-[#c8102e]/70 bg-[#c8102e]/15 text-white"
+                              ? "border-[var(--ab-red)]/70 bg-[rgba(200,16,46,0.15)] text-white"
                               : "border-white/10 text-white/70 hover:border-white/30 hover:bg-white/5",
                         )}
                       >
@@ -243,7 +243,7 @@ export function QuizModal({ moduleId, courseId, onClose, onPass }: QuizModalProp
                           checked={chosen}
                           disabled={submitted}
                           onChange={() => setAnswers((prev) => ({ ...prev, [q.id]: opt.id }))}
-                          className="accent-[#c8102e]"
+                          className="accent-[var(--ab-red)]"
                         />
                         <span className="flex-1">{opt.text}</span>
                         {submitted && isCorrect && (
@@ -267,7 +267,7 @@ export function QuizModal({ moduleId, courseId, onClose, onPass }: QuizModalProp
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg px-4 py-2 text-sm text-white/60 hover:bg-white/5 transition-colors"
+              className="ab-btn ab-btn-ghost px-4 py-2 text-sm"
             >
               {submitted ? "Close" : "Cancel"}
             </button>
@@ -276,7 +276,7 @@ export function QuizModal({ moduleId, courseId, onClose, onPass }: QuizModalProp
                 type="button"
                 disabled={!allAnswered || submitMutation.isPending}
                 onClick={() => submitMutation.mutate()}
-                className="rounded-lg bg-[#c8102e] px-5 py-2 text-sm font-semibold text-white disabled:opacity-50 hover:bg-[#a00d25] transition-colors"
+                className="ab-btn ab-btn-primary px-5 py-2 text-sm font-semibold disabled:opacity-50"
               >
                 {submitMutation.isPending ? "Submitting…" : "Submit Assessment"}
               </button>
@@ -290,7 +290,7 @@ export function QuizModal({ moduleId, courseId, onClose, onPass }: QuizModalProp
                   setAnswers({});
                   void queryClient.invalidateQueries({ queryKey: ["lms-quiz", courseId, moduleId] });
                 }}
-                className="rounded-lg bg-[#c8102e] px-5 py-2 text-sm font-semibold text-white hover:bg-[#a00d25] transition-colors"
+                className="ab-btn ab-btn-primary px-5 py-2 text-sm font-semibold"
               >
                 Try again ({result.attemptsRemaining} left)
               </button>

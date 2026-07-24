@@ -28,12 +28,11 @@ export function CourseSidebar({
   return (
     <aside
       aria-label="Course navigation"
-      className="overflow-y-auto rounded-xl border border-white/10 bg-white/[0.03] lg:max-h-[80vh] lg:sticky lg:top-4"
+      className="ab-glass overflow-y-auto lg:max-h-[80vh] lg:sticky lg:top-4 !p-0"
     >
       {data.course.stages.map((stage) => (
         <div key={stage.id} className="border-b border-white/5 last:border-0">
-          {/* Stage header */}
-          <p className="sticky top-0 z-10 bg-[#0b1f3a]/95 px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.16em] text-white/35 backdrop-blur">
+          <p className="sticky top-0 z-10 bg-[var(--ab-panel)]/95 px-4 py-2.5 ab-eyebrow text-white/50 backdrop-blur">
             {stage.title}
           </p>
 
@@ -44,17 +43,15 @@ export function CourseSidebar({
             const attemptsUsed = data.quizAttempts.filter((q) => q.moduleId === mod.id).length;
             const attemptsLeft = mod.maxAttempts - attemptsUsed;
 
-            // Count completed topics in this module
             const modTopics = flatTopics.filter((t) => t.moduleId === mod.id);
             const modDone = modTopics.filter((t) => progressMap.get(t.topicId)?.completed).length;
 
             return (
               <div key={mod.id}>
-                {/* Module row */}
                 <div
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2 border-b border-white/[0.04]",
-                    isLocked ? "opacity-50" : "",
+                    "flex items-center gap-2 border-b border-white/[0.04] px-4 py-2",
+                    isLocked && "opacity-50",
                   )}
                 >
                   <div className="min-w-0 flex-1">
@@ -62,17 +59,14 @@ export function CourseSidebar({
                       {isLocked ? (
                         <Lock className="h-3 w-3 shrink-0 text-white/30" aria-label="Locked" />
                       ) : passed ? (
-                        <CheckCircle2
-                          className="h-3 w-3 shrink-0 text-emerald-400"
-                          aria-label="Passed"
-                        />
+                        <CheckCircle2 className="h-3 w-3 shrink-0 text-emerald-400" aria-label="Passed" />
                       ) : (
                         <span className="h-3 w-3 shrink-0 rounded-full border border-white/25" aria-hidden="true" />
                       )}
                       <p className="truncate text-[11px] font-semibold text-white/75">{mod.title}</p>
                     </div>
                     {!isLocked && (
-                      <p className="ml-[18px] text-[9px] text-white/30 mt-0.5">
+                      <p className="ml-[18px] mt-0.5 text-[9px] text-white/30">
                         {modDone}/{modTopics.length} topics
                         {passed && <span className="ml-1.5 text-emerald-400/80">{assessment?.score}%</span>}
                       </p>
@@ -84,18 +78,16 @@ export function CourseSidebar({
                       type="button"
                       onClick={() => onQuizOpen(mod.id)}
                       aria-label={`Take assessment for ${mod.title}`}
-                      className="shrink-0 rounded-md border border-[#c8102e]/40 px-2 py-0.5 text-[9px] font-bold text-[#c8102e] hover:bg-[#c8102e]/10 transition-colors"
+                      className="ab-btn shrink-0 border border-[rgba(200,16,46,0.4)] px-2 py-0.5 text-[9px] font-bold text-[var(--ab-red)] hover:bg-[rgba(200,16,46,0.1)]"
                     >
-                      {attemptsUsed > 0 ? `Retry` : "Quiz"}
+                      {attemptsUsed > 0 ? "Retry" : "Quiz"}
                     </button>
                   )}
                 </div>
 
-                {/* Topics */}
                 {mod.chapters.map((ch) => (
                   <div key={ch.id}>
-                    {/* Chapter label */}
-                    <p className="px-4 py-1.5 text-[9px] uppercase tracking-widest text-white/25 bg-white/[0.015]">
+                    <p className="bg-white/[0.015] px-4 py-1.5 text-[9px] uppercase tracking-widest text-white/25">
                       {ch.title}
                     </p>
                     {ch.topics.map((topic) => {
@@ -114,7 +106,7 @@ export function CourseSidebar({
                           className={cn(
                             "flex w-full items-center gap-2 px-6 py-2 text-left text-xs transition-colors",
                             isActive
-                              ? "bg-[#c8102e]/15 text-white border-l-2 border-[#c8102e]"
+                              ? "border-l-2 border-[var(--ab-red)] bg-[rgba(200,16,46,0.12)] text-white"
                               : "text-white/55 hover:bg-white/[0.04] hover:text-white/90",
                             isLocked ? "cursor-not-allowed opacity-40" : "cursor-pointer",
                           )}
@@ -125,7 +117,7 @@ export function CourseSidebar({
                             <span
                               className={cn(
                                 "h-3 w-3 shrink-0 rounded-full border",
-                                isActive ? "border-[#c8102e]/60" : "border-white/20",
+                                isActive ? "border-[var(--ab-red)]/60" : "border-white/20",
                               )}
                               aria-hidden="true"
                             />
@@ -133,7 +125,7 @@ export function CourseSidebar({
                           <span className="flex-1 truncate leading-snug">{topic.title}</span>
                           {isBookmarked && (
                             <BookmarkIcon
-                              className="h-2.5 w-2.5 shrink-0 fill-amber-400 text-amber-400"
+                              className="h-2.5 w-2.5 shrink-0 fill-[var(--ab-gold)] text-[var(--ab-gold)]"
                               aria-label="Bookmarked"
                             />
                           )}

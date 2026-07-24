@@ -6,6 +6,12 @@ import { useMutation } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import { Sparkles, Send, User, Bot, Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  PortalPageHeader,
+  GlassCard,
+  EmptyState,
+  MotionSection,
+} from "@/components/portal/portal-ui";
 
 interface ChatMessage {
   id: string;
@@ -78,7 +84,6 @@ function AssistantInner() {
     },
   });
 
-  // Scroll to bottom on new messages
   React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -90,9 +95,7 @@ function AssistantInner() {
   }
 
   function handleQuickPrompt(prompt: string) {
-    const contextualPrompt = topicTitle
-      ? `${prompt} for "${topicTitle}"`
-      : prompt;
+    const contextualPrompt = topicTitle ? `${prompt} for "${topicTitle}"` : prompt;
     ask.mutate(contextualPrompt);
   }
 
@@ -105,127 +108,132 @@ function AssistantInner() {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-5">
-      {/* Header */}
-      <div>
-        <div className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-[#c8102e]" aria-hidden="true" />
-          <h1 className="text-2xl font-bold text-white">AI Study Assistant</h1>
-        </div>
-        <p className="mt-1 text-sm text-white/50">
-          Powered by AI — ask about DGCA topics, air law, navigation, meteorology, and more.
-        </p>
-      </div>
+      <MotionSection>
+        <PortalPageHeader
+          eyebrow="AI Tutor"
+          title={
+            <span className="flex items-center gap-2">
+              <Sparkles className="h-6 w-6 text-[var(--ab-red)]" aria-hidden="true" />
+              Study Assistant
+            </span>
+          }
+          description="Powered by AI — ask about DGCA topics, air law, navigation, meteorology, and more."
+        />
+      </MotionSection>
 
-      {/* Context chips */}
       {hasContext && (
-        <div className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-white/35">
-            Studying context
-          </p>
-          {courseTitle && (
-            <p className="mt-1.5 font-medium text-white/90 text-sm">{courseTitle}</p>
-          )}
-          {(chapterTitle || topicTitle) && (
-            <p className="mt-0.5 text-xs text-white/50">
-              {[chapterTitle, topicTitle].filter(Boolean).join(" › ")}
-            </p>
-          )}
-        </div>
+        <MotionSection delay={0.05}>
+          <GlassCard soft className="border-[rgba(200,16,46,0.2)] bg-[rgba(200,16,46,0.04)]">
+            <p className="ab-eyebrow">Studying context</p>
+            {courseTitle && (
+              <p className="mt-1.5 text-sm font-medium text-white/90">{courseTitle}</p>
+            )}
+            {(chapterTitle || topicTitle) && (
+              <p className="mt-0.5 text-xs text-white/50">
+                {[chapterTitle, topicTitle].filter(Boolean).join(" › ")}
+              </p>
+            )}
+          </GlassCard>
+        </MotionSection>
       )}
 
-      {/* Quick prompts */}
       {messages.length === 0 && (
-        <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-white/35">
-            Quick prompts
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {QUICK_PROMPTS.map((p) => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => handleQuickPrompt(p)}
-                disabled={ask.isPending}
-                className="rounded-full border border-white/15 px-3 py-1.5 text-xs text-white/60 hover:border-[#c8102e]/40 hover:bg-[#c8102e]/10 hover:text-white transition-colors disabled:opacity-50"
-              >
-                {p}
-              </button>
-            ))}
+        <MotionSection delay={0.1}>
+          <EmptyState
+            icon={Sparkles}
+            title="Your aviation AI tutor"
+            description="Ask anything about your course material, DGCA regulations, or exam prep. Try a quick prompt below to get started."
+          />
+          <div className="mt-4 space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-wider text-white/35">
+              Quick prompts
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {QUICK_PROMPTS.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => handleQuickPrompt(p)}
+                  disabled={ask.isPending}
+                  className="ab-glass-soft rounded-full px-3 py-1.5 text-xs text-white/60 transition-colors hover:border-[rgba(200,16,46,0.4)] hover:text-white disabled:opacity-50"
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        </MotionSection>
       )}
 
-      {/* Chat history */}
       {messages.length > 0 && (
-        <div
-          role="log"
-          aria-live="polite"
-          aria-label="Chat history"
-          className="space-y-4 rounded-xl border border-white/10 bg-white/[0.02] p-4 max-h-[50vh] overflow-y-auto"
-        >
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={cn(
-                "flex gap-3",
-                msg.role === "user" ? "flex-row-reverse" : "flex-row",
-              )}
-            >
-              {/* Avatar */}
+        <MotionSection delay={0.05}>
+          <GlassCard
+            soft
+            className="max-h-[50vh] space-y-4 overflow-y-auto !p-4"
+            role="log"
+            aria-live="polite"
+            aria-label="Chat history"
+          >
+            {messages.map((msg) => (
               <div
+                key={msg.id}
                 className={cn(
-                  "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs",
-                  msg.role === "user"
-                    ? "bg-[#c8102e]/20 text-[#c8102e]"
-                    : "bg-white/10 text-white/70",
-                )}
-                aria-hidden="true"
-              >
-                {msg.role === "user" ? (
-                  <User className="h-3.5 w-3.5" />
-                ) : (
-                  <Bot className="h-3.5 w-3.5" />
-                )}
-              </div>
-
-              {/* Bubble */}
-              <div
-                className={cn(
-                  "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
-                  msg.role === "user"
-                    ? "rounded-tr-sm bg-[#c8102e]/20 text-white/90"
-                    : msg.isError
-                      ? "rounded-tl-sm bg-red-500/10 text-red-300"
-                      : "rounded-tl-sm bg-white/[0.06] text-white/85",
+                  "flex gap-3",
+                  msg.role === "user" ? "flex-row-reverse" : "flex-row",
                 )}
               >
-                <p className="whitespace-pre-wrap">{msg.content}</p>
-              </div>
-            </div>
-          ))}
+                <div
+                  className={cn(
+                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+                    msg.role === "user"
+                      ? "bg-[rgba(200,16,46,0.2)] text-[var(--ab-red)]"
+                      : "ab-glass-soft text-white/70",
+                  )}
+                  aria-hidden="true"
+                >
+                  {msg.role === "user" ? (
+                    <User className="h-4 w-4" />
+                  ) : (
+                    <Bot className="h-4 w-4" />
+                  )}
+                </div>
 
-          {/* Typing indicator */}
-          {ask.isPending && (
-            <div className="flex gap-3">
-              <div
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-white/70"
-                aria-hidden="true"
-              >
-                <Bot className="h-3.5 w-3.5" />
+                <div
+                  className={cn(
+                    "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed backdrop-blur-sm",
+                    msg.role === "user"
+                      ? "rounded-tr-sm border border-[rgba(200,16,46,0.25)] bg-[rgba(200,16,46,0.15)] text-white/90"
+                      : msg.isError
+                        ? "rounded-tl-sm border border-red-500/30 bg-red-500/10 text-red-300"
+                        : "rounded-tl-sm ab-glass-soft text-white/85",
+                  )}
+                >
+                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-sm bg-white/[0.06] px-4 py-3">
-                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-white/40" style={{ animationDelay: "0ms" }} />
-                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-white/40" style={{ animationDelay: "150ms" }} />
-                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-white/40" style={{ animationDelay: "300ms" }} />
-              </div>
-            </div>
-          )}
+            ))}
 
-          <div ref={messagesEndRef} />
-        </div>
+            {ask.isPending && (
+              <div className="flex gap-3">
+                <div
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full ab-glass-soft text-white/70"
+                  aria-hidden="true"
+                >
+                  <Bot className="h-4 w-4" />
+                </div>
+                <div className="ab-glass-soft flex items-center gap-1.5 rounded-2xl rounded-tl-sm px-4 py-3">
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-white/40" style={{ animationDelay: "0ms" }} />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-white/40" style={{ animationDelay: "150ms" }} />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-white/40" style={{ animationDelay: "300ms" }} />
+                </div>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </GlassCard>
+        </MotionSection>
       )}
 
-      {/* Clear button if history */}
       {messages.length > 0 && (
         <button
           type="button"
@@ -237,44 +245,45 @@ function AssistantInner() {
         </button>
       )}
 
-      {/* Input area */}
-      <div className="relative rounded-xl border border-white/15 bg-black/20 focus-within:border-white/30 transition-colors">
-        <label htmlFor="assistant-input" className="sr-only">
-          Ask a question
-        </label>
-        <textarea
-          id="assistant-input"
-          ref={textareaRef}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          rows={3}
-          placeholder={
-            topicTitle
-              ? `Ask about "${topicTitle}"…`
-              : hasContext
-                ? "Ask about this topic…"
-                : "e.g. Explain VFR weather minima for DGCA…"
-          }
-          className="w-full resize-none bg-transparent px-4 py-3 pr-14 text-sm text-white outline-none placeholder:text-white/30"
-        />
-        <button
-          type="button"
-          disabled={!input.trim() || ask.isPending}
-          onClick={handleSubmit}
-          aria-label="Send message"
-          className="absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-lg bg-[#c8102e] text-white disabled:opacity-40 hover:bg-[#a00d25] transition-colors"
-        >
-          {ask.isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-          ) : (
-            <Send className="h-4 w-4" aria-hidden="true" />
-          )}
-        </button>
-      </div>
-      <p className="text-[10px] text-white/25 text-center">
-        Press Enter to send · Shift+Enter for new line · AI may make mistakes — verify with official DGCA material
-      </p>
+      <MotionSection delay={0.15}>
+        <GlassCard soft className="relative !p-0 focus-within:border-white/25">
+          <label htmlFor="assistant-input" className="sr-only">
+            Ask a question
+          </label>
+          <textarea
+            id="assistant-input"
+            ref={textareaRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            rows={3}
+            placeholder={
+              topicTitle
+                ? `Ask about "${topicTitle}"…`
+                : hasContext
+                  ? "Ask about this topic…"
+                  : "e.g. Explain VFR weather minima for DGCA…"
+            }
+            className="w-full resize-none bg-transparent px-4 py-3 pr-14 text-sm text-white outline-none placeholder:text-white/30"
+          />
+          <button
+            type="button"
+            disabled={!input.trim() || ask.isPending}
+            onClick={handleSubmit}
+            aria-label="Send message"
+            className="ab-btn ab-btn-primary absolute bottom-3 right-3 h-9 w-9 disabled:opacity-40"
+          >
+            {ask.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+            ) : (
+              <Send className="h-4 w-4" aria-hidden="true" />
+            )}
+          </button>
+        </GlassCard>
+        <p className="mt-2 text-center text-[10px] text-white/25">
+          Press Enter to send · Shift+Enter for new line · AI may make mistakes — verify with official DGCA material
+        </p>
+      </MotionSection>
     </div>
   );
 }

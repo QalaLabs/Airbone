@@ -18,6 +18,7 @@ import {
   Loader2,
   AlertCircle,
   Home,
+  BookOpen,
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
@@ -25,41 +26,25 @@ import type { PlayerPayload, FlatTopic, PlayerContent } from "@/components/porta
 import { CourseSidebar } from "@/components/portal/course-sidebar";
 import { QuizModal } from "@/components/portal/quiz-modal";
 import { PlayerSkeleton } from "@/components/portal/portal-skeleton";
-
-// ─── Progress Bar ─────────────────────────────────────────────────────────────
-
-function ProgressBar({ value, className }: { value: number; className?: string }) {
-  return (
-    <div className={cn("h-1.5 w-full overflow-hidden rounded-full bg-white/10", className)}>
-      <div
-        className="h-full rounded-full bg-[#c8102e] transition-all"
-        style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
-        role="progressbar"
-        aria-valuenow={value}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-label={`${value}% complete`}
-      />
-    </div>
-  );
-}
-
-// ─── Content Viewer ───────────────────────────────────────────────────────────
+import {
+  GlassCard,
+  EmptyState,
+  ProgressBar,
+  StatusPill,
+} from "@/components/portal/portal-ui";
 
 function ContentViewer({ content }: { content: PlayerContent }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-white/10">
-      <div className="flex items-center justify-between gap-2 border-b border-white/10 bg-black/30 px-4 py-3">
+    <GlassCard soft className="!p-0 overflow-hidden">
+      <div className="flex items-center justify-between gap-2 border-b border-white/10 bg-black/20 px-4 py-3">
         <div className="flex items-center gap-2 text-xs text-white/70">
           {content.type === "VIDEO" ? (
-            <Play className="h-3.5 w-3.5 text-[#c8102e]" aria-hidden="true" />
+            <Play className="h-3.5 w-3.5 text-[var(--ab-red)]" aria-hidden="true" />
           ) : (
-            <FileText className="h-3.5 w-3.5 text-[#c8102e]" aria-hidden="true" />
+            <FileText className="h-3.5 w-3.5 text-[var(--ab-red)]" aria-hidden="true" />
           )}
           <span className="font-medium">{content.title}</span>
-          <span className="rounded-sm bg-white/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white/40">
-            {content.type}
-          </span>
+          <StatusPill tone="neutral">{content.type}</StatusPill>
           {content.duration && (
             <span className="text-white/30">{Math.round(content.duration / 60)} min</span>
           )}
@@ -70,7 +55,7 @@ function ContentViewer({ content }: { content: PlayerContent }) {
             target="_blank"
             rel="noreferrer"
             download
-            className="flex items-center gap-1 rounded-md border border-white/15 px-2 py-1 text-[10px] text-white/60 hover:bg-white/5 hover:text-white transition-colors"
+            className="ab-btn ab-btn-ghost px-2 py-1 text-[10px]"
           >
             <Download className="h-3 w-3" aria-hidden="true" />
             Download
@@ -95,11 +80,9 @@ function ContentViewer({ content }: { content: PlayerContent }) {
           sandbox="allow-scripts allow-same-origin"
         />
       )}
-    </div>
+    </GlassCard>
   );
 }
-
-// ─── Mobile Drawer Toggle ────────────────────────────────────────────────────
 
 function MobileDrawerToggle({
   open,
@@ -114,15 +97,13 @@ function MobileDrawerToggle({
       onClick={onToggle}
       aria-expanded={open}
       aria-label={open ? "Close course outline" : "Open course outline"}
-      className="lg:hidden flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2 text-xs text-white/70 hover:bg-white/5"
+      className="ab-btn ab-btn-ghost px-3 py-2 text-xs lg:hidden"
     >
       {open ? "Hide" : "Show"} Outline
       <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-90")} aria-hidden="true" />
     </button>
   );
 }
-
-// ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function CoursePlayerPage() {
   const params = useParams<{ courseId: string }>();
@@ -178,7 +159,6 @@ export default function CoursePlayerPage() {
     return list;
   }, [data, unlocked]);
 
-  // Auto-select first incomplete unlocked topic
   React.useEffect(() => {
     if (!activeTopicId && flatTopics.length) {
       const resume =
@@ -234,21 +214,20 @@ export default function CoursePlayerPage() {
 
   if (isError) {
     return (
-      <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-6">
+      <GlassCard className="border-red-500/30 bg-red-500/10">
         <AlertCircle className="h-6 w-6 text-red-400" aria-hidden="true" />
         <p className="mt-2 font-semibold text-red-200">{(error as Error).message}</p>
         <p className="mt-1 text-sm text-red-200/60">Make sure you are enrolled in this course.</p>
-        <Link href="/portal" className="mt-4 inline-flex items-center gap-1.5 text-sm text-white/70 hover:text-white">
+        <Link href="/portal" className="ab-btn ab-btn-ghost mt-4 inline-flex gap-1.5 px-4 py-2 text-sm">
           <Home className="h-3.5 w-3.5" aria-hidden="true" />
           Back to dashboard
         </Link>
-      </div>
+      </GlassCard>
     );
   }
 
   if (!data) return null;
 
-  // Check if all topics in active module are done (for quiz CTA)
   const activeModuleTopics = active ? flatTopics.filter((t) => t.moduleId === active.moduleId) : [];
   const allModTopicsDone =
     activeModuleTopics.length > 0 &&
@@ -288,34 +267,33 @@ export default function CoursePlayerPage() {
       )}
 
       <div className="space-y-4">
-        {/* Header */}
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2 text-xs text-white/40">
-              <Link href="/portal" className="hover:text-white transition-colors">
-                Dashboard
-              </Link>
-              <ChevronRight className="h-3 w-3" aria-hidden="true" />
-              <Link href="/portal/courses" className="hover:text-white transition-colors">
-                My Courses
-              </Link>
-              <ChevronRight className="h-3 w-3" aria-hidden="true" />
-              <span className="text-white/70">{data.course.title}</span>
+        <GlassCard soft className="!p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <nav className="flex items-center gap-2 text-xs text-white/40" aria-label="Breadcrumb">
+                <Link href="/portal" className="hover:text-white transition-colors">
+                  Dashboard
+                </Link>
+                <ChevronRight className="h-3 w-3" aria-hidden="true" />
+                <Link href="/portal/courses" className="hover:text-white transition-colors">
+                  My Courses
+                </Link>
+                <ChevronRight className="h-3 w-3" aria-hidden="true" />
+                <span className="text-white/70">{data.course.title}</span>
+              </nav>
+              <h1 className="mt-1 ab-display text-xl text-white sm:text-2xl">{data.course.title}</h1>
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <ProgressBar value={progressPercent} className="max-w-[200px]" />
+                <span className="text-xs text-white/50">
+                  {progressPercent}% · {completedCount}/{flatTopics.length} topics
+                </span>
+              </div>
             </div>
-            <h1 className="mt-1 text-xl font-bold text-white">{data.course.title}</h1>
-            <div className="mt-2 flex items-center gap-3">
-              <ProgressBar value={progressPercent} className="max-w-[200px]" />
-              <span className="text-xs text-white/50">
-                {progressPercent}% &nbsp;·&nbsp; {completedCount}/{flatTopics.length} topics
-              </span>
-            </div>
+            <MobileDrawerToggle open={drawerOpen} onToggle={() => setDrawerOpen((v) => !v)} />
           </div>
-          <MobileDrawerToggle open={drawerOpen} onToggle={() => setDrawerOpen((v) => !v)} />
-        </div>
+        </GlassCard>
 
-        {/* Layout: sidebar + content */}
         <div className="grid gap-4 lg:grid-cols-[300px_1fr]">
-          {/* Sidebar — hidden on mobile unless drawer open */}
           <div className={cn(!drawerOpen && "hidden lg:block")}>
             <CourseSidebar
               data={data}
@@ -332,20 +310,21 @@ export default function CoursePlayerPage() {
             />
           </div>
 
-          {/* Content panel */}
-          <main className="min-h-[60vh] rounded-xl border border-white/10 bg-white/[0.02]">
+          <main className="ab-glass min-h-[60vh] !p-0">
             {!active && (
-              <div className="flex h-64 items-center justify-center">
-                <p className="text-sm text-white/40">Select a topic from the outline to begin.</p>
-              </div>
+              <EmptyState
+                icon={BookOpen}
+                title="Select a topic"
+                description="Choose a topic from the course outline to begin studying."
+              />
             )}
 
             {active?.locked && (
-              <div className="flex h-64 flex-col items-center justify-center gap-4 text-center p-6">
-                <Lock className="h-12 w-12 text-amber-400/50" aria-hidden="true" />
+              <div className="flex h-64 flex-col items-center justify-center gap-4 p-6 text-center">
+                <Lock className="h-12 w-12 text-[var(--ab-gold)]/50" aria-hidden="true" />
                 <div>
-                  <p className="font-semibold text-white/80">Module Locked</p>
-                  <p className="mt-1 text-sm text-white/45 max-w-xs">
+                  <p className="ab-display text-lg text-white/80">Module Locked</p>
+                  <p className="mt-1 max-w-xs text-sm text-white/45">
                     Pass the assessment for the previous module to unlock this content.
                   </p>
                 </div>
@@ -353,8 +332,7 @@ export default function CoursePlayerPage() {
             )}
 
             {active && !active.locked && (
-              <div className="p-5 space-y-5">
-                {/* Breadcrumb + actions */}
+              <div className="space-y-5 p-5 sm:p-6">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="text-xs text-white/35">
@@ -364,24 +342,22 @@ export default function CoursePlayerPage() {
                       <span className="mx-1.5 text-white/20">›</span>
                       {active.chapterTitle}
                     </p>
-                    <h2 className="mt-1 text-lg font-semibold text-white">{active.topicTitle}</h2>
+                    <h2 className="mt-1 ab-display text-lg text-white">{active.topicTitle}</h2>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {/* Ask AI */}
                     <Link
                       href={`/portal/assistant?${new URLSearchParams({
                         ...(data.course.title ? { course: data.course.title } : {}),
                         chapter: active.chapterTitle,
                         topic: active.topicTitle,
                       }).toString()}`}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 px-3 py-2 text-xs text-white/60 hover:border-[#c8102e]/40 hover:bg-[#c8102e]/10 hover:text-white transition-colors"
+                      className="ab-btn ab-btn-ghost px-3 py-2 text-xs"
                     >
-                      <Sparkles className="h-3.5 w-3.5 text-[#c8102e]" aria-hidden="true" />
+                      <Sparkles className="h-3.5 w-3.5 text-[var(--ab-red)]" aria-hidden="true" />
                       Ask AI
                     </Link>
 
-                    {/* Bookmark */}
                     <button
                       type="button"
                       onClick={() => activeTopicId && toggleBookmark.mutate()}
@@ -389,10 +365,10 @@ export default function CoursePlayerPage() {
                       aria-label={isBookmarked ? "Remove bookmark" : "Add bookmark"}
                       aria-pressed={isBookmarked}
                       className={cn(
-                        "rounded-lg border p-2 transition-colors",
+                        "ab-btn rounded-lg border p-2",
                         isBookmarked
-                          ? "border-amber-500/40 bg-amber-500/10 text-amber-400"
-                          : "border-white/15 text-white/40 hover:border-amber-500/40 hover:text-amber-400",
+                          ? "border-[var(--ab-gold)]/40 bg-[var(--ab-gold-soft)] text-[var(--ab-gold)]"
+                          : "ab-btn-ghost text-white/40 hover:text-[var(--ab-gold)]",
                       )}
                     >
                       <BookmarkIcon
@@ -403,14 +379,12 @@ export default function CoursePlayerPage() {
                   </div>
                 </div>
 
-                {/* Content blocks */}
                 {active.contents.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-white/15 p-8 text-center">
-                    <FileText className="mx-auto h-8 w-8 text-white/20" aria-hidden="true" />
-                    <p className="mt-2 text-sm text-white/40">
-                      No study materials uploaded for this topic yet.
-                    </p>
-                  </div>
+                  <EmptyState
+                    icon={FileText}
+                    title="No materials yet"
+                    description="No study materials uploaded for this topic yet."
+                  />
                 ) : (
                   <div className="space-y-4">
                     {active.contents.map((c) => (
@@ -419,16 +393,14 @@ export default function CoursePlayerPage() {
                   </div>
                 )}
 
-                {/* Navigation + actions footer */}
                 <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
-                  {/* Prev / Next */}
                   <div className="flex gap-2">
                     {prevTopic && (
                       <button
                         type="button"
                         onClick={() => setActiveTopicId(prevTopic.topicId)}
                         disabled={prevTopic.locked}
-                        className="flex items-center gap-1.5 rounded-lg border border-white/15 px-3 py-2 text-xs text-white/60 hover:bg-white/5 disabled:opacity-40 transition-colors"
+                        className="ab-btn ab-btn-ghost px-3 py-2 text-xs disabled:opacity-40"
                       >
                         <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
                         Previous
@@ -439,7 +411,7 @@ export default function CoursePlayerPage() {
                         type="button"
                         onClick={() => !nextTopic.locked && setActiveTopicId(nextTopic.topicId)}
                         disabled={nextTopic.locked}
-                        className="flex items-center gap-1.5 rounded-lg border border-white/15 px-3 py-2 text-xs text-white/60 hover:bg-white/5 disabled:opacity-40 transition-colors"
+                        className="ab-btn ab-btn-ghost px-3 py-2 text-xs disabled:opacity-40"
                       >
                         Next
                         <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
@@ -447,13 +419,12 @@ export default function CoursePlayerPage() {
                     )}
                   </div>
 
-                  {/* CTA buttons */}
                   <div className="flex gap-2">
                     {canTakeQuiz && (
                       <button
                         type="button"
                         onClick={() => setQuizModuleId(active.moduleId)}
-                        className="rounded-lg border border-[#c8102e]/50 bg-[#c8102e]/10 px-4 py-2 text-sm font-semibold text-[#c8102e] hover:bg-[#c8102e]/20 transition-colors"
+                        className="ab-btn ab-btn-ghost border-[rgba(200,16,46,0.5)] bg-[rgba(200,16,46,0.1)] px-4 py-2 text-sm font-semibold text-[var(--ab-red)]"
                       >
                         Take Assessment
                       </button>
@@ -464,10 +435,10 @@ export default function CoursePlayerPage() {
                       disabled={markDone.isPending || isCompleted}
                       onClick={() => markDone.mutate()}
                       className={cn(
-                        "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition-colors",
+                        "ab-btn flex items-center gap-1.5 px-4 py-2 text-sm font-semibold",
                         isCompleted
-                          ? "bg-emerald-600/20 text-emerald-400 cursor-default"
-                          : "bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60",
+                          ? "cursor-default bg-emerald-600/20 text-emerald-400"
+                          : "ab-btn-primary disabled:opacity-60",
                       )}
                     >
                       {markDone.isPending ? (
