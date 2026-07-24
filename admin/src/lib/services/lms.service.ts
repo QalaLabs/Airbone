@@ -780,9 +780,20 @@ export class LmsService {
       prisma.lmsEnrollment.findMany({
         where: { studentId, orgId: ctx.orgId },
         include: { course: { select: { id: true, title: true, slug: true, isPublished: true } } },
+        orderBy: { enrolledAt: "asc" },
       }),
       prisma.lmsStudentProgress.findMany({ where: { studentId } }),
-      prisma.lmsAssessment.findMany({ where: { studentId } }),
+      prisma.lmsAssessment.findMany({
+        where: { studentId },
+        include: {
+          module: {
+            select: {
+              id: true, title: true, maxAttempts: true, passPercent: true,
+              stage: { select: { courseId: true } },
+            },
+          },
+        },
+      }),
       prisma.lmsCertificate.findMany({
         where: { studentId, orgId: ctx.orgId, status: "ISSUED" },
         include: { course: { select: { title: true } } },
@@ -811,10 +822,63 @@ export class LmsService {
     const presentCount = attendance.filter((r) => r.status === "PRESENT" || r.status === "LATE").length;
     const attendancePercent = attendance.length > 0 ? Math.round((presentCount / attendance.length) * 100) : 0;
 
-    // Compute overall progress % across all enrolled courses
+    // Compute overall completed topics
     const completedTopics = progress.filter((p) => p.completed).length;
 
-    return { enrollments, progress, assessments, certificates, attendance, attendancePercent, completedTopics, announcements, bookmarks, quizAttempts };
+    // Per-enrollment percentComplete — one batched query for all enrolled courses
+    const enrolledCourseIds = enrollments.map((e) => e.courseId);
+    const topicsForCourses = enrolledCourseIds.length > 0
+      ? await prisma.lmsTopic.findMany({
+          where: { chapter: { module: { stage: { courseId: { in: enrolledCourseIds } } } } },
+          select: { id: true, chapter: { select: { module: { select: { stage: { select: { courseId: true } } } } } } },
+        })
+      : [];
+
+    // Build courseId → topicId[] map
+    const courseTopicsMap = new Map<string, string[]>();
+    for (const t of topicsForCourses) {
+      const cId = t.chapter.module.stage.courseId;
+      const arr = courseTopicsMap.get(cId) ?? [];
+      arr.push(t.id);
+      courseTopicsMap.set(cId, arr);
+    }
+
+    // Build topicId → completed map
+    const progressCompletedMap = new Map(progress.map((p) => [p.topicId, p.completed]));
+
+    const enrollmentsWithPercent = enrollments.map((e) => {
+      const topicIds = courseTopicsMap.get(e.courseId) ?? [];
+      const doneCount = topicIds.filter((id) => progressCompletedMap.get(id) === true).length;
+      const percentComplete = topicIds.length > 0 ? Math.round((doneCount / topicIds.length) * 100) : 0;
+      return { ...e, percentComplete };
+    });
+
+    // Prefer in-progress course; else first incomplete; else first enrollment
+    const resumeTarget =
+      enrollmentsWithPercent.find((e) => e.percentComplete > 0 && e.percentComplete < 100) ??
+      enrollmentsWithPercent.find((e) => e.percentComplete < 100) ??
+      enrollmentsWithPercent[0];
+    const continueLearning = resumeTarget
+      ? {
+          courseId: resumeTarget.courseId,
+          courseTitle: resumeTarget.course.title,
+          percentComplete: resumeTarget.percentComplete,
+        }
+      : null;
+
+    return {
+      enrollments: enrollmentsWithPercent,
+      progress,
+      assessments,
+      certificates,
+      attendance,
+      attendancePercent,
+      completedTopics,
+      announcements,
+      bookmarks,
+      quizAttempts,
+      continueLearning,
+    };
   }
 
   /** Staff: create STUDENT User + link to CRM Student for portal login. */
