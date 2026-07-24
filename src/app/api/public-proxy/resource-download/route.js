@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-const ADMIN_API_URL = process.env.ADMIN_API_URL ?? 'http://localhost:3001'
+const ADMIN_API_URL = process.env.ADMIN_API_URL ?? 'http://localhost:4000'
 
 // POST /api/public-proxy/resource-download
 // Body: { token: string, resourceId: string }

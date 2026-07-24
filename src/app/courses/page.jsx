@@ -2,7 +2,8 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
-import { fetchPublic, formatFee } from '@/lib/adminApi'
+import { fetchPublic } from '@/lib/adminApi'
+import { displayCourseFee, displayCourseEligibility } from '@/lib/courseFees'
 import { getBreadcrumbSchema } from '@/utils/seo'
 
 export const metadata = {
@@ -123,11 +124,11 @@ export default async function CoursesPage() {
               )}
 
               <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                {flagship.fee && (
+                {displayCourseFee(flagship.slug, flagship.fee) && (
                   <div>
                     <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', display: 'block', marginBottom: '0.2rem' }}>Tuition Fee</span>
                     <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.6rem', fontWeight: 900, color: 'var(--gold)' }}>
-                      {formatFee(flagship.fee)}
+                      {displayCourseFee(flagship.slug, flagship.fee)}
                     </span>
                   </div>
                 )}
@@ -213,24 +214,16 @@ export default async function CoursesPage() {
                       </p>
 
                       <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.55)', fontFamily: 'var(--font-b)', marginBottom: '1.5rem' }}>
-                        <strong>Eligibility:</strong> {(course.slug === 'cabin-crew' || course.slug === 'cabin-crew-training') ? '10+2 Pass, 17–26 yrs' : (course.eligibility || 'Class 12 or above')}
+                        <strong>Eligibility:</strong> {displayCourseEligibility(course.slug, course.eligibility)}
                       </p>
                     </div>
 
                     <div>
-                      {course.fee && (
+                      {displayCourseFee(course.slug, course.fee) && (
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.25rem', marginBottom: '1.5rem' }}>
                           <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)' }}>Tuition Rate</span>
                           <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.15rem', fontWeight: 700, color: 'var(--gold)' }}>
-                            {(course.slug === 'cabin-crew' || course.slug === 'cabin-crew-training')
-                              ? '₹30K–₹54K'
-                              : course.slug === 'atpl'
-                                ? '₹1,50,000'
-                                : course.slug === 'cadet-preparation'
-                                  ? '₹50,000'
-                                  : (course.slug === 'a320-simulator' || course.slug === 'airbus-a320-sim-training')
-                                    ? '₹10,000/hr'
-                                    : formatFee(course.fee)}
+                            {displayCourseFee(course.slug, course.fee)}
                           </span>
                         </div>
                       )}
@@ -314,16 +307,16 @@ export default async function CoursesPage() {
               </thead>
               <tbody>
                 {[
-                  { name: 'Commercial Pilot License (CPL)', slug: 'commercial-pilot-license-cpl', dur: '12–18 months', elig: '10+2 Phys+Maths, 17 yrs', fee: '₹55–65L',    dgca: '✓' },
-                  { name: 'ATPL Ground School',             slug: 'atpl',                        dur: '4–6 months',   elig: 'CPL holder',               fee: '₹1,50,000', dgca: '✓' },
-                  { name: 'Private Pilot License (PPL)',    slug: 'private-pilot-license',       dur: '3–6 months',   elig: '10+2, 16 yrs',             fee: '₹25L',      dgca: '✓' },
-                  { name: 'Instrument Rating',              slug: 'instrument-rating',           dur: '2–3 months',   elig: 'PPL holder',               fee: '₹3–5L',     dgca: '✓' },
-                  { name: 'Multi-Engine Rating',            slug: 'multi-engine-rating',         dur: '1–2 months',   elig: 'PPL/CPL holder',           fee: '₹3–5L',     dgca: '✓' },
-                  { name: 'Airbus A320 Type Rating',        slug: 'a320-simulator',              dur: '2–4 months',   elig: 'CPL + 200 hrs',            fee: '₹10,000/hr', dgca: '✓' },
-                  { name: 'DGCA Ground School',             slug: 'ground-school',               dur: '3–6 months',   elig: 'Any',                      fee: '₹2,70,000', dgca: '✓' },
-                  { name: 'Cabin Crew Training',            slug: 'cabin-crew-training',         dur: '3–6 months',   elig: '10+2 Pass, 17–26 yrs',     fee: '₹30K–₹54K', dgca: '—' },
-                  { name: 'Aviation English (ICAO L4)',     slug: 'aviation-english-icao',       dur: '1–3 months',   elig: 'Any',                      fee: '₹50K–1L',   dgca: '—' },
-                  { name: 'Flight Dispatcher',              slug: 'flight-dispatcher',           dur: '3–6 months',   elig: '10+2',                     fee: '₹1–2L',     dgca: '—' },
+                  { name: 'Commercial Pilot License (CPL)', slug: 'commercial-pilot-license-cpl', dur: '8–18 months',  elig: '10+2 Phys+Maths, 17 yrs', fee: '₹55L+ onwards', dgca: '✓' },
+                  { name: 'ATPL Ground School',             slug: 'atpl',                        dur: '4–6 months',   elig: 'CPL holder',               fee: '₹1,50,000',    dgca: '✓' },
+                  { name: 'Private Pilot License (PPL)',    slug: 'private-pilot-license',       dur: '3–6 months',   elig: '10+2, 16 yrs',             fee: '₹25,00,000',   dgca: '✓' },
+                  { name: 'Instrument Rating',              slug: 'instrument-rating',           dur: '2–3 months',   elig: 'PPL holder',               fee: '₹3–5L',       dgca: '✓' },
+                  { name: 'Multi-Engine Rating',            slug: 'multi-engine-rating',         dur: '1–2 months',   elig: 'PPL/CPL holder',           fee: '₹3–5L',       dgca: '✓' },
+                  { name: 'Airbus A320 Simulator',          slug: 'a320-simulator',              dur: 'Flexible',     elig: 'CPL + 200 hrs',            fee: '₹10,000/hr',  dgca: '✓' },
+                  { name: 'DGCA Ground School',             slug: 'ground-school',               dur: '3–6 months',   elig: 'Any',                      fee: '₹2,70,000',   dgca: '✓' },
+                  { name: 'Cabin Crew Training',            slug: 'cabin-crew-training',         dur: '3–6 months',   elig: '12th pass, 18–27 yrs',     fee: '₹30K–₹54K',   dgca: '—' },
+                  { name: 'Aviation English (ICAO L4)',     slug: 'aviation-english-icao',       dur: '1–3 months',   elig: 'Any',                      fee: '₹50K–1L',     dgca: '—' },
+                  { name: 'Flight Dispatcher',              slug: 'flight-dispatcher',           dur: '3–6 months',   elig: '10+2',                     fee: '₹1–2L',       dgca: '—' },
                 ].map((row, idx) => (
                   <tr
                     key={idx}

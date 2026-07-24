@@ -82,7 +82,7 @@ const PROGRAMS = [
     title: 'Cabin Crew Training',
     tag: 'Hospitality',
     desc: 'Three structured pathways for cabin crew aspirants led by ex-Alliance Air and retired Air India AGM trainers. From finishing batch (3 months, scholarship available) to full foundation (6 months).',
-    price: '₹30,000',
+    price: '₹30K–₹54K',
     href: '/courses/cabin-crew-training',
     accent: 'var(--gold)',
   },

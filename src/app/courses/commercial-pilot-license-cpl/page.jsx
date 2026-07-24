@@ -68,7 +68,7 @@ const faqSchema = {
     {
       '@type': 'Question',
       name: 'How much does CPL cost in India?',
-      acceptedAnswer: { '@type': 'Answer', text: 'CPL training in India costs ₹65–75 lakh at DGCA-approved FTOs, covering 200 flying hours, ground school, DGCA exam fees, and medical. Education loans available via SBI, Bank of Baroda, PNB.' }
+      acceptedAnswer: { '@type': 'Answer', text: 'CPL training in India costs ₹55–65 lakh at DGCA-approved FTOs, covering 200 flying hours, ground school, DGCA exam fees, and medical. Education loans available via SBI, Bank of Baroda, PNB.' }
     },
     {
       '@type': 'Question',

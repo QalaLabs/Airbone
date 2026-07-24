@@ -7,7 +7,7 @@ import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
   title: 'Instrument Rating Course Delhi — DGCA Approved | Airborne',
-  description: 'Earn your DGCA Instrument Rating at Airborne Aviation Academy, Dwarka Delhi — 2,500+ students trained. ILS, VOR, NDB approach training. PPL/CPL holders. Fees ₹5–8L. Enquire now.',
+  description: 'Earn your DGCA Instrument Rating at Airborne Aviation Academy, Dwarka Delhi — 2,500+ students trained. ILS, VOR, NDB approach training. PPL/CPL holders. Fees ₹3–5L. Enquire now.',
   alternates: { canonical: '/courses/instrument-rating' },
 }
 
@@ -27,7 +27,7 @@ const courseSchema = {
     name: 'Airborne Aviation Academy',
     address: { '@type': 'PostalAddress', streetAddress: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7', addressLocality: 'Dwarka', addressRegion: 'New Delhi', postalCode: '110075' }
   },
-  offers: { '@type': 'Offer', priceCurrency: 'INR', description: '₹5–8 lakh. Contact for current pricing.' },
+  offers: { '@type': 'Offer', priceCurrency: 'INR', description: '₹3–5 lakh. Contact for current pricing.' },
   coursePrerequisites: 'Valid DGCA PPL or CPL · 50 hours cross-country as PIC',
   courseMode: 'onsite',
   duration: 'P3M',
@@ -94,7 +94,7 @@ export default function InstrumentRatingPage() {
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
-                📍 Dwarka, Delhi · 2–3 Months · ₹5–8 Lakh
+                📍 Dwarka, Delhi · 2–3 Months · ₹3–5 Lakh
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
                 Instrument Rating (IR) Course — DGCA Approved, Delhi
@@ -188,7 +188,7 @@ export default function InstrumentRatingPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               <div className="course-sidebar-card">
                 <span className="course-sidebar-label">Course Fee</span>
-                <div className="course-sidebar-price">₹5–8L</div>
+                <div className="course-sidebar-price">₹3–5L</div>
                 <span className="course-sidebar-note">Ground school + flying through partner FTO</span>
                 <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(0, 39, 76, 0.08)' }} />
                 <span className="course-sidebar-label">Duration</span>

@@ -9,11 +9,11 @@ import SubmitButton from '@/components/SubmitButton'
 const COURSES = [
   'CPL Ground Classes (₹2,70,000)',
   'Cadet Pilot Program (₹50,000)',
-  'GD & PI Preparation (₹30,000)',
-  'Airline Preparation (₹1,00,000)',
-  'Airbus A320 SIM Training',
-  'Cabin Crew Training',
-  'ATPL Ground Classes',
+  'CAS Compass & ADAPT (₹30,000)',
+  'Airline Preparation / GD & PI (₹1,00,000)',
+  'Airbus A320 SIM Training (₹10,000/hr)',
+  'Cabin Crew Training (₹30K–₹54K)',
+  'ATPL Ground Classes (₹1,50,000)',
   'Private Pilot Licence (PPL)',
 ]
 

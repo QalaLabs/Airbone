@@ -113,7 +113,7 @@ export default function PPLPage() {
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
-                📍 Dwarka, Delhi · 3–6 Months · ₹8–12L Flying + Ground School
+                📍 Dwarka, Delhi · 3–6 Months · ₹25,00,000 Complete (incl. flying)
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
                 Private Pilot License (PPL) — Learn to Fly in India
@@ -219,8 +219,8 @@ export default function PPLPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               <div className="course-sidebar-card">
                 <span className="course-sidebar-label">Flying Training Fee</span>
-                <div className="course-sidebar-price">₹8–12L</div>
-                <span className="course-sidebar-note">Through DGCA-approved partner FTO</span>
+                <div className="course-sidebar-price">₹25,00,000</div>
+                <span className="course-sidebar-note">Complete PPL incl. flying training (partner FTO)</span>
                 <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(0, 39, 76, 0.08)' }} />
                 <span className="course-sidebar-label">Duration</span>
                 <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)' }}>⏱️ 3–6 Months</div>

@@ -4,7 +4,8 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
 import CoursePageFooter from '@/components/CoursePageFooter'
-import { fetchPublic, fetchPublicWithStatus, formatFee } from '@/lib/adminApi'
+import { fetchPublic, fetchPublicWithStatus } from '@/lib/adminApi'
+import { displayCourseFee, displayCourseEligibility } from '@/lib/courseFees'
 import { getCourseSchema, getBreadcrumbSchema } from '@/utils/seo'
 
 export const revalidate = 60
@@ -12,11 +13,11 @@ export const revalidate = 60
 const COURSE_SEO = {
   'commercial-pilot-license-cpl': {
     title: 'CPL Course Delhi Commercial Pilot License | Airborne Aviation',
-    description: "Enrol in Airborne's DGCA-approved CPL course in Dwarka, Delhi — 2,500+ students trained. 200 flying hours, 6 DGCA exams, airline placement support. Fees ₹45–55L. Check eligibility."
+    description: "Enrol in Airborne's DGCA-approved CPL course in Dwarka, Delhi — 2,500+ students trained. 200 flying hours, 6 DGCA exams, airline placement support. Fees ₹55–65L. Check eligibility."
   },
   'cpl-ground-classes': {
     title: 'CPL Course Delhi Commercial Pilot License | Airborne Aviation',
-    description: "Enrol in Airborne's DGCA-approved CPL course in Dwarka, Delhi — 2,500+ students trained. 200 flying hours, 6 DGCA exams, airline placement support. Fees ₹45–55L. Check eligibility."
+    description: "Enrol in Airborne's DGCA-approved CPL course in Dwarka, Delhi — 2,500+ students trained. 200 flying hours, 6 DGCA exams, airline placement support. Fees ₹55–65L. Check eligibility."
   },
   'atpl': {
     title: 'ATPL Ground School India | All Subjects | Airborne Aviation',
@@ -118,11 +119,12 @@ export default async function CourseDetailPage({ params }) {
     ? course.curriculum.map((m) => m.module)
     : meta('subjects', [])
 
+  const feeLabel = displayCourseFee(course.slug, course.fee) ?? 'Contact us'
   const courseSchema = getCourseSchema({
     title: course.title,
     slug: course.slug,
     tagline: course.subtitle ?? '',
-    price: course.fee ? formatFee(course.fee) : 'Contact us',
+    price: feeLabel,
     duration: course.duration ?? '',
     overview: course.description ?? '',
   })
@@ -211,7 +213,7 @@ export default async function CourseDetailPage({ params }) {
                   Eligibility Requirements
                 </h2>
                 <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: 0 }}>
-                  {course.slug === 'cabin-crew' ? '10+2 Pass, 17–26 Years of age, basic English ability' : course.eligibility}
+                  {displayCourseEligibility(course.slug, course.eligibility)}
                 </p>
               </div>
             )}
@@ -238,15 +240,7 @@ export default async function CourseDetailPage({ params }) {
                   Course Tuition Fee
                 </span>
                 <div className="course-sidebar-price">
-                  {(course.slug === 'cabin-crew' || course.slug === 'cabin-crew-training')
-                    ? '₹30K–₹54K'
-                    : course.slug === 'cadet-preparation'
-                      ? '₹50,000'
-                      : (course.slug === 'a320-simulator' || course.slug === 'airbus-a320-sim-training')
-                        ? '₹10,000/hr'
-                        : course.slug === 'atpl'
-                          ? '₹1,50,000'
-                          : (course.fee ? formatFee(course.fee) : 'Contact us')}
+                  {feeLabel}
                 </div>
                 <span className="course-sidebar-note">
                   *Excluding external licensing exam/viva processing fees.

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-const ADMIN_API_URL = process.env.ADMIN_API_URL ?? 'http://localhost:3001'
+const ADMIN_API_URL = process.env.ADMIN_API_URL ?? 'http://localhost:4000'
 
 export async function GET(req) {
   try {

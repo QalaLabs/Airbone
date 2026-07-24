@@ -1032,7 +1032,7 @@ const STATIC_COURSES = [
   { name: 'CAS Compass & ADAPT',  price: '₹30,000',         tag: 'Aptitude Test',  lede: 'Structured preparation for CAS Compass and ADAPT pilot aptitude test batteries.', desc: 'Numerical, spatial, psychomotor, multi-tasking, personality.', duration: '4–6 weeks',  eligibility: 'Any stage',        href: '/courses/cas-compass-adapt' },
   { name: 'Airline Preparation',  price: '₹1,00,000',       tag: 'GD / PI',        lede: 'GD, PI, personal development and mock interviews led by Rajeet Khalsa.', desc: 'GD, PI, mock interviews, communication, resume prep.', duration: '6–8 weeks',  eligibility: 'CPL holders',      href: '/courses/airline-preparation' },
   { name: 'Flying Training Guide',price: 'Free Counselling', tag: 'Guidance',       lede: 'India vs abroad comparison, DGCA conversion guide, and personalised roadmap.', desc: 'India vs abroad, DGCA conversion, which path suits you.', duration: 'Self-paced', eligibility: 'All students',     href: '/courses/flying-training-india-abroad' },
-  { name: 'Cabin Crew',           price: 'On Request',       tag: 'Hospitality',    lede: 'Cabin crew and hospitality training for aviation service careers.', desc: 'Cabin crew and hospitality training for aviation careers.', duration: '3 months',   eligibility: '18+ years',        href: '/courses/cabin-crew' },
+  { name: 'Cabin Crew',           price: '₹30K–₹54K',       tag: 'Hospitality',    lede: 'Cabin crew and hospitality training for aviation service careers.', desc: 'Cabin crew and hospitality training for aviation careers.', duration: '3–6 months', eligibility: '18–27 yrs',         href: '/courses/cabin-crew-training' },
 ]
 
 function mapCourseToCard(c) {
@@ -1743,6 +1743,7 @@ function FinalCTA() {
   const bgY = useTransform(scrollYProgress, [0, 1], ['15%', '-15%'])
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [submitError, setSubmitError] = useState('')
 
   const { values, handleChange, handleBlur, validate, isValid } = useFormValidation(
     { name: '', phone: '', email: '', pincode: '' },
@@ -1753,6 +1754,7 @@ function FinalCTA() {
     e.preventDefault()
     if (!validate()) return
     setLoading(true)
+    setSubmitError('')
     const urlParams = new URLSearchParams(window.location.search)
     const utm_source = urlParams.get('utm_source') || undefined
     const utm_medium = urlParams.get('utm_medium') || undefined
@@ -1762,14 +1764,18 @@ function FinalCTA() {
     const referrer = document.referrer || undefined
     const landing_page = window.location.href || undefined
     try {
-      await fetch('/api/lead', {
+      const res = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...values, course: 'DGCA CPL Ground School', source: 'Homepage Final CTA', utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page })
       })
-    } catch (_) { }
-    setLoading(false)
-    setSubmitted(true)
+      if (!res.ok) throw new Error('Lead submit failed')
+      setSubmitted(true)
+    } catch (_) {
+      setSubmitError('Something went wrong. Please try again or call +91 99537 77320.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -1877,6 +1883,11 @@ function FinalCTA() {
               </SubmitButton>
             </form>
           )}
+          {submitError && (
+            <p role="alert" style={{ marginTop: '1rem', color: '#fecaca', fontSize: '0.875rem', fontFamily: 'var(--font-b)' }}>
+              {submitError}
+            </p>
+          )}
 
           <div style={{ marginTop: '1.5rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.55)', letterSpacing: '0.05em' }}>
             Or call us directly ·{' '}
@@ -1901,7 +1912,7 @@ function SiteFooter() {
       { label: 'Cadet Pilot', href: '/courses/cadet-preparation' },
       { label: 'ATPL Ground', href: '/courses/atpl' },
       { label: 'A320 SIM', href: '/courses/a320-simulator' },
-      { label: 'Cabin Crew', href: '/courses/cabin-crew' },
+      { label: 'Cabin Crew', href: '/courses/cabin-crew-training' },
       { label: 'All Courses', href: '/courses' },
     ]},
     { title: 'Academy', links: [
@@ -2002,13 +2013,16 @@ function BookingModal({ open, onClose }) {
     const referrer = document.referrer || undefined
     const landing_page = window.location.href || undefined
     try {
-      await fetch('/api/lead', {
+      const res = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...values, course: 'DGCA CPL Ground School', source: 'Homepage Modal', utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page })
       })
-    } catch (_) { }
-    setStatus('success')
+      if (!res.ok) throw new Error('Lead submit failed')
+      setStatus('success')
+    } catch (_) {
+      setStatus('error')
+    }
   }
 
   useEffect(() => {
@@ -2049,6 +2063,17 @@ function BookingModal({ open, onClose }) {
                   <a href="tel:+919953777320" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', textDecoration: 'none', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>📞 Call Us</a>
                   <a href="https://wa.me/919953777320" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid #25D366', color: '#25D366', textDecoration: 'none', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>💬 WhatsApp</a>
                   <a href="/courses" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', background: 'var(--red)', color: '#fff', textDecoration: 'none', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>Explore Courses →</a>
+                </div>
+              </div>
+            ) : status === 'error' ? (
+              <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+                <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.2em', color: '#fecaca', textTransform: 'uppercase', marginBottom: '1rem' }}>Failed</div>
+                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 900, textTransform: 'uppercase', color: '#fff', marginBottom: '0.8rem' }}>Could not reserve seat</div>
+                <p style={{ fontFamily: 'var(--font-b)', fontSize: '0.85rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, marginBottom: '1.5rem' }}>Please try again, or call / WhatsApp admissions directly.</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
+                  <button type="button" onClick={() => setStatus('idle')} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', background: 'transparent', cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>Try again</button>
+                  <a href="tel:+919953777320" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', textDecoration: 'none', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>Call Us</a>
+                  <a href="https://wa.me/919953777320" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid #25D366', color: '#25D366', textDecoration: 'none', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>WhatsApp</a>
                 </div>
               </div>
             ) : (

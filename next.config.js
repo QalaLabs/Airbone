@@ -84,7 +84,12 @@ const nextConfig = {
       },
       {
         source: '/courses/cpl-flying',
-        destination: '/courses/flying-training',
+        destination: '/courses/flying-training-india-abroad',
+        permanent: true,
+      },
+      {
+        source: '/courses/cabin-crew',
+        destination: '/courses/cabin-crew-training',
         permanent: true,
       },
     ]

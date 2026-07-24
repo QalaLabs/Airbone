@@ -4,7 +4,7 @@ import { storeFallbackLead } from '@/utils/fallback-storage'
 import { sendLeadToCRM } from '@/lib/crm'
 import { consumeVerifyToken } from '@/utils/otp-store'
 
-const ADMIN_API_URL = process.env.ADMIN_API_URL ?? 'http://localhost:3001'
+const ADMIN_API_URL = process.env.ADMIN_API_URL ?? 'http://localhost:4000'
 const INTAKE_KEY = process.env.PUBLIC_INTAKE_KEY ?? ''
 const UPSTREAM_FETCH_TIMEOUT = parseInt(process.env.UPSTREAM_FETCH_TIMEOUT || '10000', 10)
 
