@@ -62,6 +62,13 @@ export class RateLimitError extends AppError {
   }
 }
 
+export class StorageUnavailableError extends AppError {
+  constructor(message = "Media storage is not configured") {
+    super("STORAGE_UNAVAILABLE", message, 503);
+    this.name = "StorageUnavailableError";
+  }
+}
+
 export function isAppError(err: unknown): err is AppError {
   return err instanceof AppError;
 }

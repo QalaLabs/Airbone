@@ -3,7 +3,7 @@ import { MediaRepository, MediaFolderRepository } from "@/lib/repositories/media
 import { AuditService } from "@/lib/services/audit.service";
 import { ActivityFeedService } from "@/lib/services/activity.service";
 import { emitEvent } from "@/lib/events/inngest";
-import { NotFoundError, ConflictError } from "@/lib/utils/errors";
+import { NotFoundError, ConflictError, StorageUnavailableError } from "@/lib/utils/errors";
 import type {
   RegisterAssetInput,
   UpdateAssetInput,
@@ -42,11 +42,9 @@ export class MediaService {
     const fileKey = `media/${Date.now()}-${uuid()}.${ext}`;
 
     if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY) {
-      return {
-        uploadUrl: `http://localhost:3001/api/v1/upload-mock?key=${fileKey}`,
-        fileKey,
-        fileUrl: `http://localhost:3001/_mock/${fileKey}`,
-      };
+      throw new StorageUnavailableError(
+        "Media storage is not configured. Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, and R2_SECRET_ACCESS_KEY.",
+      );
     }
 
     const { S3Client, PutObjectCommand } = await import("@aws-sdk/client-s3");

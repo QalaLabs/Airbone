@@ -1,12 +1,10 @@
 /**
  * AIRBORNE AVIATION — LMS DEMO SEED
  * ==========================================================================
- * Demo credentials (STUDENT portal login):
- *   Email:    demo.student@airborneaviation.in
- *   Password: DemoStudent1!
- *
- * Admin login (existing admin user):
- *   Email:    admin@airborneaviation.in  (or your existing admin email)
+ * Demo credentials (org slug: airborne-aviation):
+ *   ADMIN:   admin@airborneaviation.in        / Admin@1234!
+ *   TEACHER: demo.teacher@airborneaviation.in / DemoTeacher1!
+ *   STUDENT: demo.student@airborneaviation.in / DemoStudent1!
  *
  * Run: npm run db:seed:lms   (from admin/ directory)
  *
@@ -103,6 +101,33 @@ async function main() {
       await prisma.student.update({ where: { id: demoStudent.id }, data: { userId: demoPortalUser.id } });
     }
     console.log(`ℹ️  CRM Student exists: ${demoStudent.studentCode}`);
+  }
+
+  // ── 3b. Demo Teacher ──────────────────────────────────────────────────────
+  const teacherEmail = "demo.teacher@airborneaviation.in";
+  const teacherPassword = "DemoTeacher1!";
+  let demoTeacher = await prisma.user.findFirst({ where: { email: teacherEmail, orgId: org.id } });
+  if (!demoTeacher) {
+    demoTeacher = await prisma.user.create({
+      data: {
+        orgId: org.id,
+        name: "Demo Teacher",
+        email: teacherEmail,
+        passwordHash: await hash(teacherPassword),
+        role: "TEACHER",
+        isActive: true,
+        emailVerified: new Date(),
+      },
+    });
+    console.log(`✅ Demo teacher created: ${teacherEmail}`);
+  } else {
+    if (demoTeacher.role !== "TEACHER" || !demoTeacher.isActive) {
+      await prisma.user.update({
+        where: { id: demoTeacher.id },
+        data: { role: "TEACHER", isActive: true, deletedAt: null },
+      });
+    }
+    console.log(`ℹ️  Demo teacher exists: ${teacherEmail}`);
   }
 
   // ── 4. LMS Course ────────────────────────────────────────────────────────
@@ -769,10 +794,12 @@ async function main() {
 
   console.log("\n🎉 LMS demo seed complete!\n");
   console.log("═══════════════════════════════════════════════════════");
-  console.log("  Demo portal login");
+  console.log("  Org slug: airborne-aviation");
   console.log("  URL:      http://localhost:4000/login");
-  console.log("  Email:    demo.student@airborneaviation.in");
-  console.log("  Password: DemoStudent1!");
+  console.log("───────────────────────────────────────────────────────");
+  console.log("  ADMIN    admin@airborneaviation.in        / Admin@1234!");
+  console.log("  TEACHER  demo.teacher@airborneaviation.in / DemoTeacher1!");
+  console.log("  STUDENT  demo.student@airborneaviation.in / DemoStudent1!");
   console.log("═══════════════════════════════════════════════════════");
   console.log("  Certificate verify code: VERIFY-NAV-0001");
   console.log("  Cert No:                 ABC-NAV-2024-0001");

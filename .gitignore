@@ -16,6 +16,13 @@ build/
 .env.test.local
 .env.production.local
 .env*.local
+.env.preview.pulled
+.env.vercel*
+.vercel-bypass-secret
+admin/.vercel-bypass-secret
+admin-preview-url.txt
+*-deploy-out*.txt
+.tmp-env-pull/
 
 # Prisma
 *.db

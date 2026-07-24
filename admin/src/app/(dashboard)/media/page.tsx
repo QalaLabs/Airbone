@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, isStorageUnavailable } from "@/lib/api";
 import { formatDate, cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/use-toast";
@@ -157,7 +157,12 @@ export default function MediaPage() {
       toast({ title: "Upload Successful", description: `File "${file.name}" has been successfully added.` });
       refetch();
     } catch (err: unknown) {
-      toast({ title: "Upload Failed", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
+      const description = isStorageUnavailable(err)
+        ? "Media storage is not configured"
+        : err instanceof Error
+          ? err.message
+          : String(err);
+      toast({ title: "Upload Failed", description, variant: "destructive" });
     }
   };
 

@@ -164,6 +164,51 @@ async function main() {
 
   console.log(`✅ Users: ${createdUsers.length} created`);
 
+  // ─── RC demo accounts (idempotent; passwords match LMS seed) ───────────────
+  const rcDemoUsers = [
+    {
+      email: "admin@airborneaviation.in",
+      name: "Airborne Admin",
+      role: "ADMIN" as const,
+      password: "Admin@1234!",
+    },
+    {
+      email: "demo.teacher@airborneaviation.in",
+      name: "Demo Teacher",
+      role: "TEACHER" as const,
+      password: "DemoTeacher1!",
+    },
+    {
+      email: "demo.student@airborneaviation.in",
+      name: "Arjun Sharma",
+      role: "STUDENT" as const,
+      password: "DemoStudent1!",
+    },
+  ];
+
+  for (const demo of rcDemoUsers) {
+    const existing = await prisma.user.findFirst({
+      where: { email: demo.email, orgId: org.id },
+    });
+    if (!existing) {
+      await prisma.user.create({
+        data: {
+          orgId: org.id,
+          email: demo.email,
+          name: demo.name,
+          passwordHash: await hash(demo.password),
+          role: demo.role,
+          campusId: campusDelhi.id,
+          isActive: true,
+          emailVerified: new Date(),
+        },
+      });
+      console.log(`  👤 RC ${demo.role}: ${demo.email}`);
+    } else {
+      console.log(`  ℹ️  RC ${demo.role} exists: ${demo.email}`);
+    }
+  }
+
   // Assign head counselors to campuses
   const adminUser = createdUsers.find((u) => u.role === "ADMIN");
   const counselorUser = createdUsers.find((u) => u.role === "ADMISSIONS_COUNSELOR");
@@ -322,8 +367,13 @@ async function main() {
 
   console.log("\n🎉 Seed completed successfully!\n");
   console.log("─".repeat(50));
-  console.log("🔑 Default password for all users: Airborne@123");
+  console.log("🔑 Default password for role users: Airborne@123");
   console.log("🌐 Org slug: airborne-aviation");
+  console.log("─".repeat(50));
+  console.log("RC demo logins:");
+  console.log("  ADMIN    admin@airborneaviation.in        / Admin@1234!");
+  console.log("  TEACHER  demo.teacher@airborneaviation.in / DemoTeacher1!");
+  console.log("  STUDENT  demo.student@airborneaviation.in / DemoStudent1!");
   console.log("─".repeat(50));
 }
 

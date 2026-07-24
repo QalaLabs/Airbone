@@ -19,7 +19,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, isStorageUnavailable } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -547,7 +547,15 @@ function ContentManager({ topic, courseId }: { topic: Topic; courseId: string })
       if (!title) setTitle(file.name);
       toast({ title: "File uploaded" });
     } catch (err) {
-      toast({ title: "Upload failed", description: err instanceof Error ? err.message : "Unknown error", variant: "destructive" });
+      toast({
+        title: "Upload failed",
+        description: isStorageUnavailable(err)
+          ? "Media storage is not configured"
+          : err instanceof Error
+            ? err.message
+            : "Unknown error",
+        variant: "destructive",
+      });
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";

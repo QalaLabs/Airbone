@@ -1,5 +1,13 @@
 const BASE = process.env.ADMIN_API_URL ?? 'http://localhost:4000'
 
+function adminFetchHeaders() {
+  const bypass =
+    process.env.ADMIN_PROTECTION_BYPASS ||
+    process.env.VERCEL_AUTOMATION_BYPASS_SECRET ||
+    ''
+  return bypass ? { 'x-vercel-protection-bypass': bypass } : {}
+}
+
 // Returns { data, status } — status 0 means network error, non-zero is HTTP status
 export async function fetchPublicWithStatus(path, params = {}) {
   const url = new URL(`${BASE}/api/public${path}`)
@@ -7,7 +15,10 @@ export async function fetchPublicWithStatus(path, params = {}) {
     if (v !== undefined && v !== null) url.searchParams.set(k, String(v))
   })
   try {
-    const res = await fetch(url.toString(), { next: { revalidate: 60 } })
+    const res = await fetch(url.toString(), {
+      next: { revalidate: 60 },
+      headers: adminFetchHeaders(),
+    })
     if (res.ok) {
       const json = await res.json()
       return { data: json.data ?? null, status: res.status }
@@ -24,7 +35,10 @@ export async function fetchPublic(path, params = {}) {
     if (v !== undefined && v !== null) url.searchParams.set(k, String(v))
   })
   try {
-    const res = await fetch(url.toString(), { next: { revalidate: 60 } })
+    const res = await fetch(url.toString(), {
+      next: { revalidate: 60 },
+      headers: adminFetchHeaders(),
+    })
     if (!res.ok) return null
     const json = await res.json()
     return json.data ?? null

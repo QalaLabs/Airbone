@@ -22,7 +22,7 @@ const REQUIRED_VARS = [
 const OPTIONAL_VARS: Record<string, string> = {
   DIRECT_URL: "Prisma direct (non-pooled) URL — required for migrate deploy in CI",
   GEMINI_API_KEY: "Gemini AI study assistant — stub response returned when absent",
-  R2_ACCOUNT_ID: "Cloudflare R2 — dev falls back to mock presign URL",
+  R2_ACCOUNT_ID: "Cloudflare R2 — missing → STORAGE_UNAVAILABLE 503",
   R2_ACCESS_KEY_ID: "Cloudflare R2",
   R2_SECRET_ACCESS_KEY: "Cloudflare R2",
   R2_BUCKET_NAME: "Cloudflare R2 (default: airborne-media)",

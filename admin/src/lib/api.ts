@@ -1,3 +1,14 @@
+export class ApiClientError extends Error {
+  constructor(
+    message: string,
+    public readonly code?: string,
+    public readonly status?: number,
+  ) {
+    super(message);
+    this.name = "ApiClientError";
+  }
+}
+
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api/v1${path}`, {
     ...init,
@@ -9,10 +20,22 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   });
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({})) as { error?: { message?: string } };
-    throw new Error(err?.error?.message ?? `HTTP ${res.status}`);
+    const err = (await res.json().catch(() => ({}))) as {
+      error?: { message?: string; code?: string };
+    };
+    throw new ApiClientError(
+      err?.error?.message ?? `HTTP ${res.status}`,
+      err?.error?.code,
+      res.status,
+    );
   }
 
-  const data = await res.json() as { data?: T } & T;
+  const data = (await res.json()) as { data?: T } & T;
   return (data as { data?: T }).data ?? (data as T);
+}
+
+export function isStorageUnavailable(err: unknown): boolean {
+  return (
+    err instanceof ApiClientError && err.code === "STORAGE_UNAVAILABLE"
+  );
 }

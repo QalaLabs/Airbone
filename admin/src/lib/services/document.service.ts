@@ -2,7 +2,7 @@ import { DocumentRepository } from "@/lib/repositories/document.repository";
 import { AuditService } from "@/lib/services/audit.service";
 import { ActivityFeedService } from "@/lib/services/activity.service";
 import { emitEvent } from "@/lib/events/inngest";
-import { NotFoundError, ForbiddenError } from "@/lib/utils/errors";
+import { NotFoundError, ForbiddenError, StorageUnavailableError } from "@/lib/utils/errors";
 import { prisma } from "@/lib/db/client";
 import type { UploadDocumentInput, ReviewDocumentInput, DocumentFilters } from "@/lib/validations/document.schema";
 import type { RequestContext } from "@/types";
@@ -27,18 +27,9 @@ export class DocumentService {
     const { R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_PUBLIC_URL } = process.env;
 
     if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !R2_BUCKET_NAME) {
-      if (process.env.NODE_ENV === "production") {
-        throw new Error(
-          "R2 storage is not configured. Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, and R2_BUCKET_NAME.",
-        );
-      }
-      // Dev-only mock response
-      const fileKey = `documents/${Date.now()}-${fileName.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-      return {
-        uploadUrl: `http://localhost:3001/api/v1/upload-mock?key=${encodeURIComponent(fileKey)}`,
-        fileKey,
-        fileUrl: `${R2_PUBLIC_URL ?? "http://localhost:3001/files"}/${fileKey}`,
-      };
+      throw new StorageUnavailableError(
+        "Media storage is not configured. Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, and R2_BUCKET_NAME.",
+      );
     }
 
     // Real R2 presigned URL via AWS SDK v3

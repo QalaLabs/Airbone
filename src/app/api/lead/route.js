@@ -191,11 +191,21 @@ export async function POST(req) {
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), UPSTREAM_FETCH_TIMEOUT)
 
+    // Optional Preview automation bypass (Vercel Deployment Protection).
+    // Production custom domains do not need this; leave unset there.
+    const protectionBypass =
+      process.env.ADMIN_PROTECTION_BYPASS ||
+      process.env.VERCEL_AUTOMATION_BYPASS_SECRET ||
+      ''
+
     const res = await fetch(`${ADMIN_API_URL}/api/public/leads`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-intake-key': INTAKE_KEY,
+        ...(protectionBypass
+          ? { 'x-vercel-protection-bypass': protectionBypass }
+          : {}),
       },
       body: JSON.stringify({
         name: leadData.name,
