@@ -36,6 +36,14 @@ export const PERMISSION_MATRIX: PermissionMatrix = {
     organizations: ["read", "write", "admin"],
     campuses: ["read", "write", "delete"],
     workflows: ["read", "write", "delete"],
+    lms: ["read", "write", "delete", "publish"],
+    lms_courses: ["read", "write", "delete", "publish"],
+    lms_attendance: ["read", "write", "delete"],
+    lms_assessments: ["read", "write", "delete"],
+    lms_chat: ["read", "write", "delete"],
+    lms_progress: ["read", "write"],
+    lms_certificates: ["read", "write", "delete"],
+    lms_notifications: ["read", "write"],
   },
   MARKETING_MANAGER: {
     leads: ["read", "write", "export", "assign"],
@@ -88,6 +96,26 @@ export const PERMISSION_MATRIX: PermissionMatrix = {
     admissions: ["read"],
     documents: ["read"],
     enquiries: ["read", "write"],
+  },
+  // SMS portal roles — scoped LMS resources only; no CRM/CMS write
+  TEACHER: {
+    lms: ["read", "write"],
+    lms_courses: ["read", "write"],
+    lms_attendance: ["read", "write"],
+    lms_assessments: ["read", "write"],
+    lms_chat: ["read", "write"],
+    lms_progress: ["read"],
+    students: ["read"],
+    media: ["read", "write"],
+  },
+  STUDENT: {
+    lms: ["read"],
+    lms_courses: ["read"],
+    lms_progress: ["read", "write"],
+    lms_assessments: ["read", "write"],
+    lms_chat: ["read", "write"],
+    lms_certificates: ["read"],
+    lms_notifications: ["read", "write"],
   },
 };
 

@@ -17,7 +17,17 @@ import { toast } from "@/components/ui/use-toast";
 import { getInitials } from "@/lib/utils";
 import { apiFetch } from "@/lib/api";
 
-const ROLES = ["SUPER_ADMIN", "ADMIN", "MARKETING_MANAGER", "CONTENT_MANAGER", "ADMISSIONS_COUNSELOR", "PLACEMENT_MANAGER", "SUPPORT_STAFF"];
+const ROLES = [
+  "SUPER_ADMIN",
+  "ADMIN",
+  "MARKETING_MANAGER",
+  "CONTENT_MANAGER",
+  "ADMISSIONS_COUNSELOR",
+  "PLACEMENT_MANAGER",
+  "SUPPORT_STAFF",
+  "TEACHER",
+  "STUDENT",
+];
 
 const ROLE_LABELS: Record<string, string> = {
   SUPER_ADMIN: "Super Admin",
@@ -27,6 +37,8 @@ const ROLE_LABELS: Record<string, string> = {
   ADMISSIONS_COUNSELOR: "Admissions Counselor",
   PLACEMENT_MANAGER: "Placement Manager",
   SUPPORT_STAFF: "Support Staff",
+  TEACHER: "Teacher",
+  STUDENT: "Student",
 };
 
 interface SystemUser {

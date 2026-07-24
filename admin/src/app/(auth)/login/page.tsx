@@ -54,7 +54,16 @@ export default function LoginPage() {
         return;
       }
 
-      router.push("/");
+      // Role-aware landing: students → portal, staff → admin dashboard
+      const callback = new URLSearchParams(window.location.search).get("callbackUrl");
+      if (callback?.startsWith("/")) {
+        router.push(callback);
+      } else {
+        // Fetch session role via lightweight cookie round-trip after signIn
+        const sessionRes = await fetch("/api/auth/session");
+        const session = (await sessionRes.json()) as { user?: { role?: string } };
+        router.push(session.user?.role === "STUDENT" ? "/portal" : "/");
+      }
       router.refresh();
     } catch {
       toast({

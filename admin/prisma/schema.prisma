@@ -24,6 +24,9 @@ enum UserRole {
   ADMISSIONS_COUNSELOR
   PLACEMENT_MANAGER
   SUPPORT_STAFF
+  // SMS / LMS portal roles (additive — do not remove staff roles)
+  TEACHER
+  STUDENT
 }
 
 enum LeadStatus {
@@ -197,6 +200,15 @@ model Organization {
   hiringPartners HiringPartner[]      @relation("OrgHiringPartners")
   testimonials   Testimonial[]        @relation("OrgTestimonials")
 
+  // SMS / LMS (additive)
+  lmsCourses           LmsCourse[]           @relation("OrgLmsCourses")
+  lmsEnrollments       LmsEnrollment[]       @relation("OrgLmsEnrollments")
+  lmsAttendanceSessions LmsAttendanceSession[] @relation("OrgLmsAttendanceSessions")
+  lmsCertificates      LmsCertificate[]      @relation("OrgLmsCertificates")
+  lmsChatRooms         LmsChatRoom[]         @relation("OrgLmsChatRooms")
+  lmsNotifications     LmsNotification[]     @relation("OrgLmsNotifications")
+  lmsAnnouncements     LmsAnnouncement[]     @relation("OrgLmsAnnouncements")
+
   @@index([slug])
   @@index([isActive])
   @@map("organizations")
@@ -298,6 +310,18 @@ model User {
   createdPlacements       Placement[]          @relation("PlacementCreator")
   createdHiringPartners   HiringPartner[]      @relation("HiringPartnerCreator")
   reviewedTestimonials    Testimonial[]        @relation("TestimonialReviewer")
+
+  // SMS / LMS portal (additive)
+  studentProfile          Student?             @relation("StudentAuthUser")
+  teachingCourses         LmsCourseTeacher[]   @relation("LmsCourseTeacher")
+  lmsProgress             LmsStudentProgress[] @relation("LmsProgressStudent")
+  lmsAssessments          LmsAssessment[]      @relation("LmsAssessmentStudent")
+  lmsSentMessages         LmsMessage[]         @relation("LmsSentMessages")
+  lmsNotifications        LmsNotification[]    @relation("LmsNotificationUser")
+  issuedCertificates      LmsCertificate[]     @relation("LmsCertificateIssuer")
+  markedAttendance        LmsAttendanceRecord[] @relation("LmsAttendanceMarker")
+  lmsQuizAttempts         LmsQuizAttempt[]     @relation("LmsQuizAttemptUser")
+  lmsAnnouncements        LmsAnnouncement[]    @relation("LmsAnnouncementCreator")
 
   @@unique([email, orgId])
   @@index([orgId, role])
@@ -664,6 +688,8 @@ model Student {
   orgId          String        @db.Uuid
   campusId       String?       @db.Uuid
   leadId         String?       @unique @db.Uuid
+  // Optional portal login link (SMS) — staff CRM Student stays intact without userId
+  userId         String?       @unique @db.Uuid
   studentCode    String        @db.VarChar(50)
   firstName      String        @db.VarChar(100)
   lastName       String        @db.VarChar(100)
@@ -696,12 +722,22 @@ model Student {
   org        Organization         @relation("OrgStudents", fields: [orgId], references: [id], onDelete: Cascade)
   campus     Campus?              @relation("CampusStudents", fields: [campusId], references: [id], onDelete: SetNull)
   lead       Lead?                @relation("LeadStudent", fields: [leadId], references: [id], onDelete: SetNull)
+  user       User?                @relation("StudentAuthUser", fields: [userId], references: [id], onDelete: SetNull)
   admissions Admission[]
   documents     Document[]           @relation("StudentDocuments")
   payments      PaymentTransaction[] @relation("StudentPayments")
   applications  JobApplication[]     @relation("StudentApplications")
   placements    Placement[]          @relation("StudentPlacements")
   testimonials  Testimonial[]        @relation("StudentTestimonials")
+
+  // SMS / LMS
+  lmsEnrollments       LmsEnrollment[]       @relation("StudentLmsEnrollments")
+  lmsProgress          LmsStudentProgress[]  @relation("StudentLmsProgress")
+  lmsAssessments       LmsAssessment[]       @relation("StudentLmsAssessments")
+  lmsAttendanceRecords LmsAttendanceRecord[] @relation("StudentLmsAttendance")
+  lmsCertificates      LmsCertificate[]      @relation("StudentLmsCertificates")
+  lmsQuizAttempts      LmsQuizAttempt[]      @relation("StudentLmsQuizAttempts")
+  lmsBookmarks         LmsBookmark[]         @relation("StudentLmsBookmarks")
 
   @@unique([orgId, studentCode])
   @@unique([orgId, email])
@@ -1389,4 +1425,430 @@ model Testimonial {
   @@index([orgId, isFeatured])
   @@index([orgId, courseId])
   @@map("testimonials")
+}
+
+// ─── SMS / LMS (additive — does NOT replace marketing Course CMS) ────────────
+// Hierarchy: LmsCourse → LmsStage → LmsModule → LmsChapter → LmsTopic → LmsContent
+// Marketing website `Course` / `Resource` models stay untouched.
+
+enum LmsContentType {
+  PDF
+  VIDEO
+  NOTES
+}
+
+enum LmsTestStatus {
+  PASS
+  FAIL
+  PENDING
+}
+
+enum LmsEnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  SUSPENDED
+  DROPPED
+}
+
+enum LmsAttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+}
+
+enum LmsCertificateStatus {
+  DRAFT
+  ISSUED
+  REVOKED
+}
+
+model LmsCourse {
+  id            String        @id @default(uuid()) @db.Uuid
+  orgId         String        @db.Uuid
+  // Optional link to marketing CMS course (never merges schemas)
+  marketingCourseId String?   @db.Uuid
+  slug          String        @db.VarChar(255)
+  title         String        @db.VarChar(255)
+  description   String?       @db.Text
+  status        ContentStatus @default(DRAFT)
+  isPublished   Boolean       @default(false)
+  metadata      Json          @default("{}")
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  org         Organization      @relation("OrgLmsCourses", fields: [orgId], references: [id], onDelete: Cascade)
+  stages      LmsStage[]
+  teachers    LmsCourseTeacher[]
+  enrollments LmsEnrollment[]
+  chatRooms   LmsChatRoom[]
+  certificates LmsCertificate[]
+  attendanceSessions LmsAttendanceSession[]
+  announcements LmsAnnouncement[]
+
+  @@unique([orgId, slug])
+  @@index([orgId, status])
+  @@map("lms_courses")
+}
+
+model LmsCourseTeacher {
+  id        String   @id @default(uuid()) @db.Uuid
+  teacherId String   @db.Uuid
+  courseId  String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  teacher User      @relation("LmsCourseTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
+  course  LmsCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([teacherId, courseId])
+  @@index([courseId])
+  @@map("lms_course_teachers")
+}
+
+model LmsStage {
+  id       String @id @default(uuid()) @db.Uuid
+  title    String @db.VarChar(255)
+  order    Int    @default(0)
+  courseId String @db.Uuid
+
+  course  LmsCourse   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  modules LmsModule[]
+
+  @@index([courseId, order])
+  @@map("lms_stages")
+}
+
+model LmsModule {
+  id      String @id @default(uuid()) @db.Uuid
+  title   String @db.VarChar(255)
+  order   Int    @default(0)
+  stageId String @db.Uuid
+  // e.g. unlock after N days / mock-test gate metadata
+  unlockRules Json @default("{}")
+  passPercent Int @default(70)
+  maxAttempts Int @default(3)
+
+  stage       LmsStage        @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  chapters    LmsChapter[]
+  assessments LmsAssessment[]
+  questions   LmsQuestion[]
+  quizAttempts LmsQuizAttempt[]
+
+  @@index([stageId, order])
+  @@map("lms_modules")
+}
+
+model LmsChapter {
+  id       String @id @default(uuid()) @db.Uuid
+  title    String @db.VarChar(255)
+  order    Int    @default(0)
+  moduleId String @db.Uuid
+
+  module LmsModule  @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  topics LmsTopic[]
+
+  @@index([moduleId, order])
+  @@map("lms_chapters")
+}
+
+model LmsTopic {
+  id        String @id @default(uuid()) @db.Uuid
+  title     String @db.VarChar(255)
+  order     Int    @default(0)
+  chapterId String @db.Uuid
+
+  chapter   LmsChapter           @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  contents  LmsContent[]
+  progress  LmsStudentProgress[]
+  bookmarks LmsBookmark[]
+
+  @@index([chapterId, order])
+  @@map("lms_topics")
+}
+
+model LmsContent {
+  id       String         @id @default(uuid()) @db.Uuid
+  title    String         @db.VarChar(255)
+  type     LmsContentType
+  url      String         @db.Text
+  duration Int?
+  order    Int            @default(0)
+  topicId  String         @db.Uuid
+  metadata Json           @default("{}")
+
+  topic LmsTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@index([topicId, order])
+  @@map("lms_contents")
+}
+
+model LmsEnrollment {
+  id          String              @id @default(uuid()) @db.Uuid
+  orgId       String              @db.Uuid
+  studentId   String              @db.Uuid
+  courseId    String              @db.Uuid
+  status      LmsEnrollmentStatus @default(ACTIVE)
+  enrolledAt  DateTime            @default(now())
+  completedAt DateTime?
+  metadata    Json                @default("{}")
+
+  org     Organization @relation("OrgLmsEnrollments", fields: [orgId], references: [id], onDelete: Cascade)
+  student Student      @relation("StudentLmsEnrollments", fields: [studentId], references: [id], onDelete: Cascade)
+  course  LmsCourse    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, courseId])
+  @@index([orgId, status])
+  @@index([courseId])
+  @@map("lms_enrollments")
+}
+
+model LmsStudentProgress {
+  id          String    @id @default(uuid()) @db.Uuid
+  studentId   String    @db.Uuid
+  // Denormalized auth user when portal login exists
+  userId      String?   @db.Uuid
+  topicId     String    @db.Uuid
+  completed   Boolean   @default(false)
+  percent     Int       @default(0)
+  completedAt DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  student Student  @relation("StudentLmsProgress", fields: [studentId], references: [id], onDelete: Cascade)
+  user    User?    @relation("LmsProgressStudent", fields: [userId], references: [id], onDelete: SetNull)
+  topic   LmsTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, topicId])
+  @@index([topicId])
+  @@map("lms_student_progress")
+}
+
+model LmsAssessment {
+  id        String        @id @default(uuid()) @db.Uuid
+  studentId String        @db.Uuid
+  userId    String?       @db.Uuid
+  moduleId  String        @db.Uuid
+  score     Int           @default(0)
+  status    LmsTestStatus @default(PENDING)
+  attempts  Int           @default(1)
+  metadata  Json          @default("{}")
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  student Student   @relation("StudentLmsAssessments", fields: [studentId], references: [id], onDelete: Cascade)
+  user    User?     @relation("LmsAssessmentStudent", fields: [userId], references: [id], onDelete: SetNull)
+  module  LmsModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, moduleId])
+  @@index([moduleId, status])
+  @@map("lms_assessments")
+}
+
+model LmsAttendanceSession {
+  id        String   @id @default(uuid()) @db.Uuid
+  orgId     String   @db.Uuid
+  courseId  String   @db.Uuid
+  title     String   @db.VarChar(255)
+  heldAt    DateTime @default(now())
+  notes     String?  @db.Text
+  createdAt DateTime @default(now())
+
+  org     Organization          @relation("OrgLmsAttendanceSessions", fields: [orgId], references: [id], onDelete: Cascade)
+  course  LmsCourse             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  records LmsAttendanceRecord[]
+
+  @@index([orgId, heldAt(sort: Desc)])
+  @@index([courseId])
+  @@map("lms_attendance_sessions")
+}
+
+model LmsAttendanceRecord {
+  id        String              @id @default(uuid()) @db.Uuid
+  sessionId String              @db.Uuid
+  studentId String              @db.Uuid
+  status    LmsAttendanceStatus @default(PRESENT)
+  markedBy  String?             @db.Uuid
+  markedAt  DateTime            @default(now())
+  smsSentAt DateTime?
+  notes     String?             @db.Text
+
+  session LmsAttendanceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  student Student              @relation("StudentLmsAttendance", fields: [studentId], references: [id], onDelete: Cascade)
+  marker  User?                @relation("LmsAttendanceMarker", fields: [markedBy], references: [id], onDelete: SetNull)
+
+  @@unique([sessionId, studentId])
+  @@index([studentId])
+  @@map("lms_attendance_records")
+}
+
+model LmsCertificate {
+  id               String               @id @default(uuid()) @db.Uuid
+  orgId            String               @db.Uuid
+  studentId        String               @db.Uuid
+  courseId         String               @db.Uuid
+  certificateNo    String               @db.VarChar(100)
+  verificationCode String?              @db.VarChar(100)
+  title            String               @db.VarChar(255)
+  status           LmsCertificateStatus @default(DRAFT)
+  issuedAt         DateTime?
+  issuedBy         String?              @db.Uuid
+  fileUrl          String?              @db.Text
+  metadata         Json                 @default("{}")
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  org     Organization @relation("OrgLmsCertificates", fields: [orgId], references: [id], onDelete: Cascade)
+  student Student      @relation("StudentLmsCertificates", fields: [studentId], references: [id], onDelete: Cascade)
+  course  LmsCourse    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  issuer  User?        @relation("LmsCertificateIssuer", fields: [issuedBy], references: [id], onDelete: SetNull)
+
+  @@unique([orgId, certificateNo])
+  @@index([studentId])
+  @@index([courseId])
+  @@map("lms_certificates")
+}
+
+model LmsChatRoom {
+  id        String   @id @default(uuid()) @db.Uuid
+  orgId     String   @db.Uuid
+  courseId  String   @db.Uuid
+  title     String?  @db.VarChar(255)
+  createdAt DateTime @default(now())
+
+  org      Organization @relation("OrgLmsChatRooms", fields: [orgId], references: [id], onDelete: Cascade)
+  course   LmsCourse    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  messages LmsMessage[]
+
+  @@index([orgId, courseId])
+  @@map("lms_chat_rooms")
+}
+
+model LmsMessage {
+  id        String   @id @default(uuid()) @db.Uuid
+  roomId    String   @db.Uuid
+  senderId  String   @db.Uuid
+  text      String   @db.Text
+  createdAt DateTime @default(now())
+
+  room   LmsChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  sender User        @relation("LmsSentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([roomId, createdAt])
+  @@map("lms_messages")
+}
+
+model LmsNotification {
+  id        String   @id @default(uuid()) @db.Uuid
+  orgId     String   @db.Uuid
+  userId    String   @db.Uuid
+  title     String   @db.VarChar(255)
+  body      String   @db.Text
+  isRead    Boolean  @default(false)
+  linkUrl   String?  @db.Text
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now())
+
+  org  Organization @relation("OrgLmsNotifications", fields: [orgId], references: [id], onDelete: Cascade)
+  user User         @relation("LmsNotificationUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt(sort: Desc)])
+  @@index([orgId, createdAt(sort: Desc)])
+  @@map("lms_notifications")
+}
+
+// ─── LMS QUESTIONS (MCQ bank per module) ─────────────────────────────────────
+
+model LmsQuestion {
+  id              String   @id @default(uuid()) @db.Uuid
+  moduleId        String   @db.Uuid
+  stem            String   @db.Text
+  options         Json     @default("[]")
+  correctOptionId String   @db.VarChar(50)
+  order           Int      @default(0)
+  points          Int      @default(1)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  module LmsModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@index([moduleId, order])
+  @@map("lms_questions")
+}
+
+// ─── LMS QUIZ ATTEMPTS (per student per module) ───────────────────────────────
+
+model LmsQuizAttempt {
+  id            String   @id @default(uuid()) @db.Uuid
+  studentId     String   @db.Uuid
+  userId        String?  @db.Uuid
+  moduleId      String   @db.Uuid
+  answers       Json     @default("{}")
+  score         Int      @default(0)
+  maxScore      Int      @default(0)
+  passed        Boolean  @default(false)
+  attemptNumber Int      @default(1)
+  createdAt     DateTime @default(now())
+
+  student Student   @relation("StudentLmsQuizAttempts", fields: [studentId], references: [id], onDelete: Cascade)
+  user    User?     @relation("LmsQuizAttemptUser", fields: [userId], references: [id], onDelete: SetNull)
+  module  LmsModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, moduleId])
+  @@index([moduleId])
+  @@map("lms_quiz_attempts")
+}
+
+// ─── LMS BOOKMARKS ────────────────────────────────────────────────────────────
+
+model LmsBookmark {
+  id        String   @id @default(uuid()) @db.Uuid
+  studentId String   @db.Uuid
+  topicId   String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  student Student  @relation("StudentLmsBookmarks", fields: [studentId], references: [id], onDelete: Cascade)
+  topic   LmsTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, topicId])
+  @@index([studentId])
+  @@map("lms_bookmarks")
+}
+
+// ─── LMS ANNOUNCEMENTS ────────────────────────────────────────────────────────
+
+model LmsAnnouncement {
+  id          String    @id @default(uuid()) @db.Uuid
+  orgId       String    @db.Uuid
+  courseId    String?   @db.Uuid
+  title       String    @db.VarChar(255)
+  body        String    @db.Text
+  publishedAt DateTime?
+  createdBy   String?   @db.Uuid
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  org     Organization @relation("OrgLmsAnnouncements", fields: [orgId], references: [id], onDelete: Cascade)
+  course  LmsCourse?   @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  creator User?        @relation("LmsAnnouncementCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@index([orgId, publishedAt(sort: Desc)])
+  @@index([courseId])
+  @@map("lms_announcements")
+}
+
+// ─── FRONTEND FAILSAFE (exists in Supabase; must stay in schema to prevent DROP) ──
+// Written by marketing site lead fallback — not Admin CRM. Do not remove.
+
+model FallbackLead {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  name       String
+  phone      String
+  email      String?
+  pincode    String?
+  course     String?
+  source     String?
+  retryCount Int      @default(0) @map("retry_count")
+  status     String   @default("pending")
+
+  @@map("fallback_leads")
 }

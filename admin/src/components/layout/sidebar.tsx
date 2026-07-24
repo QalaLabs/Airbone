@@ -65,6 +65,14 @@ const NAV_GROUPS = [
     ]
   },
   {
+    label: "Student LMS (SMS)",
+    items: [
+      { href: "/lms", icon: BookOpen, label: "LMS Courses" },
+      { href: "/lms/attendance", icon: CalendarDays, label: "Attendance" },
+      { href: "/lms/certificates", icon: ShieldCheck, label: "Certificates" },
+    ]
+  },
+  {
     label: "Website & CMS",
     items: [
       { href: "/cms", icon: Globe, label: "Website CMS" },
