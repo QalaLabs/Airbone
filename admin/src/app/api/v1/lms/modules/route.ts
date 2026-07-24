@@ -33,23 +33,9 @@ export async function PATCH(req: NextRequest) {
     guard(ctx.user, "write", "lms_courses");
     const body = (await req.json()) as unknown;
     const { stageId, items } = reorderModulesSchema.parse(body);
-    await prismaReorderModules(ctx, stageId, items);
+    await LmsService.reorderModules(ctx, stageId, items);
     return ok({ reordered: items.length });
   } catch (err) {
     return handleError(err);
   }
-}
-
-async function prismaReorderModules(
-  ctx: Awaited<ReturnType<typeof import("@/lib/middleware/context").getRequestContext>>,
-  stageId: string,
-  items: { id: string; order: number }[],
-) {
-  const { prisma } = await import("@/lib/db/client");
-  const stage = await prisma.lmsStage.findFirst({
-    where: { id: stageId },
-    include: { course: { select: { orgId: true } } },
-  });
-  if (!stage || stage.course.orgId !== ctx.orgId) throw new Error("Stage not found");
-  await prisma.$transaction(items.map((i) => prisma.lmsModule.update({ where: { id: i.id }, data: { order: i.order } })));
 }

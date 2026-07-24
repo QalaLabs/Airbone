@@ -19,6 +19,7 @@ interface QuizQuestion {
   options: Array<{ id: string; text: string }>;
   order: number;
   points: number;
+  hasNegativeMarking?: boolean;
 }
 
 interface QuizPayload {
@@ -61,7 +62,11 @@ export function QuizModal({ moduleId, courseId, onClose, onPass }: QuizModalProp
     mutationFn: () =>
       apiFetch<QuizResult>(`/lms/me/courses/${courseId}/quiz/${moduleId}`, {
         method: "POST",
-        body: JSON.stringify({ moduleId, answers }),
+        body: JSON.stringify({
+          moduleId,
+          answers,
+          questionIds: quiz?.questions.map((q) => q.id) ?? [],
+        }),
       }),
     onSuccess: (data) => {
       setResult(data);
@@ -151,6 +156,11 @@ export function QuizModal({ moduleId, courseId, onClose, onPass }: QuizModalProp
             <p className="text-xs text-white/50 mt-0.5">
               Pass ≥ {quiz.module.passPercent}% · Attempt {quiz.attemptsUsed + 1} of {quiz.module.maxAttempts}
             </p>
+            {quiz.questions.some((q) => q.hasNegativeMarking) && (
+              <p className="text-[10px] text-amber-400/80 mt-0.5">
+                Some questions have negative marking for incorrect answers.
+              </p>
+            )}
           </div>
           <button
             type="button"
@@ -200,6 +210,9 @@ export function QuizModal({ moduleId, courseId, onClose, onPass }: QuizModalProp
                   {q.stem}
                   {q.points > 1 && (
                     <span className="ml-2 text-xs font-normal text-white/40">({q.points} pts)</span>
+                  )}
+                  {q.hasNegativeMarking && (
+                    <span className="ml-1 text-[10px] font-normal text-amber-400/70">· negative marking</span>
                   )}
                 </p>
                 <div className="grid gap-2">

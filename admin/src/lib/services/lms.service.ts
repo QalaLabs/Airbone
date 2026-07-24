@@ -180,13 +180,101 @@ export class LmsService {
     });
   }
 
-  static async updateModule(ctx: RequestContext, moduleId: string, data: { title?: string; passPercent?: number; maxAttempts?: number; order?: number }) {
+  static async updateModule(ctx: RequestContext, moduleId: string, data: { title?: string; passPercent?: number; maxAttempts?: number; order?: number; quizQuestionCount?: number | null; randomizeQuestions?: boolean }) {
     const mod = await prisma.lmsModule.findFirst({
       where: { id: moduleId },
       include: { stage: { include: { course: { select: { orgId: true } } } } },
     });
     if (!mod || mod.stage.course.orgId !== ctx.orgId) throw new NotFoundError("LmsModule", moduleId);
     return prisma.lmsModule.update({ where: { id: moduleId }, data });
+  }
+
+  static async duplicateModule(ctx: RequestContext, moduleId: string) {
+    const mod = await prisma.lmsModule.findFirst({
+      where: { id: moduleId },
+      include: {
+        stage: { include: { course: { select: { orgId: true } } } },
+        chapters: {
+          orderBy: { order: "asc" },
+          include: {
+            topics: {
+              orderBy: { order: "asc" },
+              include: { contents: { orderBy: { order: "asc" } } },
+            },
+          },
+        },
+        questions: { orderBy: { order: "asc" } },
+      },
+    });
+    if (!mod || mod.stage.course.orgId !== ctx.orgId) throw new NotFoundError("LmsModule", moduleId);
+
+    const nextOrder = await prisma.lmsModule.count({ where: { stageId: mod.stageId } });
+
+    return prisma.$transaction(async (tx) => {
+      const copy = await tx.lmsModule.create({
+        data: {
+          stageId: mod.stageId,
+          title: `${mod.title} (Copy)`,
+          order: nextOrder,
+          unlockRules: mod.unlockRules as object,
+          passPercent: mod.passPercent,
+          maxAttempts: mod.maxAttempts,
+          quizQuestionCount: mod.quizQuestionCount,
+          randomizeQuestions: mod.randomizeQuestions,
+        },
+      });
+
+      for (const ch of mod.chapters) {
+        const newCh = await tx.lmsChapter.create({
+          data: { moduleId: copy.id, title: ch.title, order: ch.order },
+        });
+        for (const t of ch.topics) {
+          const newT = await tx.lmsTopic.create({
+            data: { chapterId: newCh.id, title: t.title, order: t.order },
+          });
+          for (const c of t.contents) {
+            await tx.lmsContent.create({
+              data: {
+                topicId: newT.id,
+                title: c.title,
+                type: c.type,
+                url: c.url,
+                body: c.body,
+                duration: c.duration,
+                order: c.order,
+                metadata: c.metadata as object,
+              },
+            });
+          }
+        }
+      }
+
+      for (const q of mod.questions) {
+        await tx.lmsQuestion.create({
+          data: {
+            moduleId: copy.id,
+            stem: q.stem,
+            options: q.options as object[],
+            correctOptionId: q.correctOptionId,
+            order: q.order,
+            points: q.points,
+            difficulty: q.difficulty,
+            negativePoints: q.negativePoints,
+          },
+        });
+      }
+
+      return copy;
+    });
+  }
+
+  static async reorderModules(ctx: RequestContext, stageId: string, items: { id: string; order: number }[]) {
+    const stage = await prisma.lmsStage.findFirst({
+      where: { id: stageId },
+      include: { course: { select: { orgId: true } } },
+    });
+    if (!stage || stage.course.orgId !== ctx.orgId) throw new NotFoundError("LmsStage", stageId);
+    await prisma.$transaction(items.map((i) => prisma.lmsModule.update({ where: { id: i.id }, data: { order: i.order } })));
   }
 
   static async deleteModule(ctx: RequestContext, moduleId: string) {
@@ -240,13 +328,62 @@ export class LmsService {
     return prisma.lmsTopic.create({ data: { chapterId, title, order: nextOrder } });
   }
 
-  static async updateTopic(ctx: RequestContext, topicId: string, data: { title?: string; order?: number }) {
+  static async updateTopic(ctx: RequestContext, topicId: string, data: { title?: string; order?: number; chapterId?: string }) {
     const topic = await prisma.lmsTopic.findFirst({
       where: { id: topicId },
       include: { chapter: { include: { module: { include: { stage: { include: { course: { select: { orgId: true } } } } } } } } },
     });
     if (!topic || topic.chapter.module.stage.course.orgId !== ctx.orgId) throw new NotFoundError("LmsTopic", topicId);
-    return prisma.lmsTopic.update({ where: { id: topicId }, data });
+
+    if (data.chapterId && data.chapterId !== topic.chapterId) {
+      const target = await prisma.lmsChapter.findFirst({
+        where: { id: data.chapterId },
+        include: { module: { include: { stage: { include: { course: { select: { orgId: true } } } } } } },
+      });
+      if (!target || target.module.stage.course.orgId !== ctx.orgId) {
+        throw new NotFoundError("LmsChapter", data.chapterId);
+      }
+      const nextOrder = data.order ?? (await prisma.lmsTopic.count({ where: { chapterId: data.chapterId } }));
+      return prisma.lmsTopic.update({
+        where: { id: topicId },
+        data: { chapterId: data.chapterId, order: nextOrder, ...(data.title !== undefined ? { title: data.title } : {}) },
+      });
+    }
+
+    return prisma.lmsTopic.update({
+      where: { id: topicId },
+      data: {
+        ...(data.title !== undefined ? { title: data.title } : {}),
+        ...(data.order !== undefined ? { order: data.order } : {}),
+      },
+    });
+  }
+
+  static async reorderChapters(ctx: RequestContext, moduleId: string, items: { id: string; order: number }[]) {
+    const mod = await prisma.lmsModule.findFirst({
+      where: { id: moduleId },
+      include: { stage: { include: { course: { select: { orgId: true } } } } },
+    });
+    if (!mod || mod.stage.course.orgId !== ctx.orgId) throw new NotFoundError("LmsModule", moduleId);
+    await prisma.$transaction(items.map((i) => prisma.lmsChapter.update({ where: { id: i.id }, data: { order: i.order } })));
+  }
+
+  static async reorderTopics(ctx: RequestContext, chapterId: string, items: { id: string; order: number }[]) {
+    const ch = await prisma.lmsChapter.findFirst({
+      where: { id: chapterId },
+      include: { module: { include: { stage: { include: { course: { select: { orgId: true } } } } } } },
+    });
+    if (!ch || ch.module.stage.course.orgId !== ctx.orgId) throw new NotFoundError("LmsChapter", chapterId);
+    await prisma.$transaction(items.map((i) => prisma.lmsTopic.update({ where: { id: i.id }, data: { order: i.order } })));
+  }
+
+  static async reorderContents(ctx: RequestContext, topicId: string, items: { id: string; order: number }[]) {
+    const topic = await prisma.lmsTopic.findFirst({
+      where: { id: topicId },
+      include: { chapter: { include: { module: { include: { stage: { include: { course: { select: { orgId: true } } } } } } } } },
+    });
+    if (!topic || topic.chapter.module.stage.course.orgId !== ctx.orgId) throw new NotFoundError("LmsTopic", topicId);
+    await prisma.$transaction(items.map((i) => prisma.lmsContent.update({ where: { id: i.id }, data: { order: i.order } })));
   }
 
   static async deleteTopic(ctx: RequestContext, topicId: string) {
@@ -260,14 +397,37 @@ export class LmsService {
 
   // ─── Content CRUD ─────────────────────────────────────────────────────────
 
-  static async createContent(ctx: RequestContext, topicId: string, data: { title: string; type: "PDF" | "VIDEO" | "NOTES"; url: string; duration?: number | null; order?: number }) {
+  static async createContent(ctx: RequestContext, topicId: string, data: { title: string; type: "PDF" | "VIDEO" | "NOTES" | "ATTACHMENT"; url: string; body?: string | null; duration?: number | null; order?: number }) {
     const topic = await prisma.lmsTopic.findFirst({
       where: { id: topicId },
       include: { chapter: { include: { module: { include: { stage: { include: { course: { select: { orgId: true } } } } } } } } },
     });
     if (!topic || topic.chapter.module.stage.course.orgId !== ctx.orgId) throw new NotFoundError("LmsTopic", topicId);
     const nextOrder = data.order ?? (await prisma.lmsContent.count({ where: { topicId } }));
-    return prisma.lmsContent.create({ data: { topicId, title: data.title, type: data.type, url: data.url, duration: data.duration, order: nextOrder } });
+    return prisma.lmsContent.create({
+      data: {
+        topicId,
+        title: data.title,
+        type: data.type,
+        url: data.url || "#",
+        body: data.body ?? null,
+        duration: data.duration,
+        order: nextOrder,
+      },
+    });
+  }
+
+  static async updateContent(
+    ctx: RequestContext,
+    contentId: string,
+    data: { title?: string; type?: "PDF" | "VIDEO" | "NOTES" | "ATTACHMENT"; url?: string; body?: string | null; duration?: number | null; order?: number },
+  ) {
+    const content = await prisma.lmsContent.findFirst({
+      where: { id: contentId },
+      include: { topic: { include: { chapter: { include: { module: { include: { stage: { include: { course: { select: { orgId: true } } } } } } } } } } },
+    });
+    if (!content || content.topic.chapter.module.stage.course.orgId !== ctx.orgId) throw new NotFoundError("LmsContent", contentId);
+    return prisma.lmsContent.update({ where: { id: contentId }, data });
   }
 
   static async deleteContent(ctx: RequestContext, contentId: string) {
@@ -305,8 +465,36 @@ export class LmsService {
         correctOptionId: input.correctOptionId,
         order: nextOrder,
         points: input.points ?? 1,
+        difficulty: input.difficulty ?? "MEDIUM",
+        negativePoints: input.negativePoints ?? 0,
       },
     });
+  }
+
+  static async bulkCreateQuestions(
+    ctx: RequestContext,
+    moduleId: string,
+    questions: Omit<CreateQuestionInput, "moduleId">[],
+  ) {
+    const mod = await prisma.lmsModule.findFirst({
+      where: { id: moduleId },
+      include: { stage: { include: { course: { select: { orgId: true } } } } },
+    });
+    if (!mod || mod.stage.course.orgId !== ctx.orgId) throw new NotFoundError("LmsModule", moduleId);
+    const startOrder = await prisma.lmsQuestion.count({ where: { moduleId } });
+    await prisma.lmsQuestion.createMany({
+      data: questions.map((q, i) => ({
+        moduleId,
+        stem: q.stem,
+        options: q.options as object[],
+        correctOptionId: q.correctOptionId,
+        order: q.order ?? startOrder + i,
+        points: q.points ?? 1,
+        difficulty: q.difficulty ?? "MEDIUM",
+        negativePoints: q.negativePoints ?? 0,
+      })),
+    });
+    return this.listQuestions(ctx, moduleId);
   }
 
   static async updateQuestion(ctx: RequestContext, questionId: string, input: UpdateQuestionInput) {
@@ -323,6 +511,8 @@ export class LmsService {
         ...(input.correctOptionId !== undefined ? { correctOptionId: input.correctOptionId } : {}),
         ...(input.order !== undefined ? { order: input.order } : {}),
         ...(input.points !== undefined ? { points: input.points } : {}),
+        ...(input.difficulty !== undefined ? { difficulty: input.difficulty } : {}),
+        ...(input.negativePoints !== undefined ? { negativePoints: input.negativePoints } : {}),
       },
     });
   }
@@ -337,6 +527,57 @@ export class LmsService {
   }
 
   // ─── Quiz Attempt (real MCQ engine) ──────────────────────────────────────
+
+  static async getQuizForStudent(ctx: RequestContext, studentId: string, moduleId: string) {
+    await this.assertStudentAccess(ctx, studentId);
+    const mod = await prisma.lmsModule.findFirst({
+      where: { id: moduleId },
+      include: {
+        stage: { include: { course: true } },
+        questions: { orderBy: { order: "asc" } },
+      },
+    });
+    if (!mod || mod.stage.course.orgId !== ctx.orgId) throw new NotFoundError("LmsModule", moduleId);
+
+    const enrollment = await prisma.lmsEnrollment.findFirst({
+      where: { studentId, courseId: mod.stage.course.id, status: "ACTIVE" },
+    });
+    if (!enrollment) throw new ForbiddenError("read", "lms_courses");
+
+    const priorAttempts = await prisma.lmsQuizAttempt.count({ where: { studentId, moduleId } });
+    let pool = [...mod.questions];
+    if (mod.randomizeQuestions) {
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j]!, pool[i]!];
+      }
+    }
+    if (mod.quizQuestionCount && mod.quizQuestionCount < pool.length) {
+      pool = pool.slice(0, mod.quizQuestionCount);
+    }
+
+    return {
+      module: {
+        id: mod.id,
+        title: mod.title,
+        passPercent: mod.passPercent,
+        maxAttempts: mod.maxAttempts,
+        quizQuestionCount: mod.quizQuestionCount,
+        randomizeQuestions: mod.randomizeQuestions,
+      },
+      attemptsUsed: priorAttempts,
+      attemptsRemaining: Math.max(0, mod.maxAttempts - priorAttempts),
+      questions: pool.map((q) => ({
+        id: q.id,
+        stem: q.stem,
+        options: q.options,
+        points: q.points,
+        difficulty: q.difficulty,
+        // never leak correctOptionId / negativePoints details beyond existence of negative
+        hasNegativeMarking: q.negativePoints > 0,
+      })),
+    };
+  }
 
   static async submitQuiz(ctx: RequestContext, studentId: string, input: SubmitQuizInput) {
     await this.assertStudentAccess(ctx, studentId);
@@ -355,7 +596,6 @@ export class LmsService {
     });
     if (!enrollment) throw new ForbiddenError("read", "lms_courses");
 
-    // Count prior attempts
     const priorAttempts = await prisma.lmsQuizAttempt.count({
       where: { studentId, moduleId: input.moduleId },
     });
@@ -364,19 +604,31 @@ export class LmsService {
       throw new ForbiddenError("quiz", `Max ${mod.maxAttempts} attempts reached for this module`);
     }
 
-    // Grade the answers
+    const byId = new Map(mod.questions.map((q) => [q.id, q]));
+    const selectedIds = input.questionIds?.length
+      ? input.questionIds.filter((id) => byId.has(id))
+      : mod.questions.map((q) => q.id);
+    const questions = selectedIds.map((id) => byId.get(id)!);
+
     let earned = 0;
     let maxScore = 0;
-    const gradedAnswers: Record<string, { given: string; correct: string; isCorrect: boolean; points: number }> = {};
+    const gradedAnswers: Record<string, { given: string; correct: string; isCorrect: boolean; points: number; penalty: number }> = {};
 
-    for (const q of mod.questions) {
+    for (const q of questions) {
       maxScore += q.points;
       const given = input.answers[q.id] ?? "";
       const isCorrect = given === q.correctOptionId;
-      if (isCorrect) earned += q.points;
-      gradedAnswers[q.id] = { given, correct: q.correctOptionId, isCorrect, points: q.points };
+      let penalty = 0;
+      if (isCorrect) {
+        earned += q.points;
+      } else if (given && q.negativePoints > 0) {
+        penalty = q.negativePoints;
+        earned -= penalty;
+      }
+      gradedAnswers[q.id] = { given, correct: q.correctOptionId, isCorrect, points: q.points, penalty };
     }
 
+    earned = Math.max(0, earned);
     const scorePercent = maxScore > 0 ? Math.round((earned / maxScore) * 100) : 0;
     const passed = scorePercent >= mod.passPercent;
 
@@ -393,12 +645,11 @@ export class LmsService {
       },
     });
 
-    // Update aggregate LmsAssessment (upsert latest result)
     const existingAssessment = await prisma.lmsAssessment.findUnique({
       where: { studentId_moduleId: { studentId, moduleId: input.moduleId } },
     });
 
-    const newStatus = passed ? "PASS" : scorePercent < mod.passPercent ? "FAIL" : "PENDING";
+    const newStatus = passed ? "PASS" : "FAIL";
 
     if (existingAssessment) {
       await prisma.lmsAssessment.update({
@@ -659,6 +910,9 @@ export class LmsService {
         data: {
           orgId: ctx.orgId,
           courseId: input.courseId,
+          batchId: input.batchId || null,
+          timetableSlotId: input.timetableSlotId || null,
+          subjectTag: input.subjectTag || null,
           title: input.title,
           heldAt: input.heldAt ? new Date(input.heldAt) : new Date(),
         },
@@ -681,14 +935,30 @@ export class LmsService {
     });
   }
 
-  static async getAttendanceForCourse(ctx: RequestContext, courseId: string) {
+  static async getAttendanceForCourse(
+    ctx: RequestContext,
+    courseId: string,
+    opts: { batchId?: string; from?: string; to?: string } = {},
+  ) {
     const course = await prisma.lmsCourse.findFirst({ where: { id: courseId, orgId: ctx.orgId } });
     if (!course) throw new NotFoundError("LmsCourse", courseId);
 
     const sessions = await prisma.lmsAttendanceSession.findMany({
-      where: { courseId },
+      where: {
+        courseId,
+        ...(opts.batchId ? { batchId: opts.batchId } : {}),
+        ...(opts.from || opts.to
+          ? {
+              heldAt: {
+                ...(opts.from ? { gte: new Date(opts.from) } : {}),
+                ...(opts.to ? { lte: new Date(opts.to) } : {}),
+              },
+            }
+          : {}),
+      },
       orderBy: { heldAt: "desc" },
       include: {
+        batch: { select: { id: true, name: true, type: true } },
         records: {
           include: {
             student: { select: { id: true, firstName: true, lastName: true, studentCode: true } },
@@ -956,32 +1226,7 @@ export class LmsService {
   }
 
   static async getModuleQuestions(ctx: RequestContext, studentId: string, moduleId: string) {
-    await this.assertStudentAccess(ctx, studentId);
-
-    const mod = await prisma.lmsModule.findFirst({
-      where: { id: moduleId },
-      include: {
-        stage: { include: { course: true } },
-        questions: { orderBy: { order: "asc" }, select: { id: true, stem: true, options: true, order: true, points: true } },
-      },
-    });
-    if (!mod || mod.stage.course.orgId !== ctx.orgId) throw new NotFoundError("LmsModule", moduleId);
-
-    // Check enrollment
-    const enrollment = await prisma.lmsEnrollment.findFirst({
-      where: { studentId, courseId: mod.stage.course.id, status: "ACTIVE" },
-    });
-    if (!enrollment) throw new ForbiddenError("read", "lms_courses");
-
-    // Get attempt count
-    const attemptCount = await prisma.lmsQuizAttempt.count({ where: { studentId, moduleId } });
-
-    return {
-      module: { id: mod.id, title: mod.title, passPercent: mod.passPercent, maxAttempts: mod.maxAttempts },
-      questions: mod.questions,
-      attemptsUsed: attemptCount,
-      attemptsRemaining: mod.maxAttempts - attemptCount,
-    };
+    return this.getQuizForStudent(ctx, studentId, moduleId);
   }
 
   private static async assertStudentAccess(ctx: RequestContext, studentId: string) {

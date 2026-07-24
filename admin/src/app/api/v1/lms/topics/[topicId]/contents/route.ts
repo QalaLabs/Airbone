@@ -12,7 +12,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ top
     const { topicId } = await params;
     const body = (await req.json()) as unknown;
     const input = createLmsContentSchema.parse(body);
-    const content = await LmsService.createContent(ctx, topicId, input);
+    const content = await LmsService.createContent(ctx, topicId, {
+      title: input.title,
+      type: input.type,
+      url: input.url || "#",
+      body: input.body,
+      duration: input.duration,
+      order: input.order,
+    });
     return created(content);
   } catch (err) {
     return handleError(err);

@@ -114,6 +114,76 @@ function ContinueLearningCard({ data }: { data: MePayload }) {
   );
 }
 
+// ─── Upcoming Lectures ─────────────────────────────────────────────────────
+
+interface TimetableSlot {
+  id: string;
+  title: string;
+  startsAt: string;
+  endsAt: string;
+  room?: string | null;
+  onlineUrl?: string | null;
+  batch: { name: string };
+  course?: { title: string } | null;
+  teacher?: { name: string } | null;
+}
+
+function UpcomingLectures() {
+  const { data: slots, isLoading } = useQuery({
+    queryKey: ["lms-me-timetable"],
+    queryFn: () => apiFetch<TimetableSlot[]>("/lms/me/timetable"),
+  });
+
+  if (isLoading) return null;
+  if (!slots || slots.length === 0) return null;
+
+  return (
+    <section className="space-y-3" aria-labelledby="lectures-heading">
+      <div className="flex items-center gap-2">
+        <Clock className="h-4 w-4 text-[#c8102e]" aria-hidden="true" />
+        <h2 id="lectures-heading" className="text-base font-semibold text-white">
+          Upcoming Lectures
+        </h2>
+        <span className="rounded-full bg-[#c8102e]/20 px-2 py-0.5 text-[10px] font-bold text-[#c8102e]">
+          {slots.length}
+        </span>
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {slots.slice(0, 4).map((slot) => {
+          const start = new Date(slot.startsAt);
+          return (
+            <div
+              key={slot.id}
+              className="rounded-xl border border-[#c8102e]/20 bg-[#c8102e]/[0.05] p-4"
+            >
+              <p className="truncate text-sm font-medium text-white">{slot.title}</p>
+              <p className="mt-0.5 text-[11px] text-white/50">
+                {slot.batch.name}{slot.course?.title ? ` · ${slot.course.title}` : ""}
+              </p>
+              <p className="mt-1 text-[11px] text-white/40">
+                {start.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}
+                {" · "}
+                {start.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
+                {slot.room ? ` · ${slot.room}` : ""}
+              </p>
+              {slot.onlineUrl && (
+                <a
+                  href={slot.onlineUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-1.5 inline-block text-[11px] text-[#c8102e] hover:underline"
+                >
+                  Join online
+                </a>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 // ─── Upcoming Assessments ────────────────────────────────────────────────────
 
 function UpcomingAssessments({ data }: { data: MePayload }) {
@@ -455,6 +525,9 @@ export default function PortalDashboardPage() {
         </h2>
         <ContinueLearningCard data={data} />
       </section>
+
+      {/* Upcoming Lectures */}
+      <UpcomingLectures />
 
       {/* Upcoming Assessments */}
       <UpcomingAssessments data={data} />

@@ -208,6 +208,9 @@ model Organization {
   lmsChatRooms         LmsChatRoom[]         @relation("OrgLmsChatRooms")
   lmsNotifications     LmsNotification[]     @relation("OrgLmsNotifications")
   lmsAnnouncements     LmsAnnouncement[]     @relation("OrgLmsAnnouncements")
+  lmsBatches           LmsBatch[]            @relation("OrgLmsBatches")
+  lmsTimetableSlots    LmsTimetableSlot[]    @relation("OrgLmsTimetableSlots")
+  lmsAssignments       LmsAssignment[]       @relation("OrgLmsAssignments")
 
   @@index([slug])
   @@index([isActive])
@@ -322,6 +325,10 @@ model User {
   markedAttendance        LmsAttendanceRecord[] @relation("LmsAttendanceMarker")
   lmsQuizAttempts         LmsQuizAttempt[]     @relation("LmsQuizAttemptUser")
   lmsAnnouncements        LmsAnnouncement[]    @relation("LmsAnnouncementCreator")
+  lmsBatchTeaching        LmsBatchTeacher[]    @relation("LmsBatchTeacher")
+  lmsTimetableTeaching    LmsTimetableSlot[]   @relation("LmsTimetableTeacher")
+  lmsAssignmentsCreated   LmsAssignment[]      @relation("LmsAssignmentCreator")
+  lmsSubmissionsGraded    LmsAssignmentSubmission[] @relation("LmsSubmissionGrader")
 
   @@unique([email, orgId])
   @@index([orgId, role])
@@ -738,6 +745,8 @@ model Student {
   lmsCertificates      LmsCertificate[]      @relation("StudentLmsCertificates")
   lmsQuizAttempts      LmsQuizAttempt[]      @relation("StudentLmsQuizAttempts")
   lmsBookmarks         LmsBookmark[]         @relation("StudentLmsBookmarks")
+  lmsBatchMemberships  LmsBatchStudent[]     @relation("StudentLmsBatches")
+  lmsAssignmentSubmissions LmsAssignmentSubmission[] @relation("StudentLmsSubmissions")
 
   @@unique([orgId, studentCode])
   @@unique([orgId, email])
@@ -1435,6 +1444,32 @@ enum LmsContentType {
   PDF
   VIDEO
   NOTES
+  ATTACHMENT
+}
+
+enum LmsBatchType {
+  MORNING
+  EVENING
+  WEEKEND
+  CUSTOM
+}
+
+enum LmsQuestionDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum LmsAssignmentStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+enum LmsSubmissionStatus {
+  SUBMITTED
+  GRADED
+  RETURNED
 }
 
 enum LmsTestStatus {
@@ -1485,6 +1520,9 @@ model LmsCourse {
   certificates LmsCertificate[]
   attendanceSessions LmsAttendanceSession[]
   announcements LmsAnnouncement[]
+  batches     LmsBatch[]
+  timetableSlots LmsTimetableSlot[]
+  assignments LmsAssignment[]
 
   @@unique([orgId, slug])
   @@index([orgId, status])
@@ -1527,12 +1565,16 @@ model LmsModule {
   unlockRules Json @default("{}")
   passPercent Int @default(70)
   maxAttempts Int @default(3)
+  // Phase C — random quiz sets (null = use all questions)
+  quizQuestionCount  Int?
+  randomizeQuestions Boolean @default(false)
 
   stage       LmsStage        @relation(fields: [stageId], references: [id], onDelete: Cascade)
   chapters    LmsChapter[]
   assessments LmsAssessment[]
   questions   LmsQuestion[]
   quizAttempts LmsQuizAttempt[]
+  assignments LmsAssignment[]
 
   @@index([stageId, order])
   @@map("lms_modules")
@@ -1571,6 +1613,8 @@ model LmsContent {
   title    String         @db.VarChar(255)
   type     LmsContentType
   url      String         @db.Text
+  // Rich text / notes HTML body (Phase C)
+  body     String?        @db.Text
   duration Int?
   order    Int            @default(0)
   topicId  String         @db.Uuid
@@ -1587,6 +1631,7 @@ model LmsEnrollment {
   orgId       String              @db.Uuid
   studentId   String              @db.Uuid
   courseId    String              @db.Uuid
+  batchId     String?             @db.Uuid
   status      LmsEnrollmentStatus @default(ACTIVE)
   enrolledAt  DateTime            @default(now())
   completedAt DateTime?
@@ -1595,10 +1640,12 @@ model LmsEnrollment {
   org     Organization @relation("OrgLmsEnrollments", fields: [orgId], references: [id], onDelete: Cascade)
   student Student      @relation("StudentLmsEnrollments", fields: [studentId], references: [id], onDelete: Cascade)
   course  LmsCourse    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  batch   LmsBatch?    @relation(fields: [batchId], references: [id], onDelete: SetNull)
 
   @@unique([studentId, courseId])
   @@index([orgId, status])
   @@index([courseId])
+  @@index([batchId])
   @@map("lms_enrollments")
 }
 
@@ -1644,20 +1691,26 @@ model LmsAssessment {
 }
 
 model LmsAttendanceSession {
-  id        String   @id @default(uuid()) @db.Uuid
-  orgId     String   @db.Uuid
-  courseId  String   @db.Uuid
-  title     String   @db.VarChar(255)
-  heldAt    DateTime @default(now())
-  notes     String?  @db.Text
-  createdAt DateTime @default(now())
+  id              String   @id @default(uuid()) @db.Uuid
+  orgId           String   @db.Uuid
+  courseId        String   @db.Uuid
+  batchId         String?  @db.Uuid
+  timetableSlotId String?  @db.Uuid
+  title           String   @db.VarChar(255)
+  subjectTag      String?  @db.VarChar(100)
+  heldAt          DateTime @default(now())
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now())
 
-  org     Organization          @relation("OrgLmsAttendanceSessions", fields: [orgId], references: [id], onDelete: Cascade)
-  course  LmsCourse             @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  records LmsAttendanceRecord[]
+  org           Organization          @relation("OrgLmsAttendanceSessions", fields: [orgId], references: [id], onDelete: Cascade)
+  course        LmsCourse             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  batch         LmsBatch?             @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  timetableSlot LmsTimetableSlot?     @relation(fields: [timetableSlotId], references: [id], onDelete: SetNull)
+  records       LmsAttendanceRecord[]
 
   @@index([orgId, heldAt(sort: Desc)])
   @@index([courseId])
+  @@index([batchId])
   @@map("lms_attendance_sessions")
 }
 
@@ -1758,19 +1811,22 @@ model LmsNotification {
 // ─── LMS QUESTIONS (MCQ bank per module) ─────────────────────────────────────
 
 model LmsQuestion {
-  id              String   @id @default(uuid()) @db.Uuid
-  moduleId        String   @db.Uuid
-  stem            String   @db.Text
-  options         Json     @default("[]")
-  correctOptionId String   @db.VarChar(50)
-  order           Int      @default(0)
-  points          Int      @default(1)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id              String                @id @default(uuid()) @db.Uuid
+  moduleId        String                @db.Uuid
+  stem            String                @db.Text
+  options         Json                  @default("[]")
+  correctOptionId String                @db.VarChar(50)
+  order           Int                   @default(0)
+  points          Int                   @default(1)
+  difficulty      LmsQuestionDifficulty @default(MEDIUM)
+  negativePoints  Int                   @default(0)
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
 
   module LmsModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
 
   @@index([moduleId, order])
+  @@index([moduleId, difficulty])
   @@map("lms_questions")
 }
 
@@ -1833,6 +1889,146 @@ model LmsAnnouncement {
   @@index([orgId, publishedAt(sort: Desc)])
   @@index([courseId])
   @@map("lms_announcements")
+}
+
+// ─── LMS BATCHES (Phase C) ────────────────────────────────────────────────────
+
+model LmsBatch {
+  id        String       @id @default(uuid()) @db.Uuid
+  orgId     String       @db.Uuid
+  courseId  String       @db.Uuid
+  name      String       @db.VarChar(255)
+  type      LmsBatchType @default(CUSTOM)
+  startDate DateTime?
+  endDate   DateTime?
+  capacity  Int?
+  metadata  Json         @default("{}")
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  org                Organization           @relation("OrgLmsBatches", fields: [orgId], references: [id], onDelete: Cascade)
+  course             LmsCourse              @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  teachers           LmsBatchTeacher[]
+  students           LmsBatchStudent[]
+  enrollments        LmsEnrollment[]
+  timetableSlots     LmsTimetableSlot[]
+  attendanceSessions LmsAttendanceSession[]
+  assignments        LmsAssignment[]
+
+  @@index([orgId, courseId])
+  @@index([orgId, type])
+  @@map("lms_batches")
+}
+
+model LmsBatchTeacher {
+  id        String   @id @default(uuid()) @db.Uuid
+  batchId   String   @db.Uuid
+  teacherId String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  batch   LmsBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  teacher User     @relation("LmsBatchTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@unique([batchId, teacherId])
+  @@index([teacherId])
+  @@map("lms_batch_teachers")
+}
+
+model LmsBatchStudent {
+  id        String   @id @default(uuid()) @db.Uuid
+  batchId   String   @db.Uuid
+  studentId String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  batch   LmsBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  student Student  @relation("StudentLmsBatches", fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([batchId, studentId])
+  @@index([studentId])
+  @@map("lms_batch_students")
+}
+
+// ─── LMS TIMETABLE (Phase C) ──────────────────────────────────────────────────
+
+model LmsTimetableSlot {
+  id             String   @id @default(uuid()) @db.Uuid
+  orgId          String   @db.Uuid
+  batchId        String   @db.Uuid
+  courseId       String?  @db.Uuid
+  teacherId      String?  @db.Uuid
+  title          String   @db.VarChar(255)
+  startsAt       DateTime
+  endsAt         DateTime
+  room           String?  @db.VarChar(100)
+  onlineUrl      String?  @db.Text
+  subjectTag     String?  @db.VarChar(100)
+  recurrenceRule Json     @default("{}")
+  metadata       Json     @default("{}")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  org                Organization           @relation("OrgLmsTimetableSlots", fields: [orgId], references: [id], onDelete: Cascade)
+  batch              LmsBatch               @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  course             LmsCourse?             @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  teacher            User?                  @relation("LmsTimetableTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
+  attendanceSessions LmsAttendanceSession[]
+
+  @@index([orgId, startsAt])
+  @@index([batchId, startsAt])
+  @@index([teacherId, startsAt])
+  @@map("lms_timetable_slots")
+}
+
+// ─── LMS ASSIGNMENTS (Phase C) ────────────────────────────────────────────────
+
+model LmsAssignment {
+  id          String              @id @default(uuid()) @db.Uuid
+  orgId       String              @db.Uuid
+  courseId    String              @db.Uuid
+  batchId     String?             @db.Uuid
+  moduleId    String?             @db.Uuid
+  title       String              @db.VarChar(255)
+  description String?             @db.Text
+  dueAt       DateTime?
+  maxScore    Int                 @default(100)
+  status      LmsAssignmentStatus @default(DRAFT)
+  createdBy   String?             @db.Uuid
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  org         Organization              @relation("OrgLmsAssignments", fields: [orgId], references: [id], onDelete: Cascade)
+  course      LmsCourse                 @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  batch       LmsBatch?                 @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  module      LmsModule?                @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+  creator     User?                     @relation("LmsAssignmentCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  submissions LmsAssignmentSubmission[]
+
+  @@index([orgId, courseId])
+  @@index([batchId])
+  @@index([status])
+  @@map("lms_assignments")
+}
+
+model LmsAssignmentSubmission {
+  id           String               @id @default(uuid()) @db.Uuid
+  assignmentId String               @db.Uuid
+  studentId    String               @db.Uuid
+  fileUrl      String?              @db.Text
+  body         String?              @db.Text
+  score        Int?
+  status       LmsSubmissionStatus  @default(SUBMITTED)
+  feedback     String?              @db.Text
+  submittedAt  DateTime             @default(now())
+  gradedAt     DateTime?
+  gradedBy     String?              @db.Uuid
+
+  assignment LmsAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  student    Student       @relation("StudentLmsSubmissions", fields: [studentId], references: [id], onDelete: Cascade)
+  grader     User?         @relation("LmsSubmissionGrader", fields: [gradedBy], references: [id], onDelete: SetNull)
+
+  @@unique([assignmentId, studentId])
+  @@index([studentId])
+  @@map("lms_assignment_submissions")
 }
 
 // ─── FRONTEND FAILSAFE (exists in Supabase; must stay in schema to prevent DROP) ──

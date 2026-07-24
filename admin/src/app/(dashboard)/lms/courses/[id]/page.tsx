@@ -42,6 +42,9 @@ import {
   EyeOff,
   Pencil,
   Check,
+  Copy,
+  Upload,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -49,11 +52,13 @@ import { cn } from "@/lib/utils";
 
 interface Option { id: string; text: string }
 
-interface Content { id: string; title: string; type: "PDF" | "VIDEO" | "NOTES"; url: string; duration?: number | null; order: number }
+interface Content { id: string; title: string; type: "PDF" | "VIDEO" | "NOTES" | "ATTACHMENT"; url: string; body?: string | null; duration?: number | null; order: number }
 interface Topic { id: string; title: string; order: number; contents: Content[] }
 interface Chapter { id: string; title: string; order: number; topics: Topic[] }
 interface Module {
   id: string; title: string; order: number; passPercent: number; maxAttempts: number;
+  quizQuestionCount?: number | null;
+  randomizeQuestions?: boolean;
   chapters: Chapter[];
   _count?: { questions: number };
 }
@@ -65,6 +70,7 @@ interface Course {
 }
 interface Question {
   id: string; stem: string; options: Option[]; correctOptionId: string; order: number; points: number;
+  difficulty?: string; negativePoints?: number;
 }
 interface Enrollment {
   id: string; studentId: string; status: string; enrolledAt: string;
@@ -150,6 +156,8 @@ function QuestionBankTab({ course }: { course: Course }) {
   const [editQuestion, setEditQuestion] = React.useState<Question | null>(null);
   const [stem, setStem] = React.useState("");
   const [points, setPoints] = React.useState(1);
+  const [difficulty, setDifficulty] = React.useState<"EASY" | "MEDIUM" | "HARD">("MEDIUM");
+  const [negativePoints, setNegativePoints] = React.useState(0);
   const [options, setOptions] = React.useState<Option[]>([
     { id: "a", text: "" }, { id: "b", text: "" }, { id: "c", text: "" }, { id: "d", text: "" },
   ]);
@@ -166,7 +174,7 @@ function QuestionBankTab({ course }: { course: Course }) {
   const mod = allModules.find((m) => m.id === selectedModuleId);
 
   function resetForm() {
-    setStem(""); setPoints(1); setCorrectId("a");
+    setStem(""); setPoints(1); setCorrectId("a"); setDifficulty("MEDIUM"); setNegativePoints(0);
     setOptions([{ id: "a", text: "" }, { id: "b", text: "" }, { id: "c", text: "" }, { id: "d", text: "" }]);
   }
 
@@ -174,6 +182,8 @@ function QuestionBankTab({ course }: { course: Course }) {
 
   function openEdit(q: Question) {
     setStem(q.stem); setPoints(q.points); setCorrectId(q.correctOptionId);
+    setDifficulty((q.difficulty as "EASY" | "MEDIUM" | "HARD") ?? "MEDIUM");
+    setNegativePoints(q.negativePoints ?? 0);
     setOptions(q.options as Option[]);
     setEditQuestion(q); setAddOpen(true);
   }
@@ -207,7 +217,10 @@ function QuestionBankTab({ course }: { course: Course }) {
       toast({ title: "Validation", description: "Provide stem, at least 2 options, and correct answer", variant: "destructive" });
       return;
     }
-    const body = { moduleId: selectedModuleId, stem, options: validOpts, correctOptionId: correctId, points };
+    const body = {
+      moduleId: selectedModuleId, stem, options: validOpts, correctOptionId: correctId, points,
+      difficulty, negativePoints: negativePoints || undefined,
+    };
     saveMutation.mutate(body);
   }
 
@@ -261,7 +274,11 @@ function QuestionBankTab({ course }: { course: Course }) {
                     </div>
                   ))}
                 </div>
-                <p className="mt-1.5 text-[10px] text-muted-foreground">{q.points} pt{q.points !== 1 ? "s" : ""}</p>
+                <p className="mt-1.5 text-[10px] text-muted-foreground">
+                  {q.points} pt{q.points !== 1 ? "s" : ""}
+                  {q.difficulty ? ` · ${q.difficulty}` : ""}
+                  {(q.negativePoints ?? 0) > 0 ? ` · −${q.negativePoints} wrong` : ""}
+                </p>
               </div>
               <div className="flex gap-1 opacity-0 group-hover:opacity-100">
                 <button type="button" onClick={() => openEdit(q)} className="rounded p-1 hover:bg-white/10">
@@ -328,13 +345,35 @@ function QuestionBankTab({ course }: { course: Course }) {
                 ))}
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <label className="text-xs text-muted-foreground">Points</label>
-              <Input
-                type="number" min={1} value={points}
-                onChange={(e) => setPoints(Number(e.target.value))}
-                className="h-8 w-20 text-sm"
-              />
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-muted-foreground">Points</label>
+                <Input
+                  type="number" min={1} value={points}
+                  onChange={(e) => setPoints(Number(e.target.value))}
+                  className="h-8 w-20 text-sm"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-muted-foreground">Difficulty</label>
+                <select
+                  className="h-8 rounded-lg border border-border bg-secondary/60 px-2 text-sm"
+                  value={difficulty}
+                  onChange={(e) => setDifficulty(e.target.value as "EASY" | "MEDIUM" | "HARD")}
+                >
+                  <option value="EASY">Easy</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="HARD">Hard</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-muted-foreground">Negative pts</label>
+                <Input
+                  type="number" min={0} value={negativePoints}
+                  onChange={(e) => setNegativePoints(Number(e.target.value))}
+                  className="h-8 w-20 text-sm"
+                />
+              </div>
             </div>
           </div>
           <DialogFooter>
@@ -464,25 +503,56 @@ function EnrollmentsTab({ course }: { course: Course }) {
 
 function ContentManager({ topic, courseId }: { topic: Topic; courseId: string }) {
   const queryClient = useQueryClient();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [open, setOpen] = React.useState(false);
   const [title, setTitle] = React.useState("");
-  const [type, setType] = React.useState<"PDF" | "VIDEO" | "NOTES">("PDF");
+  const [type, setType] = React.useState<"PDF" | "VIDEO" | "NOTES" | "ATTACHMENT">("PDF");
   const [url, setUrl] = React.useState("");
+  const [body, setBody] = React.useState("");
   const [duration, setDuration] = React.useState("");
+  const [uploading, setUploading] = React.useState(false);
 
   const addMutation = useMutation({
     mutationFn: () =>
       apiFetch(`/lms/topics/${topic.id}/contents`, {
         method: "POST",
-        body: JSON.stringify({ title, type, url, duration: duration ? Number(duration) : null }),
+        body: JSON.stringify({
+          title,
+          type,
+          url: url || "#",
+          body: type === "NOTES" ? body || null : null,
+          duration: duration ? Number(duration) : null,
+        }),
       }),
     onSuccess: () => {
       toast({ title: "Content added" });
-      setOpen(false); setTitle(""); setUrl(""); setDuration("");
+      setOpen(false); setTitle(""); setUrl(""); setBody(""); setDuration("");
       void queryClient.invalidateQueries({ queryKey: ["lms-course", courseId] });
     },
     onError: (err: Error) => toast({ title: "Add content failed", description: err.message, variant: "destructive" }),
   });
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const { uploadUrl, fileKey, fileUrl } = await apiFetch<{ uploadUrl: string; fileKey: string; fileUrl: string }>("/media/presign", {
+        method: "POST",
+        body: JSON.stringify({ fileName: file.name, contentType: file.type, size: file.size }),
+      });
+      const uploadRes = await fetch(uploadUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
+      if (!uploadRes.ok) throw new Error("Upload failed");
+      setUrl(fileUrl);
+      if (!title) setTitle(file.name);
+      toast({ title: "File uploaded" });
+    } catch (err) {
+      toast({ title: "Upload failed", description: err instanceof Error ? err.message : "Unknown error", variant: "destructive" });
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const deleteMutation = useMutation({
     mutationFn: (contentId: string) => apiFetch(`/lms/contents/${contentId}`, { method: "DELETE" }),
@@ -493,7 +563,7 @@ function ContentManager({ topic, courseId }: { topic: Topic; courseId: string })
     onError: (err: Error) => toast({ title: "Delete failed", description: err.message, variant: "destructive" }),
   });
 
-  const typeIcon = { PDF: FileText, VIDEO: Play, NOTES: BookOpen };
+  const typeIcon = { PDF: FileText, VIDEO: Play, NOTES: BookOpen, ATTACHMENT: FileText };
 
   return (
     <div className="mt-1 space-y-1 pl-4">
@@ -533,17 +603,39 @@ function ContentManager({ topic, courseId }: { topic: Topic; courseId: string })
             <select
               className="h-9 w-full rounded-lg border border-border bg-secondary/60 px-3 text-sm"
               value={type}
-              onChange={(e) => setType(e.target.value as "PDF" | "VIDEO" | "NOTES")}
+              onChange={(e) => setType(e.target.value as "PDF" | "VIDEO" | "NOTES" | "ATTACHMENT")}
             >
               <option value="PDF">PDF</option>
               <option value="VIDEO">Video</option>
               <option value="NOTES">Notes</option>
+              <option value="ATTACHMENT">Attachment</option>
             </select>
-            <Input
-              placeholder="URL (presigned S3 or direct link)"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-            />
+            {(type === "PDF" || type === "VIDEO" || type === "ATTACHMENT") && (
+              <>
+                <Input
+                  placeholder="URL (presigned S3 or direct link)"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                />
+                <div className="flex items-center gap-2">
+                  <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} />
+                  <Button type="button" size="sm" variant="outline" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="mr-1.5 h-3.5 w-3.5" />
+                    {uploading ? "Uploading…" : "Upload file"}
+                  </Button>
+                  {url && <span className="text-xs text-muted-foreground truncate">URL set</span>}
+                </div>
+              </>
+            )}
+            {type === "NOTES" && (
+              <textarea
+                rows={4}
+                placeholder="Notes body (optional — can also use URL)"
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                className="w-full rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm focus:outline-none"
+              />
+            )}
             {type === "VIDEO" && (
               <Input
                 type="number" placeholder="Duration (seconds, optional)"
@@ -554,7 +646,7 @@ function ContentManager({ topic, courseId }: { topic: Topic; courseId: string })
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
             <Button
-              disabled={!title || !url || addMutation.isPending}
+              disabled={!title || (type === "NOTES" ? !body && !url : !url) || addMutation.isPending}
               onClick={() => addMutation.mutate()}
             >
               {addMutation.isPending ? "Saving…" : "Add"}
@@ -582,6 +674,11 @@ function CurriculumTab({ course }: { course: Course }) {
   const [chapterTitle, setChapterTitle] = React.useState("");
   const [addingTopicFor, setAddingTopicFor] = React.useState<string | null>(null);
   const [topicTitle, setTopicTitle] = React.useState("");
+  const [settingsModule, setSettingsModule] = React.useState<Module | null>(null);
+  const [quizQuestionCount, setQuizQuestionCount] = React.useState<number | "">("");
+  const [randomizeQuestions, setRandomizeQuestions] = React.useState(false);
+  const [importOpen, setImportOpen] = React.useState(false);
+  const [importJson, setImportJson] = React.useState("");
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -623,6 +720,32 @@ function CurriculumTab({ course }: { course: Course }) {
   const renameModule = useMutation({
     mutationFn: ({ id, title }: { id: string; title: string }) => apiFetch(`/lms/modules/${id}`, { method: "PATCH", body: JSON.stringify({ title }) }),
     onSuccess: () => void invalidate(),
+  });
+  const duplicateModule = useMutation({
+    mutationFn: (id: string) => apiFetch(`/lms/modules/${id}/duplicate`, { method: "POST" }),
+    onSuccess: () => { toast({ title: "Module duplicated" }); void invalidate(); },
+    onError: (err: Error) => toast({ title: "Duplicate failed", description: err.message, variant: "destructive" }),
+  });
+  const updateModuleSettings = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: object }) =>
+      apiFetch(`/lms/modules/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    onSuccess: () => {
+      toast({ title: "Module settings saved" });
+      setSettingsModule(null);
+      void invalidate();
+    },
+    onError: (err: Error) => toast({ title: "Save failed", description: err.message, variant: "destructive" }),
+  });
+  const importMutation = useMutation({
+    mutationFn: (payload: object) =>
+      apiFetch(`/lms/courses/${courseId}/import`, { method: "POST", body: JSON.stringify(payload) }),
+    onSuccess: () => {
+      toast({ title: "Curriculum imported" });
+      setImportOpen(false);
+      setImportJson("");
+      void invalidate();
+    },
+    onError: (err: Error) => toast({ title: "Import failed", description: err.message, variant: "destructive" }),
   });
 
   // ─ Chapter mutations
@@ -694,8 +817,28 @@ function CurriculumTab({ course }: { course: Course }) {
     reorderStages.mutate(items);
   }
 
+  function openModuleSettings(mod: Module) {
+    setSettingsModule(mod);
+    setQuizQuestionCount(mod.quizQuestionCount ?? "");
+    setRandomizeQuestions(mod.randomizeQuestions ?? false);
+  }
+
+  function handleImport() {
+    try {
+      const payload = JSON.parse(importJson) as object;
+      importMutation.mutate(payload);
+    } catch {
+      toast({ title: "Invalid JSON", description: "Check your import payload format.", variant: "destructive" });
+    }
+  }
+
   return (
     <div className="space-y-3">
+      <div className="flex justify-end">
+        <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}>
+          Bulk import JSON
+        </Button>
+      </div>
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleTopReorder}>
         <SortableContext items={course.stages.map((s) => s.id)} strategy={verticalListSortingStrategy}>
           {course.stages.map((stage) => (
@@ -735,6 +878,22 @@ function CurriculumTab({ course }: { course: Course }) {
                                   <InlineEdit value={mod.title} onSave={(t) => renameModule.mutate({ id: mod.id, title: t })} />
                                 </div>
                                 <span className="text-[10px] text-muted-foreground">{mod.passPercent}% pass · {mod._count?.questions ?? 0} Qs</span>
+                                <button
+                                  type="button"
+                                  title="Duplicate module"
+                                  onClick={() => duplicateModule.mutate(mod.id)}
+                                  className="opacity-0 group-hover:opacity-60 rounded p-1 text-muted-foreground hover:bg-white/10 hover:opacity-100"
+                                >
+                                  <Copy className="h-3 w-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  title="Module settings"
+                                  onClick={() => openModuleSettings(mod)}
+                                  className="opacity-0 group-hover:opacity-60 rounded p-1 text-muted-foreground hover:bg-white/10 hover:opacity-100"
+                                >
+                                  <Settings className="h-3 w-3" />
+                                </button>
                                 <button
                                   type="button"
                                   onClick={() => { if (confirm(`Delete module "${mod.title}"?`)) deleteModule.mutate(mod.id); }}
@@ -915,6 +1074,78 @@ function CurriculumTab({ course }: { course: Course }) {
           <Plus className="h-4 w-4" /> Add Stage
         </button>
       )}
+
+      <Dialog open={!!settingsModule} onOpenChange={(v) => !v && setSettingsModule(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Module settings — {settingsModule?.title}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs text-muted-foreground">Quiz question count (random subset)</label>
+              <Input
+                type="number"
+                min={1}
+                placeholder="All questions"
+                className="mt-1"
+                value={quizQuestionCount}
+                onChange={(e) => setQuizQuestionCount(e.target.value ? Number(e.target.value) : "")}
+              />
+            </div>
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                checked={randomizeQuestions}
+                onChange={(e) => setRandomizeQuestions(e.target.checked)}
+                className="accent-[#c8102e]"
+              />
+              Randomize question order
+            </label>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSettingsModule(null)}>Cancel</Button>
+            <Button
+              disabled={updateModuleSettings.isPending}
+              onClick={() => {
+                if (!settingsModule) return;
+                updateModuleSettings.mutate({
+                  id: settingsModule.id,
+                  data: {
+                    quizQuestionCount: quizQuestionCount === "" ? null : Number(quizQuestionCount),
+                    randomizeQuestions,
+                  },
+                });
+              }}
+            >
+              Save settings
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={importOpen} onOpenChange={setImportOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Bulk import curriculum</DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-muted-foreground">
+            Paste JSON with <code className="text-primary">{"{ stages: [...] }"}</code> structure. Stages are appended to the course.
+          </p>
+          <textarea
+            rows={12}
+            value={importJson}
+            onChange={(e) => setImportJson(e.target.value)}
+            placeholder='{"stages":[{"title":"Stage 1","modules":[{"title":"Module 1","chapters":[]}]}]}'
+            className="w-full rounded-lg border border-border bg-secondary/40 px-3 py-2 text-xs font-mono focus:outline-none"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setImportOpen(false)}>Cancel</Button>
+            <Button disabled={!importJson.trim() || importMutation.isPending} onClick={handleImport}>
+              {importMutation.isPending ? "Importing…" : "Import"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

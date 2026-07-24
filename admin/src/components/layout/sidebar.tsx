@@ -27,6 +27,8 @@ import {
   CalendarDays,
   BarChart3,
   Plug,
+  Layers,
+  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -68,8 +70,11 @@ const NAV_GROUPS = [
     label: "Student LMS (SMS)",
     items: [
       { href: "/lms", icon: BookOpen, label: "LMS Courses" },
+      { href: "/lms/batches", icon: Layers, label: "Batches" },
+      { href: "/lms/timetable", icon: Clock, label: "Timetable" },
       { href: "/lms/attendance", icon: CalendarDays, label: "Attendance" },
       { href: "/lms/certificates", icon: ShieldCheck, label: "Certificates" },
+      { href: "/faculty", icon: GraduationCap, label: "Faculty Panel" },
     ]
   },
   {

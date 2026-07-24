@@ -25,12 +25,16 @@ export const createLmsModuleSchema = z.object({
   unlockRules: z.record(z.unknown()).optional(),
   passPercent: z.number().int().min(0).max(100).optional(),
   maxAttempts: z.number().int().min(1).optional(),
+  quizQuestionCount: z.number().int().min(1).nullable().optional(),
+  randomizeQuestions: z.boolean().optional(),
 });
 
 export const updateLmsModuleSchema = z.object({
   title: z.string().min(1).max(255).optional(),
   passPercent: z.number().int().min(0).max(100).optional(),
   maxAttempts: z.number().int().min(1).optional(),
+  quizQuestionCount: z.number().int().min(1).nullable().optional(),
+  randomizeQuestions: z.boolean().optional(),
 });
 
 export const createLmsChapterSchema = z.object({
@@ -43,10 +47,26 @@ export const createLmsTopicSchema = z.object({
   order: z.number().int().min(0).optional(),
 });
 
+export const updateLmsTopicSchema = z.object({
+  title: z.string().min(1).max(255).optional(),
+  order: z.number().int().min(0).optional(),
+  chapterId: z.string().uuid().optional(),
+});
+
 export const createLmsContentSchema = z.object({
   title: z.string().min(1).max(255),
-  type: z.enum(["PDF", "VIDEO", "NOTES"]),
-  url: z.string().min(1),
+  type: z.enum(["PDF", "VIDEO", "NOTES", "ATTACHMENT"]),
+  url: z.string().min(1).optional().default("#"),
+  body: z.string().optional().nullable(),
+  duration: z.number().int().positive().optional().nullable(),
+  order: z.number().int().min(0).optional(),
+});
+
+export const updateLmsContentSchema = z.object({
+  title: z.string().min(1).max(255).optional(),
+  type: z.enum(["PDF", "VIDEO", "NOTES", "ATTACHMENT"]).optional(),
+  url: z.string().min(1).optional(),
+  body: z.string().optional().nullable(),
   duration: z.number().int().positive().optional().nullable(),
   order: z.number().int().min(0).optional(),
 });
@@ -58,6 +78,7 @@ export const reorderSchema = z.object({
 export const enrollStudentSchema = z.object({
   studentId: z.string().uuid(),
   courseId: z.string().uuid(),
+  batchId: z.string().uuid().optional().nullable(),
 });
 
 export const markProgressSchema = z.object({
@@ -72,14 +93,17 @@ export const submitAssessmentSchema = z.object({
   status: z.enum(["PASS", "FAIL", "PENDING"]),
 });
 
-// Real MCQ quiz submission
 export const submitQuizSchema = z.object({
   moduleId: z.string().uuid(),
-  answers: z.record(z.string()), // { questionId: optionId }
+  answers: z.record(z.string()),
+  questionIds: z.array(z.string().uuid()).optional(),
 });
 
 export const markAttendanceSchema = z.object({
   courseId: z.string().uuid(),
+  batchId: z.string().uuid().optional().nullable(),
+  timetableSlotId: z.string().uuid().optional().nullable(),
+  subjectTag: z.string().max(100).optional().nullable(),
   title: z.string().min(1).max(255),
   heldAt: z.string().datetime().optional(),
   records: z.array(
@@ -91,7 +115,6 @@ export const markAttendanceSchema = z.object({
   ).min(1),
 });
 
-// Question bank
 export const createQuestionSchema = z.object({
   moduleId: z.string().uuid(),
   stem: z.string().min(1).max(5000),
@@ -99,16 +122,21 @@ export const createQuestionSchema = z.object({
   correctOptionId: z.string().min(1),
   order: z.number().int().min(0).optional(),
   points: z.number().int().min(1).optional(),
+  difficulty: z.enum(["EASY", "MEDIUM", "HARD"]).optional(),
+  negativePoints: z.number().int().min(0).optional(),
 });
 
 export const updateQuestionSchema = createQuestionSchema.partial().omit({ moduleId: true });
 
-// Bookmarks
+export const bulkQuestionsSchema = z.object({
+  moduleId: z.string().uuid(),
+  questions: z.array(createQuestionSchema.omit({ moduleId: true })).min(1).max(200),
+});
+
 export const toggleBookmarkSchema = z.object({
   topicId: z.string().uuid(),
 });
 
-// Announcements
 export const createAnnouncementSchema = z.object({
   title: z.string().min(1).max(255),
   body: z.string().min(1),
@@ -116,7 +144,6 @@ export const createAnnouncementSchema = z.object({
   publishedAt: z.string().datetime().optional().nullable(),
 });
 
-// Certificate issue
 export const issueCertificateSchema = z.object({
   studentId: z.string().uuid(),
   courseId: z.string().uuid(),
@@ -124,6 +151,97 @@ export const issueCertificateSchema = z.object({
   certificateNo: z.string().min(1).max(100),
   verificationCode: z.string().max(100).optional(),
   fileUrl: z.string().optional(),
+});
+
+export const createBatchSchema = z.object({
+  courseId: z.string().uuid(),
+  name: z.string().min(1).max(255),
+  type: z.enum(["MORNING", "EVENING", "WEEKEND", "CUSTOM"]).optional(),
+  startDate: z.string().datetime().optional().nullable(),
+  endDate: z.string().datetime().optional().nullable(),
+  capacity: z.number().int().positive().optional().nullable(),
+});
+
+export const updateBatchSchema = createBatchSchema.partial().omit({ courseId: true });
+
+export const batchMembersSchema = z.object({
+  studentIds: z.array(z.string().uuid()).optional(),
+  teacherIds: z.array(z.string().uuid()).optional(),
+});
+
+export const createTimetableSlotSchema = z.object({
+  batchId: z.string().uuid(),
+  courseId: z.string().uuid().optional().nullable(),
+  teacherId: z.string().uuid().optional().nullable(),
+  title: z.string().min(1).max(255),
+  startsAt: z.string().datetime(),
+  endsAt: z.string().datetime(),
+  room: z.string().max(100).optional().nullable(),
+  onlineUrl: z.union([z.string().url(), z.literal("")]).optional().nullable(),
+  subjectTag: z.string().max(100).optional().nullable(),
+});
+
+export const updateTimetableSlotSchema = createTimetableSlotSchema.partial().omit({ batchId: true });
+
+export const createAssignmentSchema = z.object({
+  courseId: z.string().uuid(),
+  batchId: z.string().uuid().optional().nullable(),
+  moduleId: z.string().uuid().optional().nullable(),
+  title: z.string().min(1).max(255),
+  description: z.string().optional().nullable(),
+  dueAt: z.string().datetime().optional().nullable(),
+  maxScore: z.number().int().min(1).optional(),
+  status: z.enum(["DRAFT", "PUBLISHED", "CLOSED"]).optional(),
+});
+
+export const updateAssignmentSchema = createAssignmentSchema.partial().omit({ courseId: true });
+
+export const submitAssignmentSchema = z.object({
+  assignmentId: z.string().uuid(),
+  fileUrl: z.string().optional().nullable(),
+  body: z.string().optional().nullable(),
+});
+
+export const gradeSubmissionSchema = z.object({
+  score: z.number().int().min(0),
+  feedback: z.string().optional().nullable(),
+  status: z.enum(["GRADED", "RETURNED"]).optional(),
+});
+
+export const assignCourseTeacherSchema = z.object({
+  courseId: z.string().uuid(),
+  teacherId: z.string().uuid(),
+});
+
+export const bulkCurriculumImportSchema = z.object({
+  stages: z.array(
+    z.object({
+      title: z.string().min(1),
+      modules: z.array(
+        z.object({
+          title: z.string().min(1),
+          chapters: z.array(
+            z.object({
+              title: z.string().min(1),
+              topics: z.array(
+                z.object({
+                  title: z.string().min(1),
+                  contents: z.array(
+                    z.object({
+                      title: z.string().min(1),
+                      type: z.enum(["PDF", "VIDEO", "NOTES", "ATTACHMENT"]),
+                      url: z.string().optional().default("#"),
+                      body: z.string().optional(),
+                    }),
+                  ).optional(),
+                }),
+              ).optional(),
+            }),
+          ).optional(),
+        }),
+      ).optional(),
+    }),
+  ).min(1),
 });
 
 export type CreateLmsCourseInput = z.infer<typeof createLmsCourseSchema>;
@@ -138,3 +256,10 @@ export type UpdateQuestionInput = z.infer<typeof updateQuestionSchema>;
 export type ToggleBookmarkInput = z.infer<typeof toggleBookmarkSchema>;
 export type CreateAnnouncementInput = z.infer<typeof createAnnouncementSchema>;
 export type IssueCertificateInput = z.infer<typeof issueCertificateSchema>;
+export type CreateBatchInput = z.infer<typeof createBatchSchema>;
+export type UpdateBatchInput = z.infer<typeof updateBatchSchema>;
+export type CreateTimetableSlotInput = z.infer<typeof createTimetableSlotSchema>;
+export type UpdateTimetableSlotInput = z.infer<typeof updateTimetableSlotSchema>;
+export type CreateAssignmentInput = z.infer<typeof createAssignmentSchema>;
+export type UpdateAssignmentInput = z.infer<typeof updateAssignmentSchema>;
+export type BulkCurriculumImportInput = z.infer<typeof bulkCurriculumImportSchema>;
