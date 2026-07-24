@@ -39,3 +39,121 @@
 
 ## Bottom line
 Code is in good shape for this round. **The blocking risk to a "client-ready build" is entirely outside this repo**: (1) production is running stale code from before at least 3 merged fixes, (2) the admin backend / its env var is broken or misconfigured, causing real empty-content pages live right now. Neither can be resolved by more code auditing — both need direct Vercel + admin-backend access.
+
+---
+
+## Phase A — Production Readiness (branch: `chore/phase-a-production-ready`)
+
+### Gate results (run 2026-07-24)
+| Gate | Result |
+|---|---|
+| `prisma validate` | ✅ Schema valid |
+| `prisma migrate status` | ✅ 3 migrations applied, database up to date |
+| `tsc --noEmit` (admin) | ✅ 0 errors |
+| `tsc --noEmit` (root) | ✅ 0 errors |
+| `next lint` (admin) | ✅ 0 errors (2 minor unused-var warnings, pre-existing) |
+| `next build` (admin) | ✅ 91 routes — 0 errors |
+| `next build` (root) | ✅ 46 routes — 0 errors (ECONNREFUSED during SSG is expected when admin not running locally) |
+
+### Files changed in this branch
+| File | Change |
+|---|---|
+| `admin/.env.example` | Comprehensive: all required + optional keys with inline docs |
+| `.env.example` | Updated: `ADMIN_API_URL`, `PUBLIC_INTAKE_KEY`, removed dead Supabase vars |
+| `admin/src/lib/env.ts` | New: typed env accessor, required-var validation at startup, dev warnings for optional |
+| `admin/src/middleware.ts` | `/dev/*` blocked with 404 in `NODE_ENV=production`; moved out of PUBLIC_PATHS |
+| `admin/scripts/reset-admin-password.mjs` | New utility script (untracked) |
+| `admin/src/app/dev/auto-login/page.tsx` | New dev helper (untracked) — client-side production guard + middleware guard |
+
+### Vercel project split
+Two separate Vercel projects are required:
+
+**Project 1 — Marketing Site** (root `/`)
+- Root Directory: `` (empty — repo root)
+- Framework: Next.js
+- Build Command: `next build` (or `npm run build`)
+- Output Directory: `.next`
+
+**Project 2 — Admin OS** (`/admin`)
+- Root Directory: `admin`
+- Framework: Next.js
+- Build Command: `prisma generate && prisma migrate deploy && next build`
+- Output Directory: `.next`
+- Install Command: `npm install` (postinstall runs `prisma generate` automatically)
+
+### Required env vars — set in Vercel Dashboard before first deploy
+
+#### Admin project (Production + Preview)
+```
+DATABASE_URL          postgresql pooler URL (Neon/Supabase)
+DIRECT_URL            postgresql direct URL (for migrate deploy)
+AUTH_SECRET           openssl rand -base64 32
+AUTH_URL              https://admin.airborneacademy.in
+PUBLIC_INTAKE_KEY     shared secret (min 32 chars, same value as marketing site)
+INNGEST_EVENT_KEY     from app.inngest.com → Event Keys
+INNGEST_SIGNING_KEY   from app.inngest.com → Signing Key
+R2_ACCOUNT_ID         Cloudflare R2
+R2_ACCESS_KEY_ID      Cloudflare R2
+R2_SECRET_ACCESS_KEY  Cloudflare R2
+R2_BUCKET_NAME        airborne-media
+R2_BUCKET_DOCS        airborne-docs
+R2_PUBLIC_URL         https://media.airborneacademy.in
+PUBLIC_ORG_SLUG       airborne-aviation
+```
+
+Optional (features degrade gracefully if absent):
+```
+GEMINI_API_KEY        AI study assistant (stub response when missing)
+TWILIO_*              SMS — not yet active in code
+WATI_*                WhatsApp — Sprint 5
+RESEND_*              Email — reserved
+UPSTASH_*             Redis — reserved
+```
+
+#### Marketing site project (Production + Preview)
+```
+ADMIN_API_URL         https://admin.airborneacademy.in
+PUBLIC_INTAKE_KEY     same value as admin's PUBLIC_INTAKE_KEY
+PUBLIC_ORG_SLUG       airborne-aviation  (optional — has default)
+```
+
+### Deploy sequence (Preview → Production)
+```bash
+# 1. Push this branch
+git push -u origin chore/phase-a-production-ready
+
+# 2. In Vercel dashboard: create Preview deploy from this branch for BOTH projects
+#    (Vercel auto-deploys preview on push if branch deploy is enabled)
+
+# 3. Smoke test the preview URLs (see checklist below)
+
+# 4. After smoke pass: merge PR → main → Vercel auto-deploys Production
+```
+
+If Vercel CLI is available and logged in:
+```bash
+# Admin preview
+cd admin && vercel --prod=false
+
+# Marketing site preview
+cd .. && vercel --prod=false
+```
+
+### Smoke test checklist (run against Preview URLs)
+- [ ] **Admin login** — `https://admin-preview.vercel.app/login` → email + password → lands on dashboard
+- [ ] **Student portal login** — `/login` with student creds → lands on `/portal`
+- [ ] **LMS course view** — `/portal/courses` → at least one course visible
+- [ ] **AI assistant** — `/portal/assistant` → sends question → gets response (or stub if GEMINI_API_KEY not set)
+- [ ] **Certificate verify** — `/api/v1/public/lms/certificates?certNo=XXX` → JSON with cert data
+- [ ] **Lead form** — marketing site contact form → 200 response, no CORS error
+- [ ] **Public courses** — marketing site `/courses` → not empty (confirms `ADMIN_API_URL` is correct)
+- [ ] **Inngest health** — `https://admin-preview.vercel.app/api/inngest` → 200 (GET returns function list)
+- [ ] **Dev auto-login blocked** — `https://admin-preview.vercel.app/dev/auto-login` → 404 in production
+
+### Remaining blockers (human action required in Vercel Dashboard)
+1. **Create the two Vercel projects** if not already linked — Root Directory split cannot be done via CLI alone
+2. **Set all REQUIRED env vars** listed above in both Vercel projects (Production AND Preview environments)
+3. **Set `INNGEST_EVENT_KEY` + `INNGEST_SIGNING_KEY`** — get from app.inngest.com after syncing functions
+4. **Confirm `ADMIN_API_URL`** in marketing site Vercel project matches the live admin URL
+5. **Domain assignment** — assign `airborneacademy.in` to marketing site and `admin.airborneacademy.in` to admin project
+6. **`prisma migrate deploy`** runs automatically during admin build — ensure `DIRECT_URL` is the non-pooled Neon/Supabase URL

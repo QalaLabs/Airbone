@@ -20,8 +20,24 @@ const PUBLIC_PATHS = [
   "/favicon.ico",
 ];
 
+// Dev-only paths — blocked in production, allowed in development/preview
+const DEV_ONLY_PATHS = ["/dev"];
+
 export default auth((req: NextRequest & { auth?: { user?: { orgId?: string; id?: string; role?: string } } | null }) => {
   const { pathname } = req.nextUrl;
+
+  // Block dev-only routes in production (middleware guard — defense in depth
+  // alongside the client-side check in /dev/auto-login/page.tsx)
+  if (DEV_ONLY_PATHS.some((p) => pathname.startsWith(p))) {
+    if (process.env.NODE_ENV === "production") {
+      return NextResponse.json(
+        { success: false, error: { code: "NOT_FOUND", message: "Not found" } },
+        { status: 404 },
+      );
+    }
+    // Allow in dev/preview
+    return NextResponse.next();
+  }
 
   // Allow public paths
   if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
