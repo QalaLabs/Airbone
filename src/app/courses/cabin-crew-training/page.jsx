@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-import MultiStepLeadForm from '@/components/MultiStepLeadForm'
+import LeadForm from '@/components/LeadForm'
 import { getBreadcrumbSchema } from '@/utils/seo'
 import CoursePageFooter from '@/components/CoursePageFooter'
 
@@ -369,10 +369,9 @@ export default function CabinCrewTrainingPage() {
                 <span className="course-sidebar-label">Batch Size</span>
                 <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)' }}>👥 Max 20 Students</div>
               </div>
-              <MultiStepLeadForm
-                courseName="Cabin Crew Training"
+              <LeadForm
+                courseName="Cabin Crew Training (₹30K–₹54K)"
                 source="Course Detail: cabin-crew-training"
-                courseCategory="cabin-crew"
                 successMessage="Thank you! Your Cabin Crew Training enquiry has been received. An Airborne admissions counsellor will contact you within 24 hours."
               />
             </div>

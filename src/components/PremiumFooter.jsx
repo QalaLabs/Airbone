@@ -31,7 +31,6 @@ const PROGRAMS = [
 const SOCIAL_LINKS = [
   { label: 'Facebook', href: 'https://facebook.com/airborneaviationacademy', icon: 'M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z' },
   { label: 'Instagram', href: 'https://instagram.com/airborneaviationacademy', icon: 'M17.34 5.46a1.2 1.2 0 10-.05 2.4 1.2 1.2 0 00.05-2.4M12 7.92A4.08 4.08 0 007.92 12 4.08 4.08 0 0012 16.08 4.08 4.08 0 0016.08 12 4.08 4.08 0 0012 7.92M12 4a8 8 0 018 8 8 8 0 01-8 8 8 8 0 01-8-8 8 8 0 018-8m0-2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z' },
-  { label: 'LinkedIn', href: '#', icon: 'M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2zM4 6a2 2 0 100-4 2 2 0 000 4z' },
   { label: 'YouTube', href: 'https://youtube.com/@airborneaviationacademy', icon: 'M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58 2.78 2.78 0 001.94 2C5.12 20 12 20 12 20s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z' },
 ]
 

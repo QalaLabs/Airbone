@@ -34,8 +34,15 @@ export async function POST(req) {
       body: JSON.stringify({ type: 'otp_verification', phone: `+91${phone}`, code }),
     }).catch((err) => console.error(JSON.stringify({ event: 'otp_whatsapp_delivery_failed', phone, reason: err.message })))
   } else {
-    // No delivery channel configured — log server-side so the flow is testable end to end.
-    console.log(JSON.stringify({ event: 'otp_generated_no_delivery_channel', phone, code }))
+    // Demo / production safety: do not pretend OTP was sent when no delivery channel exists.
+    console.log(JSON.stringify({ event: 'otp_disabled_no_delivery_channel', phone }))
+    return NextResponse.json(
+      {
+        error: 'Phone OTP is temporarily disabled. Please use the standard enquiry form or WhatsApp admissions.',
+        code: 'OTP_DISABLED',
+      },
+      { status: 503 }
+    )
   }
 
   return NextResponse.json({ success: true, message: 'OTP sent.' }, { status: 200 })

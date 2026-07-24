@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-import MultiStepLeadForm from '@/components/MultiStepLeadForm'
+import LeadForm from '@/components/LeadForm'
 import { getBreadcrumbSchema } from '@/utils/seo'
 import CoursePageFooter from '@/components/CoursePageFooter'
 
@@ -285,10 +285,9 @@ export default function CPLPage() {
                 <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)' }}>👥 Max 25 Students</div>
                 <span className="course-sidebar-note">July 2026 batch now enrolling</span>
               </div>
-              <MultiStepLeadForm
-                courseName="CPL Ground School"
+              <LeadForm
+                courseName="CPL Ground Classes (₹2,70,000)"
                 source="Course Detail: commercial-pilot-license-cpl"
-                courseCategory="pilot"
                 successMessage="Thank you! Your CPL Ground School enquiry has been received. An Airborne admissions counsellor will contact you within 24 hours."
               />
             </div>
