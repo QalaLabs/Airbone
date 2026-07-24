@@ -54,7 +54,7 @@ export default function PremiumFooter({ onBookDemo }) {
         <div className="pf-inner pf-cta-inner">
           <div className="pf-cta-eyebrow">
             <span className="pf-red-line" />
-            <span className="pf-eyebrow-text">ADMISSIONS OPEN \u00B7 JULY 2026 BATCH</span>
+            <span className="pf-eyebrow-text">ADMISSIONS OPEN · JULY 2026 BATCH</span>
             <span className="pf-red-line" />
           </div>
           <h2 className="pf-cta-heading">
