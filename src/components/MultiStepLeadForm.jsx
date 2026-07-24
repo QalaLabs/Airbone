@@ -14,7 +14,7 @@ function genUuid() {
   return `lead-${Date.now()}-${Math.random().toString(16).slice(2)}`
 }
 
-function YesNo({ label, value, onChange, name }) {
+function YesNo({ label, value, onChange }) {
   return (
     <div style={{ marginBottom: '1.1rem' }}>
       <span style={{ display: 'block', fontSize: '0.82rem', color: 'rgba(255,255,255,0.8)', marginBottom: '0.5rem', fontFamily: 'var(--font-b)' }}>{label}</span>

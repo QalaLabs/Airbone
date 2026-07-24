@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 const ADMIN_API_URL = process.env.ADMIN_API_URL ?? 'http://localhost:4000'
 
-export async function GET(req) {
+export async function GET() {
   try {
     const res = await fetch(`${ADMIN_API_URL}/api/public/settings`, {
       next: { revalidate: 60 },

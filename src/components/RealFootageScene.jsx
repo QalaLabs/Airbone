@@ -3,7 +3,7 @@
  * Philosophy: Real footage > CGI
  */
 
-import { useEffect, useRef, useMemo } from 'react'
+import { useEffect, useRef } from 'react'
 
 /* ─────────────────────────────────────────────────────────────────
    UTILITY: Smooth parallax on mouse move
@@ -43,7 +43,7 @@ function useParallax(containerRef, strength = 12) {
 /* ─────────────────────────────────────────────────────────────────
    SIMULATOR SCENE — Act 4
 ───────────────────────────────────────────────────────────────── */
-export function SimulatorScene({ visible, sceneProgress = 0 }) {
+export function SimulatorScene({ visible }) {
   const parallaxRef = useRef()
   useParallax(parallaxRef, 8)
 
@@ -79,7 +79,7 @@ export function SimulatorScene({ visible, sceneProgress = 0 }) {
 /* ─────────────────────────────────────────────────────────────────
    TRAINING SCENE — Act 3
 ───────────────────────────────────────────────────────────────── */
-export function TrainingRealScene({ visible, sceneProgress = 0 }) {
+export function TrainingRealScene({ visible }) {
   const parallaxRef = useRef()
   useParallax(parallaxRef, 6)
 

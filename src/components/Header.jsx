@@ -1,13 +1,19 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Header() {
-  const [mobileOpen, setMobileOpen] = useState(false)
   const pathname = usePathname()
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [prevPathname, setPrevPathname] = useState(pathname)
+
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname)
+    setMobileOpen(false)
+  }
 
   const links = [
     { name: 'About', path: '/about' },
@@ -16,11 +22,6 @@ export default function Header() {
     { name: 'Resources', path: '/resources' },
     { name: 'Contact', path: '/contact' }
   ]
-
-  // Close mobile drawer on route change
-  useEffect(() => {
-    setMobileOpen(false)
-  }, [pathname])
 
   return (
     <>

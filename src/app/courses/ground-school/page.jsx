@@ -166,7 +166,7 @@ export default function GroundSchoolPage() {
               <h2 className="course-section-title">
                 Your Instructor — Capt. Navrang Singh
               </h2>
-              <div style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', border: '1px solid rgba(0, 39, 76, 0.08)', padding: '2rem', borderRadius: '4px' }}>
+              <div style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', padding: '2rem', borderRadius: '4px' }}>
                 <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.8', margin: 0 }}>
                   Capt. Navrang Singh is the co-founder of Airborne Aviation Academy and has been teaching DGCA ground school personally since 2009. With 15+ years of flight instruction experience, he strips DGCA syllabi down to first principles — Air Regulations, Technical General, Navigation, Meteorology, RTR — taught the way you will actually use them in the cockpit.
                 </p>

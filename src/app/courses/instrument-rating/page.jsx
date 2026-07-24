@@ -151,7 +151,7 @@ export default function InstrumentRatingPage() {
               <h2 className="course-section-title">
                 A320 Simulator Practice — Before You Fly
               </h2>
-              <div style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', border: '1px solid rgba(0, 39, 76, 0.08)', padding: '1.5rem', borderRadius: '4px' }}>
+              <div style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', padding: '1.5rem', borderRadius: '4px' }}>
                 <p style={{ fontSize: '0.88rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: '0 0 1rem 0' }}>
                   Airborne's in-house A320 FTD (Flight Training Device) is available for instrument approach practice — ILS, VOR, and NDB procedures — before your actual flying hours begin. Simulator practice reduces instrument flying costs significantly by building approach proficiency before transitioning to the aircraft.
                 </p>

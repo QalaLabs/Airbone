@@ -72,7 +72,7 @@ function Loader({ done }) {
 }
 
 /* ─── NAV ─── */
-function Nav({ actIndex, total, onDemo }) {
+function Nav({ total, onDemo }) {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -293,7 +293,7 @@ function Act4Overlay({ visible }) {
   )
 }
 
-function Act5Overlay({ visible, actProgress, onDemo }) {
+function Act5Overlay({ visible, actProgress }) {
   const isBoot = actProgress < 0.35
   const isAlign = actProgress >= 0.35 && actProgress < 0.70
   const isReady = actProgress >= 0.70

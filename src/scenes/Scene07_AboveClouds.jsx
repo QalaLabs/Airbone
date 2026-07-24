@@ -4,8 +4,6 @@ import { useFrame } from '@react-three/fiber'
 
 // ─── Sky dome: transitions from cloud-grey interior → golden sunrise ───────────
 function AboveCloudsSkyDome({ progress = 0 }) {
-  const matRef = useRef()
-
   const material = useMemo(
     () =>
       new THREE.ShaderMaterial({

@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { seededUnit } from '@/utils/seeded-random'
 import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 
@@ -9,18 +10,18 @@ export function VolumetricClouds({ count = 40, spread = 800 }) {
   const clouds = useMemo(() => {
     return Array.from({ length: count }).map((_, i) => ({
       id: i,
-      x: (Math.random() - 0.5) * spread,
-      y: (Math.random() - 0.5) * 60,
-      z: (Math.random() - 0.5) * spread,
-      sx: 20 + Math.random() * 60,
-      sy: 8 + Math.random() * 20,
-      sz: 20 + Math.random() * 50,
-      opacity: 0.6 + Math.random() * 0.35,
-      speed: 0.5 + Math.random() * 1.5,
+      x: (seededUnit(i * 100 + 0) - 0.5) * spread,
+      y: (seededUnit(i * 100 + 1) - 0.5) * 60,
+      z: (seededUnit(i * 100 + 2) - 0.5) * spread,
+      sx: 20 + seededUnit(i * 100 + 3) * 60,
+      sy: 8 + seededUnit(i * 100 + 4) * 20,
+      sz: 20 + seededUnit(i * 100 + 5) * 50,
+      opacity: 0.6 + seededUnit(i * 100 + 6) * 0.35,
+      speed: 0.5 + seededUnit(i * 100 + 7) * 1.5,
     }))
   }, [count, spread])
   
-  useFrame((state) => {
+  useFrame(() => {
     if (groupRef.current) {
       groupRef.current.children.forEach((child, i) => {
         const cloud = clouds[i]

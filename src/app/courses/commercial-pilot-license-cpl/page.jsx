@@ -237,7 +237,7 @@ export default function CPLPage() {
                   { icon: '🏫', title: 'Small Batches — Max 25', body: 'Training paced according to each student\'s learning speed.' },
                   { icon: '🎯', title: '1-on-1 Doubt Sessions', body: 'Individual doubt-solving sessions with Capt. Navrang Singh until concepts are clear.' },
                 ].map((c, i) => (
-                  <div key={i} style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', border: '1px solid rgba(0, 39, 76, 0.08)', padding: '1.5rem', borderRadius: '4px' }}>
+                  <div key={i} style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', padding: '1.5rem', borderRadius: '4px' }}>
                     <div style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}>{c.icon}</div>
                     <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.85rem', fontWeight: 700, color: 'var(--navy)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{c.title}</div>
                     <div style={{ fontSize: '0.8rem', color: 'rgba(0, 39, 76, 0.55)', lineHeight: '1.5' }}>{c.body}</div>

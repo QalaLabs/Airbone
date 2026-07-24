@@ -13,8 +13,6 @@ export function useScrollProgress({ totalScenes = 7, heightPerScene = 1 } = {}) 
   })
   
   useEffect(() => {
-    const totalHeight = totalScenes * heightPerScene * window.innerHeight
-    
     const handleScroll = () => {
       const scrollY = window.scrollY
       const maxScroll = document.documentElement.scrollHeight - window.innerHeight

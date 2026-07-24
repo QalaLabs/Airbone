@@ -1,4 +1,5 @@
 import { useRef, useMemo } from 'react'
+import { seededUnit } from '@/utils/seeded-random'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
@@ -42,13 +43,13 @@ function CloudCarpet() {
 
   const data = useMemo(() =>
     Array.from({ length: count }, () => ({
-      x: (Math.random() - 0.5) * 700,
-      z: -50 - Math.random() * 600,
-      sx: 40 + Math.random() * 120,
-      sz: 20 + Math.random() * 50,
-      y: -2 + (Math.random() - 0.5) * 6,
-      ry: Math.random() * Math.PI,
-      op: 0.5 + Math.random() * 0.4,
+      x: (seededUnit(0) - 0.5) * 700,
+      z: -50 - seededUnit(1) * 600,
+      sx: 40 + seededUnit(2) * 120,
+      sz: 20 + seededUnit(3) * 50,
+      y: -2 + (seededUnit(4) - 0.5) * 6,
+      ry: seededUnit(5) * Math.PI,
+      op: 0.5 + seededUnit(6) * 0.4,
     })), [])
 
   useFrame((s) => {
@@ -82,12 +83,12 @@ function MidClouds() {
 
   const data = useMemo(() =>
     Array.from({ length: count }, () => ({
-      x: (Math.random() - 0.5) * 400,
-      z: -80 - Math.random() * 350,
-      sx: 25 + Math.random() * 70,
-      sz: 15 + Math.random() * 35,
-      y: 8 + Math.random() * 10,
-      ry: Math.random() * Math.PI,
+      x: (seededUnit(7) - 0.5) * 400,
+      z: -80 - seededUnit(8) * 350,
+      sx: 25 + seededUnit(9) * 70,
+      sz: 15 + seededUnit(10) * 35,
+      y: 8 + seededUnit(11) * 10,
+      ry: seededUnit(12) * Math.PI,
     })), [])
 
   useFrame((s) => {
@@ -102,7 +103,7 @@ function MidClouds() {
           <meshBasicMaterial
             color="#ede8f8"
             transparent
-            opacity={0.18 + Math.random() * 0.15}
+            opacity={0.18 + seededUnit(13) * 0.15}
             depthWrite={false}
           />
         </mesh>
@@ -116,8 +117,8 @@ function HorizonClouds() {
   const data = useMemo(() =>
     Array.from({ length: 16 }, (_, i) => ({
       x: (i - 8) * 55,
-      sz: 80 + Math.random() * 80,
-      sx: 90 + Math.random() * 60,
+      sz: 80 + seededUnit(14) * 80,
+      sx: 90 + seededUnit(15) * 60,
     })), [])
 
   return (
@@ -140,9 +141,9 @@ function AltitudeParticles() {
   const positions = useMemo(() => {
     const arr = new Float32Array(count * 3)
     for (let i = 0; i < count; i++) {
-      arr[i * 3]     = (Math.random() - 0.5) * 300
-      arr[i * 3 + 1] = (Math.random() - 0.5) * 40 + 5
-      arr[i * 3 + 2] = (Math.random() - 0.5) * 400 - 100
+      arr[i * 3]     = (seededUnit(i * 100 + 16) - 0.5) * 300
+      arr[i * 3 + 1] = (seededUnit(i * 100 + 17) - 0.5) * 40 + 5
+      arr[i * 3 + 2] = (seededUnit(i * 100 + 18) - 0.5) * 400 - 100
     }
     return arr
   }, [])
@@ -216,7 +217,7 @@ function DawnLighting() {
   )
 }
 
-export default function Act07_Success({ progress = 0 }) {
+export default function Act07_Success() {
   return (
     <group>
       <DawnLighting />

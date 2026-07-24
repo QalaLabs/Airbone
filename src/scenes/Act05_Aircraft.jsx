@@ -1,4 +1,5 @@
 import { useRef, useMemo } from 'react'
+import { seededUnit } from '@/utils/seeded-random'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
@@ -237,9 +238,9 @@ function HangarDust() {
   const positions = useMemo(() => {
     const arr = new Float32Array(count * 3)
     for (let i = 0; i < count; i++) {
-      arr[i * 3]     = (Math.random() - 0.5) * 80
-      arr[i * 3 + 1] = Math.random() * 28
-      arr[i * 3 + 2] = (Math.random() - 0.5) * 100
+      arr[i * 3]     = (seededUnit(i * 100 + 0) - 0.5) * 80
+      arr[i * 3 + 1] = seededUnit(i * 100 + 1) * 28
+      arr[i * 3 + 2] = (seededUnit(i * 100 + 2) - 0.5) * 100
     }
     return arr
   }, [])
@@ -310,7 +311,7 @@ function RevealLighting() {
   )
 }
 
-export default function Act05_Aircraft({ progress = 0 }) {
+export default function Act05_Aircraft() {
   return (
     <group>
       <RevealLighting />

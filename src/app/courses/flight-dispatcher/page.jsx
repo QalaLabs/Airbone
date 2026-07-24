@@ -127,7 +127,7 @@ export default function FlightDispatcherPage() {
               </p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
                 {['Co-signs every flight plan', 'Monitors weather en-route', 'Coordinates fuel load', 'Reviews all NOTAMs', 'Manages ATC slots', 'Supports in-flight decisions'].map((item, i) => (
-                  <div key={i} style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', border: '1px solid rgba(0, 39, 76, 0.08)', borderRadius: '4px', padding: '0.75rem 1rem', fontSize: '0.8rem', color: 'rgba(0, 39, 76, 0.75)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div key={i} style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', borderRadius: '4px', padding: '0.75rem 1rem', fontSize: '0.8rem', color: 'rgba(0, 39, 76, 0.75)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <span style={{ color: 'var(--navy)', fontWeight: 700 }}>✓</span> {item}
                   </div>
                 ))}

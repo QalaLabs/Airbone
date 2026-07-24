@@ -32,7 +32,6 @@ function hasScriptInjection(str) {
 
 export async function POST(req) {
   const correlationId = crypto.randomUUID()
-  const timestamp = new Date().toISOString()
   let leadData = null
   let rawSource = 'unknown'
 
@@ -55,7 +54,7 @@ export async function POST(req) {
       if (!payload || typeof payload !== 'object') {
         throw new Error('Malformed payload')
       }
-    } catch (err) {
+    } catch {
       console.error(JSON.stringify({
         correlationId,
         event: 'lead_validation_failed',

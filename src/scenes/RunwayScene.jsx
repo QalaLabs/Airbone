@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { seededUnit } from '@/utils/seeded-random'
 import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 
@@ -112,7 +113,7 @@ function AtmosphericGround() {
 }
 
 // Distant aircraft silhouette approaching
-function DistantAircraft({ progress = 0 }) {
+function DistantAircraft() {
   const ref = useRef()
   
   useFrame((state) => {
@@ -228,12 +229,12 @@ function CloudLayer({ y = 60, count = 15, scale = 1, opacity = 0.9 }) {
   const clouds = useMemo(() => {
     return Array.from({ length: count }).map((_, i) => ({
       id: i,
-      x: (Math.random() - 0.5) * 600,
-      z: (Math.random() - 0.5) * 600 - 200,
-      scaleX: (1 + Math.random() * 3) * scale,
-      scaleY: (0.4 + Math.random() * 0.6) * scale,
-      scaleZ: (1 + Math.random() * 2) * scale,
-      rot: Math.random() * Math.PI * 2,
+      x: (seededUnit(i * 100 + 0) - 0.5) * 600,
+      z: (seededUnit(i * 100 + 1) - 0.5) * 600 - 200,
+      scaleX: (1 + seededUnit(i * 100 + 2) * 3) * scale,
+      scaleY: (0.4 + seededUnit(i * 100 + 3) * 0.6) * scale,
+      scaleZ: (1 + seededUnit(i * 100 + 4) * 2) * scale,
+      rot: seededUnit(i * 100 + 5) * Math.PI * 2,
     }))
   }, [count, scale])
   

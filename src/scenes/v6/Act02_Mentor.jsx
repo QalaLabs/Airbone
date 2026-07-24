@@ -1,3 +1,4 @@
+import { seededUnit } from '@/utils/seeded-random'
 /**
  * Act02_Mentor — Late-night classroom
  * Dark environment. A single spotlight on the whiteboard.
@@ -8,7 +9,6 @@
 import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useTexture } from '@react-three/drei'
-import * as THREE from 'three'
 
 /* ── Mentor Panel ── */
 function MentorPanel() {
@@ -37,14 +37,14 @@ function DustMotes() {
   const positions = useMemo(() => {
     const arr = new Float32Array(count * 3)
     for (let i = 0; i < count; i++) {
-      arr[i * 3]     = (Math.random() - 0.5) * 4
-      arr[i * 3 + 1] = Math.random() * 6
-      arr[i * 3 + 2] = (Math.random() - 0.5) * 4 - 1
+      arr[i * 3]     = (seededUnit(i * 100 + 0) - 0.5) * 4
+      arr[i * 3 + 1] = seededUnit(i * 100 + 1) * 6
+      arr[i * 3 + 2] = (seededUnit(i * 100 + 2) - 0.5) * 4 - 1
     }
     return arr
   }, [])
 
-  const phases = useMemo(() => Float32Array.from({ length: count }, () => Math.random() * Math.PI * 2), [])
+  const phases = useMemo(() => Float32Array.from({ length: count }, () => seededUnit(3) * Math.PI * 2), [])
 
   useFrame(({ clock }) => {
     if (!pointsRef.current) return

@@ -385,7 +385,7 @@ function LensFlare() {
 }
 
 // ─── Scene09_CTA ──────────────────────────────────────────────────────────────
-export default function Scene09_CTA({ progress = 0 }) {
+export default function Scene09_CTA() {
   return (
     <>
       {/* Stars — deep space above */}

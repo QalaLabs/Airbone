@@ -1,4 +1,5 @@
 import { useRef, useMemo } from 'react'
+import { seededUnit } from '@/utils/seeded-random'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
@@ -44,9 +45,9 @@ function TwilightStars() {
   const positions = useMemo(() => {
     const arr = new Float32Array(count * 3)
     for (let i = 0; i < count; i++) {
-      const theta = Math.random() * Math.PI * 2
-      const phi = Math.random() * Math.PI * 0.38
-      const r = 350 + Math.random() * 100
+      const theta = seededUnit(i * 100 + 0) * Math.PI * 2
+      const phi = seededUnit(i * 100 + 1) * Math.PI * 0.38
+      const r = 350 + seededUnit(i * 100 + 2) * 100
       arr[i * 3]     = r * Math.sin(phi) * Math.cos(theta)
       arr[i * 3 + 1] = Math.abs(r * Math.cos(phi)) + 20
       arr[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta)
@@ -77,11 +78,11 @@ function CloudLayer({ y, count, spread, opacity, color, speed }) {
 
   const data = useMemo(() =>
     Array.from({ length: count }, () => ({
-      x: (Math.random() - 0.5) * spread,
-      z: (Math.random() - 0.5) * spread * 0.8,
-      sx: 30 + Math.random() * 80,
-      sz: 15 + Math.random() * 35,
-      ry: Math.random() * Math.PI,
+      x: (seededUnit(3) - 0.5) * spread,
+      z: (seededUnit(4) - 0.5) * spread * 0.8,
+      sx: 30 + seededUnit(5) * 80,
+      sz: 15 + seededUnit(6) * 35,
+      ry: seededUnit(7) * Math.PI,
     })), [count, spread])
 
   useFrame((s) => {
@@ -96,7 +97,7 @@ function CloudLayer({ y, count, spread, opacity, color, speed }) {
           <meshBasicMaterial
             color={color || '#e8d4c0'}
             transparent
-            opacity={opacity * (0.4 + Math.random() * 0.6)}
+            opacity={opacity * (0.4 + seededUnit(8) * 0.6)}
             depthWrite={false}
           />
         </mesh>
@@ -204,7 +205,7 @@ function TwilightLighting() {
   )
 }
 
-export default function Act08_Destination({ progress = 0 }) {
+export default function Act08_Destination() {
   return (
     <group>
       <TwilightLighting />

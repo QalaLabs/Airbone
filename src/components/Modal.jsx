@@ -37,9 +37,15 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : ''
-    if (!isOpen) { setSubmitted(false); submitLock.current = false; setValues({ name: '', phone: '', email: '', pincode: '', course: '' }) }
     return () => { document.body.style.overflow = '' }
-  }, [isOpen, setValues])
+  }, [isOpen])
+
+  const handleClose = useCallback(() => {
+    setSubmitted(false)
+    submitLock.current = false
+    setValues({ name: '', phone: '', email: '', pincode: '', course: '' })
+    onClose()
+  }, [onClose, setValues])
 
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault()
@@ -68,20 +74,22 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
           utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page,
         }),
       })
-    } catch {}
+    } catch {
+      // Lead webhook failure is non-blocking for modal UX.
+    }
     setSubmitted(true)
   }, [values, validate])
 
   return (
     <div
       className={`modal-overlay ${isOpen ? 'open' : ''}`}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+      onClick={(e) => { if (e.target === e.currentTarget) handleClose() }}
       role="dialog"
       aria-modal="true"
       aria-label={isDemo ? 'Book Free Demo Class' : 'Apply Now'}
     >
       <div className="modal">
-        <button className="modal-close" onClick={onClose} aria-label="Close">×</button>
+        <button className="modal-close" onClick={handleClose} aria-label="Close">×</button>
 
         {submitted ? (
           <div style={{ textAlign: 'center', padding: '2rem 0' }}>
@@ -122,7 +130,7 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
                 </a>
               </div>
             </div>
-            <button className="btn btn-outline" onClick={onClose}>Close</button>
+            <button className="btn btn-outline" onClick={handleClose}>Close</button>
           </div>
         ) : (
           <>

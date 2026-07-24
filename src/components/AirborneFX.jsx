@@ -461,7 +461,7 @@ const PILOTS = [
 
 export function SuccessMosaic({ image: fallbackImage }) {
   const [isMobile, setIsMobile] = useState(false)
-  const [expanded, setExpanded] = useState(false)
+  const [expanded] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
   
@@ -584,7 +584,7 @@ export function SuccessMosaic({ image: fallbackImage }) {
               onMouseEnter={handleTouchStart}
               onMouseLeave={handleTouchEnd}
             >
-              {PILOTS.map((p, i) => {
+              {PILOTS.map((p) => {
                 const parts = p.role.split('·')
                 const roleName = parts[0]?.trim() || ''
                 const airlineName = parts[1]?.trim() || ''

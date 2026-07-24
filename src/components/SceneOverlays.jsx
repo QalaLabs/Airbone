@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 /* ────────────────────────────────────────────────────────────────
    Overlay visibility wrapper
@@ -23,7 +23,7 @@ function Overlay({ visible, children, style = {} }) {
 /* ────────────────────────────────────────────────────────────────
    ACT 1: DREAM
 ──────────────────────────────────────────────────────────────── */
-export function DreamOverlay({ visible, onDemo, onApply }) {
+export function DreamOverlay({ visible }) {
   return (
     <Overlay visible={visible}>
       <div className="dream-content">

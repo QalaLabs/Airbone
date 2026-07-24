@@ -1,10 +1,11 @@
+import { seededUnit } from '@/utils/seeded-random'
 import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 
 /* ── AIRCRAFT BILLBOARD — Replaces low-poly primitive shapes ── */
-function Aircraft({ progress = 0 }) {
+function Aircraft() {
   const ref = useRef()
   const tex = useTexture('/footage/aircraft-ascending.jpg')
 
@@ -56,9 +57,9 @@ function HangarDust() {
   const positions = useMemo(() => {
     const arr = new Float32Array(count * 3)
     for (let i = 0; i < count; i++) {
-      arr[i * 3]     = (Math.random() - 0.5) * 80
-      arr[i * 3 + 1] = Math.random() * 28
-      arr[i * 3 + 2] = (Math.random() - 0.5) * 100
+      arr[i * 3]     = (seededUnit(i * 100 + 0) - 0.5) * 80
+      arr[i * 3 + 1] = seededUnit(i * 100 + 1) * 28
+      arr[i * 3 + 2] = (seededUnit(i * 100 + 2) - 0.5) * 100
     }
     return arr
   }, [])
@@ -128,13 +129,13 @@ function RevealLighting() {
   )
 }
 
-export default function Act03_Aircraft({ progress = 0 }) {
+export default function Act03_Aircraft() {
   return (
     <group>
       <RevealLighting />
       <HangarFloor />
       <HangarDust />
-      <Aircraft progress={progress} />
+      <Aircraft />
     </group>
   )
 }

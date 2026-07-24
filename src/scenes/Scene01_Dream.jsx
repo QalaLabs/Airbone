@@ -273,7 +273,7 @@ function DistantAircraft() {
 }
 
 // ─── Main Scene ──────────────────────────────────────────────────────────────
-export default function Scene01_Dream({ progress = 0 }) {
+export default function Scene01_Dream() {
   return (
     <group>
       {/* Sky */}

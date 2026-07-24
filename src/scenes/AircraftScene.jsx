@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { useRef, useMemo } from 'react'
+import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 
 // Procedural aircraft exterior (for boarding scene)

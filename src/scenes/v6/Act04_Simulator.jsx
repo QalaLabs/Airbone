@@ -1,6 +1,6 @@
+import { seededUnit } from '@/utils/seeded-random'
 import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 
 // ---------------------------------------------------------------------------
@@ -77,9 +77,9 @@ function useParticlePositions(count = 100) {
   return useMemo(() => {
     const pos = new Float32Array(count * 3)
     for (let i = 0; i < count; i++) {
-      pos[i * 3 + 0] = (Math.random() - 0.5) * 10
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 6
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 4 - 2
+      pos[i * 3 + 0] = (seededUnit(i * 100 + 0) - 0.5) * 10
+      pos[i * 3 + 1] = (seededUnit(i * 100 + 1) - 0.5) * 6
+      pos[i * 3 + 2] = (seededUnit(i * 100 + 2) - 0.5) * 4 - 2
     }
     return pos
   }, [count])

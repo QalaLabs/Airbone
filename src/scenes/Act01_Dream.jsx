@@ -1,4 +1,5 @@
 import { useRef, useMemo } from 'react'
+import { seededUnit } from '@/utils/seeded-random'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
@@ -15,19 +16,17 @@ function Starfield() {
   const ref = useRef()
   const count = 2800
 
-  const { positions, sizes } = useMemo(() => {
+  const { positions } = useMemo(() => {
     const positions = new Float32Array(count * 3)
-    const sizes = new Float32Array(count)
-    for (let i = 0; i < count; i++) {
-      const theta = Math.random() * Math.PI * 2
-      const phi = Math.random() * Math.PI * 0.48
-      const r = 200 + Math.random() * 250
+        for (let i = 0; i < count; i++) {
+      const theta = seededUnit(i * 100 + 0) * Math.PI * 2
+      const phi = seededUnit(i * 100 + 1) * Math.PI * 0.48
+      const r = 200 + seededUnit(i * 100 + 2) * 250
       positions[i * 3]     = r * Math.sin(phi) * Math.cos(theta)
       positions[i * 3 + 1] = Math.abs(r * Math.cos(phi)) + 3
       positions[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta)
-      sizes[i] = 0.15 + Math.random() * 0.55
-    }
-    return { positions, sizes }
+          }
+    return { positions }
   }, [])
 
   const geo = useMemo(() => {

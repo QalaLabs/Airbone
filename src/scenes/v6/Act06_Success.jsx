@@ -1,6 +1,7 @@
 import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useTexture } from '@react-three/drei'
+import { seededRange } from '@/utils/seeded-random'
 import * as THREE from 'three'
 
 // ---------------------------------------------------------------------------
@@ -90,7 +91,7 @@ const skyFrag = /* glsl */ `
 `
 
 /* ── A single cloud puff (billboard plane) ───────────────────────────────── */
-function CloudPuff({ position, size, opacity, speed, index }) {
+function CloudPuff({ position, size, opacity, speed }) {
   const ref = useRef()
 
   useFrame((_, delta) => {
@@ -123,17 +124,17 @@ function CloudPuff({ position, size, opacity, speed, index }) {
 /* ── Cloud layer data ────────────────────────────────────────────────────── */
 function useCloudData(count = 24) {
   return useMemo(() => {
-    const rng = (min, max) => min + Math.random() * (max - min)
+    const rng = (seed, min, max) => seededRange(seed, min, max)
     return Array.from({ length: count }, (_, i) => ({
       id: i,
       position: [
-        rng(-60, 60),              // X — wide spread
-        rng(-2, 2),                // Y — thin altitude band
-        rng(-200, -20),            // Z — distant to near
+        rng(i * 3 + 0, -60, 60),
+        rng(i * 3 + 1, -2, 2),
+        rng(i * 3 + 2, -200, -20),
       ],
-      size:    [rng(8, 15), rng(3, 5)],
-      opacity: rng(0.6, 0.9),
-      speed:   rng(0.8, 2.0),     // base forward drift speed
+      size:    [rng(i * 3 + 3, 8, 15), rng(i * 3 + 4, 3, 5)],
+      opacity: rng(i * 3 + 5, 0.6, 0.9),
+      speed:   rng(i * 3 + 6, 0.8, 2.0),
     }))
   }, [count])
 }
@@ -150,7 +151,7 @@ export default function Act06_Success({ progress = 0 }) {
     uProgress: { value: 0 },
   }), [])
 
-  useFrame(({ clock }, delta) => {
+  useFrame(({ clock }) => {
     const t = clock.getElapsedTime()
 
     // Update sky uniforms
@@ -246,7 +247,6 @@ export default function Act06_Success({ progress = 0 }) {
           size={c.size}
           opacity={c.opacity}
           speed={c.speed * (1 + progress * 3)}
-          index={c.id}
         />
       ))}
 

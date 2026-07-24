@@ -1,10 +1,11 @@
+import { seededUnit } from '@/utils/seeded-random'
 /**
  * Act01_Dream — Runway at dawn
  * The opening act. Camera at runway level, looking toward the horizon.
  * Vast. Hopeful. The student standing at the edge of everything.
  */
 
-import { useRef, useMemo, useEffect } from 'react'
+import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useTexture } from '@react-three/drei'
 import * as THREE from 'three'
@@ -89,12 +90,12 @@ function DreamPanel() {
 /* ── Clouds (billboard planes) ── */
 function Clouds() {
   const cloudData = useMemo(() => Array.from({ length: 18 }, (_, i) => ({
-    x: (Math.random() - 0.5) * 800,
-    y: 80 + Math.random() * 80,
-    z: -100 - Math.random() * 700,
-    sx: 80 + Math.random() * 100,
-    sy: 20 + Math.random() * 30,
-    opacity: 0.35 + Math.random() * 0.35,
+    x: (seededUnit(i * 10 + 0) - 0.5) * 800,
+    y: 80 + seededUnit(i * 10 + 1) * 80,
+    z: -100 - seededUnit(i * 10 + 2) * 700,
+    sx: 80 + seededUnit(i * 10 + 3) * 100,
+    sy: 20 + seededUnit(i * 10 + 4) * 30,
+    opacity: 0.35 + seededUnit(i * 10 + 5) * 0.35,
   })), [])
 
   return (

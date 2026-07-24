@@ -28,21 +28,22 @@ export default function ResourcesClient() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
 
-  const [unlocked, setUnlocked] = useState(false)
-  const [gateToken, setGateToken] = useState(null)
+  const [unlocked, setUnlocked] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return !!sessionStorage.getItem('resource_gate_token')
+  })
+  const [gateToken, setGateToken] = useState(() => {
+    if (typeof window === 'undefined') return null
+    return sessionStorage.getItem('resource_gate_token')
+  })
   const [showGateModal, setShowGateModal] = useState(false)
   const [targetResource, setTargetResource] = useState(null)
   const [formStatus, setFormStatus] = useState('idle') // idle, loading, success
 
-  const { values, handleChange, handleBlur, validate, isValid, setValues } = useFormValidation(
+  const { values, handleChange, handleBlur, validate, isValid } = useFormValidation(
     { name: '', phone: '', email: '', course: '' },
     { name: validateName, phone: validatePhone, email: validateEmail, course: validateRequired }
   )
-
-  useEffect(() => {
-    const token = sessionStorage.getItem('resource_gate_token')
-    if (token) { setGateToken(token); setUnlocked(true) }
-  }, [])
 
   useEffect(() => {
     fetch('/api/public-proxy/resources')
@@ -109,7 +110,9 @@ export default function ResourcesClient() {
         sessionStorage.setItem('resource_gate_token', token)
         setGateToken(token)
       }
-    } catch {}
+    } catch {
+      // Gate token fetch is best-effort; form still unlocks locally.
+    }
 
     setUnlocked(true)
     setFormStatus('success')

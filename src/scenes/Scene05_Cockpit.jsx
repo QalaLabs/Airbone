@@ -131,7 +131,7 @@ function RadioPanel({ position }) {
 }
 
 // ─── Main cockpit scene ───────────────────────────────────────────────────────
-export default function Scene05_Cockpit({ progress = 0 }) {
+export default function Scene05_Cockpit() {
   const meshRef = useRef()
 
   // Build instrument textures once

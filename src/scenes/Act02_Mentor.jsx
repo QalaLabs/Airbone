@@ -1,4 +1,5 @@
 import { useRef, useMemo } from 'react'
+import { seededUnit } from '@/utils/seeded-random'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
@@ -17,22 +18,22 @@ function WisdomParticles() {
   const ref = useRef()
   const count = 1800
 
-  const { positions, velocities } = useMemo(() => {
+  const { positions } = useMemo(() => {
     const positions = new Float32Array(count * 3)
     const velocities = new Float32Array(count * 3)
     for (let i = 0; i < count; i++) {
       // Arrange in rough sphere around origin
-      const phi   = Math.acos(2 * Math.random() - 1)
-      const theta = Math.random() * Math.PI * 2
-      const r     = 8 + Math.random() * 55
+      const phi   = Math.acos(2 * seededUnit(i * 100 + 0) - 1)
+      const theta = seededUnit(i * 100 + 1) * Math.PI * 2
+      const r     = 8 + seededUnit(i * 100 + 2) * 55
       positions[i * 3]     = r * Math.sin(phi) * Math.cos(theta)
       positions[i * 3 + 1] = r * Math.cos(phi) + 10
       positions[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta)
-      velocities[i * 3]     = (Math.random() - 0.5) * 0.002
-      velocities[i * 3 + 1] = (Math.random() - 0.5) * 0.001
-      velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.002
+      velocities[i * 3]     = (seededUnit(i * 100 + 3) - 0.5) * 0.002
+      velocities[i * 3 + 1] = (seededUnit(i * 100 + 4) - 0.5) * 0.001
+      velocities[i * 3 + 2] = (seededUnit(i * 100 + 5) - 0.5) * 0.002
     }
-    return { positions, velocities }
+    return { positions }
   }, [])
 
   const geo = useMemo(() => {
@@ -70,9 +71,9 @@ function GoldParticles() {
   const positions = useMemo(() => {
     const arr = new Float32Array(count * 3)
     for (let i = 0; i < count; i++) {
-      const phi   = Math.acos(2 * Math.random() - 1)
-      const theta = Math.random() * Math.PI * 2
-      const r     = 5 + Math.random() * 30
+      const phi   = Math.acos(2 * seededUnit(i * 100 + 6) - 1)
+      const theta = seededUnit(i * 100 + 7) * Math.PI * 2
+      const r     = 5 + seededUnit(i * 100 + 8) * 30
       arr[i * 3]     = r * Math.sin(phi) * Math.cos(theta)
       arr[i * 3 + 1] = r * Math.cos(phi) + 10
       arr[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta)
@@ -206,14 +207,14 @@ function KnowledgeShards() {
   const shards = useMemo(() =>
     Array.from({ length: 8 }, (_, i) => {
       const angle = (i / 8) * Math.PI * 2
-      const r = 12 + Math.random() * 8
+      const r = 12 + seededUnit(9) * 8
       return {
         x: Math.cos(angle) * r,
-        y: 10 + (Math.random() - 0.5) * 10,
+        y: 10 + (seededUnit(10) - 0.5) * 10,
         z: Math.sin(angle) * r,
-        sx: 0.6 + Math.random() * 1.2,
-        sy: 1.5 + Math.random() * 2.5,
-        rx: Math.random() * Math.PI,
+        sx: 0.6 + seededUnit(11) * 1.2,
+        sy: 1.5 + seededUnit(12) * 2.5,
+        rx: seededUnit(13) * Math.PI,
         ry: angle,
       }
     }), [])
@@ -230,7 +231,7 @@ function KnowledgeShards() {
           <meshBasicMaterial
             color={i % 3 === 0 ? '#d8a030' : '#2a4070'}
             transparent
-            opacity={0.2 + Math.random() * 0.2}
+            opacity={0.2 + seededUnit(14) * 0.2}
             side={THREE.DoubleSide}
             depthWrite={false}
           />
@@ -255,7 +256,7 @@ function VoidLighting() {
   )
 }
 
-export default function Act02_Mentor({ progress = 0 }) {
+export default function Act02_Mentor() {
   return (
     <group>
       <VoidLighting />

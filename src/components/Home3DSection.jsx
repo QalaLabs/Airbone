@@ -20,18 +20,15 @@ import SubmitButton from '@/components/SubmitButton'
 function Cursor() {
   const dotRef  = useRef()
   const ringRef = useRef()
-  const [enabled, setEnabled] = useState(false)
+  const [enabled] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return !window.matchMedia('(max-width: 1024px) or (pointer: coarse)').matches
+  })
 
   useEffect(() => {
-    const isMobile = window.matchMedia('(max-width: 1024px) or (pointer: coarse)').matches
-    if (isMobile) {
-      setEnabled(false)
-      return
-    }
-    setEnabled(true)
+    if (!enabled) return
 
     let px = 0, py = 0, rx = 0, ry = 0, raf
-
     const move = (e) => { px = e.clientX; py = e.clientY }
     const loop = () => {
       rx += (px - rx) * 0.1
@@ -58,7 +55,7 @@ function Cursor() {
         el.removeEventListener('mouseleave', out)
       })
     }
-  }, [])
+  }, [enabled])
 
   if (!enabled) return null
 
@@ -87,7 +84,7 @@ function Loader({ done }) {
 }
 
 /* ─── NAV ─── */
-function Nav({ actIndex, total, onDemo }) {
+function Nav({ total, onDemo }) {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -307,7 +304,7 @@ function Act4Overlay({ visible }) {
   )
 }
 
-function Act5Overlay({ visible, actProgress, onDemo }) {
+function Act5Overlay({ visible, actProgress }) {
   const isBoot = actProgress < 0.35
   const isAlign = actProgress >= 0.35 && actProgress < 0.70
   const isReady = actProgress >= 0.70

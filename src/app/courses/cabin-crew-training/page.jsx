@@ -175,7 +175,7 @@ export default function CabinCrewTrainingPage() {
                 Trained by Industry Veterans
               </h2>
               <div className="course-subject-grid">
-                <div style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', border: '1px solid rgba(0, 39, 76, 0.08)', padding: '2rem', borderRadius: '4px' }}>
+                <div style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', padding: '2rem', borderRadius: '4px' }}>
                   <div style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', fontWeight: 800, color: 'var(--navy)', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Capt. Mukul Mitra Barua</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--navy)', fontFamily: 'var(--font-h)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '1rem' }}>Lead Trainer — Aviation Training & Safety</div>
                   <p style={{ fontSize: '0.82rem', color: 'rgba(0, 39, 76, 0.65)', lineHeight: '1.7', margin: '0 0 1rem 0' }}>
@@ -185,7 +185,7 @@ export default function CabinCrewTrainingPage() {
                     "Cabin crew is not about looking the part. It is about being the calmest person on board when something goes wrong."
                   </p>
                 </div>
-                <div style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', border: '1px solid rgba(0, 39, 76, 0.08)', padding: '2rem', borderRadius: '4px' }}>
+                <div style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', padding: '2rem', borderRadius: '4px' }}>
                   <div style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', fontWeight: 800, color: 'var(--navy)', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Rajeet Khalsa</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--navy)', fontFamily: 'var(--font-h)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '1rem' }}>Lead Trainer — Soft Skills & Professional Readiness</div>
                   <p style={{ fontSize: '0.82rem', color: 'rgba(0, 39, 76, 0.65)', lineHeight: '1.7', margin: '0 0 1rem 0' }}>
@@ -229,7 +229,7 @@ export default function CabinCrewTrainingPage() {
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 {PATHWAYS.map((p, i) => (
-                  <div key={i} style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', border: '1px solid rgba(0, 39, 76, 0.08)', borderRadius: '4px', padding: '2rem' }}>
+                  <div key={i} style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', borderRadius: '4px', padding: '2rem' }}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '1.25rem' }}>
                       <div style={{ flexShrink: 0, width: '2.5rem', height: '2.5rem', borderRadius: '50%', background: '#DB241E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-h)', fontSize: '1rem', fontWeight: 900, color: 'var(--navy)' }}>P{p.num}</div>
                       <div>

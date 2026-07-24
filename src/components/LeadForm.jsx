@@ -22,7 +22,7 @@ const COURSES = [
 
 export default function LeadForm({ courseName = '', source = 'Dynamic Page Form', successMessage = '' }) {
   const [status, setStatus] = useState('idle')
-  const { values, errors, touched, handleChange, handleBlur, validate, isValid, setValues } = useFormValidation(
+  const { values, errors, touched, handleChange, handleBlur, validate, isValid } = useFormValidation(
     { name: '', phone: '', email: '', pincode: '', course: courseName || COURSES[0] },
     validators
   )

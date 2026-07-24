@@ -386,7 +386,7 @@ function TakeoffAircraft({ speed = 0, liftoff = 0 }) {
         <group>
           {Array.from({ length: 8 }, (_, i) => {
             const t = i / 8
-            const spread = (1 - t) * 0.5
+            void ((1 - t) * 0.5)
             const fade = speed * (1 - t * 0.7)
             return (
               <group key={i}>
@@ -431,11 +431,11 @@ function TakeoffAircraft({ speed = 0, liftoff = 0 }) {
 
 // ─── Motion blur decals on runway (appear at speed > 0.4) ────────────────────
 function RunwayBlur({ speed = 0, aircraftZ = 0 }) {
-  if (speed < 0.4) return null
-
   const blurIntensity = (speed - 0.4) / 0.6
   const positions = useMemo(() =>
     Array.from({ length: 10 }, (_, i) => aircraftZ + 8 + i * 3.5), [aircraftZ])
+
+  if (speed < 0.4) return null
 
   return (
     <group>

@@ -188,7 +188,7 @@ function SlowCameraRotation() {
 }
 
 // ─── Scene08_Success ──────────────────────────────────────────────────────────
-export default function Scene08_Success({ progress = 0 }) {
+export default function Scene08_Success() {
   return (
     <>
       {/* Subtle camera idle drift */}

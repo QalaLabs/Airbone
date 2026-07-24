@@ -334,18 +334,20 @@ export default function GlobalRouteMap() {
   const [hovered, setHovered]   = useState(null)
   const [tooltip, setTooltip]   = useState(null)
   const [pinned, setPinned]     = useState(null)
-  const [reducedMotion, setReducedMotion] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
+  const [reducedMotion, setReducedMotion] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  )
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' && window.innerWidth < 769
+  )
 
   /* Respect prefers-reduced-motion + cut particle density on small screens */
   useEffect(() => {
     if (typeof window === 'undefined') return
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReducedMotion(mq.matches)
     const onMqChange = e => setReducedMotion(e.matches)
     mq.addEventListener('change', onMqChange)
     const onResize = () => setIsMobile(window.innerWidth < 769)
-    onResize()
     window.addEventListener('resize', onResize)
     return () => { mq.removeEventListener('change', onMqChange); window.removeEventListener('resize', onResize) }
   }, [])
@@ -366,8 +368,6 @@ export default function GlobalRouteMap() {
   const rawX = useMotionValue(0), rawY = useMotionValue(0)
   const mx = useSpring(rawX, { stiffness: 60, damping: 22 })
   const my = useSpring(rawY, { stiffness: 60, damping: 22 })
-  const l1x = useTransform(mx, v => `${v * -0.006}%`), l1y = useTransform(my, v => `${v * -0.006}%`)
-  const l2x = useTransform(mx, v => `${v * -0.012}%`), l2y = useTransform(my, v => `${v * -0.012}%`)
   const glx = useTransform(mx, v => `${v * 0.008}%`), gly = useTransform(my, v => `${v * 0.008}%`)
 
   const onMouseMove  = e => { const r = sectionRef.current?.getBoundingClientRect(); if(r){ rawX.set(e.clientX-r.left-r.width/2); rawY.set(e.clientY-r.top-r.height/2) } }

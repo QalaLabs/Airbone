@@ -8,7 +8,7 @@
  * Each act owns 1/7 of total scroll range.
  */
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 
 export const ACTS = [
   { id: 0, name: 'Dream',     label: '01 · The Dream' },
@@ -61,17 +61,15 @@ export function useScrollEngine() {
 }
 
 export function useCursor() {
-  const pos = useRef({ x: 0, y: 0 })
-  const [, forceRender] = useState(0)
+  const [pos, setPos] = useState({ x: 0, y: 0 })
 
   useEffect(() => {
     const onMove = (e) => {
-      pos.current = { x: e.clientX, y: e.clientY }
-      forceRender(n => n + 1)
+      setPos({ x: e.clientX, y: e.clientY })
     }
     window.addEventListener('mousemove', onMove, { passive: true })
     return () => window.removeEventListener('mousemove', onMove)
   }, [])
 
-  return pos.current
+  return pos
 }
