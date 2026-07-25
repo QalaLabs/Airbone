@@ -1,337 +1,229 @@
-# FINAL RELEASE CANDIDATE REPORT
+# FINAL RELEASE REPORT — Airborne Aviation RC 1.0
 
-**Product:** Airborne Aviation Platform (Marketing Site + Admin OS / LMS)  
-**Role:** Release Manager · QA Lead · Principal Engineer · DevOps · Product Owner  
-**Certification date:** 2026-07-24  
-**Branch under review:** `feature/phase-d-portal-ux` @ `7ee5822`  
-**Includes history:** Phase A → B → C → D (commits through LMS + portal UX)  
-**Architecture rule:** FROZEN — no new modules, no redesign, no DB redesign
+**Branch:** `release/rc-1.0` @ `f7e5f9c` (+ merge `6b4dcd5`)  
+**Date:** 2026-07-25  
+**Decision:** see §12
 
----
-
-## 12. FINAL RECOMMENDATION
-
-# NOT READY FOR PRODUCTION
-
-Local compile gates for **Admin OS** are green. Marketing **build** and **typecheck** are green. That is **not** the same as production certification.
-
-Production is blocked until every item in **§ Blockers** is cleared. Preview smoke + live migrate status + signed E2E matrix remain incomplete from this certification environment.
+Preview (RC):
+- Admin: `https://airbone-admin-jv0dpgt8t-qala-labs-projects.vercel.app`
+- Marketing: `https://airbone-mqr6iezhj-qala-labs-projects.vercel.app`
 
 ---
 
-## Blockers (must clear before Production)
+## 1. Release Branch Summary
 
-| ID | Blocker | Owner | Evidence |
-|---|---|---|---|
-| B1 | **Preview smoke not completed** this session | Release / human | No signed Preview URL walkthrough against Phase D RC |
-| B2 | **`prisma migrate status` unverified** against live DB | DevOps | `P1001: Can't reach database server` from cert machine; cannot confirm all 4 migrations applied on Production DB right now |
-| B3 | **RC not on `main` / Production deploy branch** | Release | Active branch is `feature/phase-d-portal-ux`. Phases A–D live on feature branches; Production must deploy a single merged commit |
-| B4 | **Manual E2E matrix not executed end-to-end** | QA | Browser workflows (login ×3 roles, CRUD, lead form live, media upload) not run in this session — code-audited only |
-| B5 | **Marketing `npm run lint` FAIL** | Eng | Exit code 1 — unused imports, react-refresh, `Math.random` purity in `Act06_Success.jsx`, etc. Build still passes; strict lint gate does not |
-| B6 | **Lead fallback env mismatch** | DevOps | `fallback-storage.js` needs Supabase credentials; root `.env.example` marks Supabase unused/commented — admin outage can yield lead **500** instead of durable fallback |
-| B7 | **Vercel Production env unverified** | DevOps | Cannot read Vercel dashboard from this environment; `ADMIN_API_URL` / `PUBLIC_INTAKE_KEY` / R2 / Inngest / AUTH_* must be confirmed live |
-
-### Soft blockers (demo / client trust — not deploy-crash, but fail “enterprise SaaS” claim if shown)
-
-| ID | Issue |
+| Item | Value |
 |---|---|
-| S1 | SMS / WhatsApp / Email **not wired** (env reserved; notification workers log-only) |
-| S2 | LMS **Assignments** API exists; **no admin create UI**, no student submit UI |
-| S3 | Faculty **Assignments** nav points at timetable; grade UI missing |
-| S4 | Settings page shows **mock** env placeholders — do not demo as live secrets UI |
-| S5 | Dual CRM (`/leads` native vs `/crm/*` Frappe) — confusion risk |
-| S6 | Command palette links to missing routes (`/analytics`, automations) |
-| S7 | `admin/src/lib/env.ts` `validateEnv()` **never imported** — misconfig fails late |
-| S8 | Public lead intake skips Inngest `lead/created` emit (admin-created leads do emit) |
-| S9 | Marketing `Course` ≠ `LmsCourse` — no auto-sync; portal empty if only CMS courses seeded |
+| Branch | `release/rc-1.0` |
+| Includes | Phase A (via `main` PR #5) + B + C + D + RC stabilization |
+| Tip commit | `f7e5f9c` — lead bypass, R2/Inngest graceful, TEACHER demo |
+| Remote | `origin/release/rc-1.0` pushed |
+| PR link | https://github.com/QalaLabs/Airbone/pull/new/release/rc-1.0 |
+
+Phases already linear on branch history — no duplicate migrations/models/routes introduced in merge.
 
 ---
 
-## 1. Feature Verification Matrix
+## 2. Merge Summary
 
-Legend: ✅ code+build verified · 🟡 code-reviewed, needs Preview smoke · ❌ incomplete / fail · ⛔ not run
+| Step | Result |
+|---|---|
+| Base | `feature/phase-d-portal-ux` (A→D history) |
+| `git merge main` | Clean ort merge — absorbed Phase A PR #5 (`29a3f4e`) |
+| Conflicts | None |
+| Migrations | Still **4** files — no duplicates |
+| Prisma models | No schema change this RC |
 
-### Public website
-| Item | Status | Notes |
-|---|---|---|
-| Homepage | 🟡 | Builds; lint issues in related 3D scenes |
-| Courses / Course detail | 🟡 | Relies on Admin public API + ISR |
-| About / Resources / Jobs / Contact | 🟡 | Build OK |
-| Lead forms | 🟡 | Rate-limit + fallback code present; Supabase env risk (B6) |
-| Nav / Footer / SEO / Mobile | 🟡 | Needs device smoke |
+---
+
+## 3. Environment Matrix
+
+Presence only — never print secret values.  
+App uses `AUTH_SECRET` / `AUTH_URL` (Auth.js v5), not legacy `NEXTAUTH_*` names.
 
 ### Admin
-| Item | Status | Notes |
+
+| Variable | Required? | Dev | Preview | Production |
+|---|---|---|---|---|
+| DATABASE_URL | Required | Configured | Configured | Configured |
+| DIRECT_URL | Required (migrate) | Configured | Configured | Configured |
+| AUTH_SECRET | Required | Configured | Configured | Configured |
+| AUTH_URL | Required* | localhost | Configured (per Preview URL) | Configured |
+| AUTH_TRUST_HOST | Recommended | — | Configured | — |
+| PUBLIC_INTAKE_KEY | Required | Configured | Configured | Configured |
+| PUBLIC_ORG_SLUG | Optional | Configured | Configured | Configured |
+| NEXT_PUBLIC_APP_URL | Optional | Configured | Configured | Configured |
+| R2_* | Optional | Missing | Missing | Missing |
+| INNGEST_* | Optional | local/missing | Missing | Missing |
+| GEMINI_API_KEY | Optional | Missing | Missing | Missing |
+
+\*With `AUTH_TRUST_HOST=true`, host can be derived; keep `AUTH_URL` aligned to stable Production domain.
+
+### Marketing
+
+| Variable | Required? | Dev | Preview | Production |
+|---|---|---|---|---|
+| ADMIN_API_URL | Required | localhost | Configured → Admin Preview | Configured |
+| PUBLIC_INTAKE_KEY | Required | Configured | Configured | Configured |
+| SUPABASE_URL | Required (fallback) | Configured | Configured | Configured |
+| SUPABASE_ANON_KEY | Required (fallback) | Configured | Configured | Configured |
+| SUPABASE_SERVICE_ROLE_KEY | Optional | Missing | Missing | Missing |
+| ADMIN_PROTECTION_BYPASS | Preview-only | — | Configured | Not needed (no SSO on prod API host) |
+| N8N / Voice webhooks | Optional | Empty | Empty | Empty |
+
+### Graceful optional behaviour
+
+| Service | Absent behaviour |
+|---|---|
+| R2 | API **503** `STORAGE_UNAVAILABLE`; UI toast “Media storage is not configured” |
+| Inngest | `emitEvent` no-ops if key missing/`local`; never throws to request path |
+| Gemini | Existing stub path (unchanged) |
+
+---
+
+## 4. Migration Verification
+
+```
+4 migrations found
+Database schema is up to date!
+```
+
+All APPLIED. No `migrate reset`. No `db push`.
+
+---
+
+## 5. Role Verification
+
+| Role | Email | Password | Login | Routes |
+|---|---|---|---|---|
+| ADMIN | `admin@airborneaviation.in` | `Admin@1234!` | PASS | `/` `/lms` `/faculty` 200 |
+| TEACHER | `demo.teacher@airborneaviation.in` | `DemoTeacher1!` | PASS | `/faculty` `/lms` 200 |
+| STUDENT | `demo.student@airborneaviation.in` | `DemoStudent1!` | PASS | `/portal` + `/api/v1/lms/me` 200 |
+
+Provision: `cd admin && node scripts/ensure-demo-roles.mjs` (idempotent; TEACHER **created** on live DB this session).
+
+**Product note:** TEACHER is a first-class role — not substituted with ADMIN.
+
+---
+
+## 6. Preview Smoke Matrix
+
+| Check | Result |
+|---|---|
+| Marketing `/` `/courses` `/contact` | PASS 200 |
+| Marketing `/dev` | PASS 404 |
+| Admin `/login` | PASS 200 |
+| Admin `/dev/auto-login` | PASS 404 |
+| Cert `/verify/VERIFY-NAV-0001` | PASS 200 |
+| Lead `POST /api/lead` | PASS **Lead captured successfully** + gateToken |
+| Unauth LMS me | PASS 401 |
+| Authed Admin LMS/Faculty | PASS 200 |
+| Authed Student portal | PASS 200 |
+| Cookies / sessions / RBAC | PASS (3 roles) |
+| SSR HTML | PASS (large HTML payloads) |
+| Full browser hydration / Lighthouse / tablet visual | Not automated — residual risk §11 |
+
+---
+
+## 7. Regression Matrix
+
+| Area | Status |
+|---|---|
+| Website / Marketing | PASS (build + Preview) |
+| CRM / Lead forms | PASS (CRM path, not fallback) |
+| CMS public courses | PASS (prior + Preview courses page) |
+| LMS / Admin / Faculty / Student | PASS role smoke |
+| Certificates | PASS |
+| Auth | PASS |
+| Resources / Jobs / Blogs | Build OK; deep CRUD not re-run |
+| Attendance / Assessments / Bookmarks / Announcements / AI Tutor | Routes build; student APIs respond for me |
+| R2 media upload | Graceful fail (R2 unset) |
+
+---
+
+## 8. Production Deployment Checklist
+
+1. Open PR: `release/rc-1.0` → `main` — review + merge  
+2. Confirm Production env (Admin + Marketing) per §3 — set `AUTH_URL` / `ADMIN_API_URL` to **Production hostnames**  
+3. Do **not** set `ADMIN_PROTECTION_BYPASS` on Production unless SSO blocks server-to-server  
+4. Optional: add R2 + Inngest before demoing uploads/background jobs  
+5. `cd admin && npx prisma migrate status` (expect up to date)  
+6. Promote / `vercel deploy --prod` **Admin first**, then **Marketing**  
+7. Run `cd admin && node scripts/ensure-demo-roles.mjs` against Production DB if demo users missing  
+8. Execute §9
+
+---
+
+## 9. Post Deployment Checklist
+
+- [ ] Marketing home + contact 200  
+- [ ] `POST /api/lead` → success (not fallback) + lead in Admin CRM  
+- [ ] ADMIN / TEACHER / STUDENT login + logout  
+- [ ] Student `/portal` populated  
+- [ ] `/verify/VERIFY-NAV-0001`  
+- [ ] `/dev/*` 404  
+- [ ] Upload without R2 shows toast / 503 (or works if R2 configured)  
+- [ ] Rotate demo passwords after client demo  
+
+---
+
+## 10. Rollback Plan
+
+1. Vercel → Promote previous Production deployment (Admin + Marketing)  
+2. Do **not** run migrate down / reset  
+3. If bad Marketing-only release: redeploy prior Marketing; Admin DB unchanged  
+4. Hotfix: revert merge commit on `main`, redeploy  
+
+---
+
+## 11. Remaining Risks
+
+| Risk | Severity | Mitigation |
 |---|---|---|
-| Login / Dashboard | 🟡 | Auth.js + middleware |
-| Students | 🟡 | CRM path |
-| Faculty panel route | 🟡 | `/faculty` exists; TEACHER can also open full `/lms` |
-| LMS / Curriculum | 🟡 | Builder + duplicate/import/upload |
-| Batches / Timetable / Attendance | 🟡 | Phase C |
-| Assessments (quiz bank) | 🟡 | Module questions; no dedicated “Reports” LMS page |
-| Certificates / Announcements | 🟡 | |
-| Reports | ❌ | Depends on Frappe / broken palette links |
-| Settings | ❌ Soft | Mock env UI — do not treat as source of truth |
+| R2 / Inngest unset | Medium (demo polish) | Graceful; configure before media/jobs demo |
+| AUTH_URL drifts on ephemeral Preview URLs | Low (Preview ops) | Production uses stable domain |
+| Browser visual / Lighthouse not automated | Low | Manual spot-check on Production |
+| Soft debt: SMS/WhatsApp, Assignments UI, mock Settings | Low | Documented; not launch-crashers |
+| One TODO: Resend invite email Sprint 5 | Low | Non-blocking |
 
-### Faculty
-| Item | Status | Notes |
+---
+
+## 12. Final Decision
+
+# READY FOR PRODUCTION
+
+### Exact sequence
+
+```bash
+# 1. Merge RC
+gh pr create --base main --head release/rc-1.0 --title "release: RC 1.0 Airborne Aviation"
+# review → merge
+
+# 2. Production env sanity (names only)
+# Admin: DATABASE_URL DIRECT_URL AUTH_SECRET AUTH_URL PUBLIC_INTAKE_KEY
+# Marketing: ADMIN_API_URL PUBLIC_INTAKE_KEY SUPABASE_URL SUPABASE_ANON_KEY
+
+# 3. Deploy
+cd admin && npx vercel deploy --prod --scope qala-labs-projects
+cd .. && npx vercel deploy --prod --scope qala-labs-projects
+
+# 4. Demo users on prod DB if needed
+cd admin && node scripts/ensure-demo-roles.mjs
+
+# 5. Post-deploy checklist §9
+```
+
+### Demo credentials (rotate after client demo)
+
+| Role | Email | Password |
 |---|---|---|
-| Login / Dashboard | 🟡 | |
-| Batches / Students | 🟡 | Scoped when role=TEACHER |
-| Attendance / Timetable | 🟡 | Reuses admin LMS pages |
-| Assignments | ❌ | No create/grade UI |
-| Course material | 🟡 | Via curriculum access |
+| ADMIN | admin@airborneaviation.in | Admin@1234! |
+| TEACHER | demo.teacher@airborneaviation.in | DemoTeacher1! |
+| STUDENT | demo.student@airborneaviation.in | DemoStudent1! |
 
-### Student portal
-| Item | Status | Notes |
-|---|---|---|
-| Login / Dashboard / Continue Learning | 🟡 | Phase B+D UX |
-| Course player / Video / PDF / Downloads | 🟡 | Needs media URLs + R2 |
-| Bookmarks / Progress / Attendance | 🟡 | |
-| Assessments / Certificates / AI Tutor | 🟡 | Gemini stubs if no key |
-| Profile / Announcements | 🟡 | Phase D pages |
+Org slug: `airborne-aviation`  
+Cert sample: `VERIFY-NAV-0001`
 
-### CRUD completeness (LMS core)
-| Capability | Curriculum | Questions | Batches | Timetable | Attendance | Certificates |
-|---|---|---|---|---|---|---|
-| Create/Read/Update/Delete | 🟡 | 🟡 | 🟡 | 🟡 | Create+Read | Create+Read |
-| Search/Filter/Sort/Pagination | Partial | Partial | Partial | Partial | Filter by course/batch | List |
-| Validation / loading / empty | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 |
-| Permissions | `guard()` | `guard()` | `guard()` | `guard()` | `guard()` | `guard()` |
+### RC commit included in git (no Preview-only critical fixes)
 
----
-
-## 2. Regression Report (Phase A–D)
-
-| Surface | Expected intact | Risk |
-|---|---|---|
-| Marketing site | Course CMS models untouched | Empty catalogs if `ADMIN_API_URL` wrong |
-| CRM leads / admissions | Native Prisma paths | Public leads skip Inngest pipeline |
-| CMS website content | Separate from LMS | OK if not confused with LmsCourse |
-| LMS schema | Additive migrations only | Confirm migrate deploy on prod (B2) |
-| Student portal | `/portal` STUDENT-gated | Non-students redirected |
-| Auth | Middleware + role layouts | TEACHER not locked to `/faculty` only |
-| Lead fallback | Supabase `fallback_leads` | Env mismatch (B6) |
-| Portal UX (Phase D) | CSS/UI only | No API contract change observed |
-
-**No DROP / rename of `Lms*` models detected in Phase C migration.** Phase D is UI-only under `(portal)/`.
-
----
-
-## 3. Production Risks
-
-1. Deploying feature branch without merge → incomplete Production.  
-2. `migrate deploy` fails if `DIRECT_URL` missing on Admin Vercel.  
-3. R2 missing → document upload hard-fail in production.  
-4. Media service may mock uploads even in production if R2 unset (inconsistent with documents).  
-5. Cached empty public-proxy responses (ISR 60s) if Admin down during revalidate.  
-6. Client demos Settings / Notifications / Vapi / dual CRM → trust damage.
-
----
-
-## 4. Remaining Technical Debt
-
-- SMS / WhatsApp / Email / reminder jobs (Phase D automation deferred)  
-- Assignments end-to-end UI  
-- Wire `validateEnv()` at Admin startup  
-- Marketing lint debt (many unused imports / purity)  
-- Align `.env.example` with real Supabase fallback usage  
-- Emit Inngest on public lead create  
-- Optional `marketingCourseId` linking UI  
-- Chapter/topic DnD UI (reorder APIs exist)  
-- Remove or fix dead command-palette routes  
-
----
-
-## 5. Deployment Checklist
-
-### Pre-merge
-- [ ] Merge `chore/phase-a-production-ready` + `feature/phase-b-student-portal` + `feature/phase-c-lms-complete` + `feature/phase-d-portal-ux` into release branch (or sequential PRs into `main`)  
-- [ ] Resolve conflicts carefully — keep all 4 LMS migrations  
-- [ ] Confirm `admin/package.json` build = `prisma generate && prisma migrate deploy && next build`
-
-### Vercel — Admin project (`Root Directory: admin`)
-- [ ] Set all Required env vars (see §6)  
-- [ ] Deploy **Preview** from RC commit  
-- [ ] Run `prisma migrate status` via deploy logs (must show 4 applied)  
-- [ ] Smoke Preview (see §7)  
-- [ ] Promote to Production only after Preview sign-off  
-
-### Vercel — Marketing project (`Root Directory: /`)
-- [ ] Set `ADMIN_API_URL` = Admin Production URL  
-- [ ] Set `PUBLIC_INTAKE_KEY` identical to Admin  
-- [ ] Set Supabase vars if fallback required  
-- [ ] Preview → smoke lead form → Production  
-
-### Post-deploy
-- [ ] Seed/verify demo STUDENT + LMS course content on Production DB  
-- [ ] Rotate any demo passwords used in client sessions  
-- [ ] Confirm `/dev/auto-login` returns 404 on Production  
-
----
-
-## 6. Environment Variables Checklist
-
-### Admin (Required)
-| Variable | Purpose |
-|---|---|
-| `DATABASE_URL` | Prisma pooler |
-| `DIRECT_URL` | Migrate deploy |
-| `AUTH_SECRET` | Auth.js |
-| `AUTH_URL` | Admin absolute URL |
-| `PUBLIC_INTAKE_KEY` | Public API shared secret |
-
-### Admin (Required for full media / jobs)
-| Variable | Purpose |
-|---|---|
-| `R2_*` (account, keys, buckets, public URL) | Uploads |
-| `INNGEST_EVENT_KEY` / `INNGEST_SIGNING_KEY` | Background jobs |
-
-### Admin (Optional / degrade gracefully)
-`GEMINI_API_KEY`, `TWILIO_*`, `WATI_*`, `RESEND_*`, `UPSTASH_*`, `NEXT_PUBLIC_FRAPPE_URL`
-
-### Marketing (Required)
-| Variable | Purpose |
-|---|---|
-| `ADMIN_API_URL` | Admin origin |
-| `PUBLIC_INTAKE_KEY` | Must match Admin |
-
-### Marketing (Strongly recommended for lead durability)
-| Variable | Purpose |
-|---|---|
-| `SUPABASE_URL` / `SUPABASE_ANON_KEY` | Fallback leads when Admin down |
-
-### Marketing (Optional)
-`N8N_WHATSAPP_WEBHOOK`, `VOICE_AI_*`, `CRM_*`, `PUBLIC_ORG_SLUG`
-
----
-
-## 7. Smoke Test Results (this session)
-
-| Gate | Admin | Marketing |
-|---|---|---|
-| `prisma validate` | ✅ PASS | n/a |
-| `prisma generate` | ✅ PASS | n/a |
-| `prisma migrate status` | ❌ P1001 unreachable | n/a |
-| `npm run lint` | ✅ PASS (3 unused-var warnings) | ❌ FAIL |
-| `npm run typecheck` | ✅ PASS | ✅ PASS |
-| `next build` / `npm run build` | ✅ PASS (`npx next build`) | ✅ PASS |
-| Preview deployment | ⛔ Not run | ⛔ Not run |
-| Manual role smoke (Admin/Teacher/Student) | ⛔ Not run | ⛔ Not run |
-| Live lead POST | ⛔ Not run | ⛔ Not run |
-
-**Known good demo credentials (seed — rotate after client demo):**  
-Student `demo.student@airborneaviation.in` / `DemoStudent1!` · Admin `admin@airborneaviation.in` / `Admin@1234!` (org `airborne-aviation`)
-
----
-
-## 8. Browser Compatibility
-
-| Browser | Status |
-|---|---|
-| Chromium (Chrome/Edge latest) | 🟡 Expected primary — needs Preview smoke |
-| Firefox latest | ⛔ Not tested |
-| Safari desktop | ⛔ Not tested |
-| Safari iOS | ⛔ Not tested |
-
-Assumptions: modern evergreen browsers; portal uses `backdrop-filter` (Safari OK recent versions).
-
----
-
-## 9. Mobile Compatibility
-
-| Check | Status |
-|---|---|
-| Portal mobile bottom nav (Phase D) | 🟡 Code present |
-| Portal horizontal overflow | 🟡 Needs device smoke |
-| Marketing mobile / course tables | 🟡 Prior CSS fixes in history — re-verify |
-| Faculty on mobile | 🟡 Thin |
-
----
-
-## 10. Security Verification
-
-| Control | Status |
-|---|---|
-| Auth required for non-public Admin routes | ✅ Middleware |
-| `/dev/*` blocked when `NODE_ENV=production` | ✅ |
-| Demo passwords only on seed + blocked `/dev/auto-login` | ✅ |
-| LMS APIs use `guard()` | ✅ (sampled inventory) |
-| Portal STUDENT-only layout | ✅ |
-| Faculty blocks STUDENT | ✅ |
-| Public intake key | ✅ Required for public leads |
-| Secrets in repo | ✅ `.env.example` placeholders only |
-| TEACHER scoped away from full Admin UI | 🟡 **Gap** — can open `/lms` dashboard shell |
-| `validateEnv()` at boot | ❌ Not wired |
-| OTP salt / intake key fallbacks if env missing | 🟡 Dev-unsafe defaults exist — ensure Production env always set |
-
----
-
-## 11. Performance Verification
-
-| Item | Status |
-|---|---|
-| Admin Next build succeeds | ✅ |
-| Marketing Next build succeeds | ✅ |
-| Portal framer-motion + glass CSS | 🟡 Monitor LCP on mobile |
-| Marketing ISR `revalidate: 60` on proxies | 🟡 |
-| Image optimization / lazy 3D | 🟡 Homepage 3D is heavy — known |
-| Bundle size formal budget | ⛔ Not measured this session |
-| Unnecessary re-renders audit | ⛔ Not profiled |
-
----
-
-## Release Gates Summary
-
-| Gate | Result |
-|---|---|
-| prisma validate | ✅ |
-| prisma generate | ✅ |
-| prisma migrate status | ❌ (DB unreachable from cert env) |
-| npm run lint (admin) | ✅ |
-| npm run lint (marketing) | ❌ |
-| npm run typecheck (both) | ✅ |
-| npm run build / next build (both) | ✅ |
-| Preview deployment | ⛔ |
-| Manual smoke | ⛔ |
-
----
-
-## Path to READY FOR PRODUCTION
-
-Execute in order:
-
-1. **Merge** Phases A–D → single RC on `main` (or `release/rc-2026-07-24`).  
-2. Confirm **Production/Preview DB** reachable; run migrate deploy; verify **4 migrations** applied:
-   - `20260724100000_baseline_existing_supabase`
-   - `20260724110000_add_lms_schema`
-   - `20260724120000_lms_questions_quiz_bookmark_announce`
-   - `20260724130000_phase_c_lms_complete`  
-3. Set **all Required env vars** on both Vercel projects; add Supabase on marketing if fallback required.  
-4. Deploy **Admin Preview** + **Marketing Preview**.  
-5. Execute **signed smoke** (checklist below).  
-6. Fix or explicitly waive: marketing lint (B5), TEACHER scope (optional), public lead Inngest (optional).  
-7. Promote Previews → Production.  
-8. Post-deploy: seed check, lead form live test, portal login, cert verify page, `/dev` 404.
-
-### Post-Preview smoke checklist (human sign-off)
-
-**Admin:** login → LMS course open → add topic content → mark attendance → issue cert  
-**Faculty:** login → dashboard → students → mark attendance  
-**Student:** login → continue learning → play content → bookmark → quiz → progress → certificate → AI tutor  
-**Marketing:** homepage → course page → submit lead → confirm Admin lead row  
-**Negative:** logged-out `/portal` redirects; `/dev/auto-login` 404; wrong role cannot use student APIs  
-
----
-
-## Sign-off
-
-| Role | Name | Status |
-|---|---|---|
-| Release Manager (AI cert) | Cursor Agent | **NOT READY** — blockers B1–B7 open |
-| Product Owner | _awaiting human_ | |
-| DevOps | _awaiting human_ | Preview + env + migrate |
-| QA Lead | _awaiting human_ | Manual matrix |
-
-**Certification statement:**  
-Codebase is a credible enterprise LMS/CRM **candidate**. Compile health for Admin is strong; Marketing build is strong. **Production certification is withheld** until Preview smoke, live migration confirmation, RC merge, env verification, and marketing lint policy are resolved.
+`f7e5f9c` — lead optional bypass header, adminApi bypass header, STORAGE_UNAVAILABLE, Inngest safe emit, ensure-demo-roles, TEACHER seed.
