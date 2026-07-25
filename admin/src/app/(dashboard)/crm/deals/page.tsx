@@ -1,12 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { Plus, Filter, MoreVertical, DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { getDeals } from "@/lib/crm/deals";
 import { Deal } from "@/lib/crm/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CRMDataTable, CRMColumn } from "@/components/shared/crm-data-table";
 
@@ -152,15 +151,6 @@ export default function CRMDealsPage() {
         </Badge>
       ),
     },
-    {
-      key: "action",
-      header: "Action",
-      render: () => (
-        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-white">
-          <MoreVertical className="h-4 w-4" />
-        </Button>
-      ),
-    },
   ];
 
   return (
@@ -169,13 +159,6 @@ export default function CRMDealsPage() {
         <div className="space-y-1">
           <h1 className="text-2xl font-bold tracking-tight text-white">Deals</h1>
           <p className="text-sm text-muted-foreground">Manage your brand deals and partnerships</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="border-white/10 text-xs font-semibold h-9">Export</Button>
-          <Button className="text-xs font-semibold h-9">
-            <Plus className="mr-2 h-4 w-4" />
-            New Deal
-          </Button>
         </div>
       </div>
 
@@ -238,10 +221,6 @@ export default function CRMDealsPage() {
                 <TabsTrigger value="won" className="text-xs font-semibold text-muted-foreground data-[state=active]:text-white">Won</TabsTrigger>
                 <TabsTrigger value="lost" className="text-xs font-semibold text-muted-foreground data-[state=active]:text-white">Lost</TabsTrigger>
               </TabsList>
-              <Button variant="outline" className="border-white/10 text-xs font-semibold h-8">
-                <Filter className="mr-2 h-3.5 w-3.5" />
-                Filter
-              </Button>
             </div>
             <TabsContent value="all" className="mt-0">
               <CRMDataTable columns={columns} data={deals} searchable={false} pageSize={10} />

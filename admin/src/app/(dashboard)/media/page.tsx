@@ -5,7 +5,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   Search, FolderOpen, Image as ImageIcon, FileText, Film, File, Music,
   ChevronRight, Home, Grid3X3, List, Copy, ExternalLink,
-  Upload, Server, CheckCircle2, Cloud
+  Upload
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -54,8 +54,6 @@ function formatFileSize(bytes: number): string {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 }
 
-const MOCK_HIGHRES_ASSETS: MediaAsset[] = [];
-
 export default function MediaPage() {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [search, setSearch] = React.useState("");
@@ -64,7 +62,6 @@ export default function MediaPage() {
   const [folderPath, setFolderPath] = React.useState<{ id: string; name: string }[]>([]);
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
   const [selectedAsset, setSelectedAsset] = React.useState<MediaAsset | null>(null);
-  const [s3ConfigOpen, setS3ConfigOpen] = React.useState(false);
 
   React.useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 400);
@@ -188,20 +185,8 @@ export default function MediaPage() {
     toast({ title: "CDN URL Copied", description: "High-speed S3 asset link copied to clipboard." });
   };
 
-  const handleSaveS3Config = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast({ title: "S3/CDN Integration Configured", description: "AWS S3 bucket policy and CloudFront CDN distribution synchronized." });
-    setS3ConfigOpen(false);
-  };
-
-  const currentFolders = folders ?? [
-    { id: "f1", name: "High-Res Fleet Photos", slug: "fleet-photos", assetCount: 24 },
-    { id: "f2", name: "Simulator Cinematic Videos", slug: "sim-videos", assetCount: 8 },
-    { id: "f3", name: "Campus Amenities & Labs", slug: "campus-amenities", assetCount: 16 },
-    { id: "f4", name: "Cadet Convocation & PR", slug: "cadet-pr", assetCount: 32 },
-  ];
-  
-  const mediaAssets = assets?.items ?? MOCK_HIGHRES_ASSETS;
+  const currentFolders = folders ?? [];
+  const mediaAssets = assets?.items ?? [];
 
   return (
     <div className="space-y-8 pb-12">
@@ -210,14 +195,6 @@ export default function MediaPage() {
         description="Unified digital asset grid of high-res academy photography and cinematic video footage with lightning-fast CDN URL sharing."
         action={
           <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setS3ConfigOpen(true)}
-              className="border-white/10 hover:bg-white/5 text-xs font-bold text-white"
-            >
-              <Server className="h-4 w-4 mr-1.5 text-amber-400" />
-              S3 / CDN Configuration
-            </Button>
             <Button
               onClick={handleUploadClick}
               className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 transition-all hover:scale-105 text-xs font-bold"
@@ -494,43 +471,6 @@ export default function MediaPage() {
         </DialogContent>
       </Dialog>
 
-      {/* S3 / CDN Configuration Dialog */}
-      <Dialog open={s3ConfigOpen} onOpenChange={setS3ConfigOpen}>
-        <DialogContent className="max-w-lg glass-panel border-white/10 bg-slate-900/95">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-white flex items-center gap-2">
-              <Cloud className="h-5 w-5 text-amber-400" />
-              AWS S3 & CloudFront CDN Integration
-            </DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSaveS3Config} className="space-y-4 pt-2">
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-muted-foreground">AWS S3 Bucket Name *</label>
-              <Input defaultValue="airborne-academy-media-prod" required className="bg-secondary/40 border-white/10 text-xs font-mono text-white font-semibold" />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-muted-foreground">AWS Region *</label>
-              <Input defaultValue="ap-south-1 (Mumbai)" required className="bg-secondary/40 border-white/10 text-xs font-semibold text-white" />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-muted-foreground">CloudFront CDN Distribution Domain *</label>
-              <Input defaultValue="https://cdn.airborneaviation.in" required className="bg-secondary/40 border-white/10 text-xs font-mono text-primary font-bold" />
-            </div>
-            <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 space-y-1">
-              <span className="text-xs font-bold text-white block flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4 text-primary" /> Multi-Part Direct Upload Enabled
-              </span>
-              <p className="text-[11px] text-muted-foreground">High-resolution simulator videos (&gt;500MB) are automatically broken into 5MB chunks for accelerated S3 transfer.</p>
-            </div>
-            <DialogFooter className="pt-4 border-t border-white/10">
-              <Button type="button" variant="outline" onClick={() => setS3ConfigOpen(false)} className="border-white/10 hover:bg-white/5 text-xs font-bold">Cancel</Button>
-              <Button type="submit" className="bg-primary hover:bg-primary/90 text-white text-xs font-bold shadow-lg shadow-primary/20">
-                Synchronize Storage Configuration
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

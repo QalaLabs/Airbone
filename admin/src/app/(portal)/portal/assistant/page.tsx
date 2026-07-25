@@ -4,7 +4,7 @@ import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
-import { Sparkles, Send, User, Bot, Loader2, X } from "lucide-react";
+import { Sparkles, Send, User, Bot, Loader2, X, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   PortalPageHeader,
@@ -18,6 +18,7 @@ interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   isError?: boolean;
+  isUnavailable?: boolean;
 }
 
 const QUICK_PROMPTS = [
@@ -37,6 +38,7 @@ function AssistantInner() {
 
   const [input, setInput] = React.useState("");
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
+  const [unavailable, setUnavailable] = React.useState(false);
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
@@ -59,6 +61,21 @@ function AssistantInner() {
         role: "user",
         content: question,
       };
+
+      if (data.stub) {
+        setUnavailable(true);
+        const notice: ChatMessage = {
+          id: `a-${Date.now()}`,
+          role: "assistant",
+          content:
+            "Study Assistant is unavailable. AI is not configured for this environment yet.",
+          isUnavailable: true,
+        };
+        setMessages((prev) => [...prev, userMsg, notice]);
+        setInput("");
+        return;
+      }
+
       const botMsg: ChatMessage = {
         id: `a-${Date.now()}`,
         role: "assistant",
@@ -73,11 +90,19 @@ function AssistantInner() {
         role: "user",
         content: question,
       };
+      const notConfigured =
+        /not configured|GEMINI_API_KEY|missing/i.test(err.message);
+      if (notConfigured) {
+        setUnavailable(true);
+      }
       const errMsg: ChatMessage = {
         id: `e-${Date.now()}`,
         role: "assistant",
-        content: `Sorry, I couldn't answer that. ${err.message}`,
+        content: notConfigured
+          ? "Study Assistant is unavailable. AI is not configured for this environment yet."
+          : `Sorry, I couldn't answer that. ${err.message}`,
         isError: true,
+        isUnavailable: notConfigured,
       };
       setMessages((prev) => [...prev, userMsg, errMsg]);
       setInput("");
@@ -90,11 +115,12 @@ function AssistantInner() {
 
   function handleSubmit() {
     const q = input.trim();
-    if (!q || ask.isPending) return;
+    if (!q || ask.isPending || unavailable) return;
     ask.mutate(q);
   }
 
   function handleQuickPrompt(prompt: string) {
+    if (unavailable || ask.isPending) return;
     const contextualPrompt = topicTitle ? `${prompt} for "${topicTitle}"` : prompt;
     ask.mutate(contextualPrompt);
   }
@@ -117,9 +143,29 @@ function AssistantInner() {
               Study Assistant
             </span>
           }
-          description="Powered by AI — ask about DGCA topics, air law, navigation, meteorology, and more."
+          description={
+            unavailable
+              ? "Currently unavailable — AI is not configured for this environment."
+              : "Ask about DGCA topics, air law, navigation, meteorology, and more."
+          }
         />
       </MotionSection>
+
+      {unavailable && (
+        <MotionSection delay={0.02}>
+          <GlassCard soft className="border-amber-500/30 bg-amber-500/10">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" aria-hidden="true" />
+              <div>
+                <p className="text-sm font-semibold text-white">Assistant unavailable</p>
+                <p className="mt-1 text-xs text-white/60">
+                  The study assistant backend is not configured. Answers are disabled until AI is enabled by an administrator.
+                </p>
+              </div>
+            </div>
+          </GlassCard>
+        </MotionSection>
+      )}
 
       {hasContext && (
         <MotionSection delay={0.05}>
@@ -137,11 +183,11 @@ function AssistantInner() {
         </MotionSection>
       )}
 
-      {messages.length === 0 && (
+      {messages.length === 0 && !unavailable && (
         <MotionSection delay={0.1}>
           <EmptyState
             icon={Sparkles}
-            title="Your aviation AI tutor"
+            title="Your aviation study assistant"
             description="Ask anything about your course material, DGCA regulations, or exam prep. Try a quick prompt below to get started."
           />
           <div className="mt-4 space-y-2">
@@ -154,7 +200,7 @@ function AssistantInner() {
                   key={p}
                   type="button"
                   onClick={() => handleQuickPrompt(p)}
-                  disabled={ask.isPending}
+                  disabled={ask.isPending || unavailable}
                   className="ab-glass-soft rounded-full px-3 py-1.5 text-xs text-white/60 transition-colors hover:border-[rgba(200,16,46,0.4)] hover:text-white disabled:opacity-50"
                 >
                   {p}
@@ -162,6 +208,16 @@ function AssistantInner() {
               ))}
             </div>
           </div>
+        </MotionSection>
+      )}
+
+      {messages.length === 0 && unavailable && (
+        <MotionSection delay={0.1}>
+          <EmptyState
+            icon={AlertCircle}
+            title="Assistant unavailable"
+            description="AI study help is not configured in this environment. Check back once an administrator enables it."
+          />
         </MotionSection>
       )}
 
@@ -203,8 +259,8 @@ function AssistantInner() {
                     "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed backdrop-blur-sm",
                     msg.role === "user"
                       ? "rounded-tr-sm border border-[rgba(200,16,46,0.25)] bg-[rgba(200,16,46,0.15)] text-white/90"
-                      : msg.isError
-                        ? "rounded-tl-sm border border-red-500/30 bg-red-500/10 text-red-300"
+                      : msg.isUnavailable || msg.isError
+                        ? "rounded-tl-sm border border-amber-500/30 bg-amber-500/10 text-amber-200"
                         : "rounded-tl-sm ab-glass-soft text-white/85",
                   )}
                 >
@@ -257,18 +313,21 @@ function AssistantInner() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             rows={3}
+            disabled={unavailable}
             placeholder={
-              topicTitle
-                ? `Ask about "${topicTitle}"…`
-                : hasContext
-                  ? "Ask about this topic…"
-                  : "e.g. Explain VFR weather minima for DGCA…"
+              unavailable
+                ? "Assistant unavailable…"
+                : topicTitle
+                  ? `Ask about "${topicTitle}"…`
+                  : hasContext
+                    ? "Ask about this topic…"
+                    : "e.g. Explain VFR weather minima for DGCA…"
             }
-            className="w-full resize-none bg-transparent px-4 py-3 pr-14 text-sm text-white outline-none placeholder:text-white/30"
+            className="w-full resize-none bg-transparent px-4 py-3 pr-14 text-sm text-white outline-none placeholder:text-white/30 disabled:cursor-not-allowed disabled:opacity-50"
           />
           <button
             type="button"
-            disabled={!input.trim() || ask.isPending}
+            disabled={!input.trim() || ask.isPending || unavailable}
             onClick={handleSubmit}
             aria-label="Send message"
             className="ab-btn ab-btn-primary absolute bottom-3 right-3 h-9 w-9 disabled:opacity-40"
@@ -281,7 +340,9 @@ function AssistantInner() {
           </button>
         </GlassCard>
         <p className="mt-2 text-center text-[10px] text-white/25">
-          Press Enter to send · Shift+Enter for new line · AI may make mistakes — verify with official DGCA material
+          {unavailable
+            ? "AI study assistant is not configured in this environment"
+            : "Press Enter to send · Shift+Enter for new line · AI may make mistakes — verify with official DGCA material"}
         </p>
       </MotionSection>
     </div>

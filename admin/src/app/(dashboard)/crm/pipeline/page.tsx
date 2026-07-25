@@ -1,12 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { Plus, Search, Filter, MoreVertical } from "lucide-react";
 import { getLeadPipeline } from "@/lib/crm/sales";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 const stageColors: Record<string, string> = {
   Prospecting: "bg-blue-500",
@@ -119,33 +116,9 @@ export default function CRMPipelinePage() {
           <h1 className="text-2xl font-bold tracking-tight text-white">Sales Pipeline</h1>
           <p className="text-sm text-muted-foreground">Pipeline management and lead tracking</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="border-white/10 text-xs font-semibold h-9">
-            <Filter className="mr-2 h-4 w-4" />
-            Filter
-          </Button>
-          <Button className="text-xs font-semibold h-9">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Deal
-          </Button>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-4 border-b border-white/5 pb-4">
-        <div className="relative w-64">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search deals..." className="pl-8 h-9 text-xs bg-secondary/40 border-white/10" />
-        </div>
-        <select className="h-9 rounded-md border border-white/10 bg-secondary/40 px-3 text-xs text-white">
-          <option>All Owners</option>
-          <option>Sales Team A</option>
-          <option>Sales Team B</option>
-        </select>
-        <div className="ml-auto">
-          <Badge variant="outline" className="border-white/10 font-bold text-xs py-1 px-2.5 rounded-full">
-            Total: {totalDeals} deals
-          </Badge>
-        </div>
+        <Badge variant="outline" className="border-white/10 font-bold text-xs py-1 px-2.5 rounded-full">
+          Total: {totalDeals} deals
+        </Badge>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 overflow-x-auto pb-4">
@@ -165,14 +138,9 @@ export default function CRMPipelinePage() {
                 stage.deals.map((deal, j) => (
                   <Card key={j} className="cursor-pointer bg-card hover:border-primary/50 border-white/5 transition-all shadow-md">
                     <CardContent className="p-3">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="text-xs font-bold text-white truncate">{deal.name}</p>
-                          <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{deal.contact}</p>
-                        </div>
-                        <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground shrink-0 hover:text-white">
-                          <MoreVertical className="h-3.5 w-3.5" />
-                        </Button>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-white truncate">{deal.name}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{deal.contact}</p>
                       </div>
                       <div className="flex items-center justify-between mt-3 gap-2">
                         <span className="text-xs font-extrabold text-white shrink-0">{deal.value}</span>

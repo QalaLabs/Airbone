@@ -20,12 +20,7 @@ import {
   Settings,
   ShieldCheck,
   Building2,
-  TrendingUp,
-  Handshake,
-  GitFork,
-  Send,
   CalendarDays,
-  BarChart3,
   Plug,
   Layers,
   Clock,
@@ -44,16 +39,9 @@ const NAV_GROUPS = [
     ]
   },
   {
-    label: "Sales CRM",
+    label: "Integrations",
     items: [
-      { href: "/crm/dashboard", icon: TrendingUp, label: "CRM Dashboard" },
-      { href: "/crm/leads", icon: Users, label: "Leads" },
-      { href: "/crm/pipeline", icon: GitFork, label: "Pipeline" },
-      { href: "/crm/deals", icon: Handshake, label: "Deals" },
-      { href: "/crm/outreach", icon: Send, label: "Outreach" },
-      { href: "/crm/meetings", icon: CalendarDays, label: "Meetings" },
-      { href: "/crm/analytics", icon: BarChart3, label: "Analytics" },
-      { href: "/crm/integrations", icon: Plug, label: "Integrations" },
+      { href: "/crm/integrations", icon: Plug, label: "CRM Integrations" },
     ]
   },
   {
@@ -82,7 +70,6 @@ const NAV_GROUPS = [
     items: [
       { href: "/cms", icon: Globe, label: "Website CMS" },
       { href: "/courses", icon: BookOpen, label: "Course Manager" },
-      { href: "/blog", icon: FileText, label: "Blog" },
       { href: "/resources", icon: FileText, label: "Resources" },
       { href: "/testimonials", icon: Star, label: "Testimonials", badge: true },
       { href: "/media", icon: ImageIcon, label: "Media Library" },

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import { formatDate } from "@/lib/utils";
@@ -10,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { 
   Building2, Briefcase, Calendar, Plus, CheckCircle2,
-  UserCheck, Star, ExternalLink
+  UserCheck, ExternalLink
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "@/components/ui/use-toast";
@@ -19,6 +20,7 @@ interface HiringPartner {
   id: string;
   name: string;
   slug: string;
+  website?: string | null;
   isActive: boolean;
   _count?: { jobs?: number; placements?: number };
 }
@@ -91,12 +93,15 @@ export default function PlacementsPage() {
     queryFn: () => apiFetch<StudentLite[]>("/students?page=1&limit=100"),
   });
 
+  const totalApplications = jobs.reduce((sum, j) => sum + (j._count?.applications ?? 0), 0);
+
   // Mappers
   const currentPartners = partners.map(p => ({
     id: p.id,
     name: p.name,
     logo: p.name.substring(0, 2).toUpperCase(),
     code: p.slug.substring(0, 3).toUpperCase(),
+    website: p.website?.trim() || null,
     activeDrives: p._count?.jobs ?? 0,
     cadetsPlaced: p._count?.placements ?? 0,
     status: p.isActive ? "HIRING_ACTIVE" : "RECRUITMENT_CLOSED",
@@ -108,8 +113,7 @@ export default function PlacementsPage() {
     airline: j.hiringPartner?.name ?? "Academy Drive",
     title: j.title,
     date: formatDate(j.createdAt),
-    venue: j.location || "Delhi Campus",
-    eligibleCount: 45,
+    venue: j.location || undefined,
     shortlistedCount: j._count?.applications ?? 0,
     status: j.status === "PUBLISHED" ? "REGISTRATION_OPEN" : "IN_PROGRESS"
   }));
@@ -171,13 +175,12 @@ export default function PlacementsPage() {
         }
       />
 
-      {/* KPI Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* KPI Overview — live counts only */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[
-          { title: "Total Cadets Placed", value: String(placementsList.length), change: "+15% vs last year", color: "text-emerald-400", bg: "bg-emerald-500/10", icon: CheckCircle2 },
-          { title: "Active Airline Partners", value: `${partners.length} Airlines`, change: "Indigo, Air India, Akasa...", color: "text-blue-400", bg: "bg-blue-500/10", icon: Building2 },
-          { title: "Ongoing Placement Drives", value: `${jobs.length} Drives`, change: "45 Cadets participating", color: "text-amber-400", bg: "bg-amber-500/10", icon: Briefcase },
-          { title: "Interview Shortlist Rate", value: "88.4%", change: "Industry leading conversion", color: "text-purple-400", bg: "bg-purple-500/10", icon: Star },
+          { title: "Total Cadets Placed", value: String(placementsList.length), change: "From placement records", color: "text-emerald-400", bg: "bg-emerald-500/10", icon: CheckCircle2 },
+          { title: "Active Airline Partners", value: String(partners.length), change: "Registered hiring partners", color: "text-blue-400", bg: "bg-blue-500/10", icon: Building2 },
+          { title: "Ongoing Placement Drives", value: String(jobs.length), change: `${totalApplications} applications across drives`, color: "text-amber-400", bg: "bg-amber-500/10", icon: Briefcase },
         ].map((kpi, idx) => {
           const Icon = kpi.icon;
           return (
@@ -264,9 +267,11 @@ export default function PlacementsPage() {
 
                     <div className="flex items-center justify-between pt-4 border-t border-white/10 text-xs font-semibold">
                       <span className="text-muted-foreground">Preferred Hiring Partner</span>
-                      <button onClick={() => toast({ title: "Opening Partner Dashboard", description: `Loading ${al.name} corporate portal link...` })} className="text-primary hover:underline flex items-center gap-1">
-                        View Portal <ExternalLink className="h-3 w-3" />
-                      </button>
+                      {al.website ? (
+                        <a href={al.website} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
+                          View Portal <ExternalLink className="h-3 w-3" />
+                        </a>
+                      ) : null}
                     </div>
                   </div>
                 ))}
@@ -302,25 +307,25 @@ export default function PlacementsPage() {
                           <Calendar className="h-3.5 w-3.5 text-amber-400" />
                           <span>Schedule: {dr.date}</span>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                          <Building2 className="h-3.5 w-3.5 text-primary" />
-                          <span>Venue: {dr.venue}</span>
-                        </div>
+                        {dr.venue ? (
+                          <div className="flex items-center gap-1.5">
+                            <Building2 className="h-3.5 w-3.5 text-primary" />
+                            <span>Venue: {dr.venue}</span>
+                          </div>
+                        ) : null}
                       </div>
                     </div>
 
                     <div className="flex items-center gap-6 shrink-0 border-t md:border-t-0 md:border-l border-white/10 pt-4 md:pt-0 md:pl-6">
                       <div className="text-center">
-                        <span className="text-[10px] font-bold text-muted-foreground block uppercase">Eligible Cadets</span>
-                        <span className="text-xl font-extrabold text-white mt-0.5 block">{dr.eligibleCount}</span>
-                      </div>
-                      <div className="text-center">
-                        <span className="text-[10px] font-bold text-muted-foreground block uppercase">Shortlisted</span>
+                        <span className="text-[10px] font-bold text-muted-foreground block uppercase">Applications</span>
                         <span className="text-xl font-extrabold text-emerald-400 mt-0.5 block">{dr.shortlistedCount}</span>
                       </div>
-                      <Button onClick={() => toast({ title: "Manage Drive", description: `Loading management console for ${dr.title}.` })} className="bg-primary hover:bg-primary/90 text-white text-xs font-bold shadow-lg shadow-primary/20">
-                        Manage Drive →
-                      </Button>
+                      {dr.id ? (
+                        <Button asChild className="bg-primary hover:bg-primary/90 text-white text-xs font-bold shadow-lg shadow-primary/20">
+                          <Link href={`/jobs/${dr.id}`}>Manage Drive →</Link>
+                        </Button>
+                      ) : null}
                     </div>
                   </div>
                 ))}

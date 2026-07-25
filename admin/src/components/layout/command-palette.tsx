@@ -2,22 +2,21 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Search, Command, CornerDownLeft, FileText, Users, GraduationCap, BookOpen, Briefcase, Settings, Star, ShieldCheck, Activity, Globe, Layout, Image as ImageIcon, MessageSquare, PieChart } from "lucide-react";
+import { Search, Command, CornerDownLeft, FileText, Users, GraduationCap, BookOpen, Briefcase, Settings, Star, ShieldCheck, Activity, Globe, Image as ImageIcon, PieChart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const MODULES = [
-  { id: "dashboard", name: "Executive Dashboard", category: "Analytics & Core", shortcut: "G D", href: "/", icon: Activity },
+  { id: "dashboard", name: "Operations Dashboard", category: "Analytics & Core", shortcut: "G D", href: "/", icon: Activity },
   { id: "leads", name: "Lead Management & CRM", category: "Core CRM", shortcut: "G L", href: "/leads", icon: Users },
   { id: "admissions", name: "Admissions Workflow", category: "Operations", shortcut: "G A", href: "/admissions", icon: GraduationCap },
   { id: "students", name: "Student Management", category: "Operations", shortcut: "G S", href: "/students", icon: Users },
   { id: "courses", name: "Course Manager", category: "Academic", shortcut: "G C", href: "/courses", icon: BookOpen },
+  { id: "lms", name: "LMS Courses", category: "Academic", shortcut: "G L M", href: "/lms", icon: BookOpen },
   { id: "placements", name: "Placements & Airlines", category: "Career", shortcut: "G P", href: "/placements", icon: Briefcase },
   { id: "cms", name: "Website CMS Editor", category: "Web & Content", shortcut: "G W", href: "/cms", icon: Globe },
-  { id: "page-builder", name: "Visual Page Builder", category: "Web & Content", shortcut: "G B", href: "/page-builder", icon: Layout },
   { id: "media", name: "Media Library", category: "Web & Content", shortcut: "G M", href: "/media", icon: ImageIcon },
-  { id: "blog", name: "Blog & Resources", category: "Web & Content", shortcut: "G R", href: "/blog", icon: FileText },
-  { id: "automations", name: "Automations & Webhooks", category: "Integrations", shortcut: "G U", href: "/automations", icon: MessageSquare },
-  { id: "analytics", name: "Advanced Analytics & Reports", category: "Analytics & Core", shortcut: "G N", href: "/analytics", icon: PieChart },
+  { id: "resources", name: "Resources", category: "Web & Content", shortcut: "G R", href: "/resources", icon: FileText },
+  { id: "analytics", name: "Analytics & Reports", category: "Analytics & Core", shortcut: "G N", href: "/crm/analytics", icon: PieChart },
   { id: "testimonials", name: "Testimonials Reviews", category: "Web & Content", shortcut: "G T", href: "/testimonials", icon: Star },
   { id: "users", name: "User Management & RBAC", category: "System", shortcut: "G U", href: "/users", icon: Users },
   { id: "settings", name: "System Settings", category: "System", shortcut: "G E", href: "/settings", icon: Settings },

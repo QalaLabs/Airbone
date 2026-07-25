@@ -2,14 +2,13 @@
 
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { apiFetch } from "@/lib/api";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { 
   History, Download, Search, Filter, ShieldCheck,
-  Clock, Globe, Lock, Cpu, Database
+  Clock, Globe, Database
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "@/components/ui/use-toast";
@@ -31,20 +30,28 @@ export default function AuditPage() {
   const [actionFilter, setActionFilter] = React.useState("ALL");
   const [selectedAudit, setSelectedAudit] = React.useState<AuditLog | null>(null);
 
-  const { data: auditLogs } = useQuery({
+  const { data: auditResult } = useQuery({
     queryKey: ["audit-trail", search, actionFilter],
-    queryFn: () => {
+    queryFn: async () => {
       const p = new URLSearchParams({
         page: "1",
         limit: "100",
         ...(search ? { search } : {}),
         ...(actionFilter && actionFilter !== "ALL" ? { module: actionFilter } : {}),
       });
-      return apiFetch<AuditLog[]>(`/audit?${p}`);
+      // apiFetch drops meta; fetch raw so we can use meta.total for the KPI.
+      const raw = await fetch(`/api/v1/audit?${p}`, { credentials: "include" });
+      if (!raw.ok) throw new Error(`HTTP ${raw.status}`);
+      const json = await raw.json() as { data: AuditLog[]; meta?: { total: number } };
+      return {
+        items: json.data ?? [],
+        total: json.meta?.total ?? (json.data?.length ?? 0),
+      };
     },
   });
 
-  const filteredAudits = auditLogs ?? [];
+  const filteredAudits = auditResult?.items ?? [];
+  const totalEntries = auditResult?.total ?? filteredAudits.length;
 
   const handleCsvExport = () => {
     // Generate CSV string
@@ -60,7 +67,7 @@ export default function AuditPage() {
     link.click();
     document.body.removeChild(link);
 
-    toast({ title: "CSV Export Generated", description: "Cryptographically verified audit trail downloaded successfully." });
+    toast({ title: "CSV Export Generated", description: "Audit trail downloaded successfully." });
   };
 
   return (
@@ -76,30 +83,22 @@ export default function AuditPage() {
         }
       />
 
-      {/* Security Ledger Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { title: "Ledger State", value: "IMMUTABLE", change: "Write-only WORM storage", color: "text-emerald-400", bg: "bg-emerald-500/10", icon: Lock },
-          { title: "Verification Status", value: "SHA-256 SECURED", change: "Zero cryptographic collisions", color: "text-purple-400", bg: "bg-purple-500/10", icon: ShieldCheck },
-          { title: "Recorded Events", value: "1,420 Entries", change: "Across all 15 CRM modules", color: "text-blue-400", bg: "bg-blue-500/10", icon: Database },
-          { title: "Audit Log Compliance", value: "DGCA / HIPAA", change: "Complete non-repudiation", color: "text-amber-400", bg: "bg-amber-500/10", icon: Cpu },
-        ].map((kpi, idx) => {
-          const Icon = kpi.icon;
-          return (
-            <motion.div key={kpi.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: idx * 0.05 }} className="glass-card rounded-2xl p-5 flex flex-col justify-between">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-muted-foreground">{kpi.title}</span>
-                <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${kpi.bg} ${kpi.color}`}>
-                  <Icon className="h-4 w-4" />
-                </div>
-              </div>
-              <div className="mt-4">
-                <div className="text-2xl font-bold text-white tracking-tight">{kpi.value}</div>
-                <p className="text-[11px] font-medium text-muted-foreground mt-1">{kpi.change}</p>
-              </div>
-            </motion.div>
-          );
-        })}
+      {/* Live count from filtered API result */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="glass-card rounded-2xl p-5 flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground">Recorded Events</span>
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400">
+              <Database className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-4">
+            <div className="text-2xl font-bold text-white tracking-tight">{totalEntries.toLocaleString()} Entries</div>
+            <p className="text-[11px] font-medium text-muted-foreground mt-1">
+              {actionFilter === "ALL" && !search ? "Matching current filters" : "Filtered result total"}
+            </p>
+          </div>
+        </motion.div>
       </div>
 
       {/* Main Audit Table */}
@@ -142,7 +141,13 @@ export default function AuditPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/10 bg-secondary/20">
-              {filteredAudits.map((aud) => (
+              {filteredAudits.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-16 text-center text-xs text-muted-foreground">
+                    No audit entries match the current filters.
+                  </td>
+                </tr>
+              ) : filteredAudits.map((aud) => (
                 <tr key={aud.id} onClick={() => setSelectedAudit(aud)} className="hover:bg-white/5 transition-colors cursor-pointer group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -192,9 +197,6 @@ export default function AuditPage() {
                   Module: <span className="font-semibold text-white">{selectedAudit?.module}</span> • Entry ID: <span className="font-mono text-primary font-bold">{selectedAudit?.id}</span>
                 </p>
               </div>
-              <span className="text-xs font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full">
-                VERIFIED IMMUTABLE
-              </span>
             </div>
           </DialogHeader>
 
@@ -221,11 +223,11 @@ export default function AuditPage() {
               </div>
 
               <div>
-                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Cryptographic Verification Hash (SHA-256)</h3>
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Integrity Hash</h3>
                 <div className="p-4 rounded-xl bg-slate-950 border border-white/10 text-xs font-mono font-bold text-emerald-400 select-all overflow-x-auto">
                   {selectedAudit.integrityHash}
                 </div>
-                <p className="text-[11px] text-muted-foreground mt-1.5">This hash guarantees that the audit record has not been modified or tampered with since the moment of execution.</p>
+                <p className="text-[11px] text-muted-foreground mt-1.5">Row hash from the audit ledger for this entry.</p>
               </div>
             </div>
           )}

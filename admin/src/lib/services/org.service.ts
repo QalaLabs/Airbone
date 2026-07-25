@@ -6,16 +6,39 @@ import { prisma } from "@/lib/db/client";
 import type { CreateOrgInput, UpdateOrgInput, CreateCampusInput, UpdateCampusInput } from "@/lib/validations/org.schema";
 import type { RequestContext } from "@/types";
 
+/** Strip secret-like blobs so they never reach the browser. */
+function sanitizeOrgSettings(settings: unknown): Record<string, unknown> {
+  if (!settings || typeof settings !== "object" || Array.isArray(settings)) return {};
+  const next = { ...(settings as Record<string, unknown>) };
+  delete next.envVars;
+  return next;
+}
+
+function sanitizeOrg<T extends { settings?: unknown }>(org: T): T {
+  return { ...org, settings: sanitizeOrgSettings(org.settings) };
+}
+
 export class OrgService {
   static async getById(ctx: RequestContext) {
     const org = await OrgRepository.findById(ctx.orgId);
     if (!org) throw new NotFoundError("Organization", ctx.orgId);
-    return org;
+    return sanitizeOrg(org);
   }
 
   static async update(ctx: RequestContext, input: UpdateOrgInput) {
     const existing = await this.getById(ctx);
-    const updated = await OrgRepository.update(ctx.orgId, input);
+    const safeInput: UpdateOrgInput = {
+      ...input,
+      ...(input.settings !== undefined
+        ? {
+            settings: {
+              ...sanitizeOrgSettings(existing.settings),
+              ...sanitizeOrgSettings(input.settings),
+            },
+          }
+        : {}),
+    };
+    const updated = await OrgRepository.update(ctx.orgId, safeInput);
 
     await AuditService.write({
       orgId: ctx.orgId,
@@ -26,10 +49,10 @@ export class OrgService {
       entityType: "organization",
       entityId: ctx.orgId,
       oldValue: existing as unknown as Record<string, unknown>,
-      newValue: updated as unknown as Record<string, unknown>,
+      newValue: sanitizeOrg(updated) as unknown as Record<string, unknown>,
     });
 
-    return updated;
+    return sanitizeOrg(updated);
   }
 
   // Only SUPER_ADMIN — creates a new tenant org
@@ -41,7 +64,8 @@ export class OrgService {
   }
 
   static async listAll() {
-    return OrgRepository.listAll();
+    const orgs = await OrgRepository.listAll();
+    return orgs.map((o) => sanitizeOrg(o));
   }
 }
 

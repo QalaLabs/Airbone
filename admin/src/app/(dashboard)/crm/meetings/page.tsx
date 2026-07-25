@@ -1,12 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { Plus, Calendar, Clock, Video, MoreVertical, ExternalLink } from "lucide-react";
+import { Calendar, Clock, Video } from "lucide-react";
 import { getMeetings } from "@/lib/crm/meetings";
 import { Meeting } from "@/lib/crm/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { CRMDataTable, CRMColumn } from "@/components/shared/crm-data-table";
 
 interface PrepContact {
@@ -147,10 +146,6 @@ export default function CRMMeetingsPage() {
           <h1 className="text-2xl font-bold tracking-tight text-white">Meetings</h1>
           <p className="text-sm text-muted-foreground">Schedule, prep, and track meetings</p>
         </div>
-        <Button className="text-xs font-semibold h-9">
-          <Plus className="mr-2 h-4 w-4" />
-          Schedule Meeting
-        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
@@ -232,9 +227,6 @@ export default function CRMMeetingsPage() {
                         </span>
                       </div>
                     </div>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-white shrink-0">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
                   </div>
                 );
               })}
@@ -254,10 +246,6 @@ export default function CRMMeetingsPage() {
               <div className="p-3 rounded-lg bg-secondary/20 border border-white/5">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-xs font-bold text-white truncate">{meetingPrep.company}</p>
-                  <Button variant="ghost" size="sm" className="text-[10px] font-bold text-muted-foreground hover:text-white h-7">
-                    <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
-                    LinkedIn
-                  </Button>
                 </div>
                 <div className="grid grid-cols-2 gap-2 mt-2 text-[10px] text-muted-foreground font-semibold">
                   <span>Industry: {meetingPrep.industry}</span>
