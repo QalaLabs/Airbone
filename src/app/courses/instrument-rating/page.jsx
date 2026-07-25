@@ -6,7 +6,7 @@ import { getBreadcrumbSchema } from '@/utils/seo'
 import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
-  title: 'Instrument Rating Course Delhi — DGCA Approved | Airborne',
+  title: 'Instrument Rating Course Delhi — DGCA Complied | Airborne',
   description: 'Earn your DGCA Instrument Rating at Airborne Aviation Academy, Dwarka Delhi — 2,500+ students trained. ILS, VOR, NDB approach training. PPL/CPL holders. Fees ₹3–5L. Enquire now.',
   alternates: { canonical: '/courses/instrument-rating' },
 }
@@ -97,7 +97,7 @@ export default function InstrumentRatingPage() {
                 📍 Dwarka, Delhi · 2–3 Months · ₹3–5 Lakh
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
-                Instrument Rating (IR) Course — DGCA Approved, Delhi
+                Instrument Rating (IR) Course — DGCA Complied, Delhi
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
                 An Instrument Rating (IR) allows pilots to fly in Instrument Meteorological Conditions (IMC) — clouds, reduced visibility, and night operations — using only cockpit instruments. The IR is a mandatory component of DGCA CPL training and essential for any pilot pursuing a commercial airline career.

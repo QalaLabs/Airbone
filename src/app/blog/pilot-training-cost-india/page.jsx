@@ -66,7 +66,7 @@ const COST_TABLE = [
   { component: 'Student Pilot License (SPL)', cost: '₹15,000 – ₹25,000', note: 'Required to begin flying hours' },
   { component: 'Cadet Pilot Preparation', cost: '₹50,000', note: 'Airline cadet program preparation' },
   { component: 'GD & PI Preparation', cost: '₹30,000', note: 'Airline interview preparation' },
-  { component: 'Airbus A320 SIM Training', cost: '₹10,000 / hr', note: 'In-house Airbus A320 FTD Level 5 simulator' },
+  { component: 'Airbus A320 SIM FBS', cost: '₹12,000', note: 'In-house Airbus A320 Simulator FBS' },
 ]
 
 const INDIA_VS_ABROAD = [

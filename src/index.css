@@ -2461,17 +2461,81 @@ html { scroll-behavior: smooth; }
    SITE HEADER & NAVIGATION DRAWER FOR PUBLIC PAGES
    ================================================================ */
 
-/* Base site header for public pages */
+/* Base site header — glass morphosis (light) */
 .site-header {
   position: sticky !important;
   top: 0 !important;
-  background: rgba(0, 15, 30, 0.95) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+  background: rgba(255, 255, 255, 0.78) !important;
+  border-bottom: 1px solid rgba(0, 39, 76, 0.08) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  box-shadow: 0 10px 40px -12px rgba(0, 39, 76, 0.12) !important;
   padding: 1rem var(--margin) !important;
   height: auto !important;
   z-index: 999 !important;
+}
+
+.site-header .nav-link {
+  color: rgba(0, 39, 76, 0.72) !important;
+}
+.site-header .nav-link[data-active="true"],
+.site-header .nav-link:hover {
+  color: var(--navy) !important;
+}
+
+.header-hamburger-btn {
+  background: rgba(0, 39, 76, 0.06) !important;
+  color: var(--navy) !important;
+}
+
+/* Visible breadcrumb trail */
+.site-breadcrumb {
+  margin: 0 0 1.5rem;
+}
+.site-breadcrumb-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-h);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.site-breadcrumb-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.site-breadcrumb-link {
+  color: var(--red);
+  text-decoration: none;
+}
+.site-breadcrumb-link:hover {
+  text-decoration: underline;
+}
+.site-breadcrumb-current {
+  color: rgba(0, 39, 76, 0.55);
+}
+.site-breadcrumb-sep {
+  color: rgba(0, 39, 76, 0.25);
+}
+
+/* Light theme page shells (content pages) */
+.theme-light {
+  background: var(--paper, #F9FAFB) !important;
+  color: var(--ink, #212121);
+}
+.theme-light .ov-h1,
+.theme-light .ov-h2 {
+  color: var(--navy) !important;
+}
+.theme-light .ov-body {
+  color: rgba(33, 33, 33, 0.7) !important;
 }
 
 /* Hamburger button styling for public pages */
@@ -3178,6 +3242,11 @@ html { scroll-behavior: smooth; }
 .course-main-wrapper.courses-listing {
   background-color: var(--navy-deep) !important;
   color: rgba(255,255,255,0.85) !important;
+}
+
+.course-main-wrapper.courses-listing.theme-light {
+  background-color: var(--paper, #F9FAFB) !important;
+  color: var(--ink, #212121) !important;
 }
 
 .course-breadcrumb {

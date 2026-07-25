@@ -84,6 +84,7 @@ export default function CadetPreparationPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', minWidth: 0, width: '100%' }}>
 
             <div>
+              <div style={{ display: 'inline-block', background: 'rgba(219,36,30,0.1)', border: '1px solid rgba(219,36,30,0.3)', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '0.85rem', fontFamily: 'var(--font-h)', fontWeight: 700, letterSpacing: '0.08em', color: '#DB241E', textTransform: 'uppercase', marginBottom: '1rem' }}>This is the Quickest Entry in aviation</div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
                 📍 Dwarka, Delhi · ₹50,000
               </span>
@@ -102,6 +103,29 @@ export default function CadetPreparationPage() {
               </h2>
               <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: 0 }}>
                 A cadet pilot program is an airline-sponsored pathway where the airline selects fresh CPL holders, funds or co-funds their A320/B737 type rating, and fast-tracks them to a First Officer seat. In India, IndiGo's JFO Program, Air India's iFLY/Cadet Scheme, and Akasa Air's cadet pathway are the most sought-after airline-entry routes.
+              </p>
+            </div>
+
+            {/* Airline Pathways */}
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
+                Cadet Pathways by Airline
+              </h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
+                {[
+                  { airline: 'IndiGo', program: 'JFO Cadet Program', note: 'Cadet pathways via IndiGo selection processes' },
+                  { airline: 'Air India', program: 'iFLY / Cadet Scheme', note: 'Cadet pathways via Air India selection processes' },
+                  { airline: 'Akasa Air', program: 'Cadet Pathway', note: 'Cadet pathways via Akasa selection processes' },
+                ].map((item, i) => (
+                  <div key={i} style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', borderLeft: '3px solid #D8A027', padding: '1.5rem', borderRadius: '4px' }}>
+                    <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.05rem', fontWeight: 800, color: 'var(--navy)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{item.airline}</div>
+                    <div style={{ fontSize: '0.85rem', color: 'rgba(0, 39, 76, 0.65)', marginBottom: '0.75rem', fontWeight: 600 }}>{item.program}</div>
+                    <div style={{ fontSize: '0.78rem', color: 'rgba(0, 39, 76, 0.55)', lineHeight: '1.5' }}>{item.note}</div>
+                  </div>
+                ))}
+              </div>
+              <p style={{ fontSize: '0.82rem', color: 'rgba(0, 39, 76, 0.55)', marginTop: '1rem', lineHeight: '1.6' }}>
+                For mock tests and specific airline preparation, contact <a href="mailto:deepak@airborneaviation.in" style={{ color: '#D8A027', textDecoration: 'underline' }}>deepak@airborneaviation.in</a>
               </p>
             </div>
 

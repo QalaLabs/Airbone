@@ -13,9 +13,10 @@ const COURSES = [
   'CPL Ground Classes (₹2,70,000)',
   'Cadet Pilot Program (₹50,000)',
   'CAS Compass & ADAPT (₹30,000)',
-  'Airline Preparation / GD & PI (₹1,00,000)',
-  'Airbus A320 SIM Training (₹10,000/hr)',
-  'Cabin Crew Training (₹30K–₹54K)',
+  'GD & PI Course (₹30,000)',
+  'Airline Interview Preparation (₹1,50,000)',
+  'Airbus A320 Simulator FBS (₹12,000)',
+  'Cabin Crew Training (₹59,000)',
   'ATPL Ground Classes (₹1,50,000)',
   'Private Pilot Licence (PPL)',
 ]

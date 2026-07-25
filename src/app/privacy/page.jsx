@@ -100,6 +100,14 @@ export default function PrivacyPage() {
               <p>For any privacy-related questions, please contact:</p>
               <div style={{ background: '#00162e', border: '1px solid rgba(255,255,255,0.08)', padding: '1.5rem', borderRadius: '1px', marginTop: '1rem' }}>
                 <p style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  <strong style={{ color: '#fff', fontFamily: 'var(--font-h)', fontSize: '0.92rem' }}>Data Compliance Manager</strong>
+                  <span>Deepak Aggarwal</span>
+                  <span>Email: <a href="mailto:data@airborneaviation.in" style={{ color: '#D8A027', textDecoration: 'none' }}>data@airborneaviation.in</a></span>
+                  <span>Phone: <a href="tel:+917303017062" style={{ color: '#D8A027', textDecoration: 'none' }}>+91 73030 17062</a></span>
+                </p>
+              </div>
+              <div style={{ background: '#00162e', border: '1px solid rgba(255,255,255,0.08)', padding: '1.5rem', borderRadius: '1px', marginTop: '1rem' }}>
+                <p style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                   <strong style={{ color: '#fff', fontFamily: 'var(--font-h)', fontSize: '0.92rem' }}>Airborne Aviation Private Limited</strong>
                   <span>E-549, 2nd Floor, Ramphal Chowk, Sector 7, Dwarka, New Delhi — 110075</span>
                   <span>Email: <a href="mailto:info@airborneaviation.in" style={{ color: '#D8A027', textDecoration: 'none' }}>info@airborneaviation.in</a></span>

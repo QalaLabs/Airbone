@@ -159,7 +159,7 @@ export default function CabinCrewTrainingPage() {
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
-                📍 Dwarka, Delhi · 3–6 Months · ₹30K–₹54K
+                📍 Dwarka, Delhi · 3–6 Months · ₹59,000
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
                 Cabin Crew & Aviation Hospitality Training — Dwarka, Delhi
@@ -202,23 +202,13 @@ export default function CabinCrewTrainingPage() {
             <div className="course-section-divider">
               <div style={{ background: 'rgba(219,36,30,0.06)', border: '1px solid rgba(219,36,30,0.3)', borderRadius: '6px', padding: '1.5rem 2rem' }}>
                 <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.75rem', letterSpacing: '0.2em', color: '#DB241E', textTransform: 'uppercase', marginBottom: '0.5rem' }}>⚡ Limited Time — Batch 1 Only</div>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 800, color: 'var(--navy)', marginBottom: '0.75rem' }}>Batch 1 Scholarship — First 20 Students</div>
-                <p style={{ fontSize: '0.85rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.6', margin: '0 0 1rem 0' }}>
-                  All Batch 1 students take a free eligibility test. Based on result, they are placed at P1, P2, or P3 level. <strong className="current">P1 (worth ₹54,000) is FREE for all Batch 1 students.</strong>
+                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 800, color: 'var(--navy)', marginBottom: '0.75rem' }}>100%* Scholarship</div>
+                <p style={{ fontSize: '0.85rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.6', margin: '0 0 0.5rem 0' }}>
+                  <strong>*Upon Scoring ≥70%</strong>
                 </p>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
-                  {[
-                    { level: 'P1 Level (near-selection)', fee: '₹5,000', note: 'Uniform + goodies only' },
-                    { level: 'P2 Level (communication gaps)', fee: '₹35,000', note: 'P2 + P1 (P1 free)' },
-                    { level: 'P3 Level (needs foundation)', fee: '₹59,000', note: 'P3 + P2 + P1 (P1 free) — ₹54,000 + ₹5,000' },
-                  ].map((row, i) => (
-                    <div key={i} style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(216,160,39,0.15)', borderRadius: '4px', padding: '1rem', textAlign: 'center' }}>
-                      <div style={{ fontSize: '0.75rem', color: 'rgba(0, 39, 76, 0.55)', marginBottom: '0.4rem' }}>{row.level}</div>
-                      <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.4rem', fontWeight: 900, color: 'var(--navy)' }}>{row.fee}</div>
-                      <div style={{ fontSize: '0.68rem', color: 'rgba(0, 39, 76, 0.4)', marginTop: '0.25rem' }}>{row.note}</div>
-                    </div>
-                  ))}
-                </div>
+                <p style={{ fontSize: '0.85rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.6', margin: 0 }}>
+                  All Batch 1 students take a free eligibility test. Based on result, they are placed at P1, P2, or P3 level. P1 (worth ₹54,000) is FREE for all Batch 1 students scoring above 70%.
+                </p>
               </div>
             </div>
 
@@ -358,10 +348,10 @@ export default function CabinCrewTrainingPage() {
           <div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               <div className="course-sidebar-card">
-                <div style={{ display: 'inline-block', background: 'rgba(219,36,30,0.1)', border: '1px solid rgba(219,36,30,0.3)', borderRadius: '2px', padding: '0.25rem 0.75rem', fontSize: '0.68rem', fontFamily: 'var(--font-h)', letterSpacing: '0.15em', color: '#DB241E', textTransform: 'uppercase', marginBottom: '1rem' }}>Batch 1 Scholarship</div>
-                <span className="course-sidebar-label">Starting from</span>
-                <div className="course-sidebar-price">₹5,000</div>
-                <span className="course-sidebar-note">P1 value ₹54,000 — free for Batch 1</span>
+                <div style={{ display: 'inline-block', background: 'rgba(219,36,30,0.1)', border: '1px solid rgba(219,36,30,0.3)', borderRadius: '2px', padding: '0.25rem 0.75rem', fontSize: '0.68rem', fontFamily: 'var(--font-h)', letterSpacing: '0.15em', color: '#DB241E', textTransform: 'uppercase', marginBottom: '1rem' }}>100%* Scholarship</div>
+                <span className="course-sidebar-label">Course Fee</span>
+                <div className="course-sidebar-price">₹59,000</div>
+                <span className="course-sidebar-note">*Upon Scoring ≥70%</span>
                 <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(0, 39, 76, 0.08)' }} />
                 <span className="course-sidebar-label">Duration</span>
                 <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)' }}>⏱️ 3–6 Months</div>
@@ -370,7 +360,7 @@ export default function CabinCrewTrainingPage() {
                 <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)' }}>👥 Max 20 Students</div>
               </div>
               <LeadForm
-                courseName="Cabin Crew Training (₹30K–₹54K)"
+                courseName="Cabin Crew Training (₹59,000)"
                 source="Course Detail: cabin-crew-training"
                 successMessage="Thank you! Your Cabin Crew Training enquiry has been received. An Airborne admissions counsellor will contact you within 24 hours."
               />

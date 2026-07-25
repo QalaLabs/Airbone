@@ -6,17 +6,17 @@ import { getBreadcrumbSchema } from '@/utils/seo'
 import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
-  title: 'DGCA Ground School Delhi | CPL & ATPL Classes | Airborne',
-  description: 'Pass your DGCA CPL & ATPL exams with Airborne\'s expert-led ground school in Dwarka, Delhi. All subjects. Taught by airline pilots. Enrol now.',
+  title: 'DGCA Complied Ground School Delhi | CPL & ATPL Classes | Airborne',
+  description: 'Pass your DGCA CPL & ATPL exams with Airborne\'s DGCA Complied ground school in Dwarka, Delhi. All subjects. Taught by airline pilots. 3–6 months. Enrol now.',
   alternates: { canonical: '/courses/ground-school' },
   openGraph: {
-    title: 'DGCA Ground School Delhi | CPL & ATPL Classes | Airborne',
-    description: 'Pass your DGCA CPL & ATPL exams with Airborne\'s expert-led ground school in Dwarka, Delhi. All subjects. Taught by airline pilots. Enrol now.',
+    title: 'DGCA Complied Ground School Delhi | CPL & ATPL Classes | Airborne',
+    description: 'Pass your DGCA CPL & ATPL exams with Airborne\'s DGCA Complied ground school in Dwarka, Delhi. All subjects. Taught by airline pilots. 3–6 months. Enrol now.',
     url: 'https://www.airborneaviation.in/courses/ground-school',
   },
   twitter: {
-    title: 'DGCA Ground School Delhi | CPL & ATPL Classes | Airborne',
-    description: 'Pass your DGCA CPL & ATPL exams with Airborne\'s expert-led ground school in Dwarka, Delhi. All subjects. Taught by airline pilots. Enrol now.',
+    title: 'DGCA Complied Ground School Delhi | CPL & ATPL Classes | Airborne',
+    description: 'Pass your DGCA CPL & ATPL exams with Airborne\'s DGCA Complied ground school in Dwarka, Delhi. All subjects. Taught by airline pilots. 3–6 months. Enrol now.',
   },
 }
 
@@ -29,8 +29,8 @@ const breadcrumbSchema = getBreadcrumbSchema([
 const courseSchema = {
   '@context': 'https://schema.org',
   '@type': 'Course',
-  name: 'DGCA Ground School',
-  description: 'DGCA-approved ground school in Dwarka, Delhi. All CPL & ATPL subjects by Capt. Navrang Singh — 2,500+ trained since 2009.',
+  name: 'DGCA Complied Ground School',
+  description: 'DGCA Complied ground school in Dwarka, Delhi. All CPL & ATPL subjects by Capt. Navrang Singh — 2,500+ trained since 2009. Duration: 3–6 months.',
   provider: {
     '@type': 'EducationalOrganization',
     name: 'Airborne Aviation Academy',
@@ -124,13 +124,13 @@ export default function GroundSchoolPage() {
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
-                📍 Dwarka, Delhi · 3 Months · ₹2,70,000
+                📍 Dwarka, Delhi · 3–6 Months · ₹2,70,000
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
-                DGCA Ground School Classes in Dwarka, Delhi — CPL & ATPL
+                DGCA Ground School Classes in Dwarka, Delhi — DGCA Complied
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
-                Airborne Aviation Academy offers DGCA-approved ground school classes in Dwarka, New Delhi. All DGCA subjects covered by Capt. Navrang Singh — who has personally trained 2,500+ aviation aspirants since 2009.
+                Airborne Aviation Academy offers DGCA Complied ground school classes in Dwarka, New Delhi. All DGCA subjects covered by Capt. Navrang Singh — who has personally trained 2,500+ aviation aspirants since 2009. Duration: 3–6 months.
               </p>
             </div>
 
@@ -201,7 +201,7 @@ export default function GroundSchoolPage() {
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
                 {[
-                  { q: 'How long does DGCA Ground School take?', a: 'Approximately 3 months for all 5 DGCA CPL papers. Batches are capped at 25 students. Weekend and weekday batches available.' },
+                  { q: 'How long does DGCA Ground School take?', a: '3–6 months for all 5 DGCA CPL papers. Batches are capped at 25 students. Weekend and weekday batches available.' },
                   { q: 'Is Capt. Navrang Singh in every class?', a: 'Yes. Every core class is taught directly by Capt. Navrang Singh. No junior staff or subcontracted instructors handle any paper.' },
                   { q: 'What is the DGCA Ground School fee at Airborne?', a: '₹2,70,000 covering all 5 DGCA theoretical papers. All study material provided and kept by students. No hidden charges.' },
                   { q: 'Can I join without a CPL in progress?', a: 'Yes. Students pursuing any aviation path — CPL, ATPL, or general DGCA exam preparation — can join. Minimum eligibility is Class 12 with Physics and Mathematics.' },
@@ -226,7 +226,7 @@ export default function GroundSchoolPage() {
                 <span className="course-sidebar-note">All subjects including viva preparation</span>
                 <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(0, 39, 76, 0.08)' }} />
                 <span className="course-sidebar-label">Duration</span>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)' }}>⏱️ 3 Months</div>
+                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)' }}>⏱️ 3–6 Months</div>
                 <span className="course-sidebar-note">July 2026 batch · 25 seats</span>
               </div>
               <LeadForm courseName="DGCA Ground School" source="Course Detail: ground-school" />

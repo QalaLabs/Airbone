@@ -6,7 +6,7 @@ import { getBreadcrumbSchema } from '@/utils/seo'
 import CoursePageFooter from '@/components/CoursePageFooter'
 
 export const metadata = {
-  title: 'Multi-Engine Rating India — DGCA Approved | Airborne Aviation',
+  title: 'Multi-Engine Rating India — DGCA Complied | Airborne Aviation',
   description: 'Add a DGCA Multi-Engine Rating to your PPL or CPL at Airborne Aviation Academy, Dwarka — 2,500+ students trained. Twin-engine aircraft training. PPL/CPL holders. Fees ₹3–5L. Enquire.',
   alternates: { canonical: '/courses/multi-engine-rating' },
 }

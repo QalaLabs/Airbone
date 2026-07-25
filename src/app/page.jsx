@@ -645,7 +645,6 @@ const HOME_FAQS = [
   { q: 'What is the eligibility to join CPL ground school at Airborne?', a: 'Class 12 with Physics and Mathematics. You must also hold or be eligible for a DGCA Class 2 Medical. Age 17+ at time of first solo flight. No prior aviation experience required.' },
   { q: 'How long is the CPL ground school program?', a: "Airborne's CPL ground school runs 3–6 months for the full DGCA subject battery. Complete CPL with flying takes 12–18 months. Batches are capped at 25 students. Weekend and weekday batches available from our Dwarka, Delhi campus." },
   { q: 'What is the fee for CPL ground school?', a: 'CPL ground school at Airborne is ₹2,70,000. This covers all DGCA subjects, study materials, and viva preparation. Flying training (done at an FTO of your choice) is a separate cost — speak to our admissions team for current FTO tie-up rates.' },
-  { q: 'Is Airborne Aviation Academy DGCA approved?', a: 'Yes. Airborne Aviation Academy is a DGCA-approved Flying Training Organisation (FTO) at Ramphal Chowk, Dwarka, New Delhi. Our FTO approval is under DGCA CAR-FTO regulations.' },
   { q: 'Where is Airborne Aviation Academy located?', a: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7, Dwarka, New Delhi 110075. Contact: +91 9953 777 320.' },
   { q: 'What are the office hours?', a: 'Monday to Saturday, 9:30 AM – 6:00 PM. Closed on Sundays.' },
   { q: 'Can I do CPL and ATPL ground school together?', a: 'Yes, and Airborne recommends it. The CPL and ATPL syllabi overlap significantly in Air Navigation, Meteorology, and Technical subjects. Completing both together improves exam efficiency and reduces total preparation time.' },
@@ -1180,8 +1179,8 @@ function AirborneAdvantage() {
     const container = carouselRef.current
     const scrollLeft = container.scrollLeft
     const containerWidth = container.clientWidth
-    const cardWidth = containerWidth * 0.76 + 12
-    const index = Math.round(scrollLeft / cardWidth)
+    const cardWidth = containerWidth
+    const index = Math.round(scrollLeft / Math.max(cardWidth, 1))
     setActiveIndex(Math.min(categorizedBenefits.length - 1, Math.max(0, index)))
   }
 
@@ -1189,7 +1188,7 @@ function AirborneAdvantage() {
     if (!carouselRef.current) return
     const container = carouselRef.current
     const containerWidth = container.clientWidth
-    const cardWidth = containerWidth * 0.76 + 12
+    const cardWidth = containerWidth
     container.scrollTo({
       left: index * cardWidth,
       behavior: 'smooth'
@@ -1246,8 +1245,8 @@ function AirborneAdvantage() {
             touch-action: pan-x;
             overscroll-behavior-x: contain;
             scroll-behavior: smooth;
-            gap: 0.75rem;
-            padding: 1.5rem 0 2rem 1.5rem; /* left padding only — right bleeds to show next card */
+            gap: 0;
+            padding: 1.5rem 0 2rem;
             margin-bottom: 0.5rem;
           }
 
@@ -1255,12 +1254,12 @@ function AirborneAdvantage() {
             display: none;
           }
 
-          /* Premium glassmorphic card design */
+          /* One full screen per swipe */
           .advantage-card-mobile {
-            flex: 0 0 76vw; /* 76vw — leaves ~20% of next card visible on right */
+            flex: 0 0 100%;
             scroll-snap-align: start;
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
-            border: 1px solid rgba(216, 160, 39, 0.12); /* Subtle gold highlights */
+            border: 1px solid rgba(216, 160, 39, 0.12);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border-radius: 16px;
@@ -1272,6 +1271,7 @@ function AirborneAdvantage() {
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
+            box-sizing: border-box;
           }
 
           /* Gold top gradient hairline border */

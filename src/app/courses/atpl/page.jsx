@@ -4,6 +4,7 @@ import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
 import { getBreadcrumbSchema } from '@/utils/seo'
 import CoursePageFooter from '@/components/CoursePageFooter'
+import CourseReviews from '@/components/CourseReviews'
 
 export const metadata = {
   title: 'ATPL Ground School India | All Subjects | Airborne Aviation',
@@ -65,18 +66,15 @@ const faqSchema = {
 
 const SUBJECTS = [
   { name: 'Air Navigation', detail: 'Advanced long-range, high-altitude procedures' },
-  { name: 'Air Regulations', detail: 'ATPL-level DGCA rules and ICAO annexures' },
+  { name: 'Radio Aids & Instruments', detail: 'ILS, VOR, DME, ADF, RNAV systems' },
   { name: 'Aviation Meteorology', detail: 'Advanced synoptic and en-route weather' },
-  { name: 'Technical General', detail: 'Airframe, Engines, Avionics, Systems' },
-  { name: 'Technical Specific', detail: 'Type-specific systems (A320/B737 focus)' },
-  { name: 'RTR', detail: 'Radio Telephony Restricted (if not already held)' },
 ]
 
 const COMPARISON = [
-  { param: 'Issued by', cpl: 'DGCA India', atpl: 'DGCA India' },
+  { param: 'Issued by', cpl: 'DGCA', atpl: 'DGCA' },
   { param: 'Minimum flight hours', cpl: '200 hours', atpl: '1,500 hours' },
-  { param: 'Role eligibility', cpl: 'Co-pilot (SIC)', atpl: 'Pilot-in-Command (PIC)' },
-  { param: 'Career outcome', cpl: 'First Officer', atpl: 'Captain / Commander' },
+  { param: 'Role eligibility', cpl: 'Co-pilot', atpl: 'Pilot-in-Command' },
+  { param: 'Command', cpl: 'Co-Pilot (<5700 KG)', atpl: 'Captain/Commander' },
 ]
 
 export default function ATPLPage() {
@@ -117,17 +115,17 @@ export default function ATPLPage() {
                 ATPL Ground School in Delhi — Airline Transport Pilot License Exam Prep
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75', maxWidth: '100%' }}>
-                Airborne Aviation Academy offers ATPL (Airline Transport Pilot License) ground school classes in Dwarka, Delhi. Our ATPL program prepares commercial pilots for the DGCA ATPL written examinations — the final certification step before command eligibility on scheduled airline operations.
+                Airborne Aviation Academy offers ATPL (Airline Transport Pilot License) ground school classes in Dwarka, Delhi. Our ATPL program prepares commercial pilots for the DGCA ATPL written and Viva — the final certification step before command eligibility.
               </p>
             </div>
 
             {/* What is ATPL */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                What Is the ATPL License in India?
+                What Is ATPL in India?
               </h2>
               <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: 0 }}>
-                The Airline Transport Pilot License (ATPL) is the highest level of pilot certification issued by DGCA India. It allows pilots to act as Pilot-in-Command (PIC) on scheduled commercial airline operations. Pilots must hold a valid CPL, log minimum 1,500 hours of flight time, and pass DGCA ATPL written examinations to qualify.
+                The Airline Transport Pilot License (ATPL) is the highest level of pilot certification issued by DGCA India. It is required to act as Pilot-in-Command (PIC) on aircraft with maximum take-off weight of 5700 KG and above. To qualify for ATPL, pilots must hold a valid CPL, log minimum 1,500 hours of flight time, and pass DGCA ATPL Written and Viva examinations.
               </p>
             </div>
 
@@ -182,8 +180,7 @@ export default function ATPLPage() {
                 {[
                   'CPL holders targeting airline command (PIC) positions',
                   'Pilots approaching 1,500 hours who want exam-ready preparation',
-                  'Co-pilots upgrading to command on scheduled carriers',
-                  'Students wanting to complete ATPL theory alongside CPL training',
+                  'Co-pilots upgrading to command',
                 ].map((item, i) => (
                   <li key={i} className="course-list-item">{item}</li>
                 ))}
@@ -198,12 +195,16 @@ export default function ATPLPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
                 {[
                   {
-                    q: 'Can I do ATPL ground school alongside CPL training?',
-                    a: 'Yes. Many students complete ATPL theory during their CPL ground school phase. The syllabi overlap significantly — doing both together improves exam efficiency and saves time.',
+                    q: 'Should I do ATPL after CPL?',
+                    a: 'Yes, many students do ATPL theory after CPL. Theory overlaps for better understanding. Helps secure airline interview quicker and on priority.',
                   },
                   {
                     q: 'Is ATPL mandatory to fly as a co-pilot in India?',
-                    a: 'No. A CPL allows you to fly as co-pilot (SIC) on commercial aircraft. ATPL is required only when upgrading to Pilot-in-Command (PIC/Captain) on scheduled airline operations.',
+                    a: 'No. A CPL allows you to fly as co-pilot on commercial aircraft. ATPL is required for command to fly aircraft above 5700 KG.',
+                  },
+                  {
+                    q: 'Can I do ATPL preparation alongside flying as Co-Pilot?',
+                    a: 'Yes. Airborne provides Online Training with dedicated doubt sessions and chatbot helping ATPL journey. Students can access course content via SMS and portal for flexible learning.',
                   },
                   {
                     q: 'How long does ATPL ground school take?',
@@ -235,15 +236,16 @@ export default function ATPLPage() {
           </div>
 
         </div>
+        <CourseReviews />
         <CoursePageFooter
           whatsappText="Hi, I'm interested in the ATPL Ground School at Airborne Aviation Academy, Dwarka. Please share batch details and fee."
           nextCourses={[
             { label: 'Airline Interview Preparation', href: '/courses/airline-preparation', note: 'GD/PI and mock interview coaching to land your first officer seat' },
-            { label: 'Airbus A320 Simulator', href: '/courses/a320-simulator', note: 'Type rating familiarisation and cadet SIM prep' },
+            { label: 'Airbus A320 Simulator FBS', href: '/courses/a320-simulator', note: 'Type rating familiarisation and cadet SIM prep' },
           ]}
           relatedCourses={[
             { label: 'CPL Ground School', href: '/courses/commercial-pilot-license-cpl' },
-            { label: 'Instrument Rating', href: '/courses/instrument-rating' },
+            { label: 'GD & PI Course', href: '/courses/gd-pi' },
             { label: 'Cadet Preparation', href: '/courses/cadet-preparation' },
             { label: 'All Courses', href: '/courses' },
           ]}

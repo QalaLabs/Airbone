@@ -3,8 +3,8 @@ import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
 
 export const metadata = {
-  title: 'About Airborne Aviation Academy DGCA Approved | Dwarka Delhi',
-  description: 'Airborne Aviation Academy, Dwarka Delhi founded by Capt. Navrang Singh in 2009. 2,500+ trained. DGCA-approved FTO. Meet our faculty, fleet & placement record.',
+  title: 'About Airborne Aviation Academy DGCA Complied | Dwarka Delhi',
+  description: 'Airborne Aviation Academy, Dwarka Delhi founded by Capt. Navrang Singh in 2009. 2,500+ trained. DGCA Complied ground school. Meet our mentors, faculty & placement record.',
   alternates: { canonical: '/about' },
 }
 
@@ -20,15 +20,15 @@ const FOUNDERS = [
     name: 'Deepak Aggarwal',
     role: 'Co-founder & Business Head',
     image: '/team/deepak_portrait.jpg',
-    bio: 'Deepak Aggarwal leads the student experience at Airborne, ensuring that every stage of the journey is smooth, responsive, and well-coordinated. From first interaction to day-to-day support, he helps create a transparent and student-focused environment for both aspirants and parents.',
-    accent: 'Honest counseling and strict enrollment limits'
+    bio: 'Deepak Aggarwal is the strategic force behind Airborne\'s larger vision and business operations. With over two decades of experience in training partnerships, regulatory compliance, and high-stakes execution, he leads commercial growth, parent counselling frameworks, and institutional partnerships — making the journey to the cockpit more transparent, structured, and empowering for aspiring aviation professionals and their families.',
+    accent: 'Business strategy, partnerships & parent trust'
   },
   {
     name: 'Piyush Chandra',
     role: 'Head of Operations',
     image: '/team/piyush_portrait.jpg',
-    bio: 'Piyush Chandra is the strategic force behind Airborne\'s larger vision. With over two decades of experience in training, regulatory compliance, and high-stakes execution, he is committed to making the journey to the cockpit more transparent, structured, and empowering for aspiring aviation professionals.',
-    accent: 'Seamless international flight pathways'
+    bio: 'Piyush Chandra leads the student experience at Airborne, ensuring that every stage of the journey is smooth, responsive, and well-coordinated. From first interaction to day-to-day campus support, he helps create a transparent and student-focused environment for both aspirants and parents.',
+    accent: 'Honest counseling and strict enrollment limits'
   },
   {
     name: 'Capt. Mukul Mitra Barua',
@@ -64,7 +64,7 @@ export default function AboutPage() {
   return (
     <>
       <Header />
-      <main style={{ minHeight: '80vh', background: '#000810', padding: '4rem var(--margin) 6rem var(--margin)' }}>
+      <main className="theme-light" style={{ minHeight: '80vh', background: 'var(--paper)', padding: '4rem var(--margin) 6rem var(--margin)' }}>
         <div className="container-xl">
         
         {/* Hero Section */}
@@ -74,19 +74,19 @@ export default function AboutPage() {
             Building Captains.
             <em style={{ color: '#DB241E', fontStyle: 'normal' }}> Transforming Lives.</em>
           </h1>
-          <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '1.05rem', lineHeight: '1.7', maxWidth: '100%' }}>
+          <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(33,33,33,0.7)', fontSize: '1.05rem', lineHeight: '1.7', maxWidth: '100%' }}>
             Located at Ramphal Chowk, Dwarka, Airborne Aviation Academy was established with a singular focus: to strip away the commercial noise of pilot training and return to rigorous, conceptual excellence.
           </p>
         </div>
 
         {/* Stats Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem', marginBottom: '5rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '4rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem', marginBottom: '5rem', borderBottom: '1px solid rgba(0,39,76,0.08)', paddingBottom: '4rem' }}>
           {STATS.map((stat) => (
-            <div key={stat.label} style={{ background: '#00162e', padding: '2rem', borderLeft: '3px solid #D8A027', borderRadius: '1px', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}>
+            <div key={stat.label} style={{ background: '#fff', padding: '2rem', borderLeft: '3px solid #D8A027', borderRadius: '1px', boxShadow: '0 4px 24px rgba(0,39,76,0.08)' }}>
               <div style={{ fontFamily: 'var(--font-h)', fontSize: '2rem', fontWeight: 900, color: '#D8A027', marginBottom: '0.2rem' }}>
                 {stat.value}
               </div>
-              <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.62rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', fontWeight: 700 }}>
+              <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.62rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(0,39,76,0.5)', fontWeight: 700 }}>
                 {stat.label}
               </div>
             </div>

@@ -49,28 +49,28 @@ export default function ContactPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(contactSchema) }} />
       <Header />
-      <main style={{ minHeight: '80vh', background: '#000810', padding: '4rem var(--margin) 6rem var(--margin)' }}>
-        <div className="container-xl">
+      <main className="theme-light" style={{ minHeight: '80vh', background: 'var(--paper)', padding: 'clamp(3.5rem, 6vw, 5rem) var(--margin) clamp(4rem, 8vw, 6rem) var(--margin)' }}>
+        <div className="container-xl" style={{ maxWidth: '1100px' }}>
 
-        <div style={{ maxWidth: '800px', marginBottom: '4rem' }}>
+        <div style={{ maxWidth: '800px', marginBottom: 'clamp(2.5rem, 5vw, 4rem)' }}>
           <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start' }}>Admissions Desk</p>
-          <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', marginTop: '1rem', textTransform: 'uppercase' }}>
+          <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', marginTop: '1rem', textTransform: 'uppercase', color: 'var(--navy)' }}>
             Get In Touch &amp;
             <em style={{ color: '#D8A027', fontStyle: 'normal' }}> Visit Dwarka.</em>
           </h1>
-          <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '1.02rem', lineHeight: '1.6', maxWidth: '100%' }}>
+          <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(33,33,33,0.7)', fontSize: '1.02rem', lineHeight: '1.6', maxWidth: '100%' }}>
             Book a 90-minute demo class with Capt. Navrang Singh or visit our center for career counseling.
           </p>
         </div>
 
-        <div className="grid-2col" style={{ gap: '4rem' }}>
+        <div className="grid-2col" style={{ gap: 'clamp(2rem, 4vw, 4rem)' }}>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(1.5rem, 3vw, 2.5rem)' }}>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               {CONTACT.map((item) => (
-                <div key={item.label} style={{ borderLeft: '3px solid #DB241E', paddingLeft: '1.5rem' }}>
-                  <span style={{ fontSize: '0.62rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: '0.2rem', fontWeight: 700 }}>
+                <div key={item.label} style={{ borderLeft: '3px solid #DB241E', paddingLeft: '1.25rem', paddingTop: '0.25rem', paddingBottom: '0.25rem' }}>
+                  <span style={{ fontSize: '0.62rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(0,39,76,0.45)', display: 'block', marginBottom: '0.2rem', fontWeight: 700 }}>
                     {item.label}
                   </span>
                   {item.href ? (

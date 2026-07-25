@@ -25,7 +25,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="nav scrolled site-header">
+      <header className="nav scrolled site-header glass-nav">
         <Link href="/" className="nav-logo" aria-label="Airborne Aviation Academy home">
           <img src="/logo-primary.webp" alt="Airborne Aviation Academy" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
         </Link>
@@ -38,8 +38,9 @@ export default function Header() {
               <Link 
                 href={link.path} 
                 className="nav-link" 
+                data-active={pathname === link.path ? 'true' : 'false'}
                 style={{ 
-                  color: pathname === link.path ? '#FFFFFF' : 'rgba(255,255,255,0.7)', 
+                  color: pathname === link.path ? 'var(--navy)' : 'rgba(0,39,76,0.7)', 
                   borderBottom: pathname === link.path ? '1px solid #DB241E' : 'none' 
                 }}
               >
@@ -51,7 +52,7 @@ export default function Header() {
 
         {/* Desktop CTA */}
         <Link href="/contact" className="nav-cta desktop-only" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
-          📅 Book Demo
+          Book Demo
         </Link>
 
         {/* Hamburger Trigger */}

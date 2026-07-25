@@ -270,7 +270,7 @@ function Act4Overlay({ visible }) {
         {[
           { label: 'SIMULATOR', value: 'FTD LEVEL 5' },
           { label: 'CERTIFICATE', value: 'DGCA COMPLIANT' },
-          { label: 'SESSION RATE', value: '₹10,000 / HR' },
+          { label: 'SESSION RATE', value: '₹12,000' },
         ].map(c => (
           <div key={c.label} className="hud-card">
             <div className="hud-label">{c.label}</div>

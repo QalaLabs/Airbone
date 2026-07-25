@@ -20,8 +20,8 @@ const breadcrumbSchema = getBreadcrumbSchema([
 const courseSchema = {
   '@context': 'https://schema.org',
   '@type': 'Course',
-  name: 'Airbus A320 Simulator Training',
-  description: 'In-house Airbus A320 simulator training at Airborne Aviation Academy, Dwarka. Type rating familiarisation, cadet selection SIM prep, emergency procedures.',
+  name: 'Airbus A320 Simulator FBS Training',
+  description: 'In-house Airbus A320 Simulator FBS training at Airborne Aviation Academy, Dwarka. Type rating familiarisation, cadet selection SIM prep, emergency procedures.',
   provider: {
     '@type': 'EducationalOrganization',
     name: 'Airborne Aviation Academy',
@@ -78,13 +78,13 @@ export default function A320SimulatorPage() {
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
-                📍 Dwarka, Delhi · ₹10,000/hr (in-house SIM)
+                📍 Dwarka, Delhi · ₹12,000 (in-house SIM FBS) · CPL Eligible
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
-                Airbus A320 Simulator Training in Dwarka, Delhi
+                Airbus A320 Simulator FBS Training in Dwarka, Delhi
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
-                Airborne Aviation Academy added an Airbus A320 simulator to our Ramphal Chowk, Dwarka campus in 2024. The simulator is used for type rating familiarisation, airline cadet selection preparation, instrument approach practice, and emergency procedure training.
+                Airborne Aviation Academy added an Airbus A320 Simulator FBS to our Ramphal Chowk, Dwarka campus in 2024. The simulator is used for type rating familiarisation, airline cadet selection preparation, instrument approach practice, and emergency procedure training. Eligibility: CPL holders.
               </p>
             </div>
 
@@ -131,10 +131,13 @@ export default function A320SimulatorPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               <div className="course-sidebar-card">
                 <span className="course-sidebar-label">Session Rate</span>
-                <div className="course-sidebar-price">₹10,000/hr</div>
-                <span className="course-sidebar-note">In-house A320 simulator · Dwarka campus</span>
+                <div className="course-sidebar-price">₹12,000</div>
+                <span className="course-sidebar-note">In-house A320 Simulator FBS · Dwarka campus</span>
+                <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(0, 39, 76, 0.08)' }} />
+                <span className="course-sidebar-label">Eligibility</span>
+                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', fontWeight: 800, color: 'var(--navy)' }}>CPL</div>
               </div>
-              <LeadForm courseName="Airbus A320 Simulator Training" source="Course Detail: a320-simulator" />
+              <LeadForm courseName="Airbus A320 Simulator FBS (₹12,000)" source="Course Detail: a320-simulator" />
             </div>
           </div>
 

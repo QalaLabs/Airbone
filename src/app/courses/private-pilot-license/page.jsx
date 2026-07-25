@@ -70,7 +70,7 @@ const SUBJECTS = [
 
 const ELIGIBILITY = [
   { req: 'Age', detail: 'Minimum 17 years at PPL issuance (16+ to begin SPL training)' },
-  { req: 'Education', detail: 'Class 10+2 (any stream) — no specific subjects required' },
+  { req: 'Education', detail: 'Class 10 (any stream) — no specific subjects required' },
   { req: 'Medical', detail: 'DGCA Class 2 Medical Certificate from approved AME' },
   { req: 'Flying Hours', detail: 'Minimum 40 hours total flying, including 10 hours solo' },
   { req: 'Language', detail: 'Basic English communication ability' },

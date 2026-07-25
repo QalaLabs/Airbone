@@ -451,10 +451,10 @@ export function JourneyMap() {
 const PILOTS = [
   { name: 'Ruzal Dhral',           role: 'Cadet · IndiGo',            year: '2024', batch: 'CPL-43',  image: '/reviews/ruzal.jpg', objectPosition: 'center 15%', badge: '✈ Selected' },
   { name: 'Capt. Nipun Singh',     role: 'First Officer · Air India', year: '2023', batch: 'CPL-39',  image: '/reviews/nipun.jpg', objectPosition: 'center 20%', badge: 'First Officer' },
-  { name: 'Capt. Himansh Sagwal',  role: 'First Officer · Emirates',  year: '2022', batch: 'ATPL-12', image: '/reviews/himansh.jpg', objectPosition: 'center 12%', badge: 'First Officer' },
+  { name: 'Capt. Himansh Sagwal',  role: 'Commander · Emirates',  year: '2022', batch: 'ATPL-12', image: '/reviews/himansh.jpg', objectPosition: 'center 12%', badge: 'Commander' },
   { name: 'Kartik Juneja',         role: 'Cadet · IndiGo',            year: '2024', batch: 'CDT-08',  image: '/reviews/kartik.jpg', objectPosition: 'center 20%', badge: 'Cadet Pilot' },
   { name: 'Adesh Yadav',           role: 'First Officer · Air India', year: '2023', batch: 'CPL-41',  image: '/reviews/adesh.jpg', objectPosition: 'center 12%', badge: 'First Officer' },
-  { name: 'Naveen Kumar',          role: 'Cadet · Akasa',             year: '2025', batch: 'CDT-11',  image: '/reviews/naveen.jpg', objectPosition: 'center 18%', badge: '✈ Selected' },
+  { name: 'Naveen Kumar',          role: 'First Officer · Akasa',     year: '2025', batch: 'CDT-11',  image: '/reviews/naveen.jpg', objectPosition: 'center 18%', badge: 'First Officer' },
   { name: 'Nabansh Sardana',       role: 'First Officer · SpiceJet',  year: '2022', batch: 'ATPL-10', image: '/reviews/nabansh.jpg', objectPosition: 'center 15%', badge: 'First Officer' },
   { name: 'Priyanshi Kumar',       role: 'Cadet · IndiGo',            year: '2025', batch: 'CDT-12',  image: '/reviews/priyanshi.jpg', objectPosition: 'center 10%', badge: 'Cadet Pilot' },
 ]
@@ -567,7 +567,7 @@ export function SuccessMosaic({ image: fallbackImage }) {
           </div>
           <div className="mosaic-header-desc">
             <p style={{ color: 'rgba(33,33,33,0.7)', fontSize: '0.9375rem', lineHeight: 1.7, maxWidth: '28rem' }}>
-              Eight years. Hundreds of cockpits. A few of the captains, first officers and cadets who walked our corridors before they walked a jet bridge.
+              Fifteen years. Hundreds of cockpits. A few of the captains, first officers and cadets who walked our corridors before they walked a jet bridge.
             </p>
           </div>
         </div>

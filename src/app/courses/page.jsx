@@ -2,13 +2,14 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
+import Breadcrumb from '@/components/Breadcrumb'
 import { fetchPublic } from '@/lib/adminApi'
 import { displayCourseFee, displayCourseEligibility } from '@/lib/courseFees'
 import { getBreadcrumbSchema } from '@/utils/seo'
 
 export const metadata = {
   title: 'Pilot Training Courses in Delhi CPL, ATPL, Cabin Crew | Airborne',
-  description: 'Browse all DGCA-approved aviation courses at Airborne Aviation Academy, Dwarka Delhi — 2,500+ students trained. CPL ground school, ATPL, Cabin Crew, A320 SIM, cadet prep. Compare fees and eligibility.',
+  description: 'Browse DGCA Complied aviation courses at Airborne Aviation Academy, Dwarka Delhi — 2,500+ students trained. CPL ground school, ATPL, Cabin Crew, A320 SIM FBS, cadet prep. Compare fees and timelines.',
 }
 
 const breadcrumbSchema = getBreadcrumbSchema([
@@ -23,14 +24,15 @@ const itemListSchema = {
   description: 'Explore DGCA pilot ground school, CPL, ATPL, A320 sim & cabin crew courses at Airborne Aviation Academy, Dwarka Delhi.',
   url: 'https://www.airborneaviation.in/courses',
   itemListElement: [
-    { '@type': 'ListItem', position: 1, name: 'Commercial Pilot License (CPL)', url: 'https://www.airborneaviation.in/courses/commercial-pilot-license-cpl' },
-    { '@type': 'ListItem', position: 2, name: 'ATPL Ground School', url: 'https://www.airborneaviation.in/courses/atpl' },
-    { '@type': 'ListItem', position: 3, name: 'Cadet Pilot Program Prep', url: 'https://www.airborneaviation.in/courses/cadet-preparation' },
-    { '@type': 'ListItem', position: 4, name: 'Airbus A320 Simulator Training', url: 'https://www.airborneaviation.in/courses/a320-simulator' },
-    { '@type': 'ListItem', position: 5, name: 'CAS / Compass / ADAPT Prep', url: 'https://www.airborneaviation.in/courses/cas-compass-adapt' },
-    { '@type': 'ListItem', position: 6, name: 'Airline Preparation', url: 'https://www.airborneaviation.in/courses/airline-preparation' },
-    { '@type': 'ListItem', position: 7, name: 'Cabin Crew Training', url: 'https://www.airborneaviation.in/courses/cabin-crew-training' },
-    { '@type': 'ListItem', position: 8, name: 'Flying Training India vs Abroad', url: 'https://www.airborneaviation.in/courses/flying-training-india-abroad' }
+    { '@type': 'ListItem', position: 1, name: 'Commercial Pilot License (CPL)', url: 'https://www.airborneaviation.in/courses/flying-training-india-abroad' },
+    { '@type': 'ListItem', position: 2, name: 'DGCA CPL Ground School', url: 'https://www.airborneaviation.in/courses/commercial-pilot-license-cpl' },
+    { '@type': 'ListItem', position: 3, name: 'GD & PI Course', url: 'https://www.airborneaviation.in/courses/gd-pi' },
+    { '@type': 'ListItem', position: 4, name: 'Airline Interview Preparation', url: 'https://www.airborneaviation.in/courses/airline-preparation' },
+    { '@type': 'ListItem', position: 5, name: 'ATPL Ground School', url: 'https://www.airborneaviation.in/courses/atpl' },
+    { '@type': 'ListItem', position: 6, name: 'Cadet Pilot Program Prep', url: 'https://www.airborneaviation.in/courses/cadet-preparation' },
+    { '@type': 'ListItem', position: 7, name: 'Airbus A320 Simulator FBS', url: 'https://www.airborneaviation.in/courses/a320-simulator' },
+    { '@type': 'ListItem', position: 8, name: 'CAS / Compass / ADAPT Prep', url: 'https://www.airborneaviation.in/courses/cas-compass-adapt' },
+    { '@type': 'ListItem', position: 9, name: 'Cabin Crew Training', url: 'https://www.airborneaviation.in/courses/cabin-crew-training' },
   ]
 }
 
@@ -52,18 +54,19 @@ export default async function CoursesPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }} />
       <Header />
-      <main className="course-main-wrapper courses-listing" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
+      <main className="course-main-wrapper courses-listing theme-light" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
         <div className="container-xl">
+        <Breadcrumb items={[{ name: 'Home', path: '/' }, { name: 'Courses' }]} />
 
         {/* Header Hero Section */}
         <div style={{ maxWidth: '800px', marginBottom: '4rem' }}>
           <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start', color: 'var(--red)' }}>Academy Syllabus</p>
-          <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', marginTop: '1rem', textTransform: 'uppercase', color: '#fff' }}>
+          <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', marginTop: '1rem', textTransform: 'uppercase', color: 'var(--navy)' }}>
             Pilot Training Courses at
             <em style={{ color: 'var(--gold)', fontStyle: 'normal' }}> Airborne Aviation Academy Dwarka, Delhi</em>
           </h1>
-          <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '1.02rem', lineHeight: '1.7', maxWidth: '100%' }}>
-            Airborne Aviation Academy, Dwarka, Delhi offers DGCA-approved pilot training programs — from CPL ground school and ATPL exam prep to A320 simulator and cadet selection coaching. Every course is mentor-led and structured to meet strict DGCA requirements.
+          <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(33,33,33,0.7)', fontSize: '1.02rem', lineHeight: '1.7', maxWidth: '100%' }}>
+            Airborne Aviation Academy, Dwarka, Delhi offers DGCA Complied pilot training programs — from CPL ground school and ATPL exam prep to A320 Simulator FBS and cadet selection coaching. Every course is mentor-led and structured for DGCA exam readiness.
           </p>
         </div>
 
@@ -247,7 +250,7 @@ export default async function CoursesPage() {
         <div style={{ marginTop: '5rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '4rem' }}>
           <div style={{ marginBottom: '2.5rem' }}>
             <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start', color: 'var(--red)' }}>At a Glance</p>
-            <h2 className="ov-h2" style={{ marginTop: '0.5rem', textTransform: 'uppercase', color: '#fff' }}>All Courses at Airborne</h2>
+            <h2 className="ov-h2" style={{ marginTop: '0.5rem', textTransform: 'uppercase', color: 'var(--navy)' }}>All Courses at Airborne</h2>
           </div>
 
           <style dangerouslySetInnerHTML={{ __html: `
@@ -255,7 +258,7 @@ export default async function CoursesPage() {
               transition: background 0.2s;
             }
             .compare-course-link {
-              color: rgba(255,255,255,0.85);
+              color: var(--navy);
               text-decoration: none;
               border-bottom: 1px solid rgba(216,160,39,0.35);
               transition: color 0.2s, border-color 0.2s;
@@ -264,7 +267,7 @@ export default async function CoursesPage() {
               padding-bottom: 1px;
             }
             .compare-course-link:hover {
-              color: var(--gold);
+              color: var(--red);
               border-color: var(--red);
             }
             .compare-course-link:focus-visible {
@@ -272,24 +275,28 @@ export default async function CoursesPage() {
               outline-offset: 3px;
               border-radius: 2px;
             }
-            .courses-listing .course-table-wrap {
-              background: var(--navy-95) !important;
-              border-color: rgba(255,255,255,0.1) !important;
-              box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+            .courses-listing.theme-light .course-table-wrap {
+              background: #fff !important;
+              border: 1px solid rgba(0,39,76,0.08) !important;
+              box-shadow: 0 10px 30px rgba(0,39,76,0.06) !important;
+              border-radius: 8px;
+              padding: 0.5rem;
             }
-            .courses-listing .course-table th {
-              background: rgba(255,255,255,0.05) !important;
-              color: rgba(255,255,255,0.8) !important;
-              border-bottom-color: rgba(255,255,255,0.1) !important;
+            .courses-listing.theme-light .course-table th {
+              background: rgba(0,39,76,0.04) !important;
+              color: rgba(0,39,76,0.75) !important;
+              border-bottom-color: rgba(0,39,76,0.08) !important;
             }
-            .courses-listing .course-table td {
-              color: rgba(255,255,255,0.7) !important;
-              border-bottom-color: rgba(255,255,255,0.06) !important;
+            .courses-listing.theme-light .course-table td {
+              color: rgba(33,33,33,0.75) !important;
+              border-bottom-color: rgba(0,39,76,0.06) !important;
+              padding-top: 1.35rem !important;
+              padding-bottom: 1.35rem !important;
             }
-            .courses-listing .course-table tr:nth-child(even) {
-              background: rgba(255,255,255,0.02) !important;
+            .courses-listing.theme-light .course-table tr:nth-child(even) {
+              background: rgba(0,39,76,0.02) !important;
             }
-            .courses-listing .course-table tr:hover {
+            .courses-listing.theme-light .course-table tr:hover {
               background: rgba(216,160,39,0.08) !important;
             }
           `}} />
@@ -300,39 +307,38 @@ export default async function CoursesPage() {
                 <tr>
                   <th style={{ padding: '1.2rem 1.5rem' }}>Course</th>
                   <th style={{ padding: '1.2rem 1.5rem' }}>Duration</th>
-                  <th style={{ padding: '1.2rem 1.5rem' }}>Min Eligibility</th>
                   <th style={{ padding: '1.2rem 1.5rem' }}>Est. Fee</th>
-                  <th style={{ padding: '1.2rem 1.5rem', textAlign: 'center' }}>DGCA Approved</th>
+                  <th style={{ padding: '1.2rem 1.5rem', textAlign: 'center' }}>DGCA Complied</th>
                 </tr>
               </thead>
               <tbody>
                 {[
-                  { name: 'Commercial Pilot License (CPL)', slug: 'commercial-pilot-license-cpl', dur: '8–18 months',  elig: '10+2 Phys+Maths, 17 yrs', fee: '₹55L+ onwards', dgca: '✓' },
-                  { name: 'ATPL Ground School',             slug: 'atpl',                        dur: '4–6 months',   elig: 'CPL holder',               fee: '₹1,50,000',    dgca: '✓' },
-                  { name: 'Private Pilot License (PPL)',    slug: 'private-pilot-license',       dur: '3–6 months',   elig: '10+2, 16 yrs',             fee: '₹25,00,000',   dgca: '✓' },
-                  { name: 'Instrument Rating',              slug: 'instrument-rating',           dur: '2–3 months',   elig: 'PPL holder',               fee: '₹3–5L',       dgca: '✓' },
-                  { name: 'Multi-Engine Rating',            slug: 'multi-engine-rating',         dur: '1–2 months',   elig: 'PPL/CPL holder',           fee: '₹3–5L',       dgca: '✓' },
-                  { name: 'Airbus A320 Simulator',          slug: 'a320-simulator',              dur: 'Flexible',     elig: 'CPL + 200 hrs',            fee: '₹10,000/hr',  dgca: '✓' },
-                  { name: 'DGCA Ground School',             slug: 'ground-school',               dur: '3–6 months',   elig: 'Any',                      fee: '₹2,70,000',   dgca: '✓' },
-                  { name: 'Cabin Crew Training',            slug: 'cabin-crew-training',         dur: '3–6 months',   elig: '12th pass, 18–27 yrs',     fee: '₹30K–₹54K',   dgca: '—' },
-                  { name: 'Aviation English (ICAO L4)',     slug: 'aviation-english-icao',       dur: '1–3 months',   elig: 'Any',                      fee: '₹50K–1L',     dgca: '—' },
-                  { name: 'Flight Dispatcher',              slug: 'flight-dispatcher',           dur: '3–6 months',   elig: '10+2',                     fee: '₹1–2L',       dgca: '—' },
+                  { name: 'Commercial Pilot License (CPL)', slug: 'flying-training-india-abroad', dur: '12–18 months', fee: '₹65 Lakh* (45–75 Lacs)', dgca: '✓' },
+                  { name: 'DGCA CPL Ground School', slug: 'commercial-pilot-license-cpl', dur: '3–6 months', fee: '₹2,70,000', dgca: '✓' },
+                  { name: 'GD & PI Course', slug: 'gd-pi', dur: '3 months', fee: '₹30,000', dgca: '—' },
+                  { name: 'Airline Interview Preparation', slug: 'airline-preparation', dur: '3 months', fee: '₹1,50,000', dgca: '—' },
+                  { name: 'ATPL Ground School', slug: 'atpl', dur: '2–3 months', fee: '₹1,50,000', dgca: '✓' },
+                  { name: 'Private Pilot License (PPL)', slug: 'private-pilot-license', dur: '3–6 months', fee: '₹25,00,000', dgca: '✓' },
+                  { name: 'Multi-Engine Rating', slug: 'multi-engine-rating', dur: '1–2 months', fee: '₹3–5L', dgca: '✓' },
+                  { name: 'Airbus A320 Simulator FBS', slug: 'a320-simulator', dur: 'Flexible', fee: '₹12,000', dgca: '✓' },
+                  { name: 'Cabin Crew Training', slug: 'cabin-crew-training', dur: '3–6 months', fee: '₹0* Scholarship / ₹59,000', dgca: '—' },
+                  { name: 'Cadet Pilot Preparation', slug: 'cadet-preparation', dur: 'Flexible', fee: '₹50,000', dgca: '—' },
+                  { name: 'Parent Centric Flying Guide', slug: 'flying-training-india-abroad', dur: 'Guidance', fee: 'Free', dgca: '—' },
                 ].map((row, idx) => (
                   <tr
                     key={idx}
                     className="compare-row"
                   >
-                    <td style={{ padding: '1.2rem 1.5rem', fontWeight: 700 }}>
+                    <td style={{ padding: '1.35rem 1.5rem', fontWeight: 700 }}>
                       {row.slug ? (
                         <Link href={`/courses/${row.slug}`} className="compare-course-link">
                           {row.name}
                         </Link>
                       ) : row.name}
                     </td>
-                    <td style={{ padding: '1.2rem 1.5rem' }}>{row.dur}</td>
-                    <td style={{ padding: '1.2rem 1.5rem' }}>{row.elig}</td>
-                    <td style={{ padding: '1.2rem 1.5rem', fontWeight: 700, color: 'var(--gold)' }}>{row.fee}</td>
-                    <td style={{ padding: '1.2rem 1.5rem', textAlign: 'center', fontWeight: 900, color: row.dgca === '✓' ? 'var(--red)' : 'rgba(255,255,255,0.25)', fontSize: row.dgca === '✓' ? '1.1rem' : '0.9rem' }}>{row.dgca}</td>
+                    <td style={{ padding: '1.35rem 1.5rem' }}>{row.dur}</td>
+                    <td style={{ padding: '1.35rem 1.5rem', fontWeight: 700, color: 'var(--gold)' }}>{row.fee}</td>
+                    <td style={{ padding: '1.35rem 1.5rem', textAlign: 'center', fontWeight: 900, color: row.dgca === '✓' ? 'var(--red)' : 'rgba(0,39,76,0.25)', fontSize: row.dgca === '✓' ? '1.1rem' : '0.9rem' }}>{row.dgca}</td>
                   </tr>
                 ))}
               </tbody>

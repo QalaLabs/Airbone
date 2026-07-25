@@ -7,6 +7,7 @@ const STATIC_COURSE_SLUGS = [
   'a320-simulator',
   'cas-compass-adapt',
   'airline-preparation',
+  'gd-pi',
   'flying-training-india-abroad',
   'cabin-crew-training',
   'ground-school',
@@ -23,6 +24,7 @@ export default async function sitemap() {
   const staticRoutes = [
     '', '/about', '/courses', '/jobs', '/resources', '/contact',
     '/privacy', '/terms', '/dgca-compliance',
+    '/blog',
     '/blog/how-to-become-pilot-india',
     '/blog/pilot-salary-india',
     '/blog/dgca-ground-school-guide',
