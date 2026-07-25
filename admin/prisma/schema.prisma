@@ -211,6 +211,7 @@ model Organization {
   lmsBatches           LmsBatch[]            @relation("OrgLmsBatches")
   lmsTimetableSlots    LmsTimetableSlot[]    @relation("OrgLmsTimetableSlots")
   lmsAssignments       LmsAssignment[]       @relation("OrgLmsAssignments")
+  feePlans             FeePlan[]             @relation("OrgFeePlans")
 
   @@index([slug])
   @@index([isActive])
@@ -769,6 +770,43 @@ enum AdmissionStage {
   CANCELLED
 }
 
+model FeePlan {
+  id          String   @id @default(uuid()) @db.Uuid
+  orgId       String   @db.Uuid
+  name        String   @db.VarChar(255)
+  description String?  @db.Text
+  currency    String   @default("INR") @db.VarChar(3)
+  isActive    Boolean  @default(true)
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  org         Organization  @relation("OrgFeePlans", fields: [orgId], references: [id], onDelete: Cascade)
+  items       FeePlanItem[]
+  admissions  Admission[]   @relation("AdmissionFeePlan")
+
+  @@index([orgId, isActive])
+  @@index([orgId, createdAt(sort: Desc)])
+  @@map("fee_plans")
+}
+
+model FeePlanItem {
+  id           String   @id @default(uuid()) @db.Uuid
+  feePlanId    String   @db.Uuid
+  name         String   @db.VarChar(255)
+  amount       Decimal  @db.Decimal(10, 2)
+  dueOffsetDays Int     @default(0)
+  sortOrder    Int      @default(0)
+  metadata     Json     @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  feePlan FeePlan @relation(fields: [feePlanId], references: [id], onDelete: Cascade)
+
+  @@index([feePlanId, sortOrder])
+  @@map("fee_plan_items")
+}
+
 model Admission {
   id             String         @id @default(uuid()) @db.Uuid
   orgId          String         @db.Uuid
@@ -780,6 +818,7 @@ model Admission {
   courseName     String?        @db.VarChar(255)
   batchName      String?        @db.VarChar(255)
   batchStartDate DateTime?
+  feePlanId      String?        @db.Uuid
   feeAmount      Decimal?       @db.Decimal(10, 2)
   feeDiscount    Decimal        @default(0) @db.Decimal(10, 2)
   feeFinal       Decimal?       @db.Decimal(10, 2)
@@ -797,6 +836,7 @@ model Admission {
   campus       Campus?              @relation("CampusAdmissions", fields: [campusId], references: [id], onDelete: SetNull)
   student      Student?             @relation(fields: [studentId], references: [id], onDelete: SetNull)
   lead         Lead                 @relation("LeadAdmissions", fields: [leadId], references: [id])
+  feePlan      FeePlan?             @relation("AdmissionFeePlan", fields: [feePlanId], references: [id], onDelete: SetNull)
   counselor    User?                @relation("AdmissionCounselor", fields: [counselorId], references: [id], onDelete: SetNull)
   stageChanger User?                @relation("AdmissionStageChanger", fields: [stageChangedBy], references: [id], onDelete: SetNull)
   stageLogs    AdmissionStageLog[]
@@ -808,6 +848,7 @@ model Admission {
   @@index([studentId])
   @@index([leadId])
   @@index([counselorId])
+  @@index([feePlanId])
   @@index([orgId, createdAt(sort: Desc)])
   @@map("admissions")
 }

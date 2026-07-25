@@ -61,6 +61,19 @@ export class LeadService {
     const updated = await LeadRepository.update(ctx.orgId, id, input);
 
     if (statusChanged) {
+      await prisma.leadActivity.create({
+        data: {
+          leadId: id,
+          orgId: ctx.orgId,
+          performedBy: ctx.user.id,
+          activityType: "STATUS_CHANGE",
+          title: `Status → ${input.status}`,
+          notes: input.lostReason ?? `Changed from ${existing.status} to ${input.status}`,
+          completedAt: new Date(),
+          metadata: { oldStatus: existing.status, newStatus: input.status },
+        },
+      });
+
       await emitEvent({
         name: "lead/status.changed",
         orgId: ctx.orgId,
@@ -76,6 +89,9 @@ export class LeadService {
           newStatus: input.status as LeadStatus,
         },
       });
+
+      await this.recalculateScore(ctx, id, `status:${input.status}`);
+      return LeadRepository.findById(ctx.orgId, id);
     } else {
       // General update audit via event
       const { AuditService } = await import("@/lib/services/audit.service");
@@ -107,6 +123,19 @@ export class LeadService {
 
     await LeadRepository.update(ctx.orgId, id, { assignedTo: counselorId });
 
+    await prisma.leadActivity.create({
+      data: {
+        leadId: id,
+        orgId: ctx.orgId,
+        performedBy: ctx.user.id,
+        activityType: "ASSIGNMENT",
+        title: `Assigned to ${counselor.name}`,
+        notes: `Counselor ${counselor.name} assigned`,
+        completedAt: new Date(),
+        metadata: { counselorId },
+      },
+    });
+
     await emitEvent({
       name: "lead/assigned",
       orgId: ctx.orgId,
@@ -121,6 +150,8 @@ export class LeadService {
         counselorName: counselor.name,
       },
     });
+
+    await this.recalculateScore(ctx, id, "assigned");
 
     return { ok: true };
   }
@@ -162,7 +193,11 @@ export class LeadService {
         outcome: input.outcome,
         nextAction: input.nextAction,
         dueAt: input.dueAt ? new Date(input.dueAt) : null,
-        completedAt: input.completedAt ? new Date(input.completedAt) : null,
+        completedAt: input.completedAt
+          ? new Date(input.completedAt)
+          : input.activityType === "NOTE" || input.activityType === "CALL" || input.activityType === "EMAIL" || input.activityType === "WHATSAPP" || input.activityType === "SMS" || input.activityType === "MEETING"
+            ? new Date()
+            : null,
         durationMins: input.durationMins,
         metadata: (input.metadata ?? {}) as Prisma.InputJsonValue,
       },
@@ -171,13 +206,16 @@ export class LeadService {
       },
     });
 
-    // Update lead nextFollowUp if nextAction provided
-    if (input.dueAt) {
-      await prisma.lead.update({
-        where: { id: leadId },
-        data: { nextFollowUp: new Date(input.dueAt) },
-      });
-    }
+    // Update lead touch + optional follow-up
+    await prisma.lead.update({
+      where: { id: leadId },
+      data: {
+        lastActivityAt: new Date(),
+        ...(input.dueAt ? { nextFollowUp: new Date(input.dueAt) } : {}),
+      },
+    });
+
+    await this.recalculateScore(ctx, leadId, `activity:${input.activityType}`);
 
     await emitEvent({
       name: "lead/activity.created",
@@ -195,6 +233,160 @@ export class LeadService {
     });
 
     return activity;
+  }
+
+  static async completeActivity(
+    ctx: RequestContext,
+    leadId: string,
+    activityId: string,
+    input: { completedAt?: string; outcome?: string } = {},
+  ) {
+    await this.getById(ctx, leadId);
+    const existing = await prisma.leadActivity.findFirst({
+      where: { id: activityId, leadId, orgId: ctx.orgId },
+    });
+    if (!existing) throw new NotFoundError("LeadActivity", activityId);
+
+    const activity = await prisma.leadActivity.update({
+      where: { id: activityId },
+      data: {
+        completedAt: input.completedAt ? new Date(input.completedAt) : new Date(),
+        ...(input.outcome !== undefined ? { outcome: input.outcome } : {}),
+      },
+      include: {
+        performer: { select: { id: true, name: true, avatarUrl: true } },
+      },
+    });
+
+    await prisma.lead.update({
+      where: { id: leadId },
+      data: { lastActivityAt: new Date() },
+    });
+
+    return activity;
+  }
+
+  static async updateFollowUp(ctx: RequestContext, leadId: string, nextFollowUp: string | null) {
+    await this.getById(ctx, leadId);
+    return prisma.lead.update({
+      where: { id: leadId },
+      data: { nextFollowUp: nextFollowUp ? new Date(nextFollowUp) : null },
+      select: { id: true, nextFollowUp: true },
+    });
+  }
+
+  /** Simple deterministic score: base + status + activity counts. Caps at 100. */
+  static async recalculateScore(ctx: RequestContext, leadId: string, reason?: string) {
+    const lead = await this.getById(ctx, leadId);
+    const counts = await prisma.leadActivity.groupBy({
+      by: ["activityType"],
+      where: { leadId, orgId: ctx.orgId },
+      _count: { _all: true },
+    });
+
+    const byType = Object.fromEntries(counts.map((c) => [c.activityType, c._count._all]));
+    let score = 10;
+    const statusBoost: Record<string, number> = {
+      NEW: 0,
+      CONTACTED: 10,
+      INTERESTED: 20,
+      FOLLOW_UP: 15,
+      COUNSELED: 30,
+      APPLICATION_SUBMITTED: 40,
+      CONVERTED: 90,
+      LOST: 0,
+    };
+    score += statusBoost[lead.status] ?? 0;
+    score += Math.min(15, (byType.CALL ?? 0) * 5);
+    score += Math.min(10, (byType.EMAIL ?? 0) * 3);
+    score += Math.min(10, (byType.WHATSAPP ?? 0) * 3);
+    score += Math.min(10, (byType.MEETING ?? 0) * 5);
+    score += Math.min(5, (byType.NOTE ?? 0) * 1);
+    if (lead.assignedTo) score += 5;
+    if (lead.email) score += 5;
+    if (lead.courseInterest) score += 5;
+    score = Math.max(0, Math.min(100, score));
+
+    if (score === lead.score) return lead;
+
+    await prisma.$transaction([
+      prisma.lead.update({
+        where: { id: leadId },
+        data: { score },
+      }),
+      prisma.leadScoreHistory.create({
+        data: {
+          leadId,
+          orgId: ctx.orgId,
+          score,
+          reason: reason ?? "recalculate",
+        },
+      }),
+    ]);
+
+    return LeadRepository.findById(ctx.orgId, leadId);
+  }
+
+  static async convertToAdmission(
+    ctx: RequestContext,
+    leadId: string,
+    input: {
+      courseName?: string;
+      counselorId?: string;
+      campusId?: string;
+      feeAmount?: number;
+      notes?: string;
+    } = {},
+  ) {
+    const lead = await this.getById(ctx, leadId);
+    const { AdmissionService } = await import("@/lib/services/admission.service");
+    const { ValidationError } = await import("@/lib/utils/errors");
+    if (lead.status === "LOST") {
+      throw new ValidationError([{ message: "Cannot convert a lost lead" }]);
+    }
+
+    const existingAdmission = await prisma.admission.findFirst({
+      where: { leadId, orgId: ctx.orgId },
+      orderBy: { createdAt: "desc" },
+    });
+    if (existingAdmission && existingAdmission.stage !== "CANCELLED" && existingAdmission.stage !== "DROPPED") {
+      return { admission: existingAdmission, created: false };
+    }
+
+    const admission = await AdmissionService.create(ctx, {
+      leadId,
+      courseName: input.courseName ?? lead.courseInterest ?? undefined,
+      counselorId: input.counselorId ?? lead.assignedTo ?? undefined,
+      campusId: input.campusId ?? lead.campusId ?? undefined,
+      feeAmount: input.feeAmount,
+      feeDiscount: 0,
+      notes: input.notes,
+    });
+
+    await prisma.lead.update({
+      where: { id: leadId },
+      data: {
+        status: "APPLICATION_SUBMITTED",
+        lastActivityAt: new Date(),
+      },
+    });
+
+    await prisma.leadActivity.create({
+      data: {
+        leadId,
+        orgId: ctx.orgId,
+        performedBy: ctx.user.id,
+        activityType: "STATUS_CHANGE",
+        title: "Converted to admission",
+        notes: `Application ${admission.applicationNo} created`,
+        completedAt: new Date(),
+        metadata: { admissionId: admission.id },
+      },
+    });
+
+    await this.recalculateScore(ctx, leadId, "converted_to_admission");
+
+    return { admission, created: true };
   }
 
   static async listActivities(ctx: RequestContext, leadId: string, page = 1, limit = 20) {

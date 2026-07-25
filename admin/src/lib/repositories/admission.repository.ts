@@ -13,6 +13,7 @@ const ADMISSION_SELECT = {
   courseName: true,
   batchName: true,
   batchStartDate: true,
+  feePlanId: true,
   feeAmount: true,
   feeDiscount: true,
   feeFinal: true,
@@ -29,7 +30,60 @@ const ADMISSION_SELECT = {
   student: { select: { id: true, studentCode: true, firstName: true, lastName: true } },
   lead: { select: { id: true, name: true, phone: true, email: true } },
   counselor: { select: { id: true, name: true, email: true, avatarUrl: true } },
+  feePlan: {
+    select: {
+      id: true,
+      name: true,
+      currency: true,
+      items: {
+        orderBy: { sortOrder: "asc" as const },
+        select: { id: true, name: true, amount: true, dueOffsetDays: true, sortOrder: true },
+      },
+    },
+  },
   _count: { select: { documents: true, payments: true, stageLogs: true } },
+} satisfies Prisma.AdmissionSelect;
+
+/** Detail fetch — includes related collections for the admissions dossier UI. */
+const ADMISSION_DETAIL_SELECT = {
+  ...ADMISSION_SELECT,
+  stageLogs: {
+    orderBy: { changedAt: "desc" as const },
+    take: 50,
+    include: { actor: { select: { id: true, name: true, avatarUrl: true } } },
+  },
+  documents: {
+    orderBy: { createdAt: "desc" as const },
+    take: 50,
+    select: {
+      id: true,
+      documentType: true,
+      name: true,
+      fileUrl: true,
+      fileMimeType: true,
+      fileSizeBytes: true,
+      status: true,
+      rejectionReason: true,
+      reviewedAt: true,
+      createdAt: true,
+    },
+  },
+  payments: {
+    orderBy: { createdAt: "desc" as const },
+    take: 50,
+    select: {
+      id: true,
+      amount: true,
+      currency: true,
+      method: true,
+      status: true,
+      receiptNo: true,
+      feeType: true,
+      referenceNo: true,
+      paidAt: true,
+      createdAt: true,
+    },
+  },
 } satisfies Prisma.AdmissionSelect;
 
 export class AdmissionRepository {
@@ -76,7 +130,7 @@ export class AdmissionRepository {
   static async findById(orgId: string, id: string) {
     return prisma.admission.findFirst({
       where: { id, orgId },
-      select: ADMISSION_SELECT,
+      select: ADMISSION_DETAIL_SELECT,
     });
   }
 
@@ -102,6 +156,7 @@ export class AdmissionRepository {
         courseName: data.courseName,
         batchName: data.batchName,
         batchStartDate: data.batchStartDate ? new Date(data.batchStartDate) : null,
+        feePlanId: data.feePlanId,
         feeAmount: data.feeAmount,
         feeDiscount: data.feeDiscount,
         feeFinal,
@@ -128,6 +183,7 @@ export class AdmissionRepository {
         ...(data.courseName !== undefined && { courseName: data.courseName }),
         ...(data.batchName !== undefined && { batchName: data.batchName }),
         ...(data.batchStartDate !== undefined && { batchStartDate: data.batchStartDate ? new Date(data.batchStartDate) : null }),
+        ...(data.feePlanId !== undefined && { feePlanId: data.feePlanId }),
         ...(data.feeAmount !== undefined && { feeAmount: data.feeAmount }),
         ...(data.feeDiscount !== undefined && { feeDiscount: data.feeDiscount }),
         ...(feeFinalUpdate !== undefined && { feeFinal: feeFinalUpdate, feeBalance: feeFinalUpdate }),
