@@ -33,6 +33,23 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+*-deploy*.log
+*-build*.log
+*-redeploy*.log
+admin-*-deploy.log
+mkt-*-deploy.log
+
+# Local-only RC / ops scratch (not part of release)
+scripts/enable-*-bypass.mjs
+scripts/fix-auth-url-redeploy.mjs
+scripts/rc-auth-*.mjs
+scripts/rc-inspect-*.mjs
+scripts/rc-preview-smoke.mjs
+scripts/rc-probe-*.mjs
+scripts/rc-pull-*.mjs
+scripts/set-prod-urls.mjs
+scripts/smoke-admin-preview.mjs
+scripts/smoke-http.mjs
 
 # OS
 .DS_Store
