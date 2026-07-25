@@ -46,9 +46,13 @@ export const leadFiltersSchema = z.object({
   search: z.string().max(255).optional(),
   dateFrom: z.string().datetime().optional(),
   dateTo: z.string().datetime().optional(),
+  followUpOverdue: z
+    .enum(["true", "false"])
+    .optional()
+    .transform((v) => (v === undefined ? undefined : v === "true")),
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(100).default(20),
-  sortBy: z.enum(["createdAt", "updatedAt", "score", "name", "status"]).default("createdAt"),
+  sortBy: z.enum(["createdAt", "updatedAt", "score", "name", "status", "nextFollowUp"]).default("createdAt"),
   sortDir: z.enum(["asc", "desc"]).default("desc"),
 });
 
@@ -69,7 +73,22 @@ export const updateFollowUpSchema = z.object({
   nextFollowUp: z.string().datetime().nullable(),
 });
 
+export const completeActivitySchema = z.object({
+  completedAt: z.string().datetime().optional(),
+  outcome: z.string().max(255).optional(),
+});
+
+export const convertLeadSchema = z.object({
+  courseName: z.string().max(255).optional(),
+  counselorId: z.string().uuid().optional(),
+  campusId: z.string().uuid().optional(),
+  feeAmount: z.number().positive().optional(),
+  notes: z.string().max(5000).optional(),
+});
+
 export type CreateLeadInput = z.infer<typeof createLeadSchema>;
 export type UpdateLeadInput = z.infer<typeof updateLeadSchema>;
 export type LeadFilters = z.infer<typeof leadFiltersSchema>;
 export type CreateActivityInput = z.infer<typeof createActivitySchema>;
+export type CompleteActivityInput = z.infer<typeof completeActivitySchema>;
+export type ConvertLeadInput = z.infer<typeof convertLeadSchema>;

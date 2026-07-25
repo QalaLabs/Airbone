@@ -1,6 +1,8 @@
 import { AdmissionRepository } from "@/lib/repositories/admission.repository";
 import { AuditService } from "@/lib/services/audit.service";
 import { ActivityFeedService } from "@/lib/services/activity.service";
+import { StudentService } from "@/lib/services/student.service";
+import { FeePlanService } from "@/lib/services/fee-plan.service";
 import { emitEvent } from "@/lib/events/inngest";
 import { NotFoundError, ValidationError } from "@/lib/utils/errors";
 import { STAGE_TRANSITIONS } from "@/lib/validations/admission.schema";
@@ -8,6 +10,14 @@ import { prisma } from "@/lib/db/client";
 import type { CreateAdmissionInput, UpdateAdmissionInput, ChangeStageInput, AdmissionFilters } from "@/lib/validations/admission.schema";
 import type { AdmissionStage } from "@prisma/client";
 import type { RequestContext } from "@/types";
+
+function splitLeadName(name: string): { firstName: string; lastName: string } {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return { firstName: "Student", lastName: "-" };
+  const firstName = parts[0] ?? "Student";
+  if (parts.length === 1) return { firstName, lastName: "-" };
+  return { firstName, lastName: parts.slice(1).join(" ") };
+}
 
 export class AdmissionService {
   static async list(ctx: RequestContext, filters: AdmissionFilters) {
@@ -21,14 +31,12 @@ export class AdmissionService {
   }
 
   static async create(ctx: RequestContext, input: CreateAdmissionInput) {
-    // Verify lead exists in this org
     const lead = await prisma.lead.findFirst({
       where: { id: input.leadId, orgId: ctx.orgId, deletedAt: null },
       select: { id: true, name: true },
     });
     if (!lead) throw new NotFoundError("Lead", input.leadId);
 
-    // Verify counselor if provided
     if (input.counselorId) {
       const counselor = await prisma.user.findFirst({
         where: { id: input.counselorId, orgId: ctx.orgId, isActive: true },
@@ -36,8 +44,22 @@ export class AdmissionService {
       if (!counselor) throw new NotFoundError("Counselor", input.counselorId);
     }
 
+    let createInput = { ...input };
+    if (input.feePlanId) {
+      const plan = await FeePlanService.getById(ctx, input.feePlanId);
+      if (!plan.isActive) {
+        throw new ValidationError([{ message: "Fee plan is inactive" }]);
+      }
+      const total = FeePlanService.totalAmount(plan.items);
+      createInput = {
+        ...createInput,
+        feeAmount: createInput.feeAmount ?? total,
+        feeDiscount: createInput.feeDiscount ?? 0,
+      };
+    }
+
     const applicationNo = await AdmissionRepository.getNextApplicationNo(ctx.orgId);
-    const admission = await AdmissionRepository.create(ctx.orgId, { ...input, applicationNo });
+    const admission = await AdmissionRepository.create(ctx.orgId, { ...createInput, applicationNo });
 
     await AuditService.write({
       orgId: ctx.orgId,
@@ -81,7 +103,28 @@ export class AdmissionService {
 
   static async update(ctx: RequestContext, id: string, input: UpdateAdmissionInput) {
     const existing = await this.getById(ctx, id);
-    const updated = await AdmissionRepository.update(ctx.orgId, id, input);
+    const updateInput = { ...input };
+
+    if (input.feePlanId) {
+      const plan = await FeePlanService.getById(ctx, input.feePlanId);
+      if (!plan.isActive) {
+        throw new ValidationError([{ message: "Fee plan is inactive" }]);
+      }
+      const total = FeePlanService.totalAmount(plan.items);
+      if (updateInput.feeAmount === undefined) {
+        updateInput.feeAmount = total;
+      }
+    }
+
+    const updated = await AdmissionRepository.update(ctx.orgId, id, updateInput);
+
+    if (
+      input.feePlanId !== undefined ||
+      input.feeAmount !== undefined ||
+      input.feeDiscount !== undefined
+    ) {
+      await AdmissionRepository.updateFeeBalance(ctx.orgId, id);
+    }
 
     await AuditService.write({
       orgId: ctx.orgId,
@@ -95,7 +138,7 @@ export class AdmissionService {
       newValue: updated as unknown as Record<string, unknown>,
     });
 
-    return updated;
+    return AdmissionRepository.findById(ctx.orgId, id);
   }
 
   static async changeStage(ctx: RequestContext, id: string, input: ChangeStageInput) {
@@ -103,7 +146,6 @@ export class AdmissionService {
     const fromStage = admission.stage as AdmissionStage;
     const { toStage } = input;
 
-    // Enforce valid transitions
     const allowed = STAGE_TRANSITIONS[fromStage] ?? [];
     if (!allowed.includes(toStage)) {
       throw new ValidationError([
@@ -111,16 +153,39 @@ export class AdmissionService {
       ]);
     }
 
-    // When enrolling: require a student (existing or auto-create from lead)
     let studentId = input.studentId ?? admission.studentId ?? undefined;
 
     if (toStage === "ENROLLED" && !studentId && admission.lead) {
-      // Auto-create student record from lead if not exists
       const existingStudent = await prisma.student.findFirst({
-        where: { leadId: admission.leadId, orgId: ctx.orgId },
+        where: { leadId: admission.leadId, orgId: ctx.orgId, deletedAt: null },
         select: { id: true },
       });
-      studentId = existingStudent?.id;
+
+      if (existingStudent) {
+        studentId = existingStudent.id;
+      } else if (input.createStudent !== false) {
+        const { firstName, lastName } = splitLeadName(admission.lead.name);
+        const email =
+          admission.lead.email?.trim() ||
+          `student+${admission.applicationNo.toLowerCase()}@airborne.local`;
+        const student = await StudentService.create(ctx, {
+          firstName,
+          lastName,
+          email,
+          phone: admission.lead.phone,
+          nationality: "Indian",
+          medicalFitness: false,
+          leadId: admission.leadId,
+          campusId: admission.campusId ?? undefined,
+        });
+        studentId = student.id;
+      }
+    }
+
+    if (toStage === "ENROLLED" && !studentId) {
+      throw new ValidationError([
+        { message: "Cannot enroll without a linked student. Pass createStudent:true or studentId." },
+      ]);
     }
 
     const updated = await AdmissionRepository.advanceStage(
@@ -132,14 +197,12 @@ export class AdmissionService {
       studentId,
     );
 
-    // If enrolled, mark lead as CONVERTED
     if (toStage === "ENROLLED") {
       await prisma.lead.update({
         where: { id: admission.leadId, orgId: ctx.orgId },
         data: { status: "CONVERTED", convertedAt: new Date(), score: 100 },
       });
 
-      // Mark student as enrolled
       if (studentId) {
         await prisma.student.update({
           where: { id: studentId },
@@ -157,7 +220,7 @@ export class AdmissionService {
       entityType: "admission",
       entityId: id,
       oldValue: { stage: fromStage },
-      newValue: { stage: toStage },
+      newValue: { stage: toStage, studentId },
     });
 
     await ActivityFeedService.write({

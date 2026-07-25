@@ -36,6 +36,28 @@ const LEAD_SELECT = {
   updatedAt: true,
   counselor: { select: { id: true, name: true, avatarUrl: true, email: true } },
   campus: { select: { id: true, name: true, city: true } },
+  admissions: {
+    select: {
+      id: true,
+      applicationNo: true,
+      stage: true,
+      courseName: true,
+      batchName: true,
+      feeAmount: true,
+      feePaid: true,
+      feeBalance: true,
+      feeFinal: true,
+      studentId: true,
+      createdAt: true,
+    },
+    orderBy: { createdAt: "desc" },
+    take: 5,
+  },
+  scoreHistory: {
+    select: { id: true, score: true, reason: true, createdAt: true },
+    orderBy: { createdAt: "desc" },
+    take: 10,
+  },
 } satisfies Prisma.LeadSelect;
 
 export class LeadRepository {
@@ -64,6 +86,12 @@ export class LeadRepository {
         ...(filters.dateFrom ? { gte: new Date(filters.dateFrom) } : {}),
         ...(filters.dateTo ? { lte: new Date(filters.dateTo) } : {}),
       };
+    }
+    if (filters.followUpOverdue) {
+      where.nextFollowUp = { lt: new Date() };
+      if (!filters.status) {
+        where.status = { notIn: ["CONVERTED", "LOST"] };
+      }
     }
 
     const skip = (filters.page - 1) * filters.limit;

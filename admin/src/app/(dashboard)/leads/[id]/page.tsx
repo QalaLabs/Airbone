@@ -5,8 +5,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft, Mail, Phone, Calendar, User, MessageSquare,
-  PhoneCall, Clock, FileText, Sparkles,
-  Bot, ShieldCheck, Download, Paperclip, Plus, Send, Landmark, CreditCard
+  PhoneCall, Clock, FileText, Sparkles, Plus, CheckCircle2,
+  UserPlus, GraduationCap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -22,38 +22,87 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { motion, AnimatePresence } from "framer-motion";
+
+interface LeadAdmission {
+  id: string;
+  applicationNo: string;
+  stage: string;
+  courseName?: string | null;
+  batchName?: string | null;
+  feePaid?: string | number | null;
+  feeBalance?: string | number | null;
+  feeFinal?: string | number | null;
+}
 
 interface Lead {
   id: string;
   name: string;
-  email: string;
+  email?: string | null;
   phone: string;
   status: string;
   source: string;
-  priority?: string;
-  score?: number;
-  courseInterest?: string;
-  notes?: string;
-  assignedTo?: { id: string; name: string };
-  admission?: { id: string; applicationNo: string; stage: string; feePaid?: boolean };
+  score: number;
+  courseInterest?: string | null;
+  city?: string | null;
+  nextFollowUp?: string | null;
+  lastActivityAt?: string | null;
+  convertedAt?: string | null;
+  lostReason?: string | null;
+  assignedTo?: string | null;
+  counselor?: { id: string; name: string; email?: string | null } | null;
+  admissions?: LeadAdmission[];
+  scoreHistory?: { id: string; score: number; reason?: string | null; createdAt: string }[];
   createdAt: string;
   updatedAt: string;
 }
 
 interface LeadActivity {
   id: string;
-  type: string;
-  description: string;
-  createdBy?: { name: string };
+  activityType: string;
+  title?: string | null;
+  notes?: string | null;
+  outcome?: string | null;
+  dueAt?: string | null;
+  completedAt?: string | null;
+  durationMins?: number | null;
+  performer?: { id: string; name: string } | null;
   createdAt: string;
 }
 
-const LEAD_STATUSES = ["NEW", "CONTACTED", "INTERESTED", "NOT_INTERESTED", "FOLLOW_UP", "COUNSELED", "CONVERTED", "LOST"];
+interface CounselorOption {
+  id: string;
+  name: string;
+  role: string;
+}
+
+const LEAD_STATUSES = [
+  "NEW",
+  "CONTACTED",
+  "INTERESTED",
+  "FOLLOW_UP",
+  "COUNSELED",
+  "APPLICATION_SUBMITTED",
+  "CONVERTED",
+  "LOST",
+] as const;
+
+const ACTIVITY_TYPES = [
+  "NOTE",
+  "CALL",
+  "EMAIL",
+  "WHATSAPP",
+  "SMS",
+  "MEETING",
+  "TASK",
+] as const;
 
 const activitySchema = z.object({
-  type: z.string().min(1),
-  description: z.string().min(5, "Description must be at least 5 characters"),
+  activityType: z.enum(ACTIVITY_TYPES),
+  title: z.string().max(500).optional(),
+  notes: z.string().min(2, "Add a short note").max(5000),
+  outcome: z.string().max(255).optional(),
+  dueAt: z.string().optional(),
+  durationMins: z.coerce.number().min(0).max(1440).optional(),
 });
 
 type ActivityForm = z.infer<typeof activitySchema>;
@@ -62,103 +111,208 @@ const ACTIVITY_ICONS: Record<string, React.ElementType> = {
   NOTE: MessageSquare,
   CALL: PhoneCall,
   EMAIL: Mail,
+  WHATSAPP: MessageSquare,
+  SMS: Phone,
   MEETING: Calendar,
+  TASK: CheckCircle2,
   FOLLOW_UP: Clock,
-  OTHER: FileText,
+  STATUS_CHANGE: Sparkles,
+  ASSIGNMENT: UserPlus,
+  SYSTEM: FileText,
 };
 
-const MOCK_VOICE_AI_LOGS = [
-  { id: 1, callId: "vapi_88291a", duration: "3m 42s", summary: "Lead expressed strong interest in Cadet Pilot Program. Inquired about DGCA medical exam dates. Confirmed budget availability.", sentiment: "HIGHLY_POSITIVE", timestamp: "Today, 11:42 AM" },
-  { id: 2, callId: "vapi_55102b", duration: "1m 15s", summary: "Automated pre-screening check. Verified English proficiency and basic eligibility criteria (10+2 Physics/Maths).", sentiment: "NEUTRAL", timestamp: "Yesterday, 2:15 PM" },
-];
-
-const MOCK_WHATSAPP_MESSAGES = [
-  { id: 1, sender: "bot", text: "Hi! Thanks for requesting the Airborne Aviation Academy brochure. Here is your digital copy ✈️ [Airborne_Syllabus.pdf]", time: "Yesterday, 10:05 AM" },
-  { id: 2, sender: "user", text: "Thanks! What is the fee structure for the A320 type rating?", time: "Yesterday, 10:15 AM" },
-  { id: 3, sender: "counselor", text: "Hello Captain! I am Anjali from the admissions team. The A320 Type Rating package is ₹18.5L including ground classes and 32 hours of fixed-base/full-flight simulator sessions. Would you like to schedule a campus tour?", time: "Yesterday, 10:20 AM" },
-  { id: 4, sender: "user", text: "That sounds excellent. Let's connect tomorrow afternoon.", time: "Yesterday, 10:25 AM" },
-];
-
-const MOCK_DOCUMENTS = [
-  { id: 1, name: "Class 12 Marks Sheet.pdf", size: "2.4 MB", type: "Academic", uploadedAt: "May 12, 2026" },
-  { id: 2, name: "DGCA Class II Medical Assessment.pdf", size: "1.1 MB", type: "Medical", uploadedAt: "May 14, 2026" },
-  { id: 3, name: "Passport Copy.pdf", size: "4.2 MB", type: "Identity", uploadedAt: "May 14, 2026" },
-];
+function priorityFromScore(score: number) {
+  if (score >= 70) return "HIGH";
+  if (score >= 40) return "MEDIUM";
+  return "LOW";
+}
 
 export default function LeadDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = React.useState("overview");
-  const [addActivityOpen, setAddActivityOpen] = React.useState(false);
-  const [internalComment, setInternalComment] = React.useState("");
-  const [commentsList, setCommentsList] = React.useState([
-    { id: 1, author: "Admissions Head", text: "Excellent candidate. Recommended for immediate fast-track batch allocation.", time: "2 hours ago" }
-  ]);
+  const [activeTab, setActiveTab] = React.useState<"timeline" | "tasks" | "comms" | "scoring">("timeline");
+  const [logOpen, setLogOpen] = React.useState(false);
+  const [logDefaultType, setLogDefaultType] = React.useState<(typeof ACTIVITY_TYPES)[number]>("NOTE");
+  const [assignOpen, setAssignOpen] = React.useState(false);
+  const [counselorId, setCounselorId] = React.useState("");
+  const [followUp, setFollowUp] = React.useState("");
+  const [lostReason, setLostReason] = React.useState("");
 
   const { data: lead, isLoading } = useQuery({
     queryKey: ["lead", id],
-    queryFn: async () => {
-      const res = await apiFetch<Lead>(`/leads/${id}`);
-      return {
-        ...res,
-        score: res.score || 88,
-        priority: res.priority || "HIGH",
-        assignedTo: res.assignedTo || { id: "c1", name: "Anjali Verma" },
-        admission: res.admission || { id: "adm_9012", applicationNo: "AIR-2026-8891", stage: "DOCUMENT_VERIFICATION", feePaid: true }
-      };
-    },
+    queryFn: () => apiFetch<Lead>(`/leads/${id}`),
     enabled: !!id,
   });
 
   const { data: activities, isLoading: activitiesLoading } = useQuery({
     queryKey: ["lead", id, "activities"],
-    queryFn: () => apiFetch<LeadActivity[]>(`/leads/${id}/activities`),
+    queryFn: () => apiFetch<LeadActivity[]>(`/leads/${id}/activities?limit=50`),
     enabled: !!id,
   });
 
-  const updateStatusMutation = useMutation({
-    mutationFn: (status: string) =>
-      apiFetch(`/leads/${id}`, { method: "PATCH", body: JSON.stringify({ status }) }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["lead", id] });
-      queryClient.invalidateQueries({ queryKey: ["leads"] });
-      toast({ title: "Lead Status Updated", description: "The workflow status has been synchronized." });
+  const { data: counselors } = useQuery({
+    queryKey: ["users", "counselors"],
+    queryFn: async () => {
+      try {
+        return await apiFetch<CounselorOption[]>(`/users?limit=50`);
+      } catch {
+        return [] as CounselorOption[];
+      }
     },
-    onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<ActivityForm>({
-    resolver: zodResolver(activitySchema),
-    defaultValues: { type: "NOTE" },
+  React.useEffect(() => {
+    if (lead?.nextFollowUp) {
+      setFollowUp(lead.nextFollowUp.slice(0, 16));
+    }
+  }, [lead?.nextFollowUp]);
+
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ["lead", id] });
+    queryClient.invalidateQueries({ queryKey: ["lead", id, "activities"] });
+    queryClient.invalidateQueries({ queryKey: ["leads"] });
+  };
+
+  const updateStatusMutation = useMutation({
+    mutationFn: (payload: { status: string; lostReason?: string }) =>
+      apiFetch(`/leads/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+    onSuccess: () => {
+      invalidate();
+      toast({ title: "Status updated" });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<ActivityForm>({
+    resolver: zodResolver(activitySchema),
+    defaultValues: { activityType: "NOTE", notes: "" },
+  });
+
+  const activityType = watch("activityType");
+
+  const openLog = (type: (typeof ACTIVITY_TYPES)[number] = "NOTE") => {
+    setLogDefaultType(type);
+    reset({ activityType: type, notes: "", title: "", outcome: "", dueAt: "" });
+    setValue("activityType", type);
+    setLogOpen(true);
+  };
 
   const addActivityMutation = useMutation({
-    mutationFn: (body: ActivityForm) =>
-      apiFetch(`/leads/${id}/activities`, { method: "POST", body: JSON.stringify(body) }),
+    mutationFn: (body: ActivityForm) => {
+      const payload: Record<string, unknown> = {
+        activityType: body.activityType,
+        title: body.title || undefined,
+        notes: body.notes,
+        outcome: body.outcome || undefined,
+        durationMins: body.durationMins || undefined,
+      };
+      if (body.dueAt) {
+        payload.dueAt = new Date(body.dueAt).toISOString();
+      }
+      return apiFetch(`/leads/${id}/activities`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["lead", id, "activities"] });
-      toast({ title: "Activity logged", description: "Timeline updated successfully." });
-      setAddActivityOpen(false);
+      invalidate();
+      toast({ title: "Activity logged" });
+      setLogOpen(false);
       reset();
     },
-    onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
-  const handleAddComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!internalComment.trim()) return;
-    setCommentsList(prev => [{ id: Date.now(), author: "Current User", text: internalComment, time: "Just now" }, ...prev]);
-    setInternalComment("");
-    toast({ title: "Comment added", description: "Internal notes updated." });
-  };
+  const completeTaskMutation = useMutation({
+    mutationFn: (activityId: string) =>
+      apiFetch(`/leads/${id}/activities/${activityId}`, {
+        method: "PATCH",
+        body: JSON.stringify({}),
+      }),
+    onSuccess: () => {
+      invalidate();
+      toast({ title: "Task completed" });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const assignMutation = useMutation({
+    mutationFn: (cid: string) =>
+      apiFetch(`/leads/${id}/assign`, {
+        method: "PATCH",
+        body: JSON.stringify({ counselorId: cid }),
+      }),
+    onSuccess: () => {
+      invalidate();
+      setAssignOpen(false);
+      toast({ title: "Counselor assigned" });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const followUpMutation = useMutation({
+    mutationFn: (value: string | null) =>
+      apiFetch(`/leads/${id}/follow-up`, {
+        method: "PATCH",
+        body: JSON.stringify({ nextFollowUp: value }),
+      }),
+    onSuccess: () => {
+      invalidate();
+      toast({ title: "Follow-up saved" });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const convertMutation = useMutation({
+    mutationFn: () =>
+      apiFetch<{ admission: { id: string; applicationNo: string }; created: boolean }>(`/leads/${id}/convert`, {
+        method: "POST",
+        body: JSON.stringify({
+          courseName: lead?.courseInterest ?? undefined,
+          counselorId: lead?.assignedTo ?? undefined,
+        }),
+      }),
+    onSuccess: (res) => {
+      invalidate();
+      toast({
+        title: res.created ? "Admission created" : "Admission already exists",
+        description: res.admission.applicationNo,
+      });
+      router.push(`/admissions?id=${res.admission.id}`);
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const activityList = Array.isArray(activities) ? activities : [];
+  const tasks = activityList.filter((a) => a.activityType === "TASK");
+  const openTasks = tasks.filter((a) => !a.completedAt);
+  const comms = activityList.filter((a) =>
+    ["CALL", "EMAIL", "WHATSAPP", "SMS", "MEETING"].includes(a.activityType),
+  );
+  const pipeline = ["NEW", "CONTACTED", "COUNSELED", "APPLICATION_SUBMITTED", "CONVERTED"];
+  const statusIndex = pipeline.indexOf(lead?.status ?? "NEW");
+  const primaryAdmission = lead?.admissions?.[0];
+  const counselorOptions = (Array.isArray(counselors) ? counselors : []).filter((u) =>
+    ["ADMIN", "SUPER_ADMIN", "COUNSELOR", "TEACHER"].includes(u.role),
+  );
 
   if (isLoading) {
     return (
       <div className="space-y-6 pb-12">
         <Skeleton className="h-8 w-48" />
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2 space-y-4"><Skeleton className="h-64 w-full" /><Skeleton className="h-64 w-full" /></div>
+          <div className="lg:col-span-2 space-y-4">
+            <Skeleton className="h-64 w-full" />
+            <Skeleton className="h-64 w-full" />
+          </div>
           <Skeleton className="h-96 w-full" />
         </div>
       </div>
@@ -168,73 +322,116 @@ export default function LeadDetailPage() {
   if (!lead) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
-        <p className="text-muted-foreground font-semibold">Lead profile not found in CRM database.</p>
-        <Button variant="ghost" onClick={() => router.push("/leads")} className="mt-4 text-primary font-bold">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Lead Manager
+        <p className="text-muted-foreground font-semibold">Lead not found.</p>
+        <Button variant="ghost" onClick={() => router.push("/leads")} className="mt-4">
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back to leads
         </Button>
       </div>
     );
   }
 
+  const priority = priorityFromScore(lead.score ?? 0);
+
   return (
     <div className="space-y-6 pb-12">
-      {/* Top Header & Status Bar */}
       <div className="glass-card rounded-2xl p-6 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-slate-900/80 backdrop-blur-xl">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.push("/leads")} className="h-10 w-10 hover:bg-secondary/60 text-muted-foreground hover:text-white">
+          <Button variant="ghost" size="icon" onClick={() => router.push("/leads")} className="h-10 w-10">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-2xl font-bold text-white tracking-tight">{lead.name}</h1>
               <span className="text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
-                <Sparkles className="h-3 w-3" /> Score: {lead.score}
+                <Sparkles className="h-3 w-3" /> Score: {lead.score ?? 0}
               </span>
               <span className="text-[10px] font-extrabold bg-rose-500/20 text-rose-400 border border-rose-500/30 px-2 py-0.5 rounded-full">
-                {lead.priority} PRIORITY
+                {priority}
               </span>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Intake created on {formatDate(lead.createdAt)} • Source: {lead.source.replace(/_/g, " ")}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Created {formatDate(lead.createdAt)} · Source: {(lead.source ?? "").replace(/_/g, " ")}
+              {lead.nextFollowUp ? ` · Follow-up ${formatDateTime(lead.nextFollowUp)}` : ""}
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex flex-wrap items-end gap-3">
           <div className="flex flex-col gap-1 text-xs text-muted-foreground font-semibold">
-            <span>Stage Status</span>
-            <Select value={lead.status} onValueChange={(v) => updateStatusMutation.mutate(v)} disabled={updateStatusMutation.isPending}>
-              <SelectTrigger className="w-44 bg-secondary/60 border-white/10 text-white font-bold text-xs h-9">
+            <span>Status</span>
+            <Select
+              value={lead.status}
+              onValueChange={(v) => {
+                if (v === "LOST" && !lostReason.trim()) {
+                  toast({ title: "Lost reason required", description: "Enter a lost reason below first.", variant: "destructive" });
+                  return;
+                }
+                updateStatusMutation.mutate({
+                  status: v,
+                  lostReason: v === "LOST" ? lostReason : undefined,
+                });
+              }}
+              disabled={updateStatusMutation.isPending}
+            >
+              <SelectTrigger className="w-48 bg-secondary/60 border-white/10 text-white font-bold text-xs h-9">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="glass-panel border-white/10 text-xs">
                 {LEAD_STATUSES.map((s) => (
-                  <SelectItem key={s} value={s}>{s.replace(/_/g, " ")}</SelectItem>
+                  <SelectItem key={s} value={s}>
+                    {s.replace(/_/g, " ")}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
+          <Button size="sm" variant="outline" className="border-white/10 text-xs font-bold" onClick={() => setAssignOpen(true)}>
+            <UserPlus className="h-3.5 w-3.5 mr-1" /> Assign
+          </Button>
+          <Button
+            size="sm"
+            className="bg-primary text-white text-xs font-bold"
+            onClick={() => convertMutation.mutate()}
+            disabled={convertMutation.isPending || lead.status === "LOST"}
+          >
+            <GraduationCap className="h-3.5 w-3.5 mr-1" /> Convert to Admission
+          </Button>
         </div>
       </div>
 
-      {/* Tabs Navigation */}
+      <div className="flex gap-2 items-center max-w-xl">
+        <Input
+          placeholder="Lost reason (required when marking LOST)"
+          value={lostReason}
+          onChange={(e) => setLostReason(e.target.value)}
+          className="bg-secondary/40 border-white/10 text-xs"
+        />
+      </div>
+      {lead.lostReason ? (
+        <p className="text-xs text-rose-400 font-semibold">Current lost reason: {lead.lostReason}</p>
+      ) : null}
+
       <div className="flex border-b border-white/10 gap-2 overflow-x-auto pb-1">
         {[
-          { id: "overview", label: "Profile Overview", icon: User },
-          { id: "voice_ai", label: "Voice AI Logs", icon: Bot },
-          { id: "whatsapp", label: "WhatsApp Chat", icon: MessageSquare },
-          { id: "documents", label: "Attached Documents", icon: FileText },
-          { id: "comments", label: "Internal Comments", icon: MessageSquare },
+          { id: "timeline" as const, label: "Timeline", icon: Clock },
+          { id: "tasks" as const, label: `Tasks (${openTasks.length})`, icon: CheckCircle2 },
+          { id: "comms" as const, label: "Calls / Email / WhatsApp", icon: PhoneCall },
+          { id: "scoring" as const, label: "Scoring", icon: Sparkles },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
+              type="button"
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap border ${
-                isActive ? "bg-primary/20 text-white border-primary/30 shadow-lg shadow-primary/10" : "text-muted-foreground hover:bg-white/5 hover:text-foreground border-transparent"
+                isActive
+                  ? "bg-primary/20 text-white border-primary/30"
+                  : "text-muted-foreground hover:bg-white/5 border-transparent"
               }`}
             >
-              <Icon className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+              <Icon className="h-4 w-4" />
               {tab.label}
             </button>
           );
@@ -242,333 +439,377 @@ export default function LeadDetailPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Workspace Area (Left 2 columns) */}
         <div className="lg:col-span-2 space-y-6">
-          <AnimatePresence mode="wait">
-            {activeTab === "overview" && (
-              <motion.div key="overview" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-6">
-                {/* Basic Information & Status Timeline */}
-                <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-6">
-                  <h2 className="text-base font-bold text-white flex items-center gap-2 border-b border-white/10 pb-3">
-                    <User className="h-4 w-4 text-primary" /> Basic Information
-                  </h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div className="p-4 rounded-xl bg-secondary/30 border border-white/5 space-y-1">
-                      <span className="text-xs font-semibold text-muted-foreground">Email Address</span>
-                      <div className="flex items-center gap-2 text-sm font-bold text-white">
-                        <Mail className="h-4 w-4 text-primary" /> {lead.email}
-                      </div>
-                    </div>
-                    <div className="p-4 rounded-xl bg-secondary/30 border border-white/5 space-y-1">
-                      <span className="text-xs font-semibold text-muted-foreground">Phone Number</span>
-                      <div className="flex items-center gap-2 text-sm font-mono font-bold text-white">
-                        <Phone className="h-4 w-4 text-primary" /> {lead.phone}
-                      </div>
-                    </div>
-                    <div className="p-4 rounded-xl bg-secondary/30 border border-white/5 space-y-1">
-                      <span className="text-xs font-semibold text-muted-foreground">Target Course Interest</span>
-                      <div className="text-sm font-bold text-white">{lead.courseInterest ?? "DGCA CPL Ground School"}</div>
-                    </div>
-                    <div className="p-4 rounded-xl bg-secondary/30 border border-white/5 space-y-1">
-                      <span className="text-xs font-semibold text-muted-foreground">Assigned Counselor</span>
-                      <div className="text-sm font-bold text-emerald-400">{lead.assignedTo?.name ?? "Anjali Verma"}</div>
-                    </div>
-                  </div>
+          <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-6">
+            <h2 className="text-base font-bold text-white flex items-center gap-2 border-b border-white/10 pb-3">
+              <User className="h-4 w-4 text-primary" /> Profile
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Info label="Email" value={lead.email || "—"} icon={Mail} />
+              <Info label="Phone" value={lead.phone} icon={Phone} mono />
+              <Info label="Course interest" value={lead.courseInterest || "—"} />
+              <Info label="Counselor" value={lead.counselor?.name || "Unassigned"} />
+              <Info label="City" value={lead.city || "—"} />
+              <Info
+                label="Last activity"
+                value={lead.lastActivityAt ? formatDateTime(lead.lastActivityAt) : "—"}
+              />
+            </div>
 
-                  {/* Status Timeline */}
-                  <div className="space-y-3 pt-4 border-t border-white/10">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Stage Evolution Timeline</h3>
-                    <div className="grid grid-cols-4 gap-2 pt-2">
-                      {["NEW", "CONTACTED", "COUNSELED", "CONVERTED"].map((st, idx) => {
-                        const isDone = idx <= 2;
-                        return (
-                          <div key={st} className={`p-2 rounded-xl border text-center ${isDone ? "bg-primary/20 border-primary/30 text-white" : "bg-secondary/30 border-white/5 text-muted-foreground"}`}>
-                            <span className="text-[10px] font-bold block">{st}</span>
-                            <span className="text-[9px] text-muted-foreground block mt-0.5">{isDone ? "Completed" : "Pending"}</span>
-                          </div>
-                        );
-                      })}
+            <div className="space-y-3 pt-2 border-t border-white/10">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Pipeline</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                {pipeline.map((st, idx) => {
+                  const isDone = statusIndex >= 0 && idx <= statusIndex;
+                  return (
+                    <div
+                      key={st}
+                      className={`p-2 rounded-xl border text-center ${
+                        isDone
+                          ? "bg-primary/20 border-primary/30 text-white"
+                          : "bg-secondary/30 border-white/5 text-muted-foreground"
+                      }`}
+                    >
+                      <span className="text-[10px] font-bold block">{st.replace(/_/g, " ")}</span>
                     </div>
-                  </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {activeTab === "timeline" && (
+            <TimelineCard
+              title="Activity timeline"
+              loading={activitiesLoading}
+              items={activityList}
+              onAdd={() => openLog("NOTE")}
+              onComplete={(aid) => completeTaskMutation.mutate(aid)}
+              quickActions
+              onQuick={(t) => openLog(t)}
+            />
+          )}
+
+          {activeTab === "tasks" && (
+            <TimelineCard
+              title="Tasks"
+              loading={activitiesLoading}
+              items={tasks}
+              onAdd={() => openLog("TASK")}
+              onComplete={(aid) => completeTaskMutation.mutate(aid)}
+              empty="No tasks yet."
+            />
+          )}
+
+          {activeTab === "comms" && (
+            <TimelineCard
+              title="Communication log"
+              loading={activitiesLoading}
+              items={comms}
+              onAdd={() => openLog("CALL")}
+              onComplete={(aid) => completeTaskMutation.mutate(aid)}
+              empty="No calls, emails, or WhatsApp logs yet."
+              quickActions
+              onQuick={(t) => openLog(t)}
+              quickTypes={["CALL", "EMAIL", "WHATSAPP", "SMS", "MEETING"]}
+            />
+          )}
+
+          {activeTab === "scoring" && (
+            <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-4">
+              <h2 className="text-base font-bold text-white border-b border-white/10 pb-3">Score history</h2>
+              <p className="text-sm text-white font-bold">Current score: {lead.score ?? 0}</p>
+              {!lead.scoreHistory?.length ? (
+                <p className="text-xs text-muted-foreground">No score history yet. Logging activities updates score.</p>
+              ) : (
+                <div className="space-y-2">
+                  {lead.scoreHistory.map((h) => (
+                    <div key={h.id} className="flex justify-between text-xs p-3 rounded-xl bg-secondary/30 border border-white/5">
+                      <span className="text-white font-bold">{h.score}</span>
+                      <span className="text-muted-foreground">{h.reason || "—"}</span>
+                      <span className="text-muted-foreground">{formatDateTime(h.createdAt)}</span>
+                    </div>
+                  ))}
                 </div>
-
-                {/* Activity Timeline */}
-                <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-6">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                    <h2 className="text-base font-bold text-white flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-primary" /> Activity Timeline & Touchpoints
-                    </h2>
-                    <Button size="sm" onClick={() => setAddActivityOpen(true)} className="bg-primary hover:bg-primary/90 text-white text-xs font-bold">
-                      <Plus className="h-3.5 w-3.5 mr-1" /> Add Activity
-                    </Button>
-                  </div>
-
-                  {activitiesLoading ? (
-                    <div className="space-y-4">
-                      {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
-                    </div>
-                  ) : !activities?.length ? (
-                    <p className="text-xs text-muted-foreground text-center py-8 font-semibold">No timeline activities logged yet.</p>
-                  ) : (
-                    <div className="space-y-4">
-                      {activities.map((act) => {
-                        const Icon = ACTIVITY_ICONS[act.type] ?? FileText;
-                        return (
-                          <div key={act.id} className="flex gap-4 p-4 rounded-xl bg-secondary/30 border border-white/5 hover:border-white/10 transition-colors">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary border border-primary/30">
-                              <Icon className="h-4 w-4" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-xs font-bold text-white">{act.type.replace(/_/g, " ")}</span>
-                                <span className="text-[10px] font-medium text-muted-foreground">{formatDateTime(act.createdAt)}</span>
-                              </div>
-                              <p className="text-xs text-muted-foreground leading-relaxed">{act.description}</p>
-                              {act.createdBy && (
-                                <p className="text-[10px] text-primary font-semibold mt-1">Logged by {act.createdBy.name}</p>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-
-            {activeTab === "voice_ai" && (
-              <motion.div key="voice_ai" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-6">
-                <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-6">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                    <h2 className="text-base font-bold text-white flex items-center gap-2">
-                      <Bot className="h-4 w-4 text-primary animate-pulse" /> Voice AI Screening Logs (Vapi Bot)
-                    </h2>
-                    <span className="text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full">
-                      TELEMETRY LIVE
-                    </span>
-                  </div>
-                  <div className="space-y-4">
-                    {MOCK_VOICE_AI_LOGS.map((log) => (
-                      <div key={log.id} className="p-4 rounded-xl bg-secondary/30 border border-white/5 space-y-3 hover:border-white/10 transition-colors">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-mono font-bold text-primary">{log.callId} ({log.duration})</span>
-                          <span className="text-[10px] font-medium text-muted-foreground">{log.timestamp}</span>
-                        </div>
-                        <p className="text-xs text-foreground leading-relaxed font-medium">{log.summary}</p>
-                        <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[11px] font-bold">
-                          <span className="text-muted-foreground">Intent Assessment</span>
-                          <span className="text-emerald-400">{log.sentiment}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {activeTab === "whatsapp" && (
-              <motion.div key="whatsapp" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-6">
-                <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-6">
-                  <h2 className="text-base font-bold text-white flex items-center gap-2 border-b border-white/10 pb-3">
-                    <MessageSquare className="h-4 w-4 text-emerald-400" /> WhatsApp Conversation History
-                  </h2>
-                  <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
-                    {MOCK_WHATSAPP_MESSAGES.map((msg) => {
-                      const isUser = msg.sender === "user";
-                      return (
-                        <div key={msg.id} className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}>
-                          <div className={`max-w-md p-3.5 rounded-2xl text-xs font-medium leading-relaxed ${
-                            isUser ? "bg-primary text-white rounded-br-none shadow-md shadow-primary/20" : 
-                            msg.sender === "bot" ? "bg-secondary/40 text-muted-foreground rounded-bl-none border border-white/5" :
-                            "bg-slate-800 text-white rounded-bl-none border border-emerald-500/20"
-                          }`}>
-                            <div className="text-[9px] font-extrabold uppercase mb-1 opacity-70">
-                              {msg.sender === "user" ? lead.name : msg.sender === "bot" ? "Airborne Bot" : "Assigned Counselor"}
-                            </div>
-                            {msg.text}
-                          </div>
-                          <span className="text-[9px] text-muted-foreground mt-1 px-1">{msg.time}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="flex items-center gap-3 pt-4 border-t border-white/10">
-                    <Input placeholder="Reply to candidate via WhatsApp Business API..." className="bg-secondary/40 border-white/10 text-xs font-medium" />
-                    <Button size="icon" className="bg-emerald-500 hover:bg-emerald-600 text-white shrink-0">
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {activeTab === "documents" && (
-              <motion.div key="documents" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-6">
-                <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-6">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                    <h2 className="text-base font-bold text-white flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-primary" /> Candidate Documents & Records
-                    </h2>
-                    <Button size="sm" variant="outline" className="border-white/10 text-xs font-bold">
-                      <Paperclip className="h-3.5 w-3.5 mr-1" /> Upload Document
-                    </Button>
-                  </div>
-                  <div className="space-y-3">
-                    {MOCK_DOCUMENTS.map((doc) => (
-                      <div key={doc.id} className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-white/5 hover:border-white/10 transition-colors">
-                        <div className="flex items-center gap-3.5 min-w-0">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary border border-primary/30">
-                            <FileText className="h-5 w-5" />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-xs font-bold text-white truncate">{doc.name}</p>
-                            <p className="text-[11px] text-muted-foreground">Uploaded {doc.uploadedAt} • {doc.size}</p>
-                          </div>
-                        </div>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
-                          <Download className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {activeTab === "comments" && (
-              <motion.div key="comments" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-6">
-                <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-6">
-                  <h2 className="text-base font-bold text-white flex items-center gap-2 border-b border-white/10 pb-3">
-                    <MessageSquare className="h-4 w-4 text-primary" /> Internal Comments & Notes (Team Only)
-                  </h2>
-                  <form onSubmit={handleAddComment} className="space-y-3">
-                    <Textarea
-                      placeholder="Add an internal note for counselors or admissions desk..."
-                      rows={3}
-                      value={internalComment}
-                      onChange={(e) => setInternalComment(e.target.value)}
-                      className="bg-secondary/40 border-white/10 text-xs font-medium"
-                    />
-                    <div className="flex justify-end">
-                      <Button type="submit" size="sm" className="bg-primary hover:bg-primary/90 text-white text-xs font-bold">
-                        Add Internal Comment
-                      </Button>
-                    </div>
-                  </form>
-                  <div className="space-y-4 pt-4 border-t border-white/10">
-                    {commentsList.map((com) => (
-                      <div key={com.id} className="p-4 rounded-xl bg-secondary/30 border border-white/5 space-y-2">
-                        <div className="flex items-center justify-between text-[11px] font-bold">
-                          <span className="text-primary">{com.author}</span>
-                          <span className="text-muted-foreground">{com.time}</span>
-                        </div>
-                        <p className="text-xs text-foreground font-medium leading-relaxed">{com.text}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Right Sidebar: Admission Status, Payment Status & Metadata */}
         <div className="space-y-6">
-          {/* Admission & Payment Status */}
-          {lead.admission && (
-            <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-5">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-white flex items-center gap-2 border-b border-white/10 pb-3">
-                <Landmark className="h-4 w-4 text-primary" /> Admission & Financials
+          <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-4">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-white border-b border-white/10 pb-3">
+              Follow-up
+            </h3>
+            <Input
+              type="datetime-local"
+              value={followUp}
+              onChange={(e) => setFollowUp(e.target.value)}
+              className="bg-secondary/40 border-white/10 text-xs"
+            />
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                className="text-xs font-bold flex-1"
+                onClick={() =>
+                  followUpMutation.mutate(followUp ? new Date(followUp).toISOString() : null)
+                }
+                disabled={followUpMutation.isPending}
+              >
+                Save
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs font-bold border-white/10"
+                onClick={() => {
+                  setFollowUp("");
+                  followUpMutation.mutate(null);
+                }}
+              >
+                Clear
+              </Button>
+            </div>
+            <Button size="sm" variant="outline" className="w-full border-white/10 text-xs font-bold" onClick={() => openLog("TASK")}>
+              <Plus className="h-3.5 w-3.5 mr-1" /> Schedule task
+            </Button>
+          </div>
+
+          {primaryAdmission ? (
+            <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-4">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-white border-b border-white/10 pb-3">
+                Admission
               </h3>
-              <div className="space-y-4">
-                <div>
-                  <span className="text-xs text-muted-foreground font-semibold">Application Number</span>
-                  <p className="text-sm font-bold text-white mt-0.5">{lead.admission.applicationNo}</p>
-                </div>
-                <div>
-                  <span className="text-xs text-muted-foreground font-semibold">Stage Status</span>
-                  <div className="mt-1">
-                    <StatusBadge status={lead.admission.stage} domain="admission" />
-                  </div>
-                </div>
-                <div>
-                  <span className="text-xs text-muted-foreground font-semibold">Payment Status</span>
-                  <div className="mt-1 flex items-center gap-2 text-xs font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-xl">
-                    <CreditCard className="h-4 w-4 text-emerald-400 shrink-0" />
-                    <span>REGISTRATION FEE PAID (₹25,000)</span>
-                  </div>
-                </div>
-                <Button variant="outline" className="w-full border-white/10 text-xs font-bold hover:bg-white/5" asChild>
-                  <a href={`/admissions?id=${lead.admission.id}`}>Open Admission Dossier</a>
-                </Button>
+              <div>
+                <span className="text-xs text-muted-foreground font-semibold">Application</span>
+                <p className="text-sm font-bold text-white mt-0.5">{primaryAdmission.applicationNo}</p>
               </div>
+              <StatusBadge status={primaryAdmission.stage} domain="admission" />
+              <Button variant="outline" className="w-full border-white/10 text-xs font-bold" asChild>
+                <a href={`/admissions?id=${primaryAdmission.id}`}>Open admission</a>
+              </Button>
+            </div>
+          ) : (
+            <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-3">
+              <h3 className="text-sm font-bold text-white">No admission yet</h3>
+              <p className="text-xs text-muted-foreground">Convert this lead to start the admissions workflow.</p>
             </div>
           )}
 
-          {/* Core Telemetry Metadata */}
-          <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-4">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-white flex items-center gap-2 border-b border-white/10 pb-3">
-              <ShieldCheck className="h-4 w-4 text-primary" /> System Metadata
-            </h3>
-            <div className="space-y-3 text-xs">
-              <div>
-                <span className="text-muted-foreground block font-semibold">Lead Record ID</span>
-                <span className="font-mono text-white font-bold">{lead.id}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground block font-semibold">Created Timestamp</span>
-                <span className="text-white font-bold">{formatDateTime(lead.createdAt)}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground block font-semibold">Last Synchronized</span>
-                <span className="text-white font-bold">{formatDateTime(lead.updatedAt)}</span>
-              </div>
+          <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-3 text-xs">
+            <h3 className="text-sm font-bold text-white border-b border-white/10 pb-3">Metadata</h3>
+            <div>
+              <span className="text-muted-foreground block font-semibold">Lead ID</span>
+              <span className="font-mono text-white font-bold break-all">{lead.id}</span>
+            </div>
+            <div>
+              <span className="text-muted-foreground block font-semibold">Updated</span>
+              <span className="text-white font-bold">{formatDateTime(lead.updatedAt)}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Add Activity Dialog */}
-      <Dialog open={addActivityOpen} onOpenChange={setAddActivityOpen}>
+      <Dialog open={logOpen} onOpenChange={setLogOpen}>
         <DialogContent className="max-w-md glass-panel border-white/10 bg-slate-900/95">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-white flex items-center gap-2">
-              <Plus className="h-5 w-5 text-primary" />
-              Log Timeline Activity
-            </DialogTitle>
+            <DialogTitle className="text-lg font-bold text-white">Log activity</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit((d) => addActivityMutation.mutate(d))} className="space-y-4 pt-2">
             <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-muted-foreground">Activity Type</Label>
+              <Label className="text-xs font-bold text-muted-foreground">Type</Label>
               <select
-                className="flex h-9 w-full rounded-lg border border-white/10 bg-secondary/40 px-3 py-1 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
-                {...register("type")}
+                className="flex h-9 w-full rounded-lg border border-white/10 bg-secondary/40 px-3 py-1 text-xs font-semibold"
+                {...register("activityType")}
+                defaultValue={logDefaultType}
               >
-                {["NOTE", "CALL", "EMAIL", "MEETING", "FOLLOW_UP", "OTHER"].map((t) => (
-                  <option key={t} value={t} className="bg-slate-900">{t.replace(/_/g, " ")}</option>
+                {ACTIVITY_TYPES.map((t) => (
+                  <option key={t} value={t} className="bg-slate-900">
+                    {t}
+                  </option>
                 ))}
               </select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-muted-foreground">Activity Description *</Label>
-              <Textarea
-                placeholder="Details of the conversation or meeting..."
-                rows={4}
-                className="bg-secondary/40 border-white/10 text-xs font-medium"
-                {...register("description")}
-              />
-              {errors.description && <p className="text-xs text-destructive">{errors.description.message}</p>}
+              <Label className="text-xs font-bold text-muted-foreground">Title (optional)</Label>
+              <Input className="bg-secondary/40 border-white/10 text-xs" {...register("title")} />
             </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold text-muted-foreground">Notes *</Label>
+              <Textarea rows={4} className="bg-secondary/40 border-white/10 text-xs" {...register("notes")} />
+              {errors.notes && <p className="text-xs text-destructive">{errors.notes.message}</p>}
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold text-muted-foreground">Outcome (optional)</Label>
+              <Input className="bg-secondary/40 border-white/10 text-xs" {...register("outcome")} />
+            </div>
+            {(activityType === "TASK" || activityType === "MEETING") && (
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-muted-foreground">Due at</Label>
+                <Input type="datetime-local" className="bg-secondary/40 border-white/10 text-xs" {...register("dueAt")} />
+              </div>
+            )}
+            {activityType === "CALL" && (
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-muted-foreground">Duration (minutes)</Label>
+                <Input type="number" className="bg-secondary/40 border-white/10 text-xs" {...register("durationMins")} />
+              </div>
+            )}
             <DialogFooter className="pt-4 border-t border-white/10">
-              <Button type="button" variant="outline" onClick={() => setAddActivityOpen(false)} className="border-white/10 hover:bg-white/5 text-xs font-bold">Cancel</Button>
-              <Button type="submit" disabled={addActivityMutation.isPending} className="bg-primary hover:bg-primary/90 text-white text-xs font-bold shadow-lg shadow-primary/20">
-                {addActivityMutation.isPending ? "Adding..." : "Log Activity"}
+              <Button type="button" variant="outline" onClick={() => setLogOpen(false)} className="border-white/10 text-xs font-bold">
+                Cancel
+              </Button>
+              <Button type="submit" disabled={addActivityMutation.isPending} className="bg-primary text-white text-xs font-bold">
+                {addActivityMutation.isPending ? "Saving..." : "Save"}
               </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
+        <DialogContent className="max-w-sm glass-panel border-white/10 bg-slate-900/95">
+          <DialogHeader>
+            <DialogTitle className="text-white font-bold">Assign counselor</DialogTitle>
+          </DialogHeader>
+          <Select value={counselorId} onValueChange={setCounselorId}>
+            <SelectTrigger className="bg-secondary/60 border-white/10 text-xs">
+              <SelectValue placeholder="Select user" />
+            </SelectTrigger>
+            <SelectContent className="glass-panel border-white/10 text-xs">
+              {counselorOptions.map((u) => (
+                <SelectItem key={u.id} value={u.id}>
+                  {u.name} ({u.role})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <DialogFooter>
+            <Button
+              className="text-xs font-bold"
+              disabled={!counselorId || assignMutation.isPending}
+              onClick={() => assignMutation.mutate(counselorId)}
+            >
+              Assign
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function Info({
+  label,
+  value,
+  icon: Icon,
+  mono,
+}: {
+  label: string;
+  value: string;
+  icon?: React.ElementType;
+  mono?: boolean;
+}) {
+  return (
+    <div className="p-4 rounded-xl bg-secondary/30 border border-white/5 space-y-1">
+      <span className="text-xs font-semibold text-muted-foreground">{label}</span>
+      <div className={`flex items-center gap-2 text-sm font-bold text-white ${mono ? "font-mono" : ""}`}>
+        {Icon ? <Icon className="h-4 w-4 text-primary" /> : null}
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function TimelineCard({
+  title,
+  loading,
+  items,
+  onAdd,
+  onComplete,
+  empty = "No timeline activities logged yet.",
+  quickActions,
+  onQuick,
+  quickTypes = ["NOTE", "CALL", "EMAIL", "WHATSAPP", "TASK"],
+}: {
+  title: string;
+  loading: boolean;
+  items: LeadActivity[];
+  onAdd: () => void;
+  onComplete: (id: string) => void;
+  empty?: string;
+  quickActions?: boolean;
+  onQuick?: (t: (typeof ACTIVITY_TYPES)[number]) => void;
+  quickTypes?: (typeof ACTIVITY_TYPES)[number][];
+}) {
+  return (
+    <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-6">
+      <div className="flex items-center justify-between border-b border-white/10 pb-3 gap-3 flex-wrap">
+        <h2 className="text-base font-bold text-white flex items-center gap-2">
+          <Clock className="h-4 w-4 text-primary" /> {title}
+        </h2>
+        <div className="flex gap-2 flex-wrap">
+          {quickActions && onQuick
+            ? quickTypes.map((t) => (
+                <Button key={t} size="sm" variant="outline" className="border-white/10 text-[10px] font-bold" onClick={() => onQuick(t)}>
+                  {t}
+                </Button>
+              ))
+            : null}
+          <Button size="sm" onClick={onAdd} className="bg-primary text-white text-xs font-bold">
+            <Plus className="h-3.5 w-3.5 mr-1" /> Add
+          </Button>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <Skeleton key={i} className="h-16 w-full" />
+          ))}
+        </div>
+      ) : !items.length ? (
+        <p className="text-xs text-muted-foreground text-center py-8 font-semibold">{empty}</p>
+      ) : (
+        <div className="space-y-4">
+          {items.map((act) => {
+            const Icon = ACTIVITY_ICONS[act.activityType] ?? FileText;
+            const openTask = act.activityType === "TASK" && !act.completedAt;
+            return (
+              <div key={act.id} className="flex gap-4 p-4 rounded-xl bg-secondary/30 border border-white/5">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary border border-primary/30">
+                  <Icon className="h-4 w-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1 gap-2">
+                    <span className="text-xs font-bold text-white">
+                      {act.title || act.activityType.replace(/_/g, " ")}
+                      {openTask ? " · open" : act.completedAt && act.activityType === "TASK" ? " · done" : ""}
+                    </span>
+                    <span className="text-[10px] font-medium text-muted-foreground">{formatDateTime(act.createdAt)}</span>
+                  </div>
+                  {act.notes ? <p className="text-xs text-muted-foreground leading-relaxed">{act.notes}</p> : null}
+                  {act.outcome ? <p className="text-[10px] text-emerald-400 mt-1">Outcome: {act.outcome}</p> : null}
+                  {act.dueAt ? <p className="text-[10px] text-amber-400 mt-1">Due {formatDateTime(act.dueAt)}</p> : null}
+                  {act.performer ? (
+                    <p className="text-[10px] text-primary font-semibold mt-1">Logged by {act.performer.name}</p>
+                  ) : null}
+                  {openTask ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-2 h-7 text-[10px] font-bold border-white/10"
+                      onClick={() => onComplete(act.id)}
+                    >
+                      Mark complete
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

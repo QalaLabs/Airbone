@@ -34,6 +34,8 @@ interface Lead {
   score: number;
   courseInterest?: string;
   assignedTo?: { name: string };
+  counselor?: { id: string; name: string };
+  nextFollowUp?: string | null;
   createdAt: string;
   lastActivityAt?: string;
 }
@@ -60,6 +62,7 @@ export default function LeadsPage() {
   const [statusFilter, setStatusFilter] = React.useState("all");
   const [priorityFilter, setPriorityFilter] = React.useState("all");
   const [counsellorFilter, setCounsellorFilter] = React.useState("all");
+  const [overdueOnly, setOverdueOnly] = React.useState(false);
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
   const [createOpen, setCreateOpen] = React.useState(false);
   const [selectedLeadIds, setSelectedLeadIds] = React.useState<string[]>([]);
@@ -75,7 +78,7 @@ export default function LeadsPage() {
   });
 
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["leads", pagination.pageIndex, pagination.pageSize, debouncedSearch, statusFilter, priorityFilter, counsellorFilter],
+    queryKey: ["leads", pagination.pageIndex, pagination.pageSize, debouncedSearch, statusFilter, priorityFilter, counsellorFilter, overdueOnly],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: String(pagination.pageIndex + 1),
@@ -83,6 +86,7 @@ export default function LeadsPage() {
         ...(debouncedSearch ? { search: debouncedSearch } : {}),
         ...(statusFilter && statusFilter !== "all" ? { status: statusFilter } : {}),
         ...(counsellorFilter && counsellorFilter !== "all" ? { assignedTo: counsellorFilter } : {}),
+        ...(overdueOnly ? { followUpOverdue: "true" } : {}),
       });
       // The API responds with { success, data: Lead[], meta: {total,page,limit,totalPages} }.
       // apiFetch() only unwraps `.data` (dropping `.meta`), so pagination totals are
@@ -96,7 +100,9 @@ export default function LeadsPage() {
       const items = json.data.map((item) => ({
         ...item,
         priority: item.priority || (item.score >= 80 ? "HIGH" : item.score >= 50 ? "MEDIUM" : "LOW"),
-        assignedTo: item.assignedTo || { name: "Unassigned" }
+        assignedTo: item.counselor
+          ? { name: item.counselor.name }
+          : item.assignedTo || { name: "Unassigned" },
       }));
 
       return {
@@ -243,6 +249,21 @@ export default function LeadsPage() {
       ),
     },
     {
+      accessorKey: "nextFollowUp",
+      header: "Follow-up",
+      cell: ({ row }) => {
+        const due = row.original.nextFollowUp;
+        if (!due) return <span className="text-xs text-muted-foreground">—</span>;
+        const overdue = new Date(due) < new Date() && !["CONVERTED", "LOST"].includes(row.original.status);
+        return (
+          <span className={`text-xs font-semibold ${overdue ? "text-rose-400" : "text-muted-foreground"}`}>
+            {overdue ? "Overdue · " : ""}
+            {formatDate(due)}
+          </span>
+        );
+      },
+    },
+    {
       accessorKey: "createdAt",
       header: "Intake Date",
       cell: ({ row }) => <span className="text-xs text-muted-foreground">{formatDate(row.original.createdAt)}</span>,
@@ -264,9 +285,11 @@ export default function LeadsPage() {
                 View Full Profile
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer hover:bg-white/5" onClick={() => toast({ title: "Task added", description: "Reminder scheduled for counselor." })}>
-              <CheckSquare className="mr-2 h-4 w-4 text-emerald-400" />
-              Schedule Task
+            <DropdownMenuItem asChild className="cursor-pointer hover:bg-white/5">
+              <Link href={`/leads/${row.original.id}?tab=tasks`}>
+                <CheckSquare className="mr-2 h-4 w-4 text-emerald-400" />
+                Schedule Task
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-white/10" />
             <DropdownMenuItem className="cursor-pointer text-destructive hover:bg-destructive/20" onClick={() => toast({ title: "Lead archived", description: "Lead moved to trash." })}>
@@ -346,6 +369,17 @@ export default function LeadsPage() {
                 ))}
               </SelectContent>
             </Select>
+
+            <Button
+              type="button"
+              size="sm"
+              variant={overdueOnly ? "default" : "outline"}
+              className={`text-xs font-bold h-9 ${overdueOnly ? "bg-rose-600 hover:bg-rose-500" : "border-white/10"}`}
+              onClick={() => setOverdueOnly((v) => !v)}
+            >
+              <AlertCircle className="h-3.5 w-3.5 mr-1.5" />
+              Overdue follow-ups
+            </Button>
           </div>
         </div>
 
