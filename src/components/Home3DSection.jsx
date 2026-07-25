@@ -353,7 +353,7 @@ function Act6Overlay({ visible }) {
           {[
             { num: '15+ YRS', label: 'Teaching Excellence' },
             { num: '100%',    label: 'DGCA Pass Rate' },
-            { num: '2,100+',  label: 'Aspirants Guided' },
+            { num: '2,500+',  label: 'Aspirants Guided' },
           ].map(s => (
             <div key={s.label} style={{ textAlign: 'center' }}>
               <div style={{ fontFamily: 'var(--font-h)', fontSize: 'clamp(2rem,4vw,3.2rem)', fontWeight: 900, color: 'var(--gold)' }}>{s.num}</div>
@@ -452,9 +452,11 @@ function Modal({ open, type, onClose }) {
     return () => { window.removeEventListener('keydown', fn); document.body.style.overflow = '' }
   }, [open, onClose, setValues])
 
+  const [submitting, setSubmitting] = useState(false)
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!validate()) return
+    if (!validate() || submitting) return
 
     const urlParams = new URLSearchParams(window.location.search)
     const utm_source = urlParams.get('utm_source') || undefined
@@ -465,21 +467,22 @@ function Modal({ open, type, onClose }) {
     const referrer = document.referrer || undefined
     const landing_page = window.location.href || undefined
 
+    setSubmitting(true)
     try {
       const res = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...values, source: 'Homepage Modal', course: values.course || 'DGCA CPL Ground School', utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page })
       })
-      if (res.ok) {
-        triggerToast('Registration Success', 'Your details have been registered. An admissions advisor will contact you within 24 hours.')
-      } else {
-        triggerToast('Inquiry Captured', 'Our team has logged your slot request.')
-      }
+      if (!res.ok) throw new Error('Lead submit failed')
+      triggerToast('Registration Success', 'Your details have been registered. An admissions advisor will contact you within 24 hours.')
+      onClose()
     } catch {
-      triggerToast('Inquiry Captured', 'Our team has logged your slot request.')
+      triggerToast('Submission Failed', 'Something went wrong. Please try again or call +91 9953 777 320.')
+      // Keep form open — never toast success on failure
+    } finally {
+      setSubmitting(false)
     }
-    onClose()
   }
 
   return (
@@ -510,7 +513,7 @@ function Modal({ open, type, onClose }) {
               <option>Meteorology</option>
             </FormField>
           )}
-          <SubmitButton id="modal-submit-btn" className="modal-btn" loading={false} disabled={!isValid} style={{ borderRadius: '1px' }}>
+          <SubmitButton id="modal-submit-btn" className="modal-btn" loading={submitting} disabled={!isValid || submitting} style={{ borderRadius: '1px' }}>
             {isDemo ? 'Reserve My Demo Seat →' : 'Submit Application →'}
           </SubmitButton>
         </form>

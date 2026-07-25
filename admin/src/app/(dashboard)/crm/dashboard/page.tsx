@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { TrendingUp, DollarSign, Users, Target, Calendar, Plus } from "lucide-react";
+import { TrendingUp, DollarSign, Users, Target } from "lucide-react";
 import Link from "next/link";
 import { getSalesDashboard, getRevenueSummary } from "@/lib/crm/sales";
 import { StatCard } from "@/components/shared/stat-card";
@@ -204,15 +204,6 @@ export default function CRMDashboardPage() {
         );
       },
     },
-    {
-      key: "action",
-      header: "Action",
-      render: () => (
-        <Button variant="ghost" size="sm" className="text-xs font-bold text-primary hover:text-white">
-          View
-        </Button>
-      ),
-    },
   ];
 
   return (
@@ -221,16 +212,6 @@ export default function CRMDashboardPage() {
         <div className="space-y-1">
           <h1 className="text-2xl font-bold tracking-tight text-white">Sales Dashboard</h1>
           <p className="text-sm text-muted-foreground">Pipeline overview and deal tracking</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="border-white/10 text-xs font-semibold h-9">
-            <Calendar className="mr-2 h-4 w-4" />
-            Schedule
-          </Button>
-          <Button className="text-xs font-semibold h-9">
-            <Plus className="mr-2 h-4 w-4" />
-            New Deal
-          </Button>
         </div>
       </div>
 

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { 
-  Globe, FileText, HelpCircle, Plane, Building2, ImageIcon, Megaphone,
+  Globe, FileText, ImageIcon, Megaphone,
   Search, Plus, Eye, Edit2, Sparkles, Loader2, AlertCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -167,9 +167,6 @@ export default function CMSPage() {
       <div className="flex border-b border-white/10 gap-2 overflow-x-auto pb-1">
         {[
           { id: "pages", label: "Core Web Pages", icon: Globe },
-          { id: "faqs", label: "Knowledgebase FAQs", icon: HelpCircle },
-          { id: "fleet", label: "Fleet Information", icon: Plane },
-          { id: "campus", label: "Campus Facilities", icon: Building2 },
           { id: "gallery", label: "Public Media Gallery", icon: ImageIcon },
           { id: "news", label: "News & Announcements", icon: Megaphone },
         ].map((tab) => {
@@ -264,57 +261,6 @@ export default function CMSPage() {
                   ))}
                 </div>
               )}
-            </div>
-          </motion.div>
-        )}
-
-        {/* FAQs Tab - Feature Under Development fallback */}
-        {activeTab === "faqs" && (
-          <motion.div key="faqs" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-6">
-            <div className="glass-card rounded-2xl p-8 border border-white/10 text-center py-16">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 mx-auto shadow-xl">
-                <HelpCircle className="h-8 w-8" />
-              </div>
-              <div className="space-y-1 max-w-md mx-auto mt-6">
-                <h3 className="text-lg font-bold text-white tracking-tight">FAQ Manager Not Available</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed mt-2">
-                  The FAQ database schema and endpoints are currently not configured in the core database server. FAQs are statically managed via the web app code config.
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Fleet Tab - Feature Under Development fallback */}
-        {activeTab === "fleet" && (
-          <motion.div key="fleet" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-6">
-            <div className="glass-card rounded-2xl p-8 border border-white/10 text-center py-16">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 mx-auto shadow-xl">
-                <Plane className="h-8 w-8" />
-              </div>
-              <div className="space-y-1 max-w-md mx-auto mt-6">
-                <h3 className="text-lg font-bold text-white tracking-tight">Fleet Showcase Not Available</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed mt-2">
-                  No database engine backing is deployed for aircraft assets in this admin build. Ground simulators and plane specifications are statically pre-rendered for production CDN.
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Campus Tab - Feature Under Development fallback */}
-        {activeTab === "campus" && (
-          <motion.div key="campus" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-6">
-            <div className="glass-card rounded-2xl p-8 border border-white/10 text-center py-16">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 mx-auto shadow-xl">
-                <Building2 className="h-8 w-8" />
-              </div>
-              <div className="space-y-1 max-w-md mx-auto mt-6">
-                <h3 className="text-lg font-bold text-white tracking-tight">Campus Facilities Manager Not Available</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed mt-2">
-                  Facilities editing is locked under active migration. Base simulator coordinates and cadet housing are controlled via site config.
-                </p>
-              </div>
             </div>
           </motion.div>
         )}

@@ -510,19 +510,11 @@ function FounderSection() {
 }
 
 /* ─────────────────────────────────────
-   THE SUCCESS CLUB — Premium Achievement Wall
+   THE SUCCESS CLUB — live testimonials from API only
 ───────────────────────────────────── */
-const SUCCESS_STUDENTS = [
-  { name: 'Anusha Jain', image: '/success/Anusha%20Jain.jpeg' },
-  { name: 'Capt Abdul Salam Khan', image: '/success/Capt%20Abdul%20Salam%20khan.jpeg' },
-  { name: 'Mohit Bhargava', image: '/success/Mohd%20Yunus%20Bin%20Wahaj.jpeg' },
-  { name: 'Mohd Yunus Bin Wahaj', image: '/success/Mohit%20Bhargava.jpeg' },
-  { name: 'Samarth', image: '/success/Samarth.jpeg' },
-]
-
 function TestimonialsSection() {
   const [activeIndex, setActiveIndex] = useState(0)
-  const [students, setStudents] = useState(SUCCESS_STUDENTS)
+  const [students, setStudents] = useState([])
   const carouselRef = useRef(null)
 
   useEffect(() => {
@@ -530,13 +522,15 @@ function TestimonialsSection() {
       .then(r => { if (!r.ok) throw new Error('fail'); return r.json() })
       .then(d => {
         if (d.data && Array.isArray(d.data) && d.data.length > 0) {
-          setStudents(d.data.map((t, idx) => ({
+          setStudents(d.data.map((t) => ({
             name: t.authorName || 'Airborne Alumnus',
-            image: t.metadata?.image || SUCCESS_STUDENTS[idx % SUCCESS_STUDENTS.length].image
+            image: t.metadata?.image || '',
           })))
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        // Keep empty — do not seed curated roster as live API data
+      })
   }, [])
 
   if (students.length < 3) {
@@ -629,7 +623,7 @@ function TestimonialsSection() {
           </div>
 
           <div className="carousel-dots">
-            {SUCCESS_STUDENTS.map((_, i) => (
+            {students.map((_, i) => (
               <button
                 key={i}
                 aria-label={`Go to slide ${i + 1}`}

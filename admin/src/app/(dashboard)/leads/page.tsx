@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ColumnDef, type PaginationState } from "@tanstack/react-table";
-import { Plus, Search, Filter, MoreHorizontal, Eye, CheckSquare, Trash2, UserCheck, Sparkles, SlidersHorizontal, ChevronDown, AlertCircle } from "lucide-react";
+import { Plus, Search, Filter, MoreHorizontal, Eye, CheckSquare, UserCheck, Sparkles, SlidersHorizontal, ChevronDown, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -291,11 +291,6 @@ export default function LeadsPage() {
                 Schedule Task
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-white/10" />
-            <DropdownMenuItem className="cursor-pointer text-destructive hover:bg-destructive/20" onClick={() => toast({ title: "Lead archived", description: "Lead moved to trash." })}>
-              <Trash2 className="mr-2 h-4 w-4" />
-              Archive Lead
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       ),
@@ -407,9 +402,6 @@ export default function LeadsPage() {
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button size="sm" variant="destructive" onClick={() => { setSelectedLeadIds([]); toast({ title: "Bulk Delete", description: "Selected leads archived." }); }} className="text-xs font-bold py-1 px-3 h-8">
-                Bulk Archive
-              </Button>
             </div>
           </motion.div>
         )}

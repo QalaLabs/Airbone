@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ColumnDef, type PaginationState } from "@tanstack/react-table";
-import { Search, Globe, MoreHorizontal, Eye, Plus, BookOpen, Calendar, DollarSign, SearchCode, Save, AlertCircle, Trash2 } from "lucide-react";
+import { Search, Globe, MoreHorizontal, Eye, Plus, BookOpen, SearchCode, Save, AlertCircle, Trash2 } from "lucide-react";
 import { DataTable } from "@/components/shared/data-table";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PageHeader } from "@/components/shared/page-header";
@@ -350,8 +350,6 @@ export default function CoursesPage() {
             <div className="flex gap-2 pt-4 border-t border-white/10 mt-4 overflow-x-auto">
               {[
                 { id: "syllabus", label: "Syllabus & Curriculum", icon: BookOpen },
-                { id: "batches", label: "Batch Scheduling & Instructors", icon: Calendar },
-                { id: "fees", label: "Fee Structure & Tranches", icon: DollarSign },
                 { id: "seo", label: "Public SEO Settings", icon: SearchCode },
               ].map((tab) => {
                 const Icon = tab.icon;
@@ -399,36 +397,6 @@ export default function CoursesPage() {
                       <p className="text-xs text-muted-foreground py-4 text-center">No curriculum modules added yet.</p>
                     )}
                   </div>
-                </motion.div>
-              )}
-
-              {activeTab === "batches" && (
-                <motion.div key="batches" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-4">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Batch Scheduling & Instructors</h3>
-                  </div>
-                  <p className="text-xs text-muted-foreground py-4 text-center">
-                    Batch scheduling is not yet tracked in this system.
-                  </p>
-                </motion.div>
-              )}
-
-              {activeTab === "fees" && (
-                <motion.div key="fees" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-4">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Tuition Fee</h3>
-                  </div>
-                  <div className="p-4 rounded-xl bg-secondary/30 border border-white/5 flex items-center justify-between">
-                    <span className="text-xs font-bold text-white">Total Course Fee</span>
-                    <span className="text-sm font-mono font-bold text-emerald-400">
-                      {selectedCourse?.fee != null
-                        ? new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(selectedCourse.fee)
-                        : "Not set"}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground">
-                    Per-installment tranche breakdown is not yet tracked in this system.
-                  </p>
                 </motion.div>
               )}
 

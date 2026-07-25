@@ -4,7 +4,6 @@ import * as React from "react";
 import { TrendingUp, DollarSign, Users, Target } from "lucide-react";
 import { getSalesAnalytics, getConversionRate } from "@/lib/crm/analytics";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { CRMDataTable, CRMColumn } from "@/components/shared/crm-data-table";
 
 interface MonthlyMetric {
@@ -162,15 +161,6 @@ export default function CRMSalesAnalyticsPage() {
         <div className="space-y-1">
           <h1 className="text-2xl font-bold tracking-tight text-white">Sales Analytics</h1>
           <p className="text-sm text-muted-foreground">Performance metrics and forecasting</p>
-        </div>
-        <div className="flex gap-2">
-          <select className="h-9 rounded-md border border-white/10 bg-secondary/40 px-3 text-xs text-white">
-            <option>Last 6 Months</option>
-            <option>Last 12 Months</option>
-            <option>This Quarter</option>
-            <option>This Year</option>
-          </select>
-          <Button variant="outline" className="border-white/10 text-xs font-semibold h-9">Export Report</Button>
         </div>
       </div>
 

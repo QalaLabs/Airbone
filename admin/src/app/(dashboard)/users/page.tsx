@@ -70,7 +70,10 @@ export default function UsersPage() {
       apiFetch("/users?action=invite", { method: "POST", body: JSON.stringify(body) }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
-      toast({ title: "Invitation sent", description: "The user will receive an email to set up their account." });
+      toast({
+        title: "User invite created",
+        description: "Account invite is ready. Email delivery is not enabled yet — share the invite link with the user manually.",
+      });
       setNewUserOpen(false);
     },
     onError: (err: unknown) => toast({ title: "Invite failed", description: err instanceof Error ? err.message : String(err), variant: "destructive" }),
@@ -262,7 +265,7 @@ export default function UsersPage() {
             <DialogFooter className="pt-4 border-t border-white/10">
               <Button type="button" variant="outline" onClick={() => setNewUserOpen(false)} className="border-white/10 hover:bg-white/5 text-xs font-bold">Cancel</Button>
               <Button type="submit" disabled={inviteMutation.isPending} className="bg-primary hover:bg-primary/90 text-white text-xs font-bold shadow-lg shadow-primary/20">
-                {inviteMutation.isPending ? "Sending..." : "Send Invitation"}
+                {inviteMutation.isPending ? "Creating..." : "Create Invite"}
               </Button>
             </DialogFooter>
           </form>
