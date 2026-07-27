@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-import { getFAQSchema } from '@/utils/seo'
+import JsonLd from '@/components/JsonLd'
+import { buildResourcesGraph } from '@/lib/schema'
 import useFormValidation from '@/hooks/useFormValidation'
 import { validateName, validatePhone, validateEmail, validateRequired } from '@/utils/validation'
 import FormField from '@/components/FormField'
@@ -126,14 +127,11 @@ export default function ResourcesClient() {
     }, 1500)
   }
 
-  const faqSchema = getFAQSchema()
+  const resourcesGraph = buildResourcesGraph()
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
+      <JsonLd data={resourcesGraph} />
       <Header />
       <main style={{ minHeight: '80vh', background: '#000810', padding: '4rem var(--margin) 6rem var(--margin)' }}>
 

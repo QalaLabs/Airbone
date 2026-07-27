@@ -2,7 +2,8 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
-import { getBreadcrumbSchema } from '@/utils/seo'
+import JsonLd from '@/components/JsonLd'
+import { buildArticlePageGraph } from '@/lib/schema'
 
 export const metadata = {
   title: 'DGCA Ground School Guide — All Subjects, Exams & Prep Strategy 2026',
@@ -10,40 +11,21 @@ export const metadata = {
   alternates: { canonical: '/blog/dgca-ground-school-guide' },
 }
 
-const breadcrumbSchema = getBreadcrumbSchema([
-  { name: 'Home', path: '/' },
-  { name: 'Resources', path: '/resources' },
-  { name: 'DGCA Ground School Guide', path: '/blog/dgca-ground-school-guide' },
-])
+const FAQS = [
+  { q: 'How many times does DGCA conduct CPL exams per year?', a: 'DGCA conducts CPL written examinations 4 times per year — in January, April, July, and October. You can attempt subjects in any order, but must complete all 6 within the validity period of your Student Pilot License.' },
+  { q: 'What is the passing percentage for DGCA CPL exams?', a: 'You must score a minimum of 70% in each subject to pass a DGCA CPL written examination. There is no aggregate — each subject is independently scored and must be passed individually.' },
+  { q: 'How many attempts are allowed for DGCA CPL exams?', a: 'There is no official limit on attempts, but the SPL (Student Pilot License) validity constrains you to clear all papers within a set period. Multiple failures can result in suspension of examination privileges and affect airline applications.' },
+  { q: 'Can I study for DGCA exams on my own?', a: 'Technically yes, but the failure rate for self-study candidates is significantly higher. DGCA exams are conceptual, not rote-based. Subjects like Air Navigation and Meteorology require systematic, mentor-led understanding of applied principles.' },
+]
 
-const articleSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Article',
+const articlePageGraph = buildArticlePageGraph({
+  path: '/blog/dgca-ground-school-guide',
   headline: 'DGCA Ground School Guide — All Subjects, Exams & Prep Strategy 2026',
-  description: 'Complete DGCA ground school guide for CPL and ATPL aspirants.',
-  author: { '@type': 'Person', name: 'Capt. Navrang Singh' },
-  publisher: {
-    '@type': 'EducationalOrganization',
-    name: 'Airborne Aviation Academy',
-    logo: { '@type': 'ImageObject', url: 'https://www.airborneaviation.in/logo-primary.png' },
-    url: 'https://www.airborneaviation.in',
-  },
-  datePublished: '2026-01-20',
+  description: 'Complete DGCA ground school guide for CPL and ATPL aspirants covering subjects, exam schedule, and preparation strategy.',
+  datePublished: '2026-02-01',
   dateModified: '2026-06-01',
-  url: 'https://www.airborneaviation.in/blog/dgca-ground-school-guide',
-  mainEntityOfPage: 'https://www.airborneaviation.in/blog/dgca-ground-school-guide',
-}
-
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
-    { '@type': 'Question', name: 'How many times does DGCA conduct CPL exams per year?', acceptedAnswer: { '@type': 'Answer', text: 'DGCA conducts CPL written examinations 4 times per year — in January, April, July, and October. You can attempt subjects in any order, but must complete all 6 within the validity period of your Student Pilot License.' } },
-    { '@type': 'Question', name: 'What is the passing percentage for DGCA CPL exams?', acceptedAnswer: { '@type': 'Answer', text: 'You must score a minimum of 70% in each subject to pass a DGCA CPL written examination. There is no aggregate — each subject is independently scored and must be passed individually.' } },
-    { '@type': 'Question', name: 'How many attempts are allowed for DGCA CPL exams?', acceptedAnswer: { '@type': 'Answer', text: 'There is no official limit on attempts, but the SPL (Student Pilot License) validity constrains you to clear all papers within a set period. Multiple failures can result in suspension of examination privileges and affect airline applications.' } },
-    { '@type': 'Question', name: 'Can I study for DGCA exams on my own?', acceptedAnswer: { '@type': 'Answer', text: 'Technically yes, but the failure rate for self-study candidates is significantly higher. DGCA exams are conceptual, not rote-based. Subjects like Air Navigation and Meteorology require systematic, mentor-led understanding of applied principles.' } },
-  ],
-}
+  faqs: FAQS,
+})
 
 const SUBJECTS = [
   { name: 'Air Navigation', difficulty: 'Hard', weight: 'Very High', desc: 'Covers dead reckoning, chart reading, wind calculations, position fixing, airspeed/groundspeed conversions, and great circle navigation. Mathematical and requires consistent practice.' },
@@ -65,9 +47,8 @@ const STRATEGY = [
 export default function DGCAGroundSchoolGuidePage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <JsonLd data={articlePageGraph} />
+
       <Header />
       <main style={{ minHeight: '80vh', background: '#000810', padding: '4rem var(--margin) 6rem var(--margin)' }}>
 
@@ -167,10 +148,10 @@ export default function DGCAGroundSchoolGuidePage() {
           <section style={{ marginBottom: '3.5rem' }}>
             <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 800, color: '#D8A027', textTransform: 'uppercase', marginBottom: '1.5rem' }}>Frequently Asked Questions</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {faqSchema.mainEntity.map((faq, i) => (
+              {FAQS.map((faq, i) => (
                 <div key={i} style={{ background: '#00162e', border: '1px solid rgba(255,255,255,0.07)', padding: '1.25rem 1.5rem', borderRadius: '1px' }}>
-                  <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.88rem', fontWeight: 700, color: '#fff', marginBottom: '0.5rem' }}>{faq.name}</h3>
-                  <p style={{ fontSize: '0.83rem', color: 'rgba(255,255,255,0.6)', margin: 0, fontFamily: 'var(--font-b)', lineHeight: '1.6' }}>{faq.acceptedAnswer.text}</p>
+                  <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.88rem', fontWeight: 700, color: '#fff', marginBottom: '0.5rem' }}>{faq.q}</h3>
+                  <p style={{ fontSize: '0.83rem', color: 'rgba(255,255,255,0.6)', margin: 0, fontFamily: 'var(--font-b)', lineHeight: '1.6' }}>{faq.a}</p>
                 </div>
               ))}
             </div>

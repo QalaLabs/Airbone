@@ -2,7 +2,8 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
-import { getBreadcrumbSchema } from '@/utils/seo'
+import JsonLd from '@/components/JsonLd'
+import { buildArticlePageGraph } from '@/lib/schema'
 
 export const metadata = {
   title: 'Pilot Salary in India 2026 — CPL vs ATPL Income Guide | Airborne',
@@ -10,40 +11,21 @@ export const metadata = {
   alternates: { canonical: '/blog/pilot-salary-india' },
 }
 
-const breadcrumbSchema = getBreadcrumbSchema([
-  { name: 'Home', path: '/' },
-  { name: 'Resources', path: '/resources' },
-  { name: 'Pilot Salary in India', path: '/blog/pilot-salary-india' },
-])
+const FAQS = [
+  { q: 'What is the starting salary of a pilot in India?', a: 'A fresh CPL holder joining as a First Officer (trainee) at an Indian airline can expect a starting salary in the range of ₹1.5–3 lakhs per month, depending on the airline and aircraft type.' },
+  { q: 'What is the salary of an Airbus A320 Captain in India?', a: 'A senior A320 Captain at major Indian airlines typically earns between ₹7–14 lakhs per month, including base pay, flying allowances, night allowances, and other perks.' },
+  { q: 'How many years does it take to become a Captain in India?', a: 'Typically 8–15 years from the time of CPL, depending on airline expansion, attrition, and individual performance. IndiGo and Air India have had accelerated upgrades during periods of high growth.' },
+  { q: 'Do Indian pilots get free travel benefits?', a: 'Yes. Most Indian airlines offer free or heavily discounted standby travel for the pilot and immediate family members, along with crew travel on international carriers through bilateral agreements.' },
+]
 
-const articleSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Article',
+const articlePageGraph = buildArticlePageGraph({
+  path: '/blog/pilot-salary-india',
   headline: 'Pilot Salary in India 2026 — CPL vs ATPL Income Guide',
-  description: 'Complete pilot salary guide for India in 2026, covering First Officer vs Captain pay, airline-by-airline breakdown, and growth timeline.',
-  author: { '@type': 'Person', name: 'Capt. Navrang Singh' },
-  publisher: {
-    '@type': 'EducationalOrganization',
-    name: 'Airborne Aviation Academy',
-    logo: { '@type': 'ImageObject', url: 'https://www.airborneaviation.in/logo-primary.png' },
-    url: 'https://www.airborneaviation.in',
-  },
-  datePublished: '2026-02-01',
+  description: 'Complete pilot salary guide for India covering First Officer and Captain pay bands across major carriers.',
+  datePublished: '2026-02-15',
   dateModified: '2026-06-01',
-  url: 'https://www.airborneaviation.in/blog/pilot-salary-india',
-  mainEntityOfPage: 'https://www.airborneaviation.in/blog/pilot-salary-india',
-}
-
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
-    { '@type': 'Question', name: 'What is the starting salary of a pilot in India?', acceptedAnswer: { '@type': 'Answer', text: 'A fresh CPL holder joining as a First Officer (trainee) at an Indian airline can expect a starting salary in the range of ₹1.5–3 lakhs per month, depending on the airline and aircraft type.' } },
-    { '@type': 'Question', name: 'What is the salary of an Airbus A320 Captain in India?', acceptedAnswer: { '@type': 'Answer', text: 'A senior A320 Captain at major Indian airlines typically earns between ₹7–14 lakhs per month, including base pay, flying allowances, night allowances, and other perks.' } },
-    { '@type': 'Question', name: 'How many years does it take to become a Captain in India?', acceptedAnswer: { '@type': 'Answer', text: 'Typically 8–15 years from the time of CPL, depending on airline expansion, attrition, and individual performance. IndiGo and Air India have had accelerated upgrades during periods of high growth.' } },
-    { '@type': 'Question', name: 'Do Indian pilots get free travel benefits?', acceptedAnswer: { '@type': 'Answer', text: 'Yes. Most Indian airlines offer free or heavily discounted standby travel for the pilot and immediate family members, along with crew travel on international carriers through bilateral agreements.' } },
-  ],
-}
+  faqs: FAQS,
+})
 
 const SALARY_TABLE = [
   { rank: 'Trainee First Officer', airline: 'IndiGo / Air India', monthly: '₹1.5–2.5L', annual: '₹18–30L' },
@@ -73,9 +55,8 @@ const GROWTH_TIMELINE = [
 export default function PilotSalaryPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <JsonLd data={articlePageGraph} />
+
       <Header />
       <main style={{ minHeight: '80vh', background: '#000810', padding: '4rem var(--margin) 6rem var(--margin)' }}>
 
@@ -171,10 +152,10 @@ export default function PilotSalaryPage() {
           <section style={{ marginBottom: '3.5rem' }}>
             <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 800, color: '#D8A027', textTransform: 'uppercase', marginBottom: '1.5rem' }}>Frequently Asked Questions</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {faqSchema.mainEntity.map((faq, i) => (
+              {FAQS.map((faq, i) => (
                 <div key={i} style={{ background: '#00162e', border: '1px solid rgba(255,255,255,0.07)', padding: '1.25rem 1.5rem', borderRadius: '1px' }}>
-                  <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.88rem', fontWeight: 700, color: '#fff', marginBottom: '0.5rem' }}>{faq.name}</h3>
-                  <p style={{ fontSize: '0.83rem', color: 'rgba(255,255,255,0.6)', margin: 0, fontFamily: 'var(--font-b)', lineHeight: '1.6' }}>{faq.acceptedAnswer.text}</p>
+                  <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.88rem', fontWeight: 700, color: '#fff', marginBottom: '0.5rem' }}>{faq.q}</h3>
+                  <p style={{ fontSize: '0.83rem', color: 'rgba(255,255,255,0.6)', margin: 0, fontFamily: 'var(--font-b)', lineHeight: '1.6' }}>{faq.a}</p>
                 </div>
               ))}
             </div>

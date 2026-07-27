@@ -2,8 +2,12 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
-import { getBreadcrumbSchema } from '@/utils/seo'
+
 import CoursePageFooter from '@/components/CoursePageFooter'
+import CourseReviews from '@/components/CourseReviews'
+import JsonLd from '@/components/JsonLd'
+import { buildCoursePageGraph } from '@/lib/schema'
+import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
   title: 'Cadet Pilot Program Prep IndiGo, Air India, Akasa | Airborne',
@@ -11,42 +15,21 @@ export const metadata = {
   alternates: { canonical: '/courses/cadet-preparation' },
 }
 
-const breadcrumbSchema = getBreadcrumbSchema([
-  { name: 'Home', path: '/' },
-  { name: 'Courses', path: '/courses' },
-  { name: 'Cadet Pilot Preparation', path: '/courses/cadet-preparation' },
-])
-
-const courseSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Course',
-  name: 'Cadet Pilot Program Preparation',
-  description: 'Structured preparation for IndiGo, Air India & Akasa Air cadet pilot programs. Aptitude tests, GD/PI, simulator assessment preparation.',
-  provider: {
-    '@type': 'EducationalOrganization',
-    name: 'Airborne Aviation Academy',
-    address: { '@type': 'PostalAddress', streetAddress: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7', addressLocality: 'Dwarka', addressRegion: 'New Delhi', postalCode: '110075' }
-  },
-  coursePrerequisites: 'Valid DGCA CPL or CPL in progress',
-  url: 'https://www.airborneaviation.in/courses/cadet-preparation',
-}
-
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
+const coursePageGraph = buildCoursePageGraph({
+  ...COURSE_SCHEMA['cadet-preparation'],
+  imagePath: '/campus/campus_training.jpg',
+  price: '50000',
+  faqs: [
     {
-      '@type': 'Question',
-      name: 'What is the IndiGo JFO cadet program eligibility?',
-      acceptedAnswer: { '@type': 'Answer', text: 'IndiGo JFO typically requires a valid DGCA CPL with IR, minimum 200 hours total time, and DGCA Class 1 Medical. IndiGo conducts online aptitude tests, SIM assessments, and panel interviews.' }
+      q: 'What is the IndiGo JFO cadet program eligibility?',
+      a: 'IndiGo JFO typically requires a valid DGCA CPL with IR, minimum 200 hours total time, and DGCA Class 1 Medical. IndiGo conducts online aptitude tests, SIM assessments, and panel interviews.',
     },
     {
-      '@type': 'Question',
-      name: 'Does Airborne guarantee cadet selection?',
-      acceptedAnswer: { '@type': 'Answer', text: "No. Airline selection is entirely the airline's decision. Airborne prepares candidates to perform at their best at every stage — selection outcomes rest with the airline." }
-    }
-  ]
-}
+      q: 'Does Airborne guarantee airline cadet selection?',
+      a: "No. Airline selection is entirely the airline's decision. Airborne prepares candidates to perform at their best at every stage — selection outcomes rest with the airline.",
+    },
+  ],
+})
 
 const STAGES = [
   { stage: 'Online Application', format: 'Resume + academic records', prep: 'Resume crafting and document preparation' },
@@ -60,9 +43,8 @@ const STAGES = [
 export default function CadetPreparationPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <JsonLd data={coursePageGraph} />
+
       <Header />
       <main className="course-main-wrapper" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
 
@@ -181,6 +163,7 @@ export default function CadetPreparationPage() {
           </div>
 
         </div>
+        <CourseReviews />
         <CoursePageFooter
           whatsappText="Hi, I'm interested in Cadet Pilot Program Preparation at Airborne Aviation Academy, Dwarka. Please share details for IndiGo/Air India/Akasa cadet prep."
           nextCourses={[

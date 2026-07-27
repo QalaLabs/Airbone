@@ -2,13 +2,16 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import Breadcrumb from '@/components/Breadcrumb'
-import { getBreadcrumbSchema } from '@/utils/seo'
+import JsonLd from '@/components/JsonLd'
+import { buildBlogIndexGraph } from '@/lib/schema'
 
 export const metadata = {
   title: 'Aviation Blog — Pilot Training Guides | Airborne Aviation',
   description: 'Guides on becoming a pilot in India, CPL costs, DGCA ground school, and pilot salaries — from Airborne Aviation Academy, Dwarka Delhi.',
   alternates: { canonical: '/blog' },
 }
+
+const blogIndexGraph = buildBlogIndexGraph()
 
 const POSTS = [
   {
@@ -33,15 +36,10 @@ const POSTS = [
   },
 ]
 
-const breadcrumbSchema = getBreadcrumbSchema([
-  { name: 'Home', path: '/' },
-  { name: 'Blog', path: '/blog' },
-])
-
 export default function BlogIndexPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <JsonLd data={blogIndexGraph} />
       <Header />
       <main className="theme-light" style={{ minHeight: '80vh', background: 'var(--paper)', padding: '5rem var(--margin) 6rem' }}>
         <div className="container-xl" style={{ maxWidth: '960px' }}>

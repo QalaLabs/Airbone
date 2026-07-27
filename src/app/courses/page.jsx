@@ -3,38 +3,18 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
 import Breadcrumb from '@/components/Breadcrumb'
+import JsonLd from '@/components/JsonLd'
 import { fetchPublic } from '@/lib/adminApi'
-import { displayCourseFee, displayCourseEligibility } from '@/lib/courseFees'
-import { getBreadcrumbSchema } from '@/utils/seo'
+import { displayCourseFee } from '@/lib/courseFees'
+import { buildCoursesIndexGraph } from '@/lib/schema'
+import { COURSES_INDEX_ITEMS } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
   title: 'Pilot Training Courses in Delhi CPL, ATPL, Cabin Crew | Airborne',
-  description: 'Browse DGCA Complied aviation courses at Airborne Aviation Academy, Dwarka Delhi — 2,500+ students trained. CPL ground school, ATPL, Cabin Crew, A320 SIM FBS, cadet prep. Compare fees and timelines.',
+  description: 'Browse DGCA-aligned aviation courses at Airborne Aviation Academy, Dwarka Delhi. CPL ground school, ATPL, Cabin Crew, A320 SIM FBS, cadet prep. Compare fees and timelines.',
 }
 
-const breadcrumbSchema = getBreadcrumbSchema([
-  { name: 'Home', path: '/' },
-  { name: 'Courses', path: '/courses' },
-])
-
-const itemListSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'ItemList',
-  name: 'Aviation Courses at Airborne Aviation Academy',
-  description: 'Explore DGCA pilot ground school, CPL, ATPL, A320 sim & cabin crew courses at Airborne Aviation Academy, Dwarka Delhi.',
-  url: 'https://www.airborneaviation.in/courses',
-  itemListElement: [
-    { '@type': 'ListItem', position: 1, name: 'Commercial Pilot License (CPL)', url: 'https://www.airborneaviation.in/courses/flying-training-india-abroad' },
-    { '@type': 'ListItem', position: 2, name: 'DGCA CPL Ground School', url: 'https://www.airborneaviation.in/courses/commercial-pilot-license-cpl' },
-    { '@type': 'ListItem', position: 3, name: 'GD & PI Course', url: 'https://www.airborneaviation.in/courses/gd-pi' },
-    { '@type': 'ListItem', position: 4, name: 'Airline Interview Preparation', url: 'https://www.airborneaviation.in/courses/airline-preparation' },
-    { '@type': 'ListItem', position: 5, name: 'ATPL Ground School', url: 'https://www.airborneaviation.in/courses/atpl' },
-    { '@type': 'ListItem', position: 6, name: 'Cadet Pilot Program Prep', url: 'https://www.airborneaviation.in/courses/cadet-preparation' },
-    { '@type': 'ListItem', position: 7, name: 'Airbus A320 Simulator FBS', url: 'https://www.airborneaviation.in/courses/a320-simulator' },
-    { '@type': 'ListItem', position: 8, name: 'CAS / Compass / ADAPT Prep', url: 'https://www.airborneaviation.in/courses/cas-compass-adapt' },
-    { '@type': 'ListItem', position: 9, name: 'Cabin Crew Training', url: 'https://www.airborneaviation.in/courses/cabin-crew-training' },
-  ]
-}
+const coursesIndexGraph = buildCoursesIndexGraph(COURSES_INDEX_ITEMS)
 
 // Revalidate every 60 s so freshly published courses appear quickly
 export const revalidate = 60
@@ -51,8 +31,7 @@ export default async function CoursesPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }} />
+      <JsonLd data={coursesIndexGraph} />
       <Header />
       <main className="course-main-wrapper courses-listing theme-light" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
         <div className="container-xl">
@@ -212,12 +191,8 @@ export default async function CoursesPage() {
                         </Link>
                       </h3>
 
-                      <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.6', marginBottom: '1rem', fontFamily: 'var(--font-b)' }}>
+                      <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.6', marginBottom: '1.5rem', fontFamily: 'var(--font-b)' }}>
                         {course.subtitle ?? ''}
-                      </p>
-
-                      <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.55)', fontFamily: 'var(--font-b)', marginBottom: '1.5rem' }}>
-                        <strong>Eligibility:</strong> {displayCourseEligibility(course.slug, course.eligibility)}
                       </p>
                     </div>
 
@@ -317,7 +292,7 @@ export default async function CoursesPage() {
                   { name: 'DGCA CPL Ground School', slug: 'commercial-pilot-license-cpl', dur: '3–6 months', fee: '₹2,70,000', dgca: '✓' },
                   { name: 'GD & PI Course', slug: 'gd-pi', dur: '3 months', fee: '₹30,000', dgca: '—' },
                   { name: 'Airline Interview Preparation', slug: 'airline-preparation', dur: '3 months', fee: '₹1,50,000', dgca: '—' },
-                  { name: 'ATPL Ground School', slug: 'atpl', dur: '2–3 months', fee: '₹1,50,000', dgca: '✓' },
+                  { name: 'ATPL Ground School', slug: 'atpl', dur: '2–3 months · Age 21+', fee: '₹1,50,000', dgca: '✓' },
                   { name: 'Private Pilot License (PPL)', slug: 'private-pilot-license', dur: '3–6 months', fee: '₹25,00,000', dgca: '✓' },
                   { name: 'Multi-Engine Rating', slug: 'multi-engine-rating', dur: '1–2 months', fee: '₹3–5L', dgca: '✓' },
                   { name: 'Airbus A320 Simulator FBS', slug: 'a320-simulator', dur: 'Flexible', fee: '₹12,000', dgca: '✓' },

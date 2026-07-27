@@ -2,8 +2,11 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
-import { getBreadcrumbSchema } from '@/utils/seo'
+
 import CoursePageFooter from '@/components/CoursePageFooter'
+import JsonLd from '@/components/JsonLd'
+import { buildCoursePageGraph } from '@/lib/schema'
+import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
   title: 'Multi-Engine Rating India — DGCA Complied | Airborne Aviation',
@@ -11,50 +14,23 @@ export const metadata = {
   alternates: { canonical: '/courses/multi-engine-rating' },
 }
 
-const breadcrumbSchema = getBreadcrumbSchema([
-  { name: 'Home', path: '/' },
-  { name: 'Courses', path: '/courses' },
-  { name: 'Multi-Engine Rating', path: '/courses/multi-engine-rating' },
-])
-
-const courseSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Course',
-  name: 'Multi-Engine Rating (MER)',
-  description: 'DGCA Multi-Engine Rating training at Airborne Aviation Academy. Twin-engine endorsement for PPL and CPL holders.',
-  provider: {
-    '@type': 'EducationalOrganization',
-    name: 'Airborne Aviation Academy',
-    address: { '@type': 'PostalAddress', streetAddress: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7', addressLocality: 'Dwarka', addressRegion: 'New Delhi', postalCode: '110075' }
+const coursePageGraph = buildCoursePageGraph({
+  ...COURSE_SCHEMA['multi-engine-rating'],
+  faqs: [
+  {
+    q: 'Is Multi-Engine Rating mandatory for airlines in India?',
+    a: 'Most scheduled airline operations in India use multi-engine aircraft (A320, B737). While the MER itself is not a standalone airline requirement, most airline-entry pilot profiles require multi-engine time as part of CPL training. Airlines look for pilots who have logged multi-engine hours during their CPL flying.'
   },
-  offers: { '@type': 'Offer', priceCurrency: 'INR', description: '₹3–5 lakh. Contact for current pricing.' },
-  coursePrerequisites: 'Valid DGCA PPL or CPL',
-  courseMode: 'onsite',
-  duration: 'P2M',
-  url: 'https://www.airborneaviation.in/courses/multi-engine-rating',
-}
-
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
-    {
-      '@type': 'Question',
-      name: 'Is Multi-Engine Rating mandatory for airlines in India?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Most scheduled airline operations in India use multi-engine aircraft (A320, B737). While the MER itself is not a standalone airline requirement, most airline-entry pilot profiles require multi-engine time as part of CPL training. Airlines look for pilots who have logged multi-engine hours during their CPL flying.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'How long does Multi-Engine Rating training take?',
-      acceptedAnswer: { '@type': 'Answer', text: '1–2 months. The MER involves ground school covering twin-engine systems and asymmetric flight, plus practical flying hours on a multi-engine aircraft.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'What aircraft is used for Multi-Engine Rating training?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Multi-Engine Rating training is conducted through our DGCA-approved partner FTOs on twin-engine piston aircraft. Contact Airborne admissions for current aircraft type and availability.' }
-    }
-  ]
-}
+  {
+    q: 'How long does Multi-Engine Rating training take?',
+    a: '1–2 months. The MER involves ground school covering twin-engine systems and asymmetric flight, plus practical flying hours on a multi-engine aircraft.'
+  },
+  {
+    q: 'What aircraft is used for Multi-Engine Rating training?',
+    a: 'Multi-Engine Rating training is conducted through our DGCA-approved partner FTOs on twin-engine piston aircraft. Contact Airborne admissions for current aircraft type and availability.'
+  }
+],
+})
 
 const TRAINING_CONTENT = [
   { topic: 'Twin-Engine Systems', detail: 'Two-engine aircraft fuel, hydraulics, electrics, and systems management' },
@@ -68,9 +44,8 @@ const TRAINING_CONTENT = [
 export default function MultiEngineRatingPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <JsonLd data={coursePageGraph} />
+
       <Header />
       <main className="course-main-wrapper" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
 
@@ -132,7 +107,7 @@ export default function MultiEngineRatingPage() {
             {/* Eligibility */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                MER Eligibility Requirements
+                MER Course Requirements
               </h2>
               <ul className="course-list">
                 {[

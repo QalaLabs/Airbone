@@ -2,8 +2,11 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
-import { getBreadcrumbSchema } from '@/utils/seo'
+
 import CoursePageFooter from '@/components/CoursePageFooter'
+import JsonLd from '@/components/JsonLd'
+import { buildCoursePageGraph } from '@/lib/schema'
+import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
   title: 'Flight Dispatcher Course Delhi — DGCA | Airborne Aviation',
@@ -11,55 +14,27 @@ export const metadata = {
   alternates: { canonical: '/courses/flight-dispatcher' },
 }
 
-const breadcrumbSchema = getBreadcrumbSchema([
-  { name: 'Home', path: '/' },
-  { name: 'Courses', path: '/courses' },
-  { name: 'Flight Dispatcher', path: '/courses/flight-dispatcher' },
-])
-
-const courseSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Course',
-  name: 'Flight Dispatcher Course',
-  description: 'DGCA-aligned Flight Dispatcher training at Airborne Aviation Academy, Dwarka Delhi. Co-authorise flights, manage flight planning, and support airline operations.',
-  provider: {
-    '@type': 'EducationalOrganization',
-    name: 'Airborne Aviation Academy',
-    address: { '@type': 'PostalAddress', streetAddress: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7', addressLocality: 'Dwarka', addressRegion: 'New Delhi', postalCode: '110075' }
+const coursePageGraph = buildCoursePageGraph({
+  ...COURSE_SCHEMA['flight-dispatcher'],
+  faqs: [
+  {
+    q: 'Is a DGCA license required to work as a Flight Dispatcher in India?',
+    a: 'Yes. DGCA India issues a Flight Dispatcher License (FDL) to candidates who complete the required training and pass DGCA examinations. Airlines require a valid FDL for operational dispatch roles.'
   },
-  offers: { '@type': 'Offer', priceCurrency: 'INR', description: '₹1–2 lakh. Contact for current pricing.' },
-  coursePrerequisites: '10+2 (any stream)',
-  courseMode: 'onsite',
-  duration: 'P6M',
-  url: 'https://www.airborneaviation.in/courses/flight-dispatcher',
-}
-
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
-    {
-      '@type': 'Question',
-      name: 'Is a DGCA license required to work as a Flight Dispatcher in India?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Yes. DGCA India issues a Flight Dispatcher License (FDL) to candidates who complete the required training and pass DGCA examinations. Airlines require a valid FDL for operational dispatch roles.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'How long does the Flight Dispatcher course take?',
-      acceptedAnswer: { '@type': 'Answer', text: '3–6 months depending on batch schedule and study pace. The course covers meteorology, navigation, air regulations, aircraft performance, and dispatch procedures.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'Can I become a Flight Dispatcher without a pilot license?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Yes. Flight Dispatcher training is open to 10+2 graduates of any stream. No flying license is required. The dispatcher works from the airline operations centre, not the cockpit.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'What is the salary of a Flight Dispatcher in India?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Entry-level Flight Dispatchers earn ₹25,000–₹45,000/month at Indian airlines. Senior dispatchers with 5+ years experience and multi-type endorsements earn ₹60,000–₹1,20,000/month.' }
-    }
-  ]
-}
+  {
+    q: 'How long does the Flight Dispatcher course take?',
+    a: '3–6 months depending on batch schedule and study pace. The course covers meteorology, navigation, air regulations, aircraft performance, and dispatch procedures.'
+  },
+  {
+    q: 'Can I become a Flight Dispatcher without a pilot license?',
+    a: 'Yes. Flight Dispatcher training is open to 10+2 graduates of any stream. No flying license is required. The dispatcher works from the airline operations centre, not the cockpit.'
+  },
+  {
+    q: 'What is the salary of a Flight Dispatcher in India?',
+    a: 'Entry-level Flight Dispatchers earn ₹25,000–₹45,000/month at Indian airlines. Senior dispatchers with 5+ years experience and multi-type endorsements earn ₹60,000–₹1,20,000/month.'
+  }
+],
+})
 
 const CURRICULUM = [
   { subject: 'Aviation Meteorology', detail: 'Weather analysis, METAR/TAF interpretation, turbulence, icing, dispatch weather minima' },
@@ -81,9 +56,8 @@ const CAREER_OPTIONS = [
 export default function FlightDispatcherPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <JsonLd data={coursePageGraph} />
+
       <Header />
       <main className="course-main-wrapper" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
 
@@ -137,7 +111,7 @@ export default function FlightDispatcherPage() {
             {/* Eligibility */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                Flight Dispatcher Eligibility
+                Flight Dispatcher Requirements
               </h2>
               <ul className="course-list">
                 {[

@@ -5,19 +5,20 @@ import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
 import CoursePageFooter from '@/components/CoursePageFooter'
 import { fetchPublic, fetchPublicWithStatus } from '@/lib/adminApi'
-import { displayCourseFee, displayCourseEligibility } from '@/lib/courseFees'
-import { getCourseSchema, getBreadcrumbSchema } from '@/utils/seo'
+import { displayCourseFee } from '@/lib/courseFees'
+import JsonLd from '@/components/JsonLd'
+import { buildCoursePageGraph } from '@/lib/schema'
 
 export const revalidate = 60
 
 const COURSE_SEO = {
   'commercial-pilot-license-cpl': {
     title: 'CPL Course Delhi Commercial Pilot License | Airborne Aviation',
-    description: "Enrol in Airborne's DGCA-approved CPL course in Dwarka, Delhi — 2,500+ students trained. 200 flying hours, 6 DGCA exams, airline placement support. Fees ₹55–65L. Check eligibility."
+    description: "Enrol in Airborne's DGCA Complied CPL course in Dwarka, Delhi — 2,500+ students trained. 200 flying hours, 6 DGCA exams, airline placement support. Fees ₹55–65L."
   },
   'cpl-ground-classes': {
     title: 'CPL Course Delhi Commercial Pilot License | Airborne Aviation',
-    description: "Enrol in Airborne's DGCA-approved CPL course in Dwarka, Delhi — 2,500+ students trained. 200 flying hours, 6 DGCA exams, airline placement support. Fees ₹55–65L. Check eligibility."
+    description: "Enrol in Airborne's DGCA Complied CPL course in Dwarka, Delhi — 2,500+ students trained. 200 flying hours, 6 DGCA exams, airline placement support. Fees ₹55–65L."
   },
   'atpl': {
     title: 'ATPL Ground School India | All Subjects | Airborne Aviation',
@@ -120,24 +121,20 @@ export default async function CourseDetailPage({ params }) {
     : meta('subjects', [])
 
   const feeLabel = displayCourseFee(course.slug, course.fee) ?? 'Contact us'
-  const courseSchema = getCourseSchema({
-    title: course.title,
+  const courseSchema = buildCoursePageGraph({
     slug: course.slug,
-    tagline: course.subtitle ?? '',
+    name: course.title,
+    description: course.description || course.subtitle || '',
+    path: `/courses/${slug}`,
     price: feeLabel,
     duration: course.duration ?? '',
-    overview: course.description ?? '',
+    imagePath: image,
+    courseMode: 'blended',
   })
-  const breadcrumbSchema = getBreadcrumbSchema([
-    { name: 'Home', path: '/' },
-    { name: 'Courses', path: '/courses' },
-    { name: course.title, path: `/courses/${course.slug}` },
-  ])
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <JsonLd data={courseSchema} />
       <Header />
       <main className="course-main-wrapper" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
 
@@ -206,17 +203,7 @@ export default async function CourseDetailPage({ params }) {
               </div>
             )}
 
-            {/* Eligibility Requirements */}
-            {(course.eligibility || course.slug === 'cabin-crew') && (
-              <div className="course-section-divider">
-                <h2 className="course-section-title">
-                  Eligibility Requirements
-                </h2>
-                <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: 0 }}>
-                  {displayCourseEligibility(course.slug, course.eligibility)}
-                </p>
-              </div>
-            )}
+            {/* Requirements intentionally omitted from public course pages (client feedback L5) */}
           </div>
 
           {/* Sidebar */}

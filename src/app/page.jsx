@@ -5,7 +5,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import { motion, useScroll, useTransform, useInView, AnimatePresence } from 'framer-motion'
-import { getLocalBusinessSchema, getEducationalOrgSchema } from '@/utils/seo'
+import JsonLd from '@/components/JsonLd'
+import { buildHomeGraph } from '@/lib/schema'
 import JourneyFlightPath from '@/components/JourneyFlightPath'
 import { GlowCard } from '@/components/ui/spotlight-card'
 import PremiumFooter from '@/components/PremiumFooter'
@@ -648,8 +649,10 @@ const HOME_FAQS = [
   { q: 'Where is Airborne Aviation Academy located?', a: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7, Dwarka, New Delhi 110075. Contact: +91 9953 777 320.' },
   { q: 'What are the office hours?', a: 'Monday to Saturday, 9:30 AM – 6:00 PM. Closed on Sundays.' },
   { q: 'Can I do CPL and ATPL ground school together?', a: 'Yes, and Airborne recommends it. The CPL and ATPL syllabi overlap significantly in Air Navigation, Meteorology, and Technical subjects. Completing both together improves exam efficiency and reduces total preparation time.' },
-  { q: 'What airlines have Airborne graduates joined?', a: 'Airborne graduates have joined IndiGo, Air India, Akasa Air, SpiceJet, Air Asia India, Alliance Air, and regional operators. Over 2,500 pilots have trained at Airborne since 2009.' },
+  { q: 'What airlines have Airborne graduates joined?', a: 'Airborne graduates have joined IndiGo, Air India, Akasa Air, SpiceJet, Air Asia India, Alliance Air, and regional operators. The academy has been training aspiring pilots in Dwarka since 2009.' },
 ]
+
+const homePageGraph = buildHomeGraph(HOME_FAQS)
 
 function HomepageFAQ() {
   const [open, setOpen] = useState(null)
@@ -701,20 +704,6 @@ function HomepageFAQ() {
           ))}
         </div>
 
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'FAQPage',
-              mainEntity: HOME_FAQS.map(f => ({
-                '@type': 'Question',
-                name: f.q,
-                acceptedAnswer: { '@type': 'Answer', text: f.a }
-              }))
-            })
-          }}
-        />
       </motion.div>
     </section>
   )
@@ -1663,9 +1652,6 @@ export default function HomePage() {
     if (typeof window === 'undefined') return false
     return new URLSearchParams(window.location.search).get('mode') === '3d'
   })
-  const businessSchema = getLocalBusinessSchema()
-  const orgSchema = getEducationalOrgSchema()
-
   const openBooking = useCallback(() => setBookingOpen(true), [])
   const closeBooking = useCallback(() => setBookingOpen(false), [])
 
@@ -1693,9 +1679,7 @@ export default function HomePage() {
 
   return (
     <>
-      {/* Structured data — preserved */}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(businessSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }} />
+      <JsonLd data={homePageGraph} />
 
       {/* Global FX layers */}
       <RouteProgress />

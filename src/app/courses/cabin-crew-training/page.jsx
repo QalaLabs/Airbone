@@ -2,8 +2,12 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
-import { getBreadcrumbSchema } from '@/utils/seo'
+
 import CoursePageFooter from '@/components/CoursePageFooter'
+import CourseReviews from '@/components/CourseReviews'
+import JsonLd from '@/components/JsonLd'
+import { buildCoursePageGraph } from '@/lib/schema'
+import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
   title: 'Cabin Crew Training Delhi | Scholarship Available | Airborne',
@@ -20,64 +24,31 @@ export const metadata = {
   },
 }
 
-const breadcrumbSchema = getBreadcrumbSchema([
-  { name: 'Home', path: '/' },
-  { name: 'Courses', path: '/courses' },
-  { name: 'Cabin Crew Training', path: '/courses/cabin-crew-training' },
-])
-
-const courseSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Course',
-  name: 'Cabin Crew Training Program',
-  description: '3-module cabin crew certification at Airborne Aviation Academy, Delhi. Pathway 1: Elite Finishing. Pathway 2: Advanced Communication. Pathway 3: Basic Foundation. Batch 1 scholarship available.',
-  provider: {
-    '@type': 'EducationalOrganization',
-    name: 'Airborne Aviation Academy',
-    address: { '@type': 'PostalAddress', streetAddress: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7', addressLocality: 'Dwarka', addressRegion: 'New Delhi', postalCode: '110075' }
+const coursePageGraph = buildCoursePageGraph({
+  ...COURSE_SCHEMA['cabin-crew-training'],
+  faqs: [
+  {
+    q: 'Who teaches the cabin crew program at Airborne?',
+    a: 'Capt. Mukul Mitra Barua (ex-cabin & cockpit crew, Alliance Air) and Rajeet Khalsa (retired AGM Training, Air India, 37+ years). Not generalist coaches — real airline industry professionals.'
   },
-  offers: [
-    { '@type': 'Offer', name: 'Pathway 1 — Elite Finishing (Regular)', price: '54000', priceCurrency: 'INR' },
-    { '@type': 'Offer', name: 'Pathway 2 — Advanced Communication (Regular)', price: '30000', priceCurrency: 'INR' },
-    { '@type': 'Offer', name: 'Pathway 3 — Basic Foundation (Regular)', price: '30000', priceCurrency: 'INR' },
-    { '@type': 'Offer', name: 'Batch 1 Scholarship — P1 Level', price: '5000', priceCurrency: 'INR', description: 'First 20 students. P1 (worth ₹54,000) is free.' },
-  ],
-  courseMode: 'onsite',
-  duration: 'P6M',
-  url: 'https://www.airborneaviation.in/courses/cabin-crew-training',
-}
-
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
-    {
-      '@type': 'Question',
-      name: 'Who teaches the cabin crew program at Airborne?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Capt. Mukul Mitra Barua (ex-cabin & cockpit crew, Alliance Air) and Rajeet Khalsa (retired AGM Training, Air India, 37+ years). Not generalist coaches — real airline industry professionals.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'What is the cabin crew course fee at Airborne?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Batch 1 scholarship (first 20 students): P1 level = ₹5,000 (uniform + goodies only) | P2 level = ₹35,000 total | P3 level = ₹59,000 total (₹54,000 + ₹5,000). P1 (worth ₹54,000) is free for all Batch 1 students. Regular pricing after Batch 1: P1 = ₹54,000, P2 = ₹30,000, P3 = ₹30,000.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'Can boys join the cabin crew program?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Yes. The program is open to all candidates meeting eligibility criteria. Airlines hire male cabin crew across domestic and international carriers.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'Does Airborne guarantee cabin crew placement?',
-      acceptedAnswer: { '@type': 'Answer', text: 'No institute can guarantee airline selection. Airborne provides structured interview preparation, resume coaching, mock interviews, and career guidance. Final selection rests with the airline.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'What is the minimum height for cabin crew?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Most Indian airlines require a minimum height of 157 cm for cabin crew. Airborne screens candidates during eligibility assessment and prepares them for airline-standard requirements.' }
-    }
-  ]
-}
+  {
+    q: 'What is the cabin crew course fee at Airborne?',
+    a: 'Tuition ₹59,000. 100%* scholarship offer upon scoring ≥70% on the eligibility assessment. *Terms apply — Batch scholarship conditions explained at counselling.'
+  },
+  {
+    q: 'Can boys join the cabin crew program?',
+    a: 'Yes. The program is open to all candidates meeting eligibility criteria. Airlines hire male cabin crew across domestic and international carriers.'
+  },
+  {
+    q: 'Does Airborne guarantee cabin crew placement?',
+    a: 'No institute can guarantee airline selection. Airborne provides structured interview preparation, resume coaching, mock interviews, and career guidance. Final selection rests with the airline.'
+  },
+  {
+    q: 'What is the minimum height for cabin crew?',
+    a: 'Most Indian airlines require a minimum height of 157 cm for cabin crew. Airborne screens candidates during eligibility assessment and prepares them for airline-standard requirements.'
+  }
+],
+})
 
 const PATHWAYS = [
   {
@@ -85,8 +56,8 @@ const PATHWAYS = [
     title: 'Elite Cabin Crew Finishing Batch',
     duration: '3 Months',
     classTime: '90 Minutes',
-    regular: '₹54,000',
-    scholarship: '₹5,000 (uniform + goodies only)',
+    regular: '₹59,000',
+    scholarship: '100%* (score ≥70%)',
     best: 'Near-selection candidates needing final polish',
     focus: ['Final grooming polish', 'Professional presence', 'Service behaviour refinement', 'GD and PI readiness', 'Interview finishing support'],
   },
@@ -95,8 +66,8 @@ const PATHWAYS = [
     title: 'Advanced Communication, GD/PI & Personality',
     duration: '3 Months',
     classTime: '90 Minutes',
-    regular: '₹30,000',
-    scholarship: '₹35,000 (P2 + P1 free)',
+    regular: '₹59,000',
+    scholarship: '100%* (score ≥70%)',
     best: 'Candidates with communication or confidence gaps',
     focus: ['Spoken communication improvement', 'GD practice', 'PI preparation', 'Personality development', 'Confidence building'],
   },
@@ -105,8 +76,8 @@ const PATHWAYS = [
     title: 'Basic Communication & Global Hospitality',
     duration: '6 Months',
     classTime: '90 Minutes',
-    regular: '₹30,000',
-    scholarship: '₹59,000 (P3 + P2 + P1 free)',
+    regular: '₹59,000',
+    scholarship: '100%* (score ≥70%)',
     best: 'Beginners needing complete foundation',
     focus: ['Communication foundation', 'Hospitality standards', 'Grooming basics', 'Professional readiness', 'Zero-to-selection journey'],
   },
@@ -133,9 +104,8 @@ const CAREER_OPTIONS = [
 export default function CabinCrewTrainingPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <JsonLd data={coursePageGraph} />
+
       <Header />
       <main className="course-main-wrapper" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
 
@@ -207,7 +177,7 @@ export default function CabinCrewTrainingPage() {
                   <strong>*Upon Scoring ≥70%</strong>
                 </p>
                 <p style={{ fontSize: '0.85rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.6', margin: 0 }}>
-                  All Batch 1 students take a free eligibility test. Based on result, they are placed at P1, P2, or P3 level. P1 (worth ₹54,000) is FREE for all Batch 1 students scoring above 70%.
+                  Tuition listed at ₹59,000. Scholarship candidates scoring ≥70% on assessment may qualify for 100%* fee waiver. Counselling confirms pathway placement.
                 </p>
               </div>
             </div>
@@ -272,26 +242,6 @@ export default function CabinCrewTrainingPage() {
               </div>
             </div>
 
-            {/* Eligibility */}
-            <div className="course-section-divider">
-              <h2 className="course-section-title">
-                Eligibility
-              </h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
-                {[
-                  { label: 'Qualification', value: '10+2 Pass' },
-                  { label: 'Age', value: '18–27 Years' },
-                  { label: 'English', value: 'Basic English (improvement built into training)' },
-                  { label: 'Physical', value: 'General airline grooming standards' },
-                ].map((e, i) => (
-                  <div key={i} style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', borderLeft: '3px solid #D8A027', padding: '1rem 1.25rem' }}>
-                    <div style={{ fontSize: '0.68rem', color: 'var(--navy)', fontFamily: 'var(--font-h)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.4rem' }}>{e.label}</div>
-                    <div style={{ fontSize: '0.85rem', color: 'var(--navy)', fontWeight: 600 }}>{e.value}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
             {/* Career Options */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
@@ -328,7 +278,7 @@ export default function CabinCrewTrainingPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
                 {[
                   { q: 'Who teaches the cabin crew program at Airborne?', a: 'Capt. Mukul Mitra Barua (ex-cabin & cockpit crew, Alliance Air) and Rajeet Khalsa (retired AGM Training, Air India, 37+ years). Not generalist coaches — real airline industry professionals.' },
-                  { q: 'What is the cabin crew course fee?', a: 'Batch 1 scholarship (first 20 students): P1 level = ₹5,000 | P2 level = ₹35,000 | P3 level = ₹59,000 (₹54,000 + ₹5,000). P1 (worth ₹54,000) is free for all Batch 1 students. Regular pricing after Batch 1: P1 = ₹54,000, P2 = ₹30,000, P3 = ₹30,000.' },
+                  { q: 'What is the cabin crew course fee?', a: 'Tuition ₹59,000. 100%* scholarship offer upon scoring ≥70% on the assessment. *Terms apply — explained at counselling.' },
                   { q: 'Can boys join the cabin crew program?', a: 'Yes. The program is open to all candidates meeting eligibility criteria. Airlines hire male cabin crew across domestic and international carriers.' },
                   { q: 'Does Airborne guarantee cabin crew placement?', a: 'No institute can guarantee airline selection. Airborne provides structured interview preparation, resume coaching, mock interviews, and career guidance. Final selection rests with the airline.' },
                   { q: 'Why are your fees higher than other institutes?', a: 'Because this is airline-standard training — taught by actual airline professionals, not generalist coaches. Compare trainers, structure, and outcomes — not just price.' },
@@ -368,6 +318,7 @@ export default function CabinCrewTrainingPage() {
           </div>
 
         </div>
+        <CourseReviews />
         <CoursePageFooter
           whatsappText="Hi, I'm interested in the Cabin Crew Training program at Airborne Aviation Academy, Dwarka. Please share batch details and fee structure."
           nextCourses={[

@@ -2,8 +2,11 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
-import { getBreadcrumbSchema } from '@/utils/seo'
+
 import CoursePageFooter from '@/components/CoursePageFooter'
+import JsonLd from '@/components/JsonLd'
+import { buildCoursePageGraph } from '@/lib/schema'
+import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
   title: 'Aviation English ICAO Level 4 Delhi | Airborne Aviation',
@@ -11,54 +14,27 @@ export const metadata = {
   alternates: { canonical: '/courses/aviation-english-icao' },
 }
 
-const breadcrumbSchema = getBreadcrumbSchema([
-  { name: 'Home', path: '/' },
-  { name: 'Courses', path: '/courses' },
-  { name: 'Aviation English ICAO L4', path: '/courses/aviation-english-icao' },
-])
-
-const courseSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Course',
-  name: 'Aviation English — ICAO Level 4 Proficiency',
-  description: 'Structured Aviation English course at Airborne Aviation Academy, Dwarka Delhi. Prepares candidates for ICAO English Level 4 proficiency required for DGCA CPL and RTR licence.',
-  provider: {
-    '@type': 'EducationalOrganization',
-    name: 'Airborne Aviation Academy',
-    address: { '@type': 'PostalAddress', streetAddress: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7', addressLocality: 'Dwarka', addressRegion: 'New Delhi', postalCode: '110075' }
+const coursePageGraph = buildCoursePageGraph({
+  ...COURSE_SCHEMA['aviation-english-icao'],
+  faqs: [
+  {
+    q: 'Is ICAO English Level 4 mandatory for CPL in India?',
+    a: 'Yes. DGCA India requires a minimum ICAO English Language Proficiency (ELP) Level 4 (Operational) for CPL issuance and RTR(A) certification. Candidates must demonstrate Level 4 proficiency in pronunciation, structure, vocabulary, fluency, comprehension, and interactions.'
   },
-  offers: { '@type': 'Offer', priceCurrency: 'INR', description: '₹50,000–₹1 lakh. Contact for current pricing.' },
-  courseMode: 'onsite',
-  duration: 'P3M',
-  url: 'https://www.airborneaviation.in/courses/aviation-english-icao',
-}
-
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
-    {
-      '@type': 'Question',
-      name: 'Is ICAO English Level 4 mandatory for CPL in India?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Yes. DGCA India requires a minimum ICAO English Language Proficiency (ELP) Level 4 (Operational) for CPL issuance and RTR(A) certification. Candidates must demonstrate Level 4 proficiency in pronunciation, structure, vocabulary, fluency, comprehension, and interactions.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'How long does the Aviation English ICAO L4 course take?',
-      acceptedAnswer: { '@type': 'Answer', text: '1–3 months depending on current proficiency level. Students with strong English foundations may be test-ready in 4–6 weeks. Those needing more structured improvement typically take 2–3 months.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'Where is the ICAO English Level 4 test taken?',
-      acceptedAnswer: { '@type': 'Answer', text: 'ICAO ELP testing is conducted by DGCA-approved test centres in India (not at Airborne). Airborne prepares candidates for the test — the actual ELP assessment is at the DGCA-approved evaluator centre.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'What are the 6 components of ICAO English proficiency?',
-      acceptedAnswer: { '@type': 'Answer', text: 'ICAO ELP is assessed across 6 components: Pronunciation (accent clarity), Structure (grammar), Vocabulary (aviation and general), Fluency (natural speech pace), Comprehension (understanding spoken English), and Interactions (managing misunderstandings). Level 4 (Operational) must be achieved in all 6.' }
-    }
-  ]
-}
+  {
+    q: 'How long does the Aviation English ICAO L4 course take?',
+    a: '1–3 months depending on current proficiency level. Students with strong English foundations may be test-ready in 4–6 weeks. Those needing more structured improvement typically take 2–3 months.'
+  },
+  {
+    q: 'Where is the ICAO English Level 4 test taken?',
+    a: 'ICAO ELP testing is conducted by DGCA-approved test centres in India (not at Airborne). Airborne prepares candidates for the test — the actual ELP assessment is at the DGCA-approved evaluator centre.'
+  },
+  {
+    q: 'What are the 6 components of ICAO English proficiency?',
+    a: 'ICAO ELP is assessed across 6 components: Pronunciation (accent clarity), Structure (grammar), Vocabulary (aviation and general), Fluency (natural speech pace), Comprehension (understanding spoken English), and Interactions (managing misunderstandings). Level 4 (Operational) must be achieved in all 6.'
+  }
+],
+})
 
 const ICAO_LEVELS = [
   { level: 'Level 1', label: 'Pre-elementary', note: 'Cannot pass basic communication tests' },
@@ -82,9 +58,8 @@ const CURRICULUM = [
 export default function AviationEnglishPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <JsonLd data={coursePageGraph} />
+
       <Header />
       <main className="course-main-wrapper" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
 

@@ -2,8 +2,12 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
-import { getBreadcrumbSchema } from '@/utils/seo'
+
 import CoursePageFooter from '@/components/CoursePageFooter'
+import CourseReviews from '@/components/CourseReviews'
+import JsonLd from '@/components/JsonLd'
+import { buildCoursePageGraph } from '@/lib/schema'
+import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
   title: 'Airline Interview Preparation Delhi | 3 Months | Airborne',
@@ -11,51 +15,23 @@ export const metadata = {
   alternates: { canonical: '/courses/airline-preparation' },
 }
 
-const breadcrumbSchema = getBreadcrumbSchema([
-  { name: 'Home', path: '/' },
-  { name: 'Courses', path: '/courses' },
-  { name: 'Airline Interview Preparation', path: '/courses/airline-preparation' },
-])
-
-const courseSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Course',
-  name: 'Airline Interview Preparation',
-  description: 'Premium 3-month airline interview preparation covering multi-round GD, personal interview, soft skills, resume strategy and full mock airline panels. Led by Rajeet Khalsa, retired Air India AGM (Training).',
-  provider: {
-    '@type': 'EducationalOrganization',
-    name: 'Airborne Aviation Academy',
-    address: { '@type': 'PostalAddress', streetAddress: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7', addressLocality: 'Dwarka', addressRegion: 'New Delhi', postalCode: '110075' }
+const coursePageGraph = buildCoursePageGraph({
+  ...COURSE_SCHEMA['airline-preparation'],
+  faqs: [
+  {
+    q: 'How is Airline Interview Preparation different from the GD & PI Course?',
+    a: 'The GD & PI Course (₹30,000) covers core group discussion and interview foundations. Airline Interview Preparation (₹1,50,000) is the premium 3-month track with deeper mock airline panels, extended soft-skills coaching, and selection-format drills for IndiGo, Air India, Akasa and similar airlines.'
   },
-  url: 'https://www.airborneaviation.in/courses/airline-preparation',
-  offers: {
-    '@type': 'Offer',
-    price: '150000',
-    priceCurrency: 'INR',
+  {
+    q: 'How long is Airline Interview Preparation?',
+    a: '3 months of structured preparation with ongoing mock sessions available.'
   },
-}
-
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
-    {
-      '@type': 'Question',
-      name: 'How is Airline Interview Preparation different from the GD & PI Course?',
-      acceptedAnswer: { '@type': 'Answer', text: 'The GD & PI Course (₹30,000) covers core group discussion and interview foundations. Airline Interview Preparation (₹1,50,000) is the premium 3-month track with deeper mock airline panels, extended soft-skills coaching, and selection-format drills for IndiGo, Air India, Akasa and similar airlines.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'How long is Airline Interview Preparation?',
-      acceptedAnswer: { '@type': 'Answer', text: '3 months of structured preparation with ongoing mock sessions available.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'Is this only for pilots?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Open to both pilot and cabin crew candidates. Formats are adjusted for the role. Cabin crew candidates are also covered under Cabin Crew Training pathways.' }
-    }
-  ]
-}
+  {
+    q: 'Is this only for pilots?',
+    a: 'Open to both pilot and cabin crew candidates. Formats are adjusted for the role. Cabin crew candidates are also covered under Cabin Crew Training pathways.'
+  }
+],
+})
 
 const MODULES = [
   { module: 'Airline Selection Roadmap', detail: 'Stage-by-stage walkthrough of IndiGo, Air India, Akasa and similar airline hiring funnels — what each round tests and how to prepare.' },
@@ -69,9 +45,8 @@ const MODULES = [
 export default function AirlinePreparationPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <JsonLd data={coursePageGraph} />
+
       <Header />
       <main className="course-main-wrapper" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
 
@@ -172,6 +147,7 @@ export default function AirlinePreparationPage() {
           </div>
 
         </div>
+        <CourseReviews />
         <CoursePageFooter
           whatsappText="Hi, I'm interested in Airline Interview Preparation (₹1,50,000) at Airborne Aviation Academy. Please share details."
           nextCourses={[

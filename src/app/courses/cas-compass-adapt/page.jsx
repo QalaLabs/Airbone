@@ -2,8 +2,12 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
-import { getBreadcrumbSchema } from '@/utils/seo'
+
 import CoursePageFooter from '@/components/CoursePageFooter'
+import CourseReviews from '@/components/CourseReviews'
+import JsonLd from '@/components/JsonLd'
+import { buildCoursePageGraph } from '@/lib/schema'
+import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
   title: 'CAS Compass & ADAPT Test Preparation | Pilot Aptitude | Airborne',
@@ -11,41 +15,20 @@ export const metadata = {
   alternates: { canonical: '/courses/cas-compass-adapt' },
 }
 
-const breadcrumbSchema = getBreadcrumbSchema([
-  { name: 'Home', path: '/' },
-  { name: 'Courses', path: '/courses' },
-  { name: 'CAS Compass & ADAPT Prep', path: '/courses/cas-compass-adapt' },
-])
-
-const courseSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Course',
-  name: 'CAS Compass & ADAPT Pilot Aptitude Test Preparation',
-  description: 'Structured preparation for CAS Compass and ADAPT pilot aptitude screening tests. Covers numerical, spatial, multi-tasking, psychomotor, and personality assessment.',
-  provider: {
-    '@type': 'EducationalOrganization',
-    name: 'Airborne Aviation Academy',
-    address: { '@type': 'PostalAddress', streetAddress: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7', addressLocality: 'Dwarka', addressRegion: 'New Delhi', postalCode: '110075' }
-  },
-  url: 'https://www.airborneaviation.in/courses/cas-compass-adapt',
-}
-
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
+const coursePageGraph = buildCoursePageGraph({
+  ...COURSE_SCHEMA['cas-compass-adapt'],
+  price: '30000',
+  faqs: [
     {
-      '@type': 'Question',
-      name: 'Can aptitude test scores be improved with preparation?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Performance on timed tests improves substantially with familiarity and practice under time pressure. Structured preparation reduces first-exposure anxiety and helps candidates perform closer to their actual ability ceiling.' }
+      q: 'Can aptitude test scores be improved with preparation?',
+      a: 'Performance on timed tests improves substantially with familiarity and practice under time pressure. Structured preparation reduces first-exposure anxiety and helps candidates perform closer to their actual ability ceiling.',
     },
     {
-      '@type': 'Question',
-      name: 'Which airlines use CAS Compass or ADAPT?',
-      acceptedAnswer: { '@type': 'Answer', text: "Several Indian airlines use aptitude screening tools in cadet and direct entry selection. Airborne's preparation covers cognitive, spatial, and psychomotor components common across all major airline aptitude test formats." }
-    }
-  ]
-}
+      q: 'Which airlines use CAS Compass or ADAPT?',
+      a: "Several Indian airlines use aptitude screening tools in cadet and direct entry selection. Airborne's preparation covers cognitive, spatial, and psychomotor components common across all major airline aptitude test formats.",
+    },
+  ],
+})
 
 const PREP_MODULES = [
   { domain: 'Numerical Reasoning', what: 'Speed and accuracy with numbers under time pressure', how: 'Timed drill sessions with difficulty progression' },
@@ -58,9 +41,8 @@ const PREP_MODULES = [
 export default function CASCompassAdaptPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <JsonLd data={coursePageGraph} />
+
       <Header />
       <main className="course-main-wrapper" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
 
@@ -162,6 +144,7 @@ export default function CASCompassAdaptPage() {
           </div>
 
         </div>
+        <CourseReviews />
         <CoursePageFooter
           whatsappText="Hi, I want to prepare for the CAS Compass / ADAPT pilot aptitude test at Airborne Aviation Academy, Dwarka. Please share details."
           nextCourses={[

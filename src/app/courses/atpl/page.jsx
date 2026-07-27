@@ -2,9 +2,12 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
-import { getBreadcrumbSchema } from '@/utils/seo'
+
 import CoursePageFooter from '@/components/CoursePageFooter'
 import CourseReviews from '@/components/CourseReviews'
+import JsonLd from '@/components/JsonLd'
+import { buildCoursePageGraph } from '@/lib/schema'
+import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
   title: 'ATPL Ground School India | All Subjects | Airborne Aviation',
@@ -21,48 +24,30 @@ export const metadata = {
   },
 }
 
-const breadcrumbSchema = getBreadcrumbSchema([
-  { name: 'Home', path: '/' },
-  { name: 'Courses', path: '/courses' },
-  { name: 'ATPL Ground School', path: '/courses/atpl' },
-])
-
-const courseSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Course',
-  name: 'ATPL Ground School',
-  description: 'Complete ATPL ground school covering all DGCA airline transport pilot license examination subjects.',
-  provider: {
-    '@type': 'EducationalOrganization',
-    name: 'Airborne Aviation Academy',
-    address: { '@type': 'PostalAddress', streetAddress: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7', addressLocality: 'Dwarka', addressRegion: 'New Delhi', postalCode: '110075' }
-  },
-  coursePrerequisites: 'Valid DGCA CPL',
-  educationalCredentialAwarded: 'ATPL Certificate of Completion',
-  url: 'https://www.airborneaviation.in/courses/atpl',
-}
-
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
+const coursePageGraph = buildCoursePageGraph({
+  ...COURSE_SCHEMA['atpl'],
+  imagePath: '/campus/a320_sim.jpg',
+  price: '150000',
+  duration: 'P2M',
+  faqs: [
     {
-      '@type': 'Question',
-      name: 'Can I do ATPL ground school alongside CPL training?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Yes. Many students complete ATPL theory during their CPL ground school phase. The syllabi overlap significantly — doing both together improves exam efficiency and saves time.' }
+      q: 'Should I do ATPL after CPL?',
+      a: 'Yes, many students do ATPL theory after CPL. Theory overlaps for better understanding. Helps secure airline interview quicker and on priority.',
     },
     {
-      '@type': 'Question',
-      name: 'Is ATPL mandatory to fly as a co-pilot in India?',
-      acceptedAnswer: { '@type': 'Answer', text: 'No. A CPL allows you to fly as co-pilot (SIC) on commercial aircraft. ATPL is required only when upgrading to Pilot-in-Command (PIC/Captain) on scheduled airline operations.' }
+      q: 'Is ATPL mandatory to fly as a co-pilot in India?',
+      a: 'No. A CPL allows you to fly as co-pilot on commercial aircraft. ATPL is required for command to fly aircraft above 5700 KG.',
     },
     {
-      '@type': 'Question',
-      name: 'How long does ATPL ground school take?',
-      acceptedAnswer: { '@type': 'Answer', text: "Airborne's ATPL ground school runs 4–6 months depending on batch schedule and student pace. Weekend and weekday batches available." }
-    }
-  ]
-}
+      q: 'Can I do ATPL preparation alongside flying as Co-Pilot?',
+      a: 'Yes. Airborne provides Online Training with dedicated doubt sessions and chatbot helping ATPL journey. Students can access course content via SMS and portal for flexible learning.',
+    },
+    {
+      q: 'How long does ATPL ground school take?',
+      a: "Airborne's ATPL ground school runs 2–3 months depending on batch schedule and student pace. Eligibility: 21 years. Weekend and weekday batches available.",
+    },
+  ],
+})
 
 const SUBJECTS = [
   { name: 'Air Navigation', detail: 'Advanced long-range, high-altitude procedures' },
@@ -80,9 +65,8 @@ const COMPARISON = [
 export default function ATPLPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <JsonLd data={coursePageGraph} />
+
       <Header />
       <main className="course-main-wrapper" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
 
@@ -109,13 +93,13 @@ export default function ATPLPage() {
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
-                📍 Dwarka, Delhi · 4–6 Months · ₹1,50,000
+                Dwarka, Delhi · Age 21+ · 2–3 Months · ₹1,50,000
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
-                ATPL Ground School in Delhi — Airline Transport Pilot License Exam Prep
+                Our ATPL Program Prepares Commercial Pilots for the DGCA ATPL Written and Viva Examinations
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75', maxWidth: '100%' }}>
-                Airborne Aviation Academy offers ATPL (Airline Transport Pilot License) ground school classes in Dwarka, Delhi. Our ATPL program prepares commercial pilots for the DGCA ATPL written and Viva — the final certification step before command eligibility.
+                Airborne Aviation Academy offers ATPL (Airline Transport Pilot License) ground school classes in Dwarka, Delhi. Our ATPL program prepares commercial pilots for the DGCA ATPL written and Viva — the final certification step before command. Eligibility: 21 years. Duration: 2–3 months.
               </p>
             </div>
 
@@ -208,7 +192,7 @@ export default function ATPLPage() {
                   },
                   {
                     q: 'How long does ATPL ground school take?',
-                    a: "Airborne's ATPL ground school runs 4–6 months depending on batch schedule and student pace. Weekend and weekday batches available.",
+                    a: "Airborne's ATPL ground school runs 2–3 months depending on batch schedule and student pace. Eligibility: 21 years. Weekend and weekday batches available.",
                   },
                 ].map((faq, i) => (
                   <div key={i} className="course-faq-item">
@@ -226,7 +210,7 @@ export default function ATPLPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               <div className="course-sidebar-card">
                 <span className="course-sidebar-label">Duration</span>
-                <div className="course-sidebar-value">⏱️ 4–6 Months</div>
+                <div className="course-sidebar-value">2–3 Months · Age 21+</div>
                 <span className="course-sidebar-label">Course Fee</span>
                 <div className="course-sidebar-price">₹1,50,000</div>
                 <span className="course-sidebar-note">All subjects including viva preparation</span>

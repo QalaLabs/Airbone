@@ -2,8 +2,12 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
-import { getBreadcrumbSchema } from '@/utils/seo'
+
 import CoursePageFooter from '@/components/CoursePageFooter'
+import CourseReviews from '@/components/CourseReviews'
+import JsonLd from '@/components/JsonLd'
+import { buildCoursePageGraph } from '@/lib/schema'
+import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
   title: 'DGCA Complied Ground School Delhi | CPL & ATPL Classes | Airborne',
@@ -20,61 +24,27 @@ export const metadata = {
   },
 }
 
-const breadcrumbSchema = getBreadcrumbSchema([
-  { name: 'Home', path: '/' },
-  { name: 'Courses', path: '/courses' },
-  { name: 'DGCA Ground School', path: '/courses/ground-school' },
-])
-
-const courseSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Course',
-  name: 'DGCA Complied Ground School',
-  description: 'DGCA Complied ground school in Dwarka, Delhi. All CPL & ATPL subjects by Capt. Navrang Singh — 2,500+ trained since 2009. Duration: 3–6 months.',
-  provider: {
-    '@type': 'EducationalOrganization',
-    name: 'Airborne Aviation Academy',
-    address: { '@type': 'PostalAddress', streetAddress: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7', addressLocality: 'Dwarka', addressRegion: 'New Delhi', postalCode: '110075' }
+const coursePageGraph = buildCoursePageGraph({
+  ...COURSE_SCHEMA['ground-school'],
+  faqs: [
+  {
+    q: 'How long does DGCA Ground School take?',
+    a: 'Approximately 3 months for all 5 DGCA CPL papers. Batches are capped at 25 students. Weekend and weekday batches available.'
   },
-  offers: { '@type': 'Offer', price: '270000', priceCurrency: 'INR', availability: 'https://schema.org/InStock' },
-  courseMode: 'onsite',
-  duration: 'P3M',
-  hasCourseInstance: {
-    '@type': 'CourseInstance',
-    courseMode: 'onsite',
-    startDate: '2026-07-01',
-    maximumAttendeeCapacity: 25,
-    instructor: { '@type': 'Person', name: 'Capt. Navrang Singh', jobTitle: 'Founder & Chief Ground Instructor' }
+  {
+    q: 'Is Capt. Navrang Singh in every class?',
+    a: 'Yes. Every core class is taught directly by Capt. Navrang Singh. No junior staff or subcontracted instructors handle any paper.'
   },
-  url: 'https://www.airborneaviation.in/courses/ground-school',
-}
-
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
-    {
-      '@type': 'Question',
-      name: 'How long does DGCA Ground School take?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Approximately 3 months for all 5 DGCA CPL papers. Batches are capped at 25 students. Weekend and weekday batches available.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'Is Capt. Navrang Singh in every class?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Yes. Every core class is taught directly by Capt. Navrang Singh. No junior staff or subcontracted instructors handle any paper.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'What is the DGCA Ground School fee at Airborne?',
-      acceptedAnswer: { '@type': 'Answer', text: '₹2,70,000 covering all 5 DGCA theoretical papers. All study material provided and kept by students. No hidden charges.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'Can I join DGCA Ground School without a CPL in progress?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Yes. Students pursuing any aviation path — CPL, ATPL, or general DGCA exam preparation — can join ground school. Minimum eligibility is Class 12 with Physics and Mathematics.' }
-    }
-  ]
-}
+  {
+    q: 'What is the DGCA Ground School fee at Airborne?',
+    a: '₹2,70,000 covering all 5 DGCA theoretical papers. All study material provided and kept by students. No hidden charges.'
+  },
+  {
+    q: 'Can I join DGCA Ground School without a CPL in progress?',
+    a: 'Yes. Students pursuing any aviation path — CPL, ATPL, or general DGCA exam preparation — can join ground school. Minimum eligibility is Class 12 with Physics and Mathematics.'
+  }
+],
+})
 
 const SUBJECTS = [
   { name: 'Air Navigation', code: '010', detail: 'Spherical trig, dead reckoning, radio navigation, GPS, RNAV' },
@@ -97,9 +67,8 @@ const ADVANTAGES = [
 export default function GroundSchoolPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <JsonLd data={coursePageGraph} />
+
       <Header />
       <main className="course-main-wrapper" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
 
@@ -234,6 +203,7 @@ export default function GroundSchoolPage() {
           </div>
 
         </div>
+        <CourseReviews />
         <CoursePageFooter
           whatsappText="Hi, I'm interested in the DGCA Ground School at Airborne Aviation Academy, Dwarka. Please share current batch details."
           nextCourses={[

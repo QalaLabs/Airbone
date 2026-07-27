@@ -2,8 +2,12 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
-import { getBreadcrumbSchema } from '@/utils/seo'
+
 import CoursePageFooter from '@/components/CoursePageFooter'
+import CourseReviews from '@/components/CourseReviews'
+import JsonLd from '@/components/JsonLd'
+import { buildCoursePageGraph } from '@/lib/schema'
+import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
   title: 'GD & PI Course Delhi | ₹30,000 | Airborne Aviation',
@@ -11,51 +15,23 @@ export const metadata = {
   alternates: { canonical: '/courses/gd-pi' },
 }
 
-const breadcrumbSchema = getBreadcrumbSchema([
-  { name: 'Home', path: '/' },
-  { name: 'Courses', path: '/courses' },
-  { name: 'GD & PI Course', path: '/courses/gd-pi' },
-])
-
-const courseSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Course',
-  name: 'GD & PI Course',
-  description: 'Foundational 3-month GD & PI course covering group discussion, personal interview, personality development, communication and mock interview rounds. Led by Rajeet Khalsa, retired Air India AGM (Training).',
-  provider: {
-    '@type': 'EducationalOrganization',
-    name: 'Airborne Aviation Academy',
-    address: { '@type': 'PostalAddress', streetAddress: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7', addressLocality: 'Dwarka', addressRegion: 'New Delhi', postalCode: '110075' }
+const coursePageGraph = buildCoursePageGraph({
+  ...COURSE_SCHEMA['gd-pi'],
+  faqs: [
+  {
+    q: 'How long is the GD & PI course?',
+    a: '3 months for intensive preparation, with ongoing mock sessions available.'
   },
-  url: 'https://www.airborneaviation.in/courses/gd-pi',
-  offers: {
-    '@type': 'Offer',
-    price: '30000',
-    priceCurrency: 'INR',
+  {
+    q: 'How is this different from Airline Interview Preparation?',
+    a: 'GD & PI Course (₹30,000) is the foundational track for group discussion and interview skills. Airline Interview Preparation (₹1,50,000) is the premium 3-month package with deeper mock airline panels and extended coaching.'
   },
-}
-
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
-    {
-      '@type': 'Question',
-      name: 'How long is the GD & PI course?',
-      acceptedAnswer: { '@type': 'Answer', text: '3 months for intensive preparation, with ongoing mock sessions available.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'How is this different from Airline Interview Preparation?',
-      acceptedAnswer: { '@type': 'Answer', text: 'GD & PI Course (₹30,000) is the foundational track for group discussion and interview skills. Airline Interview Preparation (₹1,50,000) is the premium 3-month package with deeper mock airline panels and extended coaching.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'Is this only for pilots?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Open to both pilot and cabin crew candidates. GD/PI formats are adjusted for the specific role.' }
-    }
-  ]
-}
+  {
+    q: 'Is this only for pilots?',
+    a: 'Open to both pilot and cabin crew candidates. GD/PI formats are adjusted for the specific role.'
+  }
+],
+})
 
 const MODULES = [
   { module: 'Group Discussion (GD)', detail: 'Topic selection strategy, structure, timed mock GDs with panel feedback, aviation and current affairs topics used by IndiGo/Air India.' },
@@ -69,9 +45,8 @@ const MODULES = [
 export default function GdPiCoursePage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <JsonLd data={coursePageGraph} />
+
       <Header />
       <main className="course-main-wrapper" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
 
@@ -172,6 +147,7 @@ export default function GdPiCoursePage() {
           </div>
 
         </div>
+        <CourseReviews />
         <CoursePageFooter
           whatsappText="Hi, I'm interested in the GD & PI Course (₹30,000) at Airborne Aviation Academy. Please share details."
           nextCourses={[

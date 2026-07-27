@@ -1,12 +1,16 @@
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
+import JsonLd from '@/components/JsonLd'
+import { buildAboutGraph } from '@/lib/schema'
 
 export const metadata = {
   title: 'About Airborne Aviation Academy DGCA Complied | Dwarka Delhi',
-  description: 'Airborne Aviation Academy, Dwarka Delhi founded by Capt. Navrang Singh in 2009. 2,500+ trained. DGCA Complied ground school. Meet our mentors, faculty & placement record.',
+  description: 'Airborne Aviation Academy, Dwarka Delhi founded by Capt. Navrang Singh in 2009. DGCA-aligned ground school. Meet our mentors, faculty and placement pathways.',
   alternates: { canonical: '/about' },
 }
+
+const aboutPageGraph = buildAboutGraph()
 
 const FOUNDERS = [
   {
@@ -63,6 +67,7 @@ const STATS = [
 export default function AboutPage() {
   return (
     <>
+      <JsonLd data={aboutPageGraph} />
       <Header />
       <main className="theme-light" style={{ minHeight: '80vh', background: 'var(--paper)', padding: '4rem var(--margin) 6rem var(--margin)' }}>
         <div className="container-xl">

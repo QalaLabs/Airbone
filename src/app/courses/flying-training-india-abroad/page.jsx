@@ -2,59 +2,47 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
-import { getBreadcrumbSchema } from '@/utils/seo'
+import JsonLd from '@/components/JsonLd'
 import CoursePageFooter from '@/components/CoursePageFooter'
+import CourseReviews from '@/components/CourseReviews'
+import { buildArticlePageGraph } from '@/lib/schema'
 
 export const metadata = {
-  title: 'Flying Training India vs Abroad | Cost & DGCA Guide | Airborne',
-  description: 'Compare flying training in India vs abroad. DGCA requirements, cost comparison, license conversion guide, and which countries are recognised. Free counselling.',
+  title: 'Parent Centric Flying Guide | CPL India vs Abroad | Airborne',
+  description: 'Comprehensive CPL flight training guidance and Indian CPL conversion support for parents and aspirants. India vs abroad cost, timeline, and DGCA pathway.',
   alternates: { canonical: '/courses/flying-training-india-abroad' },
 }
 
-const breadcrumbSchema = getBreadcrumbSchema([
-  { name: 'Home', path: '/' },
-  { name: 'Courses', path: '/courses' },
-  { name: 'Flying Training India vs Abroad', path: '/courses/flying-training-india-abroad' },
-])
-
-const pageSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Article',
-  headline: 'Flying Training in India vs Abroad | Complete Guide for 2026',
-  description: 'A structured comparison of CPL flight training in India versus abroad, covering cost, timeline, DGCA license conversion, and airline hiring outcomes.',
-  author: {
-    '@type': 'Organization',
-    name: 'Airborne Aviation Academy',
+const FLYING_FAQS = [
+  {
+    q: 'Is it cheaper to do pilot training in India or abroad?',
+    a: 'Direct training cost can be lower in Philippines/USA (₹35–45L vs ₹65–75L). However, once conversion costs (₹5–15L), living expenses abroad, and additional 12–18 months before airline entry are added, India-trained CPL holders often reach their first airline seat faster and at lower total cost.',
   },
-  publisher: {
-    '@type': 'Organization',
-    name: 'Airborne Aviation Academy',
-    url: 'https://www.airborneaviation.in',
+  {
+    q: 'Does DGCA recognise FAA or EASA pilot licenses?',
+    a: 'DGCA does not directly accept FAA or EASA CPL for commercial operations in India. Pilots trained abroad must clear DGCA CPL written examinations and pass a DGCA Skill Test to receive an Indian CPL.',
   },
-  url: 'https://www.airborneaviation.in/courses/flying-training-india-abroad',
-}
+  {
+    q: 'Can I do DGCA ground school while flying abroad?',
+    a: 'Yes. Airborne offers DGCA ground school for students completing flying hours abroad or between training phases. Completing DGCA exams before returning to India reduces total conversion time significantly.',
+  },
+]
 
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
-    {
-      '@type': 'Question',
-      name: 'Is it cheaper to do pilot training in India or abroad?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Direct training cost can be lower in Philippines/USA (₹35–45L vs ₹65–75L). However, once conversion costs (₹5–15L), living expenses abroad, and additional 12–18 months before airline entry are added, India-trained CPL holders often reach their first airline seat faster and at lower total cost.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'Does DGCA recognise FAA or EASA pilot licenses?',
-      acceptedAnswer: { '@type': 'Answer', text: 'DGCA does not directly accept FAA or EASA CPL for commercial operations in India. Pilots trained abroad must clear DGCA CPL written examinations and pass a DGCA Skill Test to receive an Indian CPL.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'Can I do DGCA ground school while flying abroad?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Yes. Airborne offers DGCA ground school for students completing flying hours abroad or between training phases. Completing DGCA exams before returning to India reduces total conversion time significantly.' }
-    }
-  ]
-}
+const flyingGuideGraph = buildArticlePageGraph({
+  path: '/courses/flying-training-india-abroad',
+  headline: 'Parent Centric Flying Guide — Comprehensive CPL Flight Training Guidance and Indian CPL Conversion Support',
+  description:
+    'A structured comparison of CPL flight training in India versus abroad, covering cost, timeline, DGCA license conversion, and airline hiring outcomes — built for parents and aspirants.',
+  datePublished: '2026-01-10',
+  dateModified: '2026-07-01',
+  imagePath: '/footage/cockpit_instruments_closeup.jpg',
+  faqs: FLYING_FAQS,
+  breadcrumbs: [
+    { name: 'Home', path: '/' },
+    { name: 'Courses', path: '/courses' },
+    { name: 'Parent Centric Flying Guide', path: '/courses/flying-training-india-abroad' },
+  ],
+})
 
 const COMPARISON = [
   { param: 'Total Cost', india: '₹55–65 lakh (CPL)', abroad: '₹35–65 lakh depending on country' },
@@ -77,9 +65,7 @@ const DECISION = [
 export default function FlyingTrainingIndiaAbroadPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(pageSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <JsonLd data={flyingGuideGraph} />
       <Header />
       <main className="course-main-wrapper" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
 
@@ -88,11 +74,11 @@ export default function FlyingTrainingIndiaAbroadPage() {
           <span>/</span>
           <Link href="/courses" >Courses</Link>
           <span>/</span>
-          <span className="current">India vs Abroad</span>
+          <span className="current">Parent Centric Guide</span>
         </div>
 
         <div className="course-hero-image-wrap" style={{ borderRadius: '8px' }}>
-          <img src="/footage/cockpit_instruments_closeup.jpg" alt="Flying Training India vs Abroad — CPL Guide" className="course-hero-image" />
+          <img src="/footage/cockpit_instruments_closeup.jpg" alt="Parent Centric Flying Guide — CPL India vs Abroad" className="course-hero-image" />
           <div className="course-hero-overlay" style={{ background: 'linear-gradient(to top, rgba(0, 39, 76, 0.4) 0%, transparent 100%)' }} />
         </div>
 
@@ -102,13 +88,13 @@ export default function FlyingTrainingIndiaAbroadPage() {
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
-                Expert Guide — Airborne Aviation Academy
+                Parent Centric Guide — Airborne Aviation Academy
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
-                Flying Training in India vs Abroad | Complete Guide for 2026
+                Comprehensive CPL Flight Training Guidance and Indian CPL Conversion Support
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
-                The India vs abroad debate is one of the most common questions Airborne's admissions team receives. The answer depends on your budget, timeline, and final career goal — not on where your batchmate trained. This guide lays out the actual comparison based on 2025–26 data, including DGCA conversion requirements you will need if you train outside India.
+                Built for parents and aspirants. The India vs abroad debate is one of the most common questions Airborne&apos;s admissions team receives. The answer depends on your budget, timeline, and final career goal — not on where your batchmate trained. This guide lays out the actual comparison based on 2025–26 data, including DGCA conversion requirements if you train outside India.
               </p>
             </div>
 
@@ -214,6 +200,7 @@ export default function FlyingTrainingIndiaAbroadPage() {
           </div>
 
         </div>
+        <CourseReviews />
         <CoursePageFooter
           whatsappText="Hi, I want a free counselling session to compare flying training in India vs abroad. Please share details from Airborne Aviation Academy."
           nextCourses={[

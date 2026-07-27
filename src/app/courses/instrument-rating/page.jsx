@@ -2,8 +2,11 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
-import { getBreadcrumbSchema } from '@/utils/seo'
+
 import CoursePageFooter from '@/components/CoursePageFooter'
+import JsonLd from '@/components/JsonLd'
+import { buildCoursePageGraph } from '@/lib/schema'
+import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
   title: 'Instrument Rating Course Delhi — DGCA Complied | Airborne',
@@ -11,50 +14,19 @@ export const metadata = {
   alternates: { canonical: '/courses/instrument-rating' },
 }
 
-const breadcrumbSchema = getBreadcrumbSchema([
-  { name: 'Home', path: '/' },
-  { name: 'Courses', path: '/courses' },
-  { name: 'Instrument Rating', path: '/courses/instrument-rating' },
-])
-
-const courseSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Course',
-  name: 'Instrument Rating (IR)',
-  description: 'DGCA Instrument Rating training at Airborne Aviation Academy, Dwarka Delhi. ILS, VOR, NDB approaches. Prerequisite: PPL or CPL.',
-  provider: {
-    '@type': 'EducationalOrganization',
-    name: 'Airborne Aviation Academy',
-    address: { '@type': 'PostalAddress', streetAddress: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7', addressLocality: 'Dwarka', addressRegion: 'New Delhi', postalCode: '110075' }
+const coursePageGraph = buildCoursePageGraph({
+  ...COURSE_SCHEMA['instrument-rating'],
+  faqs: [
+  {
+    q: 'Is Instrument Rating required for CPL in India?',
+    a: 'Instrument Rating (IR) is part of the CPL training requirement in India. DGCA requires instrument flying hours as part of the 200-hour CPL minimum. Most CPL graduates have their IR as part of their training.'
   },
-  offers: { '@type': 'Offer', priceCurrency: 'INR', description: '₹3–5 lakh. Contact for current pricing.' },
-  coursePrerequisites: 'Valid DGCA PPL or CPL · 50 hours cross-country as PIC',
-  courseMode: 'onsite',
-  duration: 'P3M',
-  url: 'https://www.airborneaviation.in/courses/instrument-rating',
-}
-
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
-    {
-      '@type': 'Question',
-      name: 'Is Instrument Rating required for CPL in India?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Instrument Rating (IR) is part of the CPL training requirement in India. DGCA requires instrument flying hours as part of the 200-hour CPL minimum. Most CPL graduates have their IR as part of their training.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'How long does Instrument Rating training take?',
-      acceptedAnswer: { '@type': 'Answer', text: '2–3 months for ground and flight training. The IR involves ground instruction on IFR procedures, instrument approaches, and airspace, plus minimum flying hours on instruments under supervision.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'Can I use the Airborne A320 simulator for IR practice?',
-      acceptedAnswer: { '@type': 'Answer', text: "Yes. Airborne's in-house A320 FTD is used for instrument approach practice — ILS, VOR, and NDB approaches — before actual flying. This significantly reduces flight hours needed for IR proficiency." }
-    }
-  ]
-}
+  {
+    q: 'How long does Instrument Rating training take?',
+    a: '2–3 months for ground and flight training. The IR involves ground instruction on IFR procedures, instrument approaches, and airspace, plus minimum flying hours on instruments under supervision.'
+  }
+],
+})
 
 const TRAINING_CONTENT = [
   { topic: 'ILS Approaches', detail: 'Instrument Landing System precision approaches to DGCA standards' },
@@ -68,9 +40,8 @@ const TRAINING_CONTENT = [
 export default function InstrumentRatingPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <JsonLd data={coursePageGraph} />
+
       <Header />
       <main className="course-main-wrapper" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
 
@@ -132,7 +103,7 @@ export default function InstrumentRatingPage() {
             {/* Eligibility */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                Instrument Rating Eligibility
+                Instrument Rating Requirements
               </h2>
               <ul className="course-list">
                 {[

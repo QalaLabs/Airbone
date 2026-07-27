@@ -2,7 +2,8 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
-import { getBreadcrumbSchema } from '@/utils/seo'
+import JsonLd from '@/components/JsonLd'
+import { buildArticlePageGraph } from '@/lib/schema'
 
 export const metadata = {
   title: 'How to Become a Pilot in India After 12th — Step-by-Step 2026',
@@ -10,40 +11,21 @@ export const metadata = {
   alternates: { canonical: '/blog/how-to-become-pilot-india' },
 }
 
-const breadcrumbSchema = getBreadcrumbSchema([
-  { name: 'Home', path: '/' },
-  { name: 'Resources', path: '/resources' },
-  { name: 'How to Become a Pilot in India', path: '/blog/how-to-become-pilot-india' },
-])
+const FAQS = [
+  { q: 'What subjects are required in Class 12 to become a pilot?', a: 'Physics and Mathematics are mandatory in Class 12 (10+2), with a minimum aggregate of 50% marks.' },
+  { q: 'What is the minimum age to get a CPL in India?', a: 'You must be at least 18 years old at the time of applying for a CPL. You can begin your Student Pilot License (SPL) at 17.' },
+  { q: 'How much does pilot training cost in India?', a: 'Total CPL training in India costs between ₹40–60 lakhs, including ground school (₹1–2L), flying fees, DGCA exam fees, and medical costs. Training abroad can be cheaper on a per-hour basis but requires DGCA conversion.' },
+  { q: 'How long does it take to become a commercial pilot in India?', a: 'The complete CPL journey takes 18–36 months depending on flight school availability. Ground school typically runs 12–18 months in parallel.' },
+]
 
-const articleSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Article',
+const articlePageGraph = buildArticlePageGraph({
+  path: '/blog/how-to-become-pilot-india',
   headline: 'How to Become a Pilot in India After 12th — Step-by-Step Guide 2026',
   description: 'Complete step-by-step guide to becoming a commercial pilot in India after Class 12, written by Capt. Navrang Singh.',
-  author: { '@type': 'Person', name: 'Capt. Navrang Singh' },
-  publisher: {
-    '@type': 'EducationalOrganization',
-    name: 'Airborne Aviation Academy',
-    logo: { '@type': 'ImageObject', url: 'https://www.airborneaviation.in/logo-primary.png' },
-    url: 'https://www.airborneaviation.in',
-  },
   datePublished: '2026-01-15',
   dateModified: '2026-06-01',
-  url: 'https://www.airborneaviation.in/blog/how-to-become-pilot-india',
-  mainEntityOfPage: 'https://www.airborneaviation.in/blog/how-to-become-pilot-india',
-}
-
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
-    { '@type': 'Question', name: 'What subjects are required in Class 12 to become a pilot in India?', acceptedAnswer: { '@type': 'Answer', text: 'Physics and Mathematics are mandatory in Class 12 (10+2), with a minimum aggregate of 50% marks as per DGCA requirements.' } },
-    { '@type': 'Question', name: 'What is the minimum age to get a CPL in India?', acceptedAnswer: { '@type': 'Answer', text: 'You must be at least 17 to obtain a Student Pilot License, and 18 years old at the time of applying for a CPL.' } },
-    { '@type': 'Question', name: 'How much does pilot training cost in India?', acceptedAnswer: { '@type': 'Answer', text: 'Total CPL training in India costs between ₹40–60 lakhs including ground school fees (₹1–2L), flying school fees, and DGCA exam fees.' } },
-    { '@type': 'Question', name: 'How long does it take to become a commercial pilot in India?', acceptedAnswer: { '@type': 'Answer', text: 'The complete CPL journey takes between 18–36 months. Ground school runs parallel to flying and typically takes 12–18 months.' } },
-  ],
-}
+  faqs: FAQS,
+})
 
 const STEPS = [
   {
@@ -90,19 +72,11 @@ const STEPS = [
   },
 ]
 
-const FAQS = [
-  { q: 'What subjects are required in Class 12 to become a pilot?', a: 'Physics and Mathematics are mandatory in Class 12 (10+2), with a minimum aggregate of 50% marks.' },
-  { q: 'What is the minimum age to get a CPL in India?', a: 'You must be at least 18 years old at the time of applying for a CPL. You can begin your Student Pilot License (SPL) at 17.' },
-  { q: 'How much does pilot training cost in India?', a: 'Total CPL training in India costs between ₹40–60 lakhs, including ground school (₹1–2L), flying fees, DGCA exam fees, and medical costs. Training abroad can be cheaper on a per-hour basis but requires DGCA conversion.' },
-  { q: 'How long does it take to become a commercial pilot in India?', a: 'The complete CPL journey takes 18–36 months depending on flight school availability. Ground school typically runs 12–18 months in parallel.' },
-]
-
 export default function HowToBecomePilotPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <JsonLd data={articlePageGraph} />
+
       <Header />
       <main style={{ minHeight: '80vh', background: '#000810', padding: '4rem var(--margin) 6rem var(--margin)' }}>
 

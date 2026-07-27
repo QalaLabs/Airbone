@@ -2,9 +2,12 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
-import { getBreadcrumbSchema } from '@/utils/seo'
+
 import CoursePageFooter from '@/components/CoursePageFooter'
 import CourseReviews from '@/components/CourseReviews'
+import JsonLd from '@/components/JsonLd'
+import { buildCoursePageGraph } from '@/lib/schema'
+import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
   title: 'Commercial Pilot License Ground Classes in Delhi — DGCA Complied | Airborne Aviation',
@@ -21,81 +24,39 @@ export const metadata = {
   },
 }
 
-const breadcrumbSchema = getBreadcrumbSchema([
-  { name: 'Home', path: '/' },
-  { name: 'Courses', path: '/courses' },
-  { name: 'CPL Ground School', path: '/courses/commercial-pilot-license-cpl' },
-])
-
-const courseSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Course',
-  name: 'DGCA Complied CPL Ground School',
-  description: 'All 5 DGCA CPL papers: Air Navigation, Meteorology, Air Regulations, Technical General, Technical Specific. DGCA Complied training by Capt. Navrang Singh. 100% first-attempt pass rate.',
-  provider: {
-    '@type': 'EducationalOrganization',
-    name: 'Airborne Aviation Academy',
-    address: { '@type': 'PostalAddress', streetAddress: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7', addressLocality: 'Dwarka', addressRegion: 'New Delhi', postalCode: '110075' }
+const coursePageGraph = buildCoursePageGraph({
+  ...COURSE_SCHEMA['commercial-pilot-license-cpl'],
+  faqs: [
+  {
+    q: 'What DGCA exams are required for CPL?',
+    a: 'Six DGCA examinations: Air Navigation, Aviation Meteorology, Air Regulations, Technical General, Technical Specific, and RTR. Each paper requires minimum 70% to pass.'
   },
-  offers: { '@type': 'Offer', price: '270000', priceCurrency: 'INR', availability: 'https://schema.org/InStock', validFrom: '2026-07-01' },
-  courseMode: 'onsite',
-  duration: 'P3M',
-  educationalLevel: 'Professional Certification',
-  hasCourseInstance: {
-    '@type': 'CourseInstance',
-    courseMode: 'onsite',
-    startDate: '2026-07-01',
-    maximumAttendeeCapacity: 25,
-    location: {
-      '@type': 'Place',
-      name: 'Airborne Aviation Academy — Dwarka Centre',
-      address: { '@type': 'PostalAddress', streetAddress: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7', addressLocality: 'Dwarka', addressRegion: 'New Delhi', postalCode: '110075', addressCountry: 'IN' }
-    },
-    instructor: { '@type': 'Person', name: 'Capt. Navrang Singh', jobTitle: 'Founder & Chief Ground Instructor' }
+  {
+    q: 'How much does CPL cost in India?',
+    a: 'CPL training in India costs ₹55–65 lakh at DGCA-approved FTOs, covering 200 flying hours, ground school, DGCA exam fees, and medical. Education loans available via SBI, Bank of Baroda, PNB.'
   },
-  teaches: ['Air Navigation', 'Aviation Meteorology', 'Air Regulations', 'Technical General', 'Technical Specific (Airbus A320)'],
-  url: 'https://www.airborneaviation.in/courses/commercial-pilot-license-cpl',
-}
-
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
-    {
-      '@type': 'Question',
-      name: 'What DGCA exams are required for CPL?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Six DGCA examinations: Air Navigation, Aviation Meteorology, Air Regulations, Technical General, Technical Specific, and RTR. Each paper requires minimum 70% to pass.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'How much does CPL cost in India?',
-      acceptedAnswer: { '@type': 'Answer', text: 'CPL training in India costs ₹55–65 lakh at DGCA-approved FTOs, covering 200 flying hours, ground school, DGCA exam fees, and medical. Education loans available via SBI, Bank of Baroda, PNB.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'What is the DGCA CPL Ground School fee at Airborne?',
-      acceptedAnswer: { '@type': 'Answer', text: 'The tuition fee is ₹2,70,000 covering all 5 DGCA theoretical papers taught directly by Capt. Navrang Singh.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'How long does CPL Ground School take?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Approximately 3 months. Batches are capped at 25 students. Next batch starts July 2026.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'Is CPL ground school taught by Capt. Navrang Singh directly?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Yes. Every core class is taught directly by Capt. Navrang Singh. No subcontracted instructors.' }
-    }
-  ]
-}
+  {
+    q: 'What is the DGCA CPL Ground School fee at Airborne?',
+    a: 'The tuition fee is ₹2,70,000 covering all 5 DGCA theoretical papers taught directly by Capt. Navrang Singh.'
+  },
+  {
+    q: 'How long does CPL Ground School take?',
+    a: 'Approximately 3 months. Batches are capped at 25 students. Next batch starts July 2026.'
+  },
+  {
+    q: 'Is CPL ground school taught by Capt. Navrang Singh directly?',
+    a: 'Yes. Every core class is taught directly by Capt. Navrang Singh. No subcontracted instructors.'
+  }
+],
+})
 
 const SUBJECTS = [
-  { name: 'Air Navigation', code: '010', detail: 'General Navigation, Radio Aids, Instrument, Mass & Balance, Performance and Flight Planning' },
-  { name: 'Aviation Meteorology', code: '050', detail: 'Atmosphere, weather systems, METAR/TAF, forecasting' },
-  { name: 'Air Regulations', code: '010', detail: 'DGCA CAR, ICAO Annex 2, rules of the air, licensing regulations' },
-  { name: 'Technical General', code: '021', detail: 'Aerodynamics, aircraft systems, piston/turbine engines' },
-  { name: 'Technical Specific', code: '022', detail: 'Aircraft type systems for specific aircraft types' },
-  { name: 'RTR', code: 'RTR(A)', detail: 'Part 1: MCQ as per module; Part 2: Real Life Communication in simulated environment with ATC' },
+  { name: 'Air Navigation', detail: 'General Navigation, Radio Aids, Instrument, Mass & Balance, Performance and Flight Planning' },
+  { name: 'Aviation Meteorology', detail: 'Atmosphere, weather systems, METAR/TAF, forecasting' },
+  { name: 'Air Regulations', detail: 'DGCA CAR, ICAO Annex 2, rules of the air, licensing regulations' },
+  { name: 'Technical General', detail: 'Aerodynamics, aircraft systems, piston/turbine engines' },
+  { name: 'Technical Specific', detail: 'Aircraft type systems for specific aircraft types' },
+  { name: 'RTR', detail: 'Part 1: MCQ as per module; Part 2: Real Life Communication in simulated environment with ATC' },
 ]
 
 const FEE_ROWS = [
@@ -109,20 +70,18 @@ const FEE_ROWS = [
   { component: 'Total (approximate)', amount: '₹55–65 lakh' },
 ]
 
-const ELIGIBILITY = [
-  { req: 'Age', detail: 'Minimum 18 years for CPL issuance' },
+const ISSUANCE = [
+  { req: 'Age', detail: 'Minimum 18 years' },
   { req: 'Education', detail: 'Class 12 with Physics and Mathematics' },
-  { req: 'Flying Hours', detail: '200 hours total flying time' },
-  { req: 'DGCA Exam', detail: 'All DGCA exam papers passed' },
-  { req: 'Medical', detail: 'DGCA Class 1 Medical Certificate' },
+  { req: 'Flying Training', detail: '200 hours' },
+  { req: 'DGCA Exam', detail: 'Passed' },
 ]
 
 export default function CPLPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <JsonLd data={coursePageGraph} />
+
       <Header />
       <main className="course-main-wrapper" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
 
@@ -148,13 +107,13 @@ export default function CPLPage() {
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
-                📍 Dwarka, Delhi · 3–6 Months · ₹2,70,000
+                Dwarka, Delhi · 3–6 Months · ₹2,70,000
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
                 Commercial Pilot License Ground Classes in Delhi — DGCA Complied
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75', maxWidth: '100%' }}>
-                Airborne Aviation Academy offers a DGCA Complied Commercial Pilot License (CPL) Ground School in Dwarka, Delhi. The CPL Ground School covers all 5 DGCA written examination papers — taught personally by Capt. Navrang Singh, who has maintained a 100% first-attempt pass rate across 2,500+ students since 2009. July 2026 batch now enrolling. 25 seats. ₹2,70,000.
+                Airborne Aviation Academy offers a DGCA Complied Commercial Pilot License (CPL) Ground School in Dwarka, Delhi. The CPL Ground School covers all 5 DGCA written examination papers — taught personally by Capt. Navrang Singh. Structured concept-focused preparation for DGCA exams. July 2026 batch now enrolling. 25 seats. ₹2,70,000.
               </p>
             </div>
 
@@ -166,7 +125,6 @@ export default function CPLPage() {
               <div className="course-subject-grid">
                 {SUBJECTS.map((s, i) => (
                   <div key={i} className="course-subject-card">
-                    <div style={{ fontSize: '0.72rem', fontFamily: 'var(--font-h)', letterSpacing: '0.12em', color: 'var(--red)', marginBottom: '0.4rem', textTransform: 'uppercase', fontWeight: 800 }}>{s.code}</div>
                     <div className="course-subject-card-title">{s.name}</div>
                     <div className="course-subject-card-detail">{s.detail}</div>
                   </div>
@@ -202,10 +160,10 @@ export default function CPLPage() {
               </p>
             </div>
 
-            {/* Eligibility */}
+            {/* Issuance */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                CPL Eligibility Requirements
+                CPL Issuance Requirements
               </h2>
               <div className="course-table-wrap" style={{ overflowX: 'auto' }}>
                 <table className="course-table" style={{ minWidth: "600px" }}>
@@ -216,7 +174,7 @@ export default function CPLPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {ELIGIBILITY.map((row, i) => (
+                    {ISSUANCE.map((row, i) => (
                       <tr key={i}>
                         <td style={{ fontWeight: 600 }}>{row.req}</td>
                         <td>{row.detail}</td>
@@ -281,10 +239,10 @@ export default function CPLPage() {
                 <span className="course-sidebar-note">All 5 DGCA subjects included</span>
                 <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(0, 39, 76, 0.08)' }} />
                 <span className="course-sidebar-label">Duration</span>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)' }}>⏱️ 3–6 Months</div>
+                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)' }}>3–6 Months</div>
                 <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(0, 39, 76, 0.08)' }} />
                 <span className="course-sidebar-label">Batch Size</span>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)' }}>👥 Max 25 Students</div>
+                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)' }}>Max 25 Students</div>
                 <span className="course-sidebar-note">July 2026 batch now enrolling</span>
               </div>
               <LeadForm
@@ -301,13 +259,14 @@ export default function CPLPage() {
           whatsappText="Hi, I'm interested in the CPL Ground School at Airborne Aviation Academy, Dwarka. Please share July 2026 batch details and fee."
           nextCourses={[
             { label: 'ATPL Ground School', href: '/courses/atpl', note: 'Prepare for ATPL exams and upgrade to Captain — CPL holders only' },
-            { label: 'Flying Training Guide', href: '/courses/flying-training-india-abroad', note: 'CPL flight training guidance and Indian conversion support' },
+            { label: 'Parent Centric Flying Guide', href: '/courses/flying-training-india-abroad', note: 'Comprehensive CPL flight training guidance and Indian CPL conversion support' },
             { label: 'GD & PI Course', href: '/courses/gd-pi', note: 'Group discussion and interview coaching' },
           ]}
           relatedCourses={[
             { label: 'ATPL Ground School', href: '/courses/atpl' },
-            { label: 'PPL', href: '/courses/private-pilot-license' },
             { label: 'Airline Interview Prep', href: '/courses/airline-preparation' },
+            { label: 'A320 Simulator FBS', href: '/courses/a320-simulator' },
+            { label: 'PPL', href: '/courses/private-pilot-license' },
             { label: 'Cadet Preparation', href: '/courses/cadet-preparation' },
             { label: 'All Courses', href: '/courses' },
           ]}

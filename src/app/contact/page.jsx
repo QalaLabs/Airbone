@@ -1,7 +1,8 @@
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
-import { getBreadcrumbSchema, getLocalBusinessSchema } from '@/utils/seo'
+import JsonLd from '@/components/JsonLd'
+import { buildContactGraph } from '@/lib/schema'
 
 export const metadata = {
   title: 'Contact Airborne Aviation Academy — Dwarka, Delhi | Capt. Navrang Singh',
@@ -37,17 +38,12 @@ const CONTACT = [
   { label: 'Registered Office', value: 'B-104, Himachal Apartment, Sector 5, Dwarka, New Delhi — 110078' },
 ]
 
-const breadcrumbSchema = getBreadcrumbSchema([
-  { name: 'Home', path: '/' },
-  { name: 'Contact', path: '/contact' },
-])
-const contactSchema = getLocalBusinessSchema()
+const contactPageGraph = buildContactGraph()
 
 export default function ContactPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(contactSchema) }} />
+      <JsonLd data={contactPageGraph} />
       <Header />
       <main className="theme-light" style={{ minHeight: '80vh', background: 'var(--paper)', padding: 'clamp(3.5rem, 6vw, 5rem) var(--margin) clamp(4rem, 8vw, 6rem) var(--margin)' }}>
         <div className="container-xl" style={{ maxWidth: '1100px' }}>

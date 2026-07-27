@@ -2,8 +2,12 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
-import { getBreadcrumbSchema } from '@/utils/seo'
+
 import CoursePageFooter from '@/components/CoursePageFooter'
+import CourseReviews from '@/components/CourseReviews'
+import JsonLd from '@/components/JsonLd'
+import { buildCoursePageGraph } from '@/lib/schema'
+import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
   title: 'Airbus A320 Simulator Training Delhi | Airborne Aviation',
@@ -11,36 +15,17 @@ export const metadata = {
   alternates: { canonical: '/courses/a320-simulator' },
 }
 
-const breadcrumbSchema = getBreadcrumbSchema([
-  { name: 'Home', path: '/' },
-  { name: 'Courses', path: '/courses' },
-  { name: 'A320 Simulator Training', path: '/courses/a320-simulator' },
-])
-
-const courseSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Course',
-  name: 'Airbus A320 Simulator FBS Training',
-  description: 'In-house Airbus A320 Simulator FBS training at Airborne Aviation Academy, Dwarka. Type rating familiarisation, cadet selection SIM prep, emergency procedures.',
-  provider: {
-    '@type': 'EducationalOrganization',
-    name: 'Airborne Aviation Academy',
-    address: { '@type': 'PostalAddress', streetAddress: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7', addressLocality: 'Dwarka', addressRegion: 'New Delhi', postalCode: '110075' }
-  },
-  url: 'https://www.airborneaviation.in/courses/a320-simulator',
-}
-
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
+const coursePageGraph = buildCoursePageGraph({
+  ...COURSE_SCHEMA['a320-simulator'],
+  imagePath: '/campus/simulator_real.jpg',
+  price: '12000',
+  faqs: [
     {
-      '@type': 'Question',
-      name: "Is the A320 simulator at Airborne DGCA-approved for Type Rating completion?",
-      acceptedAnswer: { '@type': 'Answer', text: "The simulator is used for familiarisation and preparation — not as a DGCA-approved Full Flight Simulator (FFS) for Type Rating completion. Type Rating completion requires a Level D FFS at a DGCA-approved Type Rating Organisation (TRO). Airborne's simulator is ideal for pre-type rating preparation and cadet selection readiness." }
-    }
-  ]
-}
+      q: 'Is the A320 simulator at Airborne DGCA-approved for Type Rating completion?',
+      a: "The simulator is used for familiarisation and preparation — not as a DGCA-approved Full Flight Simulator (FFS) for Type Rating completion. Type Rating completion requires a Level D FFS at a DGCA-approved Type Rating Organisation (TRO). Airborne's simulator is ideal for pre-type rating preparation and cadet selection readiness.",
+    },
+  ],
+})
 
 const USE_CASES = [
   { use: 'Type Rating Familiarisation', who: 'CPL holders preparing for A320 Type Rating', outcome: 'Cockpit familiarisation before SIM assessment' },
@@ -53,9 +38,8 @@ const USE_CASES = [
 export default function A320SimulatorPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <JsonLd data={coursePageGraph} />
+
       <Header />
       <main className="course-main-wrapper" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
 
@@ -134,7 +118,7 @@ export default function A320SimulatorPage() {
                 <div className="course-sidebar-price">₹12,000</div>
                 <span className="course-sidebar-note">In-house A320 Simulator FBS · Dwarka campus</span>
                 <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(0, 39, 76, 0.08)' }} />
-                <span className="course-sidebar-label">Eligibility</span>
+                <span className="course-sidebar-label">Who it is for</span>
                 <div style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', fontWeight: 800, color: 'var(--navy)' }}>CPL</div>
               </div>
               <LeadForm courseName="Airbus A320 Simulator FBS (₹12,000)" source="Course Detail: a320-simulator" />
@@ -142,6 +126,7 @@ export default function A320SimulatorPage() {
           </div>
 
         </div>
+        <CourseReviews />
         <CoursePageFooter
           whatsappText="Hi, I want to book an A320 Simulator session at Airborne Aviation Academy, Dwarka. Please share availability and fee."
           nextCourses={[

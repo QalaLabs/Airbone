@@ -2,7 +2,8 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
-import { getBreadcrumbSchema } from '@/utils/seo'
+import JsonLd from '@/components/JsonLd'
+import { buildArticlePageGraph } from '@/lib/schema'
 
 export const metadata = {
   title: 'Pilot Training Cost in India 2026 — Complete CPL Fee Breakdown',
@@ -21,40 +22,34 @@ export const metadata = {
   },
 }
 
-const breadcrumbSchema = getBreadcrumbSchema([
-  { name: 'Home', path: '/' },
-  { name: 'Resources', path: '/resources' },
-  { name: 'Pilot Training Cost in India', path: '/blog/pilot-training-cost-india' },
-])
-
-const articleSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Article',
-  headline: 'Pilot Training Cost in India 2026 — Complete CPL Fee Breakdown',
-  description: 'Complete breakdown of pilot training cost in India for 2026 — CPL ground school, flying hours, DGCA exam fees, medical, and total investment.',
-  author: { '@type': 'Person', name: 'Capt. Navrang Singh' },
-  publisher: {
-    '@type': 'EducationalOrganization',
-    name: 'Airborne Aviation Academy',
-    logo: { '@type': 'ImageObject', url: 'https://www.airborneaviation.in/logo-primary.png' },
-    url: 'https://www.airborneaviation.in',
+const FAQS = [
+  {
+    q: 'What is the total cost of CPL training in India?',
+    a: 'Total CPL training cost in India — including 200 flying hours, ground school, DGCA exam fees, and medical — typically ranges from ₹50 lakh onwards for complete flying training, or ₹2,70,000 for ground school alone if flying hours are arranged separately or already completed.',
   },
+  {
+    q: 'Is pilot training cheaper in India or abroad?',
+    a: 'Direct training cost can be lower in the Philippines or USA (₹35–45L vs ₹55–75L in India). However, once DGCA conversion costs (₹5–15L), living expenses abroad, and an additional 12–18 months before airline entry are added, India-trained CPL holders often reach their first airline seat faster and at a lower total cost.',
+  },
+  {
+    q: 'What does DGCA ground school cost at Airborne?',
+    a: 'DGCA Ground School (all subjects) at Airborne Aviation Academy is ₹2,70,000. This covers Air Navigation, Meteorology, Air Regulations, Technical General & Specific, and RTR, taught personally by Capt. Navrang Singh.',
+  },
+  {
+    q: 'Are there additional costs beyond ground school and flying hours?',
+    a: 'Yes — DGCA exam fees (₹25,000–₹40,000 for 6 papers), DGCA Class 1 Medical (₹10,000–₹25,000), and Student Pilot License (₹15,000–₹25,000) are separate from ground school and flying training fees. Airborne provides a full fee breakdown before enrolment.',
+  },
+]
+
+const articlePageGraph = buildArticlePageGraph({
+  path: '/blog/pilot-training-cost-india',
+  headline: 'Pilot Training Cost in India 2026 — Complete CPL Fee Breakdown',
+  description:
+    'Complete breakdown of pilot training cost in India for 2026 — CPL ground school, flying hours, DGCA exam fees, medical, and total investment compared to training abroad.',
   datePublished: '2026-06-15',
   dateModified: '2026-07-17',
-  url: 'https://www.airborneaviation.in/blog/pilot-training-cost-india',
-  mainEntityOfPage: 'https://www.airborneaviation.in/blog/pilot-training-cost-india',
-}
-
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
-    { '@type': 'Question', name: 'What is the total cost of CPL training in India?', acceptedAnswer: { '@type': 'Answer', text: 'Total CPL training cost in India — including 200 flying hours, ground school, DGCA exam fees, and medical — typically ranges from ₹50 lakh onwards for complete flying training, or ₹2,70,000 for ground school alone if flying hours are arranged separately or already completed.' } },
-    { '@type': 'Question', name: 'Is pilot training cheaper in India or abroad?', acceptedAnswer: { '@type': 'Answer', text: 'Direct training cost can be lower in the Philippines or USA (₹35–45L vs ₹55–75L in India). However, once DGCA conversion costs (₹5–15L), living expenses abroad, and an additional 12–18 months before airline entry are added, India-trained CPL holders often reach their first airline seat faster and at a lower total cost.' } },
-    { '@type': 'Question', name: 'What does DGCA ground school cost at Airborne?', acceptedAnswer: { '@type': 'Answer', text: 'DGCA Ground School (all subjects) at Airborne Aviation Academy is ₹2,70,000. This covers Air Navigation, Meteorology, Air Regulations, Technical General & Specific, and RTR, taught personally by Capt. Navrang Singh.' } },
-    { '@type': 'Question', name: 'Are there additional costs beyond ground school and flying hours?', acceptedAnswer: { '@type': 'Answer', text: 'Yes — DGCA exam fees (₹25,000–₹40,000 for 6 papers), DGCA Class 1 Medical (₹10,000–₹25,000), and Student Pilot License (₹15,000–₹25,000) are separate from ground school and flying training fees. Airborne provides a full fee breakdown before enrolment.' } },
-  ],
-}
+  faqs: FAQS,
+})
 
 const COST_TABLE = [
   { component: 'DGCA Ground School (All Subjects)', cost: '₹2,70,000', note: 'Complete CPL ground school at Airborne' },
@@ -80,9 +75,8 @@ const INDIA_VS_ABROAD = [
 export default function PilotTrainingCostIndiaPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <JsonLd data={articlePageGraph} />
+
       <Header />
       <main style={{ minHeight: '80vh', background: '#000810', padding: '4rem var(--margin) 6rem var(--margin)' }}>
 
@@ -219,10 +213,10 @@ export default function PilotTrainingCostIndiaPage() {
           <section id="faqs" style={{ marginBottom: '3.5rem', scrollMarginTop: '6rem' }}>
             <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 800, color: '#D8A027', textTransform: 'uppercase', marginBottom: '1.5rem' }}>Frequently Asked Questions</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {faqSchema.mainEntity.map((faq, i) => (
+              {FAQS.map((faq, i) => (
                 <div key={i} style={{ background: '#00162e', border: '1px solid rgba(255,255,255,0.07)', padding: '1.25rem 1.5rem', borderRadius: '1px' }}>
-                  <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.88rem', fontWeight: 700, color: '#fff', marginBottom: '0.5rem' }}>{faq.name}</h3>
-                  <p style={{ fontSize: '0.83rem', color: 'rgba(255,255,255,0.6)', margin: 0, fontFamily: 'var(--font-b)', lineHeight: '1.6' }}>{faq.acceptedAnswer.text}</p>
+                  <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.88rem', fontWeight: 700, color: '#fff', marginBottom: '0.5rem' }}>{faq.q}</h3>
+                  <p style={{ fontSize: '0.83rem', color: 'rgba(255,255,255,0.6)', margin: 0, fontFamily: 'var(--font-b)', lineHeight: '1.6' }}>{faq.a}</p>
                 </div>
               ))}
             </div>

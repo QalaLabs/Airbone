@@ -2,8 +2,12 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
-import { getBreadcrumbSchema } from '@/utils/seo'
+
 import CoursePageFooter from '@/components/CoursePageFooter'
+import CourseReviews from '@/components/CourseReviews'
+import JsonLd from '@/components/JsonLd'
+import { buildCoursePageGraph } from '@/lib/schema'
+import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
   title: 'Private Pilot Licence (PPL) India | Airborne Aviation',
@@ -11,54 +15,27 @@ export const metadata = {
   alternates: { canonical: '/courses/private-pilot-license' },
 }
 
-const breadcrumbSchema = getBreadcrumbSchema([
-  { name: 'Home', path: '/' },
-  { name: 'Courses', path: '/courses' },
-  { name: 'Private Pilot License', path: '/courses/private-pilot-license' },
-])
-
-const courseSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Course',
-  name: 'Private Pilot License (PPL)',
-  description: 'PPL training through Airborne Aviation Academy\'s partner FTOs. Ground school by Capt. Navrang Singh. Complete flight training package.',
-  provider: {
-    '@type': 'EducationalOrganization',
-    name: 'Airborne Aviation Academy',
-    address: { '@type': 'PostalAddress', streetAddress: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7', addressLocality: 'Dwarka', addressRegion: 'New Delhi', postalCode: '110075' }
+const coursePageGraph = buildCoursePageGraph({
+  ...COURSE_SCHEMA['private-pilot-license'],
+  faqs: [
+  {
+    q: 'Can PPL hours count toward CPL?',
+    a: 'Yes. Flying hours logged during PPL training count toward the 200 total hours required for a DGCA CPL. Many students begin with PPL to build flight time before pursuing CPL.'
   },
-  offers: { '@type': 'Offer', price: '2500000', priceCurrency: 'INR', description: 'Complete PPL flight training through partner FTO' },
-  courseMode: 'onsite',
-  duration: 'P6M',
-  url: 'https://www.airborneaviation.in/courses/private-pilot-license',
-}
-
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
-    {
-      '@type': 'Question',
-      name: 'Can PPL hours count toward CPL?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Yes. Flying hours logged during PPL training count toward the 200 total hours required for a DGCA CPL. Many students begin with PPL to build flight time before pursuing CPL.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'Is PPL required before CPL in India?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Not mandatory by DGCA regulation, but strongly recommended. PPL builds fundamental flying skills that form the foundation of CPL training. Most experienced instructors recommend the PPL route.' }
-    },
-    {
-      '@type': 'Question',
-      name: 'What is the minimum age for PPL?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Minimum age of 17 years at the time of PPL issuance. You can begin training from 16 years with a Student Pilot License (SPL).' }
-    },
-    {
-      '@type': 'Question',
-      name: 'How long does PPL training take?',
-      acceptedAnswer: { '@type': 'Answer', text: '3–6 months depending on flying weather, aircraft availability, and training pace. Minimum 40 flying hours required by DGCA.' }
-    }
-  ]
-}
+  {
+    q: 'Is PPL required before CPL in India?',
+    a: 'Not mandatory by DGCA regulation, but strongly recommended. PPL builds fundamental flying skills that form the foundation of CPL training. Most experienced instructors recommend the PPL route.'
+  },
+  {
+    q: 'What is the minimum age for PPL?',
+    a: 'Minimum age of 17 years at the time of PPL issuance. You can begin training from 16 years with a Student Pilot License (SPL).'
+  },
+  {
+    q: 'How long does PPL training take?',
+    a: '3–6 months depending on flying weather, aircraft availability, and training pace. Minimum 40 flying hours required by DGCA.'
+  }
+],
+})
 
 const SUBJECTS = [
   { name: 'Air Navigation (Basics)', detail: 'Map reading, position fixing, cross-country navigation' },
@@ -86,9 +63,8 @@ const PPL_TO_CPL = [
 export default function PPLPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <JsonLd data={coursePageGraph} />
+
       <Header />
       <main className="course-main-wrapper" style={{ padding: '6rem var(--margin) 6rem var(--margin)' }}>
 
@@ -136,7 +112,7 @@ export default function PPLPage() {
             {/* Eligibility */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                PPL Eligibility Requirements
+                PPL Course Requirements
               </h2>
               <div className="course-table-wrap" style={{ overflowX: 'auto' }}>
                 <table className="course-table" style={{ minWidth: "600px" }}>
@@ -233,6 +209,7 @@ export default function PPLPage() {
           </div>
 
         </div>
+        <CourseReviews />
         <CoursePageFooter
           whatsappText="Hi, I'm interested in the Private Pilot License (PPL) course at Airborne Aviation Academy. Please share details and fee."
           nextCourses={[
