@@ -5,7 +5,7 @@ import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
 import CoursePageFooter from '@/components/CoursePageFooter'
 import { fetchPublic, fetchPublicWithStatus } from '@/lib/adminApi'
-import { displayCourseFee } from '@/lib/courseFees'
+import { displayCourseFee, COURSE_FEE_NUMERIC } from '@/lib/courseFees'
 import JsonLd from '@/components/JsonLd'
 import { buildCoursePageGraph } from '@/lib/schema'
 
@@ -121,15 +121,21 @@ export default async function CourseDetailPage({ params }) {
     : meta('subjects', [])
 
   const feeLabel = displayCourseFee(course.slug, course.fee) ?? 'Contact us'
+  // Offer price only when a verified single list price exists — never digit-strip display bands
+  const schemaPrice =
+    COURSE_FEE_NUMERIC[course.slug] ??
+    COURSE_FEE_NUMERIC[apiSlug] ??
+    COURSE_FEE_NUMERIC[slug] ??
+    null
   const courseSchema = buildCoursePageGraph({
     slug: course.slug,
     name: course.title,
     description: course.description || course.subtitle || '',
     path: `/courses/${slug}`,
-    price: feeLabel,
+    price: schemaPrice,
     duration: course.duration ?? '',
     imagePath: image,
-    courseMode: 'blended',
+    courseMode: 'onsite',
   })
 
   return (

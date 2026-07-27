@@ -34,15 +34,20 @@ export const COURSE_FEE_DISPLAY = {
 /** Numeric seed / Admin values for courses that have a single list price */
 export const COURSE_FEE_NUMERIC = {
   'cpl-ground-classes': 270000,
+  'commercial-pilot-license-cpl': 270000,
   'ground-school': 270000,
   atpl: 150000,
   'cadet-preparation': 50000,
   'cas-compass-adapt': 30000,
+  'screening-prep': 30000,
   'airline-preparation': 150000,
+  'gd-pi': 30000,
+  'gd-pi-mastery': 30000,
   'a320-simulator': 12000,
+  'airbus-a320-sim-training': 12000,
   'cabin-crew': 59000,
-  /** Minimum band for complete CPL flying — display uses ₹55L+ onwards */
-  'flying-training': 5500000,
+  'cabin-crew-training': 59000,
+  /** Minimum band for complete CPL flying — display uses ₹55L+ onwards; do not emit as Offer */
   'private-pilot-license': 2500000,
 }
 

@@ -13,7 +13,7 @@ export const COURSE_SCHEMA = {
     price: '270000',
     duration: 'P3M',
     courseMode: 'onsite',
-    startDate: '2026-07-01',
+    maximumAttendeeCapacity: 25,
     imagePath: '/footage/classroom.jpg',
     teaches: [
       'Air Navigation',
@@ -23,12 +23,11 @@ export const COURSE_SCHEMA = {
       'Technical Specific',
       'RTR',
     ],
-    educationalCredentialAwarded: 'DGCA theoretical exam readiness for CPL/ATPL pathway',
     coursePrerequisites: 'Class 12 with Physics and Mathematics; DGCA Class 2 Medical eligibility recommended',
     faqs: [
       {
         q: 'How long does DGCA Ground School take?',
-        a: 'Approximately 3 months for all 5 DGCA CPL papers. Batches are capped at 25 students. Weekend and weekday batches available.',
+        a: 'Approximately 3 months for DGCA CPL theory subjects including RTR. Batches are capped at 25 students. Weekend and weekday batches available.',
       },
       {
         q: 'Is Capt. Navrang Singh in every class?',
@@ -36,7 +35,7 @@ export const COURSE_SCHEMA = {
       },
       {
         q: 'What is the DGCA Ground School fee at Airborne?',
-        a: '₹2,70,000 covering all 5 DGCA theoretical papers. All study material provided and kept by students. No hidden charges.',
+        a: '₹2,70,000 covering DGCA CPL theory subjects including RTR. All study material provided and kept by students. No hidden charges.',
       },
       {
         q: 'Can I join DGCA Ground School without a CPL in progress?',
@@ -48,12 +47,12 @@ export const COURSE_SCHEMA = {
     slug: 'commercial-pilot-license-cpl',
     name: 'DGCA Complied CPL Ground School',
     description:
-      'All 5 DGCA CPL papers: Air Navigation, Meteorology, Air Regulations, Technical General, Technical Specific. DGCA-aligned training by Capt. Navrang Singh at Airborne Aviation Academy, Dwarka.',
+      'DGCA CPL theory preparation: Air Navigation, Meteorology, Air Regulations, Technical General, Technical Specific, and RTR. DGCA-aligned training by Capt. Navrang Singh at Airborne Aviation Academy, Dwarka.',
     path: '/courses/commercial-pilot-license-cpl',
     price: '270000',
     duration: 'P3M',
     courseMode: 'onsite',
-    startDate: '2026-07-01',
+    maximumAttendeeCapacity: 25,
     imagePath: '/campus/classroom_navrang.jpg',
     teaches: [
       'Air Navigation',
@@ -61,8 +60,8 @@ export const COURSE_SCHEMA = {
       'Air Regulations',
       'Technical General',
       'Technical Specific',
+      'RTR',
     ],
-    educationalCredentialAwarded: 'Preparation for DGCA CPL written examinations',
     coursePrerequisites: 'Class 12 with Physics and Mathematics',
     faqs: [
       {
@@ -75,11 +74,11 @@ export const COURSE_SCHEMA = {
       },
       {
         q: 'What is the DGCA CPL Ground School fee at Airborne?',
-        a: 'The tuition fee is ₹2,70,000 covering all 5 DGCA theoretical papers taught directly by Capt. Navrang Singh.',
+        a: 'The tuition fee is ₹2,70,000 covering DGCA CPL theory subjects including RTR, taught directly by Capt. Navrang Singh.',
       },
       {
         q: 'How long does CPL Ground School take?',
-        a: 'Approximately 3 months. Batches are capped at 25 students. Next batch starts July 2026.',
+        a: 'Approximately 3 months. Batches are capped at 25 students. Contact admissions for the next batch start date.',
       },
       {
         q: 'Is CPL ground school taught by Capt. Navrang Singh directly?',
@@ -91,13 +90,14 @@ export const COURSE_SCHEMA = {
     slug: 'atpl',
     name: 'ATPL Ground School',
     description:
-      'Airline Transport Pilot License ground school in Dwarka, Delhi — DGCA ATPL theory subjects with structured exam preparation at Airborne Aviation Academy.',
+      'Airline Transport Pilot License ground school in Dwarka, Delhi — DGCA ATPL theory subjects with onsite and online training support at Airborne Aviation Academy.',
     path: '/courses/atpl',
-    duration: 'P3M',
-    courseMode: 'onsite',
+    price: '150000',
+    duration: 'P2M',
+    courseMode: 'blended',
     imagePath: '/footage/classroom.jpg',
     teaches: ['ATPL Air Navigation', 'ATPL Meteorology', 'ATPL Air Regulations', 'ATPL Technical'],
-    educationalCredentialAwarded: 'Preparation for DGCA ATPL written examinations',
+    coursePrerequisites: 'Typically pursued alongside or after CPL theory; eligibility age 21+',
   },
   'cabin-crew-training': {
     slug: 'cabin-crew-training',

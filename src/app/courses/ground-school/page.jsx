@@ -24,26 +24,28 @@ export const metadata = {
   },
 }
 
-const coursePageGraph = buildCoursePageGraph({
-  ...COURSE_SCHEMA['ground-school'],
-  faqs: [
+const GROUND_SCHOOL_FAQS = [
   {
     q: 'How long does DGCA Ground School take?',
-    a: 'Approximately 3 months for all 5 DGCA CPL papers. Batches are capped at 25 students. Weekend and weekday batches available.'
+    a: '3–6 months for DGCA CPL theory subjects including RTR. Batches are capped at 25 students. Weekend and weekday batches available.',
   },
   {
     q: 'Is Capt. Navrang Singh in every class?',
-    a: 'Yes. Every core class is taught directly by Capt. Navrang Singh. No junior staff or subcontracted instructors handle any paper.'
+    a: 'Yes. Every core class is taught directly by Capt. Navrang Singh. No junior staff or subcontracted instructors handle any paper.',
   },
   {
     q: 'What is the DGCA Ground School fee at Airborne?',
-    a: '₹2,70,000 covering all 5 DGCA theoretical papers. All study material provided and kept by students. No hidden charges.'
+    a: '₹2,70,000 covering DGCA CPL theory subjects including RTR. All study material provided and kept by students. No hidden charges.',
   },
   {
-    q: 'Can I join DGCA Ground School without a CPL in progress?',
-    a: 'Yes. Students pursuing any aviation path — CPL, ATPL, or general DGCA exam preparation — can join ground school. Minimum eligibility is Class 12 with Physics and Mathematics.'
-  }
-],
+    q: 'Can I join without a CPL in progress?',
+    a: 'Yes. Students pursuing any aviation path — CPL, ATPL, or general DGCA exam preparation — can join. Minimum eligibility is Class 12 with Physics and Mathematics.',
+  },
+]
+
+const coursePageGraph = buildCoursePageGraph({
+  ...COURSE_SCHEMA['ground-school'],
+  faqs: GROUND_SCHOOL_FAQS,
 })
 
 const SUBJECTS = [
@@ -169,12 +171,7 @@ export default function GroundSchoolPage() {
                 Frequently Asked Questions
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
-                {[
-                  { q: 'How long does DGCA Ground School take?', a: '3–6 months for all 5 DGCA CPL papers. Batches are capped at 25 students. Weekend and weekday batches available.' },
-                  { q: 'Is Capt. Navrang Singh in every class?', a: 'Yes. Every core class is taught directly by Capt. Navrang Singh. No junior staff or subcontracted instructors handle any paper.' },
-                  { q: 'What is the DGCA Ground School fee at Airborne?', a: '₹2,70,000 covering all 5 DGCA theoretical papers. All study material provided and kept by students. No hidden charges.' },
-                  { q: 'Can I join without a CPL in progress?', a: 'Yes. Students pursuing any aviation path — CPL, ATPL, or general DGCA exam preparation — can join. Minimum eligibility is Class 12 with Physics and Mathematics.' },
-                ].map((faq, i) => (
+                {GROUND_SCHOOL_FAQS.map((faq, i) => (
                   <div key={i} className="course-faq-item">
                     <h3 className="course-faq-q">{faq.q}</h3>
                     <p className="course-faq-a">{faq.a}</p>

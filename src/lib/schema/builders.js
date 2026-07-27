@@ -16,15 +16,37 @@ export function sanitizeSchemaText(text = '') {
     .trim()
 }
 
-/** Extract numeric INR price from fee strings like "₹2,70,000" or "270000" */
+/**
+ * Extract a single reliable INR list price for Offer schema.
+ * Rejects ranges, Lakh/K shorthand, scholarship copy, and multi-number strings
+ * that would fabricate false Google Offer prices (e.g. "₹50K–1L" → 501).
+ */
 export function parseInrPrice(price) {
   if (price == null || price === '') return null
-  if (typeof price === 'number' && Number.isFinite(price)) return String(Math.round(price))
-  const digits = String(price).replace(/[^\d]/g, '')
-  if (!digits) return null
-  // Guard against garbage like "Contact us"
-  if (digits.length < 3) return null
-  return digits
+  if (typeof price === 'number' && Number.isFinite(price) && price > 0) {
+    return String(Math.round(price))
+  }
+
+  const raw = String(price).trim()
+  if (!raw) return null
+
+  // Reject ambiguous marketing / band strings
+  if (
+    /scholarship|lakh|lacs|\bK\b|onwards|\+|–|-|to\s+\d|\/\s*₹/i.test(raw) &&
+    !/^₹?[\d,]+$/.test(raw)
+  ) {
+    return null
+  }
+
+  // Accept only a single clean amount: 270000 | ₹2,70,000 | 2,70,000
+  const single = raw.match(/^₹?\s*([\d,]+)\s*$/)
+  if (!single) return null
+
+  const digits = single[1].replace(/,/g, '')
+  if (!/^\d{3,8}$/.test(digits)) return null
+  const n = Number(digits)
+  if (!Number.isFinite(n) || n < 100) return null
+  return String(n)
 }
 
 /**
@@ -134,10 +156,9 @@ export function buildCourseEntity({
   startDate,
   teaches,
   category,
-  educationalCredentialAwarded,
   coursePrerequisites,
   imagePath,
-  maximumAttendeeCapacity = 25,
+  maximumAttendeeCapacity,
   availableLanguage = ['en', 'hi'],
   includeInstructor = true,
 }) {
@@ -165,9 +186,6 @@ export function buildCourseEntity({
   if (teaches?.length) course.teaches = teaches
   if (category) course.about = category
   if (coursePrerequisites) course.coursePrerequisites = coursePrerequisites
-  if (educationalCredentialAwarded) {
-    course.educationalCredentialAwarded = educationalCredentialAwarded
-  }
   if (imagePath) {
     course.image = absUrl(imagePath)
   }
@@ -175,14 +193,14 @@ export function buildCourseEntity({
   const courseInstance = {
     '@type': 'CourseInstance',
     '@id': instanceId,
-    name: `${name} — Upcoming Batch`,
+    name: startDate ? `${name} — Upcoming Batch` : name,
     courseMode,
     location: { '@id': id.place() },
     courseWorkload: isoDuration || duration || undefined,
   }
 
   if (startDate) courseInstance.startDate = startDate
-  if (maximumAttendeeCapacity) {
+  if (maximumAttendeeCapacity != null && maximumAttendeeCapacity !== '') {
     courseInstance.maximumAttendeeCapacity = maximumAttendeeCapacity
   }
   if (includeInstructor) {
@@ -199,9 +217,7 @@ export function buildCourseEntity({
       availability: 'https://schema.org/InStock',
       category: 'Tuition',
       seller: { '@id': id.org() },
-      priceValidUntil: '2027-12-31',
     }
-    if (startDate) offer.validFrom = startDate
     course.offers = { '@id': offerId }
     courseInstance.offers = { '@id': offerId }
     course.hasCourseInstance = { '@id': instanceId }
@@ -210,18 +226,6 @@ export function buildCourseEntity({
 
   course.hasCourseInstance = { '@id': instanceId }
   return { course, courseInstance, offer: null }
-}
-
-export function buildEducationalCredential({ slug, name, description, competencyRequired }) {
-  return {
-    '@type': 'EducationalOccupationalCredential',
-    '@id': id.credential(slug),
-    name,
-    description: sanitizeSchemaText(description),
-    credentialCategory: 'certificate',
-    recognizedBy: { '@id': id.org() },
-    competencyRequired: competencyRequired || undefined,
-  }
 }
 
 export function buildArticleEntity({

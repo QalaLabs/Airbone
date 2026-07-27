@@ -16,7 +16,6 @@ import {
   buildArticleEntity,
   buildItemList,
   buildCourseStub,
-  buildEducationalCredential,
   sanitizeSchemaText,
 } from './builders.js'
 import { id } from './ids.js'
@@ -139,11 +138,10 @@ export function buildCoursePageGraph({
   teaches,
   faqs,
   imagePath,
-  educationalCredentialAwarded,
   coursePrerequisites,
   category,
   includeInstructor = true,
-  maximumAttendeeCapacity = 25,
+  maximumAttendeeCapacity,
 }) {
   const coursePath = path || `/courses/${slug}`
   const { course, courseInstance, offer } = buildCourseEntity({
@@ -156,7 +154,6 @@ export function buildCoursePageGraph({
     courseMode,
     startDate,
     teaches,
-    educationalCredentialAwarded,
     coursePrerequisites,
     imagePath,
     category,
@@ -191,23 +188,18 @@ export function buildCoursePageGraph({
     nodes.push(buildPrimaryImage(imagePath, name))
   }
 
-  if (educationalCredentialAwarded) {
-    nodes.push(
-      buildEducationalCredential({
-        slug,
-        name: educationalCredentialAwarded,
-        description: `Credential associated with ${name} at ${ORG.name}.`,
-      })
-    )
-  }
-
   return asGraph(nodes)
 }
 
 /** Courses index */
 export function buildCoursesIndexGraph(items) {
+  const stubs = (items || [])
+    .filter((item) => item.courseSlug)
+    .map((item) => buildCourseStub(item.courseSlug, item.name, item.path))
+
   return asGraph([
     ...coreEntities({ includeCatalog: true }),
+    ...stubs,
     buildWebPage({
       path: '/courses',
       name: 'Pilot Training Courses | Airborne Aviation Academy',

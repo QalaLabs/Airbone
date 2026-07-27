@@ -24,30 +24,36 @@ export const metadata = {
   },
 }
 
-const coursePageGraph = buildCoursePageGraph({
-  ...COURSE_SCHEMA['commercial-pilot-license-cpl'],
-  faqs: [
+const CPL_FAQS = [
   {
     q: 'What DGCA exams are required for CPL?',
-    a: 'Six DGCA examinations: Air Navigation, Aviation Meteorology, Air Regulations, Technical General, Technical Specific, and RTR. Each paper requires minimum 70% to pass.'
+    a: 'Six DGCA examinations: Air Navigation, Aviation Meteorology, Air Regulations, Technical General, Technical Specific, and RTR. Each paper requires minimum 70% to pass.',
   },
   {
-    q: 'How much does CPL cost in India?',
-    a: 'CPL training in India costs ₹55–65 lakh at DGCA-approved FTOs, covering 200 flying hours, ground school, DGCA exam fees, and medical. Education loans available via SBI, Bank of Baroda, PNB.'
+    q: 'How much does CPL Ground School cost at Airborne?',
+    a: '₹2,70,000 covering DGCA CPL theory subjects including RTR, taught directly by Capt. Navrang Singh. All subjects included — no separate fees per paper.',
   },
   {
-    q: 'What is the DGCA CPL Ground School fee at Airborne?',
-    a: 'The tuition fee is ₹2,70,000 covering all 5 DGCA theoretical papers taught directly by Capt. Navrang Singh.'
+    q: 'How much does the full CPL cost in India?',
+    a: 'CPL training in India costs ₹55–65 lakh at DGCA-approved FTOs, covering 200 flying hours, ground school, DGCA exam fees, and medical. Education loans available via SBI, Bank of Baroda, PNB.',
+  },
+  {
+    q: 'What is the batch size?',
+    a: 'Strictly capped at 25 students per session to maintain high contact ratios and personalised pacing.',
   },
   {
     q: 'How long does CPL Ground School take?',
-    a: 'Approximately 3 months. Batches are capped at 25 students. Next batch starts July 2026.'
+    a: '3–6 months for the complete ground school curriculum. Weekend and weekday batches available.',
   },
   {
-    q: 'Is CPL ground school taught by Capt. Navrang Singh directly?',
-    a: 'Yes. Every core class is taught directly by Capt. Navrang Singh. No subcontracted instructors.'
-  }
-],
+    q: 'How long is the full CPL path?',
+    a: 'The complete CPL journey from ground school to license issuance typically takes 12–18 months, depending on flying weather and training pace.',
+  },
+]
+
+const coursePageGraph = buildCoursePageGraph({
+  ...COURSE_SCHEMA['commercial-pilot-license-cpl'],
+  faqs: CPL_FAQS,
 })
 
 const SUBJECTS = [
@@ -113,7 +119,7 @@ export default function CPLPage() {
                 Commercial Pilot License Ground Classes in Delhi — DGCA Complied
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75', maxWidth: '100%' }}>
-                Airborne Aviation Academy offers a DGCA Complied Commercial Pilot License (CPL) Ground School in Dwarka, Delhi. The CPL Ground School covers all 5 DGCA written examination papers — taught personally by Capt. Navrang Singh. Structured concept-focused preparation for DGCA exams. July 2026 batch now enrolling. 25 seats. ₹2,70,000.
+                Airborne Aviation Academy offers a DGCA Complied Commercial Pilot License (CPL) Ground School in Dwarka, Delhi. The CPL Ground School covers DGCA theory subjects including RTR — taught personally by Capt. Navrang Singh. Structured concept-focused preparation for DGCA exams. Batches capped at 25 seats. ₹2,70,000.
               </p>
             </div>
 
@@ -211,14 +217,7 @@ export default function CPLPage() {
                 Frequently Asked Questions
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
-                {[
-                  { q: 'What DGCA exams are required for CPL?', a: 'Six DGCA examinations: Air Navigation, Aviation Meteorology, Air Regulations, Technical General, Technical Specific, and RTR. Each paper requires minimum 70% to pass.' },
-                  { q: 'How much does CPL Ground School cost at Airborne?', a: '₹2,70,000 covering all 5 DGCA theoretical papers taught directly by Capt. Navrang Singh. All subjects included — no separate fees per paper.' },
-                  { q: 'How much does the full CPL cost in India?', a: 'CPL training in India costs ₹55–65 lakh at DGCA-approved FTOs, covering 200 flying hours, ground school, DGCA exam fees, and medical. Education loans available via SBI, Bank of Baroda, PNB.' },
-                  { q: 'What is the batch size?', a: 'Strictly capped at 25 students per session to maintain high contact ratios and personalised pacing.' },
-                  { q: 'How long does CPL Ground School take?', a: '3–6 months for the complete ground school curriculum. Weekend and weekday batches available.' },
-                  { q: 'How long is the full CPL path?', a: 'The complete CPL journey from ground school to license issuance typically takes 12–18 months, depending on flying weather and training pace.' },
-                ].map((faq, i) => (
+                {CPL_FAQS.map((faq, i) => (
                   <div key={i} className="course-faq-item">
                     <h3 className="course-faq-q">{faq.q}</h3>
                     <p className="course-faq-a">{faq.a}</p>
@@ -236,14 +235,14 @@ export default function CPLPage() {
               <div className="course-sidebar-card">
                 <span className="course-sidebar-label">Ground School Fee</span>
                 <div className="course-sidebar-price">₹2,70,000</div>
-                <span className="course-sidebar-note">All 5 DGCA subjects included</span>
+                <span className="course-sidebar-note">DGCA CPL theory subjects including RTR</span>
                 <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(0, 39, 76, 0.08)' }} />
                 <span className="course-sidebar-label">Duration</span>
                 <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)' }}>3–6 Months</div>
                 <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(0, 39, 76, 0.08)' }} />
                 <span className="course-sidebar-label">Batch Size</span>
                 <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)' }}>Max 25 Students</div>
-                <span className="course-sidebar-note">July 2026 batch now enrolling</span>
+                <span className="course-sidebar-note">Contact admissions for next batch dates</span>
               </div>
               <LeadForm
                 courseName="CPL Ground Classes (₹2,70,000)"
@@ -256,7 +255,7 @@ export default function CPLPage() {
         </div>
         <CourseReviews />
         <CoursePageFooter
-          whatsappText="Hi, I'm interested in the CPL Ground School at Airborne Aviation Academy, Dwarka. Please share July 2026 batch details and fee."
+          whatsappText="Hi, I'm interested in the CPL Ground School at Airborne Aviation Academy, Dwarka. Please share next batch details and fee."
           nextCourses={[
             { label: 'ATPL Ground School', href: '/courses/atpl', note: 'Prepare for ATPL exams and upgrade to Captain — CPL holders only' },
             { label: 'Parent Centric Flying Guide', href: '/courses/flying-training-india-abroad', note: 'Comprehensive CPL flight training guidance and Indian CPL conversion support' },
