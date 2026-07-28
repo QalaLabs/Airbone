@@ -140,9 +140,9 @@ export const COURSE_SCHEMA = {
   },
   'airline-preparation': {
     slug: 'airline-preparation',
-    name: 'Airline Interview Preparation',
+    name: 'Comprehensive Airline Preparation Program',
     description:
-      'Structured airline interview preparation at Airborne, Dwarka — GD/PI coaching and professional readiness for airline selection.',
+      'Transition from CPL holder to First Officer. 2.5-month airline preparation program at Airborne, Dwarka covering DGCA Ground Refresher, ADAPT Screening, A320 Systems & Sim Prep, and GD/PI. 4 hours/day. ₹1,50,000.',
     path: '/courses/airline-preparation',
     courseMode: 'onsite',
     includeInstructor: false,
