@@ -1,100 +1,76 @@
-# Feedback Sprint Checklist — 24/7 MD
+# Feedback Sprint Checklist — FULL AUDIT (updated 2026-07-25 evening)
 
-Source: `Airborne Aviation Website Feedback _ 24_7 (1).md`  
-Branch: `feature/post-delivery-phase2`
+Source: `Airborne Aviation Website Feedback _ 24_7.md`  
+Code HEAD baseline: `31d9308` + this pass uncommitted deltas  
 
-Legend: `OPEN` | `IN_PROGRESS` | `FIXED` | `ALREADY` | `N/A` | `CLARIFY`
+Legend: `IMPLEMENTED_VALIDATED` | `ALREADY` | `CLIENT_DEP` | `N/A` | `PARTIAL`
 
 ## General Website
-| ID | Issue | Status | Notes |
-|----|-------|--------|-------|
-| G1 | Entire website light theme | OPEN | Dark-first today; convert chrome + pages |
-| G2 | Add more images on all pages | CLARIFY | Need asset pack; add placeholders where structure allows |
-| G3 | Map each breadcrumb | OPEN | Shared breadcrumb component + routes |
-| G4 | Use "Month" as timeline unit | OPEN | Weeks→Months where applicable |
-| G5 | Header Glass Morphosis | OPEN | Extend home glass-nav to Header.jsx |
-| G6 | DGCA Approved → DGCA Complied (except FTO) | OPEN | Sitewide replace |
-| G7 | Remove "" from whole site | CLARIFY | Ambiguous; strip empty `""` artifacts if found |
+| ID | Issue | Status |
+|----|-------|--------|
+| G1 | Entire site light theme | PARTIAL — content shells light; homepage 3D/FAQ still dark by design |
+| G2 | More images all pages | CLIENT_DEP |
+| G3 | Map each breadcrumb | PARTIAL — Breadcrumb on /courses + /blog; course details use trail links |
+| G4 | Month timeline unit | ALREADY |
+| G5 | Header Glass Morphosis | ALREADY |
+| G6 | DGCA Approved → Complied | ALREADY / reinforced |
+| G7 | Remove "" | N/A |
 
 ## Course Specific
 | ID | Issue | Status |
 |----|-------|--------|
-| C1 | CPL completion 12-18 months sitewide | OPEN |
-| C2 | CPL ground school 3-6 months | OPEN |
-| C3 | Improve CPL box padding | OPEN |
-| C4 | ATPL: 21 years, 2-3 months | OPEN |
-| C5 | PPL: 10th class, 3-6 months | OPEN |
-| C6 | Course sequence = homepage section | OPEN |
+| C1 | CPL 12–18 months | ALREADY |
+| C2 | CPL GS 3–6 months | ALREADY |
+| C3 | CPL box padding | IMPLEMENTED — program-card-padded CSS |
+| C4 | ATPL 21y / 2–3 mo | IMPLEMENTED — page/schema/listing aligned |
+| C5 | PPL 10th / 3–6 | ALREADY |
+| C6 | Sequence = homepage | ALREADY |
 
-## Content Requirements
+## Content
 | ID | Issue | Status |
 |----|-------|--------|
-| W1 | Module content every course page | OPEN |
-| W2 | Share interlinking logic | N/A | Doc deliverable in report |
-| W3 | 1-3 reviews per course page | OPEN |
-| W4 | Parent testimonial Airborne + Capt Navrang | OPEN |
+| W1 | Module content every course | PARTIAL — major courses covered; thin pages remain |
+| W2 | Interlinking logic | N/A (doc) |
+| W3 | 1–3 reviews every course | IMPLEMENTED — CourseReviews on major course pages |
+| W4 | Parent testimonials | IMPLEMENTED — PARENT_TESTIMONIALS rendered |
 
 ## Homepage
 | ID | Issue | Status |
 |----|-------|--------|
-| H1 | CPL cost 65L (45-75 vary); combine flying training; remove Extra Course/DGCA | OPEN |
-| H2 | Rename DGCA CPL GS card → GD & PI; cost 30k; dedicated page | OPEN |
-| H3 | Airline Preparation new page+box | CLARIFY | WhatsApp content missing |
-| H4 | Flying Training Guide → Parent Centric Page | OPEN |
-| H5 | Advantage = one carousel screen per swipe | OPEN |
-| H6 | 8→15 years; Himanshu→Commander; Naveenn→First Officer | OPEN |
-| H7 | FAQ CPL 12-18; DGCA Complied; remove FAQ 4 | OPEN |
-| H8 | Footer LinkedIn + pilot training sequence | OPEN |
+| H1–H2, H5–H8 | Pricing / FAQ / alumni / footer | ALREADY |
+| H3 | Airline Prep WhatsApp layout | CLIENT_DEP / page exists as premium product |
+| H4 | Parent Centric page | IMPLEMENTED — H1/meta/breadcrumb |
 
 ## About / Contact / Policy
 | ID | Issue | Status |
 |----|-------|--------|
-| A1 | Header logo change | CLARIFY | Which logo asset? |
-| A2 | Swap Deepak/Piyush text; business section Deepak | OPEN |
-| A3 | Mentors section | OPEN / ALREADY check |
-| CT1 | Contact padding/UI | OPEN |
-| P1 | Data compliance mgr contact + data@ email | OPEN |
+| A1 | Logo | CLIENT_DEP |
+| A2–A3, CT1, P1 | Bios / mentors / contact / privacy | ALREADY |
 
 ## Jobs / Resources / Blog
 | ID | Issue | Status |
 |----|-------|--------|
-| J1 | Jobs lead magnet | OPEN (light) |
-| J2 | Scrape 100 jobs weekly | CLARIFY | Ops/infra; out of sprint scope unless stub |
-| R1 | Resources lead magnets from client | CLARIFY | Waiting assets from Deepak |
-| B1 | Blog collection 404 | OPEN |
+| J1 | Jobs lead magnet | IMPLEMENTED — weekly brief CTA |
+| J2 | Scrape 100 jobs | CLIENT_DEP |
+| R1 | Resource assets | CLIENT_DEP |
+| B1 | Blog 404 | ALREADY |
 
-## /courses listing
+## Listing L1–L14
 | ID | Issue | Status |
 |----|-------|--------|
-| L1 | CPL box padding + 12-18 mo | OPEN |
-| L2 | CPL GS 3-6 mo | OPEN |
-| L3 | ATPL 21y / 2-3 mo | OPEN |
-| L4 | Structured snippet all courses | OPEN |
-| L5 | Remove eligibility from course pages | OPEN |
-| L6 | Airline Interview Prep 1.5L / 3 mo | OPEN |
-| L7 | Flying Training copy update | OPEN |
-| L8 | Cabin Crew fees 0* scholarship | OPEN |
-| L9 | PPL 3-6 mo / 10th | OPEN |
-| L10 | Remove IR + A320 from listing | OPEN |
-| L11 | FBS suffix A320; CPL elig; ₹12k | OPEN |
-| L12 | DGCA CPL GS position 2; 10+2 | OPEN |
-| L13 | Remove Aviation English + Flight Dispatcher from listing | OPEN |
-| L14 | Add GD&PI | OPEN |
+| L1–L4, L6–L9, L11–L14 | Mostly | ALREADY |
+| L5 | Remove eligibility | IMPLEMENTED — cards + dynamic slug; remaining pages retitled Requirements |
+| L10 | Remove IR (+A320 conflict with L11) | PARTIAL — IR off table; A320 kept as FBS per L11 |
 
-## ATPL page
+## ATPL / CPL / Cabin / Cadet / A320 / GD
 | ID | Issue | Status |
 |----|-------|--------|
-| AT1–AT10 | H1, subjects, vs CPL table, enrol, FAQs | OPEN |
-
-## CPL page
-| ID | Issue | Status |
-|----|-------|--------|
-| CP1–CP8 | URL note, H1, subjects, fees table, issuance, icons, recommendations | OPEN |
-
-## Cabin / Cadet / A320 / GD-PI
-| ID | Issue | Status |
-|----|-------|--------|
-| CC1 | Fee 59000; 100%* scholarship copy | OPEN |
-| CD1 | Quickest entry + 3 airline tiles | OPEN / CLARIFY institutes |
-| A320-1 | Remove specified row | OPEN |
-| GD1 | Airline prep heading → GD/PI | OPEN |
+| AT* | Duration/H1/FAQ schema | IMPLEMENTED |
+| CP* | Subjects no EASA codes; Issuance; recommendations | IMPLEMENTED |
+| CP1 URL rename | CLIENT_DEP (target blank) |
+| CP6 emoji→icons | PARTIAL — key CPL sidebar cleaned |
+| CP7 images | CLIENT_DEP |
+| CC1 | ₹59k / 100%* | IMPLEMENTED — pathways/FAQ/schema synced |
+| CD1 | Institutes lists | CLIENT_DEP placeholders |
+| A320 row remove | CLIENT_DEP (image-only ask) |
+| GD1 | Two-product model | ALREADY (ship blockers) |
