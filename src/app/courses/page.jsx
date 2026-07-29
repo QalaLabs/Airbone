@@ -20,7 +20,120 @@ const coursesIndexGraph = buildCoursesIndexGraph(COURSES_INDEX_ITEMS)
 export const revalidate = 60
 
 export default async function CoursesPage() {
-  const courses = await fetchPublic('/courses', { limit: 20 }) ?? []
+  let rawCourses = await fetchPublic('/courses', { limit: 20 }) ?? []
+
+  if (rawCourses.length === 0) {
+    rawCourses = [
+      {
+        id: "cpl-ground-classes",
+        slug: "commercial-pilot-license-cpl",
+        title: "DGCA CPL Ground School",
+        subtitle: "India's most trusted CPL Ground School in Dwarka, Delhi",
+        description: "Our Commercial Pilot License (CPL) ground school program provides structured, mentor-led training under Capt. Navrang Singh. We focus on building deep conceptual clarity rather than rote learning, preparing you for all 5 DGCA exams and your future cockpit career.",
+        duration: "GROUND SCHOOL",
+        fee: 270000.00,
+        metadata: {
+          image: "/footage/classroom.jpg",
+          flagship: true,
+          batch: "Next batch — July 2026",
+          availability: "Seats remaining"
+        }
+      },
+      {
+        id: "atpl",
+        slug: "atpl",
+        title: "ATPL Ground School",
+        subtitle: "Airline Transport Pilot License Ground School Exam Preparation",
+        description: "Airborne Aviation Academy offers ATPL ground school classes in Dwarka, Delhi. Our program prepares commercial pilots for the DGCA ATPL written examinations — the final certification step before command eligibility on scheduled airline operations.",
+        duration: "GROUND SCHOOL",
+        fee: 150000.00,
+        metadata: {
+          image: "/footage/cockpit_pilot_silhouette.jpg",
+          batch: "Next batch — July 2026"
+        }
+      },
+      {
+        id: "cadet-preparation",
+        slug: "cadet-preparation",
+        title: "Cadet Preparation",
+        subtitle: "IndiGo, Air India, and Akasa Air Cadet Selection Preparation",
+        description: "Airborne Aviation Academy prepares aspiring pilots for the cadet pilot programs of India's leading airlines — IndiGo, Air India, and Akasa Air. Our program covers aptitude testing, psychometric evaluation, group discussions, personal interviews, and the selection pathway.",
+        duration: "CADET SELECTION",
+        fee: 50000.00,
+        metadata: {
+          image: "/footage/student_overhead_panel.jpg",
+          batch: "Next intake starting soon"
+        }
+      },
+      {
+        id: "a320-simulator",
+        slug: "a320-simulator",
+        title: "Airbus A320 Simulator FBS",
+        subtitle: "Airbus A320 Simulator Familiarization and Type Rating Preparation",
+        description: "Airborne Aviation Academy offers Airbus A320 simulator sessions at our Dwarka, Delhi facility. Designed for CPL holders and type rating aspirants to practice Standard Operating Procedures (SOPs), FMGS programming, ECAM abnormal drills, and instrument approaches in a high-fidelity cockpit environment.",
+        duration: "SIMULATOR",
+        fee: 12000.00,
+        metadata: {
+          image: "/footage/simulator-training.jpg",
+          batch: "Daily slots available"
+        }
+      },
+      {
+        id: "cas-compass-adapt",
+        slug: "cas-compass-adapt",
+        title: "CAS Compass & ADAPT",
+        subtitle: "Pilot Aptitude and Psychometric Test Preparation",
+        description: "Structured preparation for the ADAPT (Airline Pilot Aptitude Test) and CAS Compass pilot selection tests used by IndiGo, Air India, Akasa Air, and other carriers. We focus on enhancing spatial reasoning, hand-eye coordination, multi-tasking management, and stress profiles.",
+        duration: "APTITUDE TEST",
+        fee: 30000.00,
+        metadata: {
+          image: "/footage/simulator_entry_dark.jpg",
+          batch: "Weekly diagnostics starting"
+        }
+      },
+      {
+        id: "flying-training-india-abroad",
+        slug: "flying-training-india-abroad",
+        title: "Parent Centric Flying Guide",
+        subtitle: "Comprehensive CPL flight training guidance and Indian CPL conversion support",
+        description: "Airborne Aviation Academy helps students navigate their flight school selection in India or abroad (USA, South Africa, and the Philippines). We provide pre-departure DGCA ground school prep, flight school evaluations, and complete post-training DGCA license conversion support.",
+        duration: "PARENTS",
+        fee: 0,
+        metadata: {
+          image: "/footage/aircraft-ascending.jpg",
+          batch: "Admissions counseling open"
+        }
+      }
+    ]
+  }
+
+  const durationMap = {
+    'atpl': '2–3 Months',
+    'cpl-ground-classes': '3–6 Months',
+    'commercial-pilot-license-cpl': '3–6 Months',
+    'ground-school': '3–6 Months',
+    'cas-compass-adapt': '1–2 Months',
+    'cadet-preparation': '3–4 Months',
+    'a320-simulator': '1–2 Months',
+    'flying-training': '2–3 Months',
+    'flying-training-india-abroad': '2–3 Months',
+    'cabin-crew': '3–6 Months',
+    'cabin-crew-training': '3–6 Months',
+    'gd-pi': '3 Months',
+    'gd-pi-mastery': '3 Months',
+    'airline-preparation': '3 Months',
+    'private-pilot-license': '3–6 Months',
+    'multi-engine-rating': '1–2 Months',
+    'instrument-rating': '1–2 Months',
+    'aviation-english-icao': '1–2 Months',
+    'flight-dispatcher': '3 Months'
+  }
+
+  const courses = rawCourses.map((c) => ({
+    ...c,
+    categoryText: c.duration ?? '',
+    duration: durationMap[c.slug] ?? ''
+  }))
 
   const flagship = courses.find((c) => c.metadata?.flagship === true) ?? courses[0] ?? null
   const supporting = flagship ? courses.filter((c) => c.id !== flagship.id) : []
@@ -174,15 +287,22 @@ export default async function CoursesPage() {
 
                   <div style={{ padding: '2rem', flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                        <span style={{ fontSize: '0.625rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--red)', fontWeight: 800 }}>
-                          {course.duration ?? ''}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '1rem', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '0.625rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--red)', fontWeight: 800, minWidth: '0', flexShrink: 1 }}>
+                          {course.categoryText ?? ''}
                         </span>
-                        {meta(course, 'availability') && (
-                          <span className="badge" style={{ fontSize: '0.55rem', padding: '0.2rem 0.5rem', margin: 0, borderColor: 'rgba(216,160,39,0.3)', background: 'rgba(216,160,39,0.05)', color: 'var(--gold)', boxShadow: 'none' }}>
-                            {meta(course, 'availability')}
-                          </span>
-                        )}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
+                          {course.duration && (
+                            <span style={{ fontSize: '0.625rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--red)', fontWeight: 800 }}>
+                              {course.duration}
+                            </span>
+                          )}
+                          {meta(course, 'availability') && (
+                            <span className="badge" style={{ fontSize: '0.55rem', padding: '0.2rem 0.5rem', margin: 0, borderColor: 'rgba(216,160,39,0.3)', background: 'rgba(216,160,39,0.05)', color: 'var(--gold)', boxShadow: 'none' }}>
+                              {meta(course, 'availability')}
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.15rem', fontWeight: 800, color: '#fff', marginBottom: '0.8rem', textTransform: 'uppercase', lineHeight: '1.3' }}>
