@@ -78,13 +78,13 @@ export default function HowToBecomePilotPage() {
       <JsonLd data={articlePageGraph} />
 
       <Header />
-      <main style={{ minHeight: '80vh', background: '#000810', padding: '4rem var(--margin) 6rem var(--margin)' }}>
+      <main style={{ minHeight: '80vh', background: 'var(--paper)', padding: '4rem var(--margin) 6rem var(--margin)' }}>
 
         {/* Breadcrumb */}
-        <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginBottom: '3rem', fontFamily: 'var(--font-h)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-          <Link href="/" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }}>Home</Link>
+        <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.75rem', color: 'rgba(33,33,33,0.5)', marginBottom: '3rem', fontFamily: 'var(--font-h)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+          <Link href="/" style={{ color: 'rgba(33,33,33,0.5)', textDecoration: 'none' }}>Home</Link>
           <span>/</span>
-          <Link href="/resources" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }}>Resources</Link>
+          <Link href="/blog" style={{ color: 'rgba(33,33,33,0.5)', textDecoration: 'none' }}>Blog</Link>
           <span>/</span>
           <span style={{ color: '#D8A027' }}>How to Become a Pilot</span>
         </div>
@@ -96,13 +96,13 @@ export default function HowToBecomePilotPage() {
             <span style={{ fontSize: '0.65rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#DB241E', fontWeight: 700, display: 'block', marginBottom: '1rem', fontFamily: 'var(--font-h)' }}>
               Career Guide · Updated June 2026
             </span>
-            <h1 style={{ fontFamily: 'var(--font-h)', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 900, color: '#FFFFFF', textTransform: 'uppercase', lineHeight: '1.15', marginBottom: '1.25rem' }}>
+            <h1 style={{ fontFamily: 'var(--font-h)', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 900, color: 'var(--navy)', textTransform: 'uppercase', lineHeight: '1.15', marginBottom: '1.25rem' }}>
               How to Become a Pilot in India After 12th
             </h1>
-            <p style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.75', marginBottom: '1.5rem', fontFamily: 'var(--font-b)' }}>
+            <p style={{ fontSize: '1.05rem', color: 'rgba(33,33,33,0.75)', lineHeight: '1.75', marginBottom: '1.5rem', fontFamily: 'var(--font-b)' }}>
               A complete, honest roadmap — from Class 12 to the airline cockpit. Written by the faculty at Airborne Aviation Academy, Dwarka, who have guided 2,500+ students into aviation careers.
             </p>
-            <div style={{ display: 'flex', gap: '2rem', fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-h)', fontWeight: 600, letterSpacing: '0.05em' }}>
+            <div style={{ display: 'flex', gap: '2rem', fontSize: '0.78rem', color: 'rgba(33,33,33,0.55)', fontFamily: 'var(--font-h)', fontWeight: 600, letterSpacing: '0.05em' }}>
               <span>By Capt. Navrang Singh</span>
               <span>·</span>
               <span>12 min read</span>
@@ -119,11 +119,11 @@ export default function HowToBecomePilotPage() {
                 <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.15rem', fontWeight: 800, color: '#D8A027', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
                   {step.title}
                 </h2>
-                <p style={{ fontSize: '0.92rem', color: 'rgba(255,255,255,0.72)', lineHeight: '1.75', fontFamily: 'var(--font-b)', margin: 0 }}>
+                <p style={{ fontSize: '0.92rem', color: 'rgba(33,33,33,0.7)', lineHeight: '1.75', fontFamily: 'var(--font-b)', margin: 0 }}>
                   {step.body}
                 </p>
                 {step.note && (
-                  <div style={{ background: '#00162e', border: '1px solid rgba(216,160,39,0.2)', padding: '1rem 1.25rem', marginTop: '1rem', borderRadius: '1px', fontSize: '0.83rem', color: 'rgba(255,255,255,0.6)', fontFamily: 'var(--font-b)' }}>
+                  <div style={{ background: '#ffffff', border: '1px solid rgba(0,39,76,0.08)', padding: '1rem 1.25rem', marginTop: '1rem', borderRadius: '1px', fontSize: '0.83rem', color: 'rgba(33,33,33,0.7)', fontFamily: 'var(--font-b)' }}>
                     💡 <strong style={{ color: '#D8A027' }}>Important:</strong> {step.note}
                   </div>
                 )}
@@ -132,8 +132,8 @@ export default function HowToBecomePilotPage() {
           </div>
 
           {/* Related Courses */}
-          <div style={{ background: '#00162e', border: '1px solid rgba(255,255,255,0.08)', padding: '2rem', borderRadius: '1px', marginBottom: '3rem' }}>
-            <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', fontWeight: 700, marginBottom: '1.25rem' }}>Programs at Airborne Aviation Academy</h3>
+          <div style={{ background: '#ffffff', border: '1px solid rgba(0,39,76,0.08)', padding: '2rem', borderRadius: '1px', marginBottom: '3rem' }}>
+            <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(33,33,33,0.55)', fontWeight: 700, marginBottom: '1.25rem' }}>Programs at Airborne Aviation Academy</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {[
                 { label: 'CPL Ground School — Complete DGCA Prep', href: '/courses/cpl-ground-classes' },
@@ -141,7 +141,7 @@ export default function HowToBecomePilotPage() {
                 { label: 'Cadet Preparation — IndiGo, Air India, Akasa', href: '/courses/cadet-preparation' },
                 { label: 'Flying Training India vs Abroad — Cost Comparison', href: '/courses/flying-training-india-abroad' },
               ].map((c) => (
-                <Link key={c.href} href={c.href} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#fff', textDecoration: 'none', fontSize: '0.88rem', fontFamily: 'var(--font-h)', fontWeight: 600, padding: '0.5rem 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <Link key={c.href} href={c.href} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--navy)', textDecoration: 'none', fontSize: '0.88rem', fontFamily: 'var(--font-h)', fontWeight: 600, padding: '0.5rem 0', borderBottom: '1px solid rgba(0,39,76,0.08)' }}>
                   <span>{c.label}</span>
                   <span style={{ color: '#D8A027' }}>→</span>
                 </Link>
@@ -151,12 +151,12 @@ export default function HowToBecomePilotPage() {
 
           {/* FAQ */}
           <div style={{ marginBottom: '3.5rem' }}>
-            <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 800, color: '#D8A027', textTransform: 'uppercase', marginBottom: '1.5rem' }}>Frequently Asked Questions</h2>
+            <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '1.5rem' }}>Frequently Asked Questions</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {FAQS.map((faq, i) => (
-                <div key={i} style={{ background: '#00162e', border: '1px solid rgba(255,255,255,0.07)', padding: '1.25rem 1.5rem', borderRadius: '1px' }}>
-                  <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.88rem', fontWeight: 700, color: '#fff', marginBottom: '0.5rem' }}>{faq.q}</h3>
-                  <p style={{ fontSize: '0.83rem', color: 'rgba(255,255,255,0.6)', margin: 0, fontFamily: 'var(--font-b)', lineHeight: '1.6' }}>{faq.a}</p>
+                <div key={i} style={{ background: '#ffffff', border: '1px solid rgba(0,39,76,0.08)', padding: '1.25rem 1.5rem', borderRadius: '1px' }}>
+                  <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.88rem', fontWeight: 700, color: 'var(--navy)', marginBottom: '0.5rem' }}>{faq.q}</h3>
+                  <p style={{ fontSize: '0.83rem', color: 'rgba(33,33,33,0.7)', margin: 0, fontFamily: 'var(--font-b)', lineHeight: '1.6' }}>{faq.a}</p>
                 </div>
               ))}
             </div>
@@ -166,10 +166,10 @@ export default function HowToBecomePilotPage() {
           <div style={{ marginBottom: '3.5rem' }}>
             <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
               <span style={{ fontSize: '0.65rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#DB241E', fontWeight: 700, display: 'block', marginBottom: '0.75rem', fontFamily: 'var(--font-h)' }}>Admissions Open — July 2026</span>
-              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.4rem', fontWeight: 900, color: '#FFFFFF', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.4rem', fontWeight: 900, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
                 Start Your Pilot Journey Today
               </h2>
-              <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', lineHeight: '1.6', maxWidth: '400px', margin: '0 auto', fontFamily: 'var(--font-b)' }}>
+              <p style={{ fontSize: '0.85rem', color: 'rgba(33,33,33,0.7)', lineHeight: '1.6', maxWidth: '400px', margin: '0 auto', fontFamily: 'var(--font-b)' }}>
                 Book a free 90-minute demo class with Capt. Navrang Singh. Get honest counselling and a personalised roadmap — no obligation.
               </p>
             </div>
@@ -177,8 +177,8 @@ export default function HowToBecomePilotPage() {
           </div>
 
           {/* Internal links */}
-          <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-            <p style={{ fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-h)', fontWeight: 700, marginBottom: '1rem' }}>Related Articles</p>
+          <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid rgba(0,39,76,0.08)' }}>
+            <p style={{ fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(33,33,33,0.55)', fontFamily: 'var(--font-h)', fontWeight: 700, marginBottom: '1rem' }}>Related Articles</p>
             <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
               <Link href="/blog/pilot-salary-india" style={{ color: '#D8A027', textDecoration: 'none', fontSize: '0.88rem', fontFamily: 'var(--font-h)', fontWeight: 600 }}>Pilot Salary in India 2026 →</Link>
               <Link href="/blog/dgca-ground-school-guide" style={{ color: '#D8A027', textDecoration: 'none', fontSize: '0.88rem', fontFamily: 'var(--font-h)', fontWeight: 600 }}>DGCA Ground School Guide →</Link>

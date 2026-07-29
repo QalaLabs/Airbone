@@ -131,38 +131,6 @@ export default function JobsClient() {
           </p>
         </div>
 
-        {/* Lead magnet */}
-        <div
-          style={{
-            marginBottom: '3rem',
-            padding: '1.5rem 1.75rem',
-            background: 'rgba(219,36,30,0.05)',
-            border: '1px solid rgba(219,36,30,0.2)',
-            borderRadius: '6px',
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '1rem',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <div style={{ maxWidth: '36rem' }}>
-            <div style={{ fontFamily: 'var(--font-h)', fontWeight: 800, color: 'var(--navy)', fontSize: '1rem', marginBottom: '0.35rem' }}>
-              Weekly airline vacancy brief
-            </div>
-            <p style={{ margin: 0, fontSize: '0.88rem', color: 'rgba(0,39,76,0.7)', lineHeight: 1.55 }}>
-              Get curated Pilot, Cabin Crew, Ground Staff and Hospitality openings — priority access for Airborne students.
-            </p>
-          </div>
-          <Link
-            href="/contact?reason=jobs-lead-magnet"
-            className="btn btn-primary"
-            style={{ textDecoration: 'none', whiteSpace: 'nowrap' }}
-          >
-            Get the brief →
-          </Link>
-        </div>
-
         {/* ====== FEATURED RECRUITMENT ====== */}
         {!loading && !error && featuredJob && (
           <div

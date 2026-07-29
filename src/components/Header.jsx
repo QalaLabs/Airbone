@@ -91,7 +91,7 @@ export default function Header() {
             <div className="drawer-header">
               {/* Logo */}
               <div className="nav-logo">
-                <img src="/logo-white.webp" alt="Airborne Aviation Academy" style={{ height: '38px', width: 'auto', objectFit: 'contain' }} />
+                <img src="/logo-primary.webp" alt="Airborne Aviation Academy" style={{ height: '38px', width: 'auto', objectFit: 'contain' }} />
               </div>
 
               {/* Close Button */}

@@ -78,26 +78,26 @@ export default async function CoursesPage() {
                 ⭐ {meta(flagship, 'batch', 'Next batch — contact us')}
               </span>
               <h2 className="ov-h1" style={{ fontSize: 'clamp(1.8rem, 4.5vw, 2.8rem)', fontWeight: 900, textTransform: 'uppercase', lineHeight: '1.1' }}>
-                <Link href={`/courses/${flagship.slug}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                <Link href={`/courses/${flagship.slug}`} style={{ color: 'var(--navy)', textDecoration: 'none' }}>
                   {flagship.title}
                 </Link>
               </h2>
               <p style={{ fontSize: '0.98rem', color: 'var(--gold)', fontWeight: 700, margin: '1rem 0 1.5rem 0', letterSpacing: '0.05em' }}>
                 {flagship.subtitle ?? meta(flagship, 'tagline', '')}
               </p>
-              <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.78)', lineHeight: '1.75', marginBottom: '2rem' }}>
+              <p style={{ fontSize: '0.88rem', color: 'rgba(33,33,33,0.75)', lineHeight: '1.75', marginBottom: '2rem' }}>
                 {flagship.description ?? ''}
               </p>
 
               {/* Subjects from curriculum */}
               {Array.isArray(flagship.curriculum) && flagship.curriculum.length > 0 && (
                 <div style={{ marginBottom: '2.5rem' }}>
-                  <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', fontWeight: 700, marginBottom: '1rem' }}>
+                  <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(0, 39, 76, 0.65)', fontWeight: 700, marginBottom: '1rem' }}>
                     Core Program Syllabus
                   </h4>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
                     {flagship.curriculum.map((m) => (
-                      <div key={m.module} style={{ background: 'rgba(255,255,255,0.06)', borderLeft: '2px solid var(--gold)', padding: '0.75rem 1rem', fontSize: '0.82rem', color: '#FFFFFF', fontWeight: 600 }}>
+                      <div key={m.module} style={{ background: 'rgba(0, 39, 76, 0.04)', borderLeft: '2px solid var(--gold)', padding: '0.75rem 1rem', fontSize: '0.82rem', color: 'var(--navy)', fontWeight: 600 }}>
                         ✓ {m.module}
                       </div>
                     ))}
@@ -108,7 +108,7 @@ export default async function CoursesPage() {
               <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                 {displayCourseFee(flagship.slug, flagship.fee) && (
                   <div>
-                    <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', display: 'block', marginBottom: '0.2rem' }}>Tuition Fee</span>
+                    <span style={{ fontSize: '0.62rem', color: 'rgba(0, 39, 76, 0.5)', textTransform: 'uppercase', display: 'block', marginBottom: '0.2rem' }}>Tuition Fee</span>
                     <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.6rem', fontWeight: 900, color: 'var(--gold)' }}>
                       {displayCourseFee(flagship.slug, flagship.fee)}
                     </span>

@@ -80,7 +80,7 @@ export default function ContactPage() {
                       {item.value}
                     </a>
                   ) : (
-                    <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 900, color: '#FFFFFF', display: 'block' }}>
+                    <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 900, color: 'var(--navy)', display: 'block' }}>
                       {item.value}
                     </span>
                   )}
@@ -94,7 +94,7 @@ export default function ContactPage() {
                     </a>
                   )}
                   {item.sub && (
-                    <span style={{ fontFamily: 'var(--font-b)', fontSize: '0.82rem', fontWeight: 500, color: 'rgba(255,255,255,0.5)', display: 'block', marginTop: '0.15rem' }}>
+                    <span style={{ fontFamily: 'var(--font-b)', fontSize: '0.82rem', fontWeight: 500, color: 'rgba(33,33,33,0.55)', display: 'block', marginTop: '0.15rem' }}>
                       {item.sub}
                     </span>
                   )}
@@ -104,8 +104,8 @@ export default function ContactPage() {
 
             <div style={{
               width: '100%', borderRadius: '24px', overflow: 'hidden',
-              boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
-              background: '#00162e', position: 'relative', isolation: 'isolate',
+              boxShadow: '0 8px 40px rgba(0,39,76,0.06)',
+              background: '#ffffff', position: 'relative', isolation: 'isolate',
             }}>
               <div style={{ position: 'relative', width: '100%', aspectRatio: '16 / 9', minHeight: '280px' }}>
                 <iframe
@@ -122,15 +122,15 @@ export default function ContactPage() {
             </div>
 
             <div style={{
-              background: '#00162e', border: '1px solid rgba(216,160,39,0.2)',
+              background: '#ffffff', border: '1px solid rgba(0,39,76,0.08)',
               borderRadius: '24px', padding: '2rem',
-              boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
+              boxShadow: '0 8px 30px rgba(0,39,76,0.04)',
             }}>
               <div style={{ marginBottom: '1rem' }}>
-                <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 800, color: '#FFFFFF', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+                <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
                   Airborne Aviation Academy
                 </h3>
-                <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.6)', lineHeight: '1.6', margin: 0 }}>
+                <p style={{ fontSize: '0.88rem', color: 'rgba(33,33,33,0.7)', lineHeight: '1.6', margin: 0 }}>
                   Led by Capt. Navrang Singh
                 </p>
               </div>
@@ -140,7 +140,7 @@ export default function ContactPage() {
                 rel="noopener noreferrer"
                 style={{ textDecoration: 'none', display: 'block', marginBottom: '0.5rem', opacity: 1, transition: 'opacity 0.2s' }}
               >
-                <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.75)', lineHeight: '1.6', margin: 0 }}>
+                <p style={{ fontSize: '0.88rem', color: 'rgba(33,33,33,0.75)', lineHeight: '1.6', margin: 0 }}>
                   E-549, 2nd Floor, Ramphal Chowk,<br />
                   Sector 7, Dwarka, New Delhi — 110075
                 </p>

@@ -122,12 +122,12 @@ export default function PremiumFooter({ onBookDemo }) {
           <div>
             <div style={{ marginBottom: '1rem' }}>
               <img
-                src="/logo-white.webp"
+                src="/logo-primary.webp"
                 alt="Airborne Aviation Academy"
                 style={{ height: '48px', width: 'auto', objectFit: 'contain', display: 'block' }}
               />
             </div>
-            <p style={{ fontSize: '0.82rem', lineHeight: '1.7', color: 'rgba(255,255,255,0.45)', maxWidth: '240px', margin: '0 0 1.5rem' }}>
+            <p style={{ fontSize: '0.82rem', lineHeight: '1.7', color: 'rgba(33,33,33,0.65)', maxWidth: '240px', margin: '0 0 1.5rem' }}>
               Building pilots. Building futures.
             </p>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -170,7 +170,7 @@ export default function PremiumFooter({ onBookDemo }) {
             <h3 className="pf-col-title">Programs</h3>
             <ul className="pf-link-list">
               {PROGRAMS.map((l) => (
-                <li key={l.href}>
+                <li key={`${l.label}-${l.href}`}>
                   <Link
                     href={l.href}
                     className={`pf-link${pathname === l.href ? ' pf-link-active' : ''}`}
@@ -236,7 +236,7 @@ export default function PremiumFooter({ onBookDemo }) {
       <div className="pf-wordmark-section" aria-hidden="true">
         <div className="pf-wordmark-wrap">
           <img
-            src="/logo-white.webp"
+            src="/logo-primary.webp"
             alt="Airborne Aviation Academy"
             style={{ height: '120px', width: 'auto', maxWidth: '100%', objectFit: 'contain', display: 'block' }}
           />

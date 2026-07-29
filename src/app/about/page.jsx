@@ -110,9 +110,9 @@ export default function AboutPage() {
               <div 
                 key={founder.name} 
                 style={{ 
-                  background: '#000f1e', 
-                  border: '1px solid rgba(255,255,255,0.08)', 
-                  borderTop: founder.name.includes('Navrang') ? '3px solid #DB241E' : '1px solid rgba(255,255,255,0.08)',
+                  background: '#ffffff', 
+                  border: '1px solid rgba(0, 39, 76, 0.08)', 
+                  borderTop: founder.name.includes('Navrang') ? '3px solid #DB241E' : '1px solid rgba(0, 39, 76, 0.08)',
                   padding: '2.5rem', 
                   borderRadius: '1px',
                   display: 'flex',
@@ -142,18 +142,18 @@ export default function AboutPage() {
                     )}
                   </div>
 
-                  <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 900, color: '#FFFFFF', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+                  <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 900, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
                     {founder.name}
                   </h3>
                   <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.62rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#D8A027', fontWeight: 700, marginBottom: '1.5rem' }}>
                     {founder.role}
                   </div>
-                  <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.68)', lineHeight: '1.6', marginBottom: '1.5rem' }}>
+                  <p style={{ fontSize: '0.88rem', color: 'rgba(33, 33, 33, 0.7)', lineHeight: '1.6', marginBottom: '1.5rem' }}>
                     {founder.bio}
                   </p>
                 </div>
                 
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '1rem', fontSize: '0.78rem', fontStyle: 'italic', color: '#D8A027', fontWeight: 500 }}>
+                <div style={{ borderTop: '1px solid rgba(0, 39, 76, 0.08)', paddingTop: '1rem', fontSize: '0.78rem', fontStyle: 'italic', color: '#D8A027', fontWeight: 500 }}>
                   💡 Key Focus: {founder.accent}
                 </div>
               </div>
@@ -162,11 +162,11 @@ export default function AboutPage() {
         </div>
 
         {/* Credentials Timeline Section */}
-        <div style={{ marginBottom: '5rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '4rem' }}>
+        <div style={{ marginBottom: '5rem', borderTop: '1px solid rgba(0,39,76,0.08)', paddingTop: '4rem' }}>
           <div style={{ marginBottom: '3.5rem' }}>
             <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start' }}>Career Milestones</p>
             <h2 className="ov-h2" style={{ marginTop: '0.75rem' }}>The Commander's Pathway</h2>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.88rem', marginTop: '0.5rem' }}>
+            <p style={{ color: 'rgba(33, 33, 33, 0.65)', fontSize: '0.88rem', marginTop: '0.5rem' }}>
               Chronological summary of Capt. Navrang Singh's aviation legacy and academy achievements.
             </p>
           </div>
@@ -238,8 +238,8 @@ export default function AboutPage() {
         </div>
 
         {/* Academy Values */}
-        <div style={{ background: '#00162e', border: '1px solid rgba(255,255,255,0.08)', padding: '3.5rem var(--margin)', borderRadius: '1px', marginBottom: '5rem' }}>
-          <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.4rem', fontWeight: 800, color: '#FFFFFF', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '2rem' }}>
+        <div style={{ background: '#ffffff', border: '1px solid rgba(0,39,76,0.08)', padding: '3.5rem var(--margin)', borderRadius: '1px', marginBottom: '5rem' }}>
+          <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.4rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '2rem' }}>
             Why Students and Parents Choose Airborne
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '2rem' }}>
@@ -251,7 +251,7 @@ export default function AboutPage() {
                 <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.95rem', fontWeight: 800, color: '#D8A027', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
                   {v.title}
                 </h4>
-                <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)', lineHeight: '1.6' }}>
+                <p style={{ fontSize: '0.85rem', color: 'rgba(33,33,33,0.7)', lineHeight: '1.6' }}>
                   {v.text}
                 </p>
               </div>
@@ -263,10 +263,10 @@ export default function AboutPage() {
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
             <span style={{ fontSize: '0.65rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#DB241E', fontWeight: 700, display: 'block', marginBottom: '0.75rem', fontFamily: 'var(--font-h)' }}>Admissions Open — July 2026</span>
-            <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.8rem', fontWeight: 900, color: '#FFFFFF', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+            <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.8rem', fontWeight: 900, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
               Begin Your Training With Airborne
             </h2>
-            <p style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.6', maxWidth: '520px', margin: '0 auto', fontFamily: 'var(--font-b)' }}>
+            <p style={{ fontSize: '1.05rem', color: 'rgba(33,33,33,0.75)', lineHeight: '1.6', maxWidth: '520px', margin: '0 auto', fontFamily: 'var(--font-b)' }}>
               Take the first step towards your airline cockpit career. Book a free counselling session and demo class at our Dwarka academy.
             </p>
           </div>
