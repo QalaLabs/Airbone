@@ -39,26 +39,26 @@ export default function DGCACompliancePage() {
   return (
     <>
       <Header />
-      <main style={{ minHeight: '80vh', background: '#000810', padding: '4rem var(--margin) 6rem var(--margin)' }}>
+      <main style={{ minHeight: '80vh', background: 'var(--paper)', padding: '4rem var(--margin) 6rem var(--margin)' }}>
         <div style={{ maxWidth: '720px', margin: '0 auto' }}>
 
           {/* Header */}
           <div style={{ marginBottom: '3rem' }}>
             <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start' }}>Regulatory</p>
-            <h1 className="ov-h1" style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', marginTop: '1rem', textTransform: 'uppercase' }}>
+            <h1 className="ov-h1" style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', marginTop: '1rem', textTransform: 'uppercase', color: 'var(--navy)' }}>
               DGCA Compliance
             </h1>
-            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1rem', marginTop: '1rem', lineHeight: '1.7', fontFamily: 'var(--font-b)' }}>
+            <p style={{ color: 'rgba(33,33,33,0.75)', fontSize: '1rem', marginTop: '1rem', lineHeight: '1.7', fontFamily: 'var(--font-b)' }}>
               Airborne Aviation Academy aligns its ground school programs with the DGCA (Directorate General of Civil Aviation) regulatory framework for CPL, ATPL, and related aviation training programs in India.
             </p>
           </div>
 
           {/* Compliance badge */}
-          <div style={{ background: '#00162e', border: '1px solid rgba(216,160,39,0.3)', borderLeft: '4px solid #D8A027', padding: '1.5rem 1.75rem', borderRadius: '1px', marginBottom: '3rem', display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
+          <div style={{ background: '#ffffff', border: '1px solid rgba(216,160,39,0.2)', borderLeft: '4px solid #D8A027', padding: '1.5rem 1.75rem', borderRadius: '1px', marginBottom: '3rem', display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
             <span style={{ fontSize: '1.5rem', flexShrink: 0 }}>✈️</span>
             <div>
               <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.9rem', fontWeight: 800, color: '#D8A027', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.35rem' }}>DGCA-Focused Ground Training</h3>
-              <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)', fontFamily: 'var(--font-b)', lineHeight: '1.6', margin: 0 }}>
+              <p style={{ fontSize: '0.85rem', color: 'rgba(33,33,33,0.7)', fontFamily: 'var(--font-b)', lineHeight: '1.6', margin: 0 }}>
                 Airborne is not an FTO and does not conduct flight training. We are a specialist ground school and aviation career preparation centre. All our programs are designed to prepare students for DGCA examinations and airline selection processes.
               </p>
             </div>
@@ -67,25 +67,25 @@ export default function DGCACompliancePage() {
           {/* Compliance points */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '3rem' }}>
             {DGCA_POINTS.map((point, i) => (
-              <div key={i} style={{ background: '#00162e', border: '1px solid rgba(255,255,255,0.07)', padding: '1.75rem', borderRadius: '1px' }}>
-                <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '0.95rem', fontWeight: 800, color: '#fff', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>{point.title}</h2>
-                <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.62)', fontFamily: 'var(--font-b)', lineHeight: '1.7', margin: 0 }}>{point.desc}</p>
+              <div key={i} style={{ background: '#ffffff', border: '1px solid rgba(0,39,76,0.08)', padding: '1.75rem', borderRadius: '1px' }}>
+                <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '0.95rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>{point.title}</h2>
+                <p style={{ fontSize: '0.88rem', color: 'rgba(33,33,33,0.7)', fontFamily: 'var(--font-b)', lineHeight: '1.7', margin: 0 }}>{point.desc}</p>
               </div>
             ))}
           </div>
 
           {/* Important Note */}
-          <div style={{ background: '#000f1e', border: '1px solid rgba(219,36,30,0.2)', borderLeft: '3px solid #DB241E', padding: '1.5rem', borderRadius: '1px', marginBottom: '3rem' }}>
+          <div style={{ background: '#ffffff', border: '1px solid rgba(219,36,30,0.15)', borderLeft: '3px solid #DB241E', padding: '1.5rem', borderRadius: '1px', marginBottom: '3rem' }}>
             <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.82rem', fontWeight: 800, color: '#DB241E', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>Regulatory Disclaimer</h3>
-            <p style={{ fontSize: '0.83rem', color: 'rgba(255,255,255,0.6)', fontFamily: 'var(--font-b)', lineHeight: '1.6', margin: 0 }}>
+            <p style={{ fontSize: '0.83rem', color: 'rgba(33,33,33,0.7)', fontFamily: 'var(--font-b)', lineHeight: '1.6', margin: 0 }}>
               DGCA regulations are updated periodically. The information on this page is provided for general guidance only. Always verify current requirements directly at <a href="https://dgca.gov.in" target="_blank" rel="noopener noreferrer" style={{ color: '#D8A027', textDecoration: 'none' }}>dgca.gov.in</a> or by contacting the DGCA regional office in your jurisdiction.
             </p>
           </div>
 
           {/* Contact */}
-          <div style={{ background: '#00162e', border: '1px solid rgba(255,255,255,0.08)', padding: '1.75rem', borderRadius: '1px', marginBottom: '2rem' }}>
+          <div style={{ background: '#ffffff', border: '1px solid rgba(0,39,76,0.08)', padding: '1.75rem', borderRadius: '1px', marginBottom: '2rem' }}>
             <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.9rem', fontWeight: 800, color: '#D8A027', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '1rem' }}>Questions About Compliance?</h3>
-            <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', fontFamily: 'var(--font-b)', marginBottom: '1.25rem' }}>
+            <p style={{ fontSize: '0.85rem', color: 'rgba(33,33,33,0.7)', fontFamily: 'var(--font-b)', marginBottom: '1.25rem' }}>
               Our admissions team can help clarify DGCA eligibility requirements, CPL examination pathways, and license conversion processes.
             </p>
             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
@@ -95,7 +95,7 @@ export default function DGCACompliancePage() {
           </div>
 
           {/* Bottom links */}
-          <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+          <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid rgba(0,39,76,0.08)', display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
             <Link href="/privacy" style={{ color: '#D8A027', textDecoration: 'none', fontSize: '0.88rem', fontFamily: 'var(--font-h)', fontWeight: 600 }}>Privacy Policy →</Link>
             <Link href="/terms" style={{ color: '#D8A027', textDecoration: 'none', fontSize: '0.88rem', fontFamily: 'var(--font-h)', fontWeight: 600 }}>Terms of Service →</Link>
             <Link href="/courses" style={{ color: '#D8A027', textDecoration: 'none', fontSize: '0.88rem', fontFamily: 'var(--font-h)', fontWeight: 600 }}>Our Courses →</Link>

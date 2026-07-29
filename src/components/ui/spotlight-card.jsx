@@ -24,7 +24,8 @@ const GlowCard = ({
   size = 'md',
   width,
   height,
-  customSize = false
+  customSize = false,
+  style = {}
 }) => {
   const cardRef = useRef(null);
   const innerRef = useRef(null);
@@ -91,7 +92,7 @@ const GlowCard = ({
       baseStyles.height = typeof height === 'number' ? `${height}px` : height;
     }
 
-    return baseStyles;
+    return { ...baseStyles, ...style };
   };
 
   const beforeAfterStyles = `

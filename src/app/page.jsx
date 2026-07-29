@@ -161,13 +161,13 @@ function FloatingNav({ onBook }) {
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             style={{
               position: 'fixed', inset: 0, zIndex: 100,
-              background: 'rgba(0,8,22,0.99)', backdropFilter: 'blur(30px)',
+              background: 'rgba(255,255,255,0.98)', backdropFilter: 'blur(30px)',
               display: 'flex', flexDirection: 'column', padding: '2rem 1.5rem',
               overflow: 'hidden',
             }}
           >
             {/* Watermark arc background */}
-            <div style={{ position: 'absolute', right: '-15%', bottom: '15%', opacity: 0.03, color: '#fff', pointerEvents: 'none', zIndex: 1 }} aria-hidden="true">
+            <div style={{ position: 'absolute', right: '-15%', bottom: '15%', opacity: 0.03, color: 'var(--navy)', pointerEvents: 'none', zIndex: 1 }} aria-hidden="true">
               <svg width="360" height="360" viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1">
                 <circle cx="20" cy="20" r="19" />
                 <path d="M8 32 Q18 20 30 10" />
@@ -178,7 +178,7 @@ function FloatingNav({ onBook }) {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '3rem', position: 'relative', zIndex: 10 }}>
               {/* Logo */}
               <div style={{ display: 'flex', alignItems: 'center' }}>
-                <img src="/logo-white.webp" alt="Airborne Aviation Academy" style={{ height: '38px', width: 'auto', objectFit: 'contain' }} />
+                <img src="/logo-primary.webp" alt="Airborne Aviation Academy" style={{ height: '38px', width: 'auto', objectFit: 'contain' }} />
               </div>
 
               {/* Close Button */}
@@ -186,8 +186,8 @@ function FloatingNav({ onBook }) {
                 onClick={() => setMobileOpen(false)}
                 aria-label="Close navigation menu"
                 style={{
-                  border: 'none', color: '#fff', cursor: 'pointer',
-                  width: '3rem', height: '3rem', borderRadius: '50%', background: 'rgba(255,255,255,0.08)',
+                  border: 'none', color: 'var(--navy)', cursor: 'pointer',
+                  width: '3rem', height: '3rem', borderRadius: '50%', background: 'rgba(0,39,76,0.05)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem',
                 }}
               >
@@ -233,10 +233,10 @@ function FloatingNav({ onBook }) {
                       {l.prefix}
                     </span>
                     <div>
-                      <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.625rem', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.15 }}>
+                      <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.625rem', fontWeight: 800, color: 'var(--navy)', letterSpacing: '-0.02em', lineHeight: 1.15 }}>
                         {l.label}
                       </div>
-                      <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.25rem', fontFamily: 'var(--font-b)' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'rgba(0,39,76,0.5)', marginTop: '0.25rem', fontFamily: 'var(--font-b)' }}>
                         {l.sub}
                       </div>
                     </div>
@@ -265,7 +265,7 @@ function FloatingNav({ onBook }) {
                 </svg>
               </button>
 
-              <div style={{ textAlign: 'center', fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.5rem' }}>
+              <div style={{ textAlign: 'center', fontSize: '0.75rem', color: 'rgba(0,39,76,0.5)', marginTop: '0.5rem' }}>
                 Ramphal Chowk, Dwarka, New Delhi · <a href="tel:+919953777320" style={{ color: 'inherit', textDecoration: 'underline' }}>+91 9953 777 320</a>
               </div>
             </div>
@@ -447,13 +447,13 @@ function BoardingStrip() {
 ───────────────────────────────────── */
 function FounderSection() {
   return (
-    <section id="founder" style={{ position: 'relative', padding: 'clamp(3.5rem,8vw,10rem) clamp(1.5rem,5vw,4rem)', background: 'var(--navy-deep)', color: '#fff', overflow: 'hidden' }}>
+    <section id="founder" style={{ position: 'relative', padding: 'clamp(3.5rem,8vw,10rem) clamp(1.5rem,5vw,4rem)', background: 'var(--paper)', color: 'var(--ink)', overflow: 'hidden' }}>
       {/* Ambient background glow */}
       <div
         className="animate-drift"
         aria-hidden
         style={{
-          position: 'absolute', inset: 0, opacity: 0.25, pointerEvents: 'none',
+          position: 'absolute', inset: 0, opacity: 0.08, pointerEvents: 'none',
           backgroundImage: 'radial-gradient(circle at 20% 30%, var(--red) 0%, transparent 40%), radial-gradient(circle at 80% 70%, var(--gold) 0%, transparent 35%)',
           filter: 'blur(80px)',
         }}
@@ -463,23 +463,23 @@ function FounderSection() {
         {/* Left: Text content */}
         <div>
           <div className="chapter-num" style={{ color: 'var(--gold)', marginBottom: '1.5rem' }}>The Mentor</div>
-          <h2 className="display-xl" style={{ fontSize: 'clamp(2.2rem,5vw,4.5rem)', color: '#fff' }}>
+          <h2 className="display-xl" style={{ fontSize: 'clamp(2.2rem,5vw,4.5rem)', color: 'var(--navy)' }}>
             Capt. Navrang <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>Singh.</span>
           </h2>
-          <p style={{ marginTop: '1.5rem', color: 'rgba(255,255,255,0.75)', fontSize: '0.9375rem', lineHeight: 1.7, maxWidth: '28rem', fontFamily: 'var(--font-b)' }}>
+          <p style={{ marginTop: '1.5rem', color: 'rgba(33,33,33,0.75)', fontSize: '0.9375rem', lineHeight: 1.7, maxWidth: '28rem', fontFamily: 'var(--font-b)' }}>
             Capt. Navrang Singh strips DGCA syllabi down to first principles. Air Regulations, Technical General, Navigation, Meteorology, RTR — taught the way you'll actually use them in the cockpit.
           </p>
 
-          <div style={{ marginTop: '2.5rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'rgba(255,255,255,0.1)', maxWidth: '28rem', width: '100%' }}>
+          <div style={{ marginTop: '2.5rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'rgba(0,39,76,0.08)', maxWidth: '28rem', width: '100%' }}>
             {[
               ['15+', 'Years teaching'],
               ['2,500+', 'Students mentored'],
               ['5/5', 'Papers, first attempt'],
               ['36', 'Oldest restart, Air India'],
             ].map(([k, v]) => (
-              <div key={k} style={{ background: 'var(--navy-deep)', padding: '1.25rem' }}>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.875rem', fontWeight: 800, letterSpacing: '-0.04em' }}>{k}</div>
-                <div style={{ fontSize: '0.6875rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.5)', marginTop: '0.25rem' }}>{v}</div>
+              <div key={k} style={{ background: '#ffffff', padding: '1.25rem' }}>
+                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.875rem', fontWeight: 800, color: 'var(--navy)', letterSpacing: '-0.04em' }}>{k}</div>
+                <div style={{ fontSize: '0.6875rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(33,33,33,0.5)', marginTop: '0.25rem' }}>{v}</div>
               </div>
             ))}
           </div>
@@ -499,7 +499,7 @@ function FounderSection() {
             style={{ height: '100%', width: '100%', objectFit: 'cover', objectPosition: 'top center' }}
             loading="lazy"
           />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, var(--navy-deep) 0%, transparent 60%)' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,39,76,0.85) 0%, transparent 60%)' }} />
           <div style={{ position: 'absolute', bottom: '1.5rem', left: '1.5rem', right: '1.5rem' }}>
             <div style={{ fontSize: '0.625rem', letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: '0.5rem' }}>Chief Instructor</div>
             <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.5rem', fontWeight: 700, color: '#fff' }}>Capt. Navrang Singh</div>
@@ -660,7 +660,7 @@ function HomepageFAQ() {
   const inView = useInView(ref, { once: true, margin: '-80px' })
 
   return (
-    <section ref={ref} style={{ padding: '6rem var(--margin)', background: '#000810', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+    <section ref={ref} style={{ padding: '6rem var(--margin)', background: '#ffffff', borderTop: '1px solid rgba(0,39,76,0.08)' }}>
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -671,19 +671,19 @@ function HomepageFAQ() {
           <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.7rem', letterSpacing: '0.3em', textTransform: 'uppercase', color: '#DB241E', fontWeight: 700, display: 'block', marginBottom: '1rem' }}>
             QUESTIONS & ANSWERS
           </span>
-          <h2 style={{ fontFamily: 'var(--font-h)', fontSize: 'clamp(1.75rem, 3.5vw, 2.5rem)', fontWeight: 900, textTransform: 'uppercase', lineHeight: '1.1', margin: 0 }}>
+          <h2 style={{ fontFamily: 'var(--font-h)', fontSize: 'clamp(1.75rem, 3.5vw, 2.5rem)', fontWeight: 900, textTransform: 'uppercase', lineHeight: '1.1', color: 'var(--navy)', margin: 0 }}>
             Frequently Asked <span style={{ color: '#D8A027' }}>Questions</span>
           </h2>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0', border: '1px solid rgba(0,39,76,0.08)', borderRadius: '4px', overflow: 'hidden' }}>
           {HOME_FAQS.map((faq, i) => (
-            <div key={i} style={{ borderBottom: i < HOME_FAQS.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+            <div key={i} style={{ borderBottom: i < HOME_FAQS.length - 1 ? '1px solid rgba(0,39,76,0.08)' : 'none' }}>
               <button
                 onClick={() => setOpen(open === i ? null : i)}
                 style={{ width: '100%', background: open === i ? 'rgba(216,160,39,0.04)' : 'transparent', border: 'none', cursor: 'pointer', padding: '1.4rem 1.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1.5rem', textAlign: 'left', transition: 'background 0.2s' }}
               >
-                <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.9rem', fontWeight: 700, color: open === i ? '#D8A027' : '#FFFFFF', lineHeight: '1.4', flex: 1 }}>{faq.q}</span>
+                <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.9rem', fontWeight: 700, color: open === i ? '#D8A027' : 'var(--navy)', lineHeight: '1.4', flex: 1 }}>{faq.q}</span>
                 <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 900, color: '#D8A027', flexShrink: 0, transform: open === i ? 'rotate(45deg)' : 'rotate(0)', transition: 'transform 0.25s', display: 'inline-block' }}>+</span>
               </button>
               <AnimatePresence initial={false}>
@@ -696,7 +696,7 @@ function HomepageFAQ() {
                     transition={{ duration: 0.3, ease: 'easeInOut' }}
                     style={{ overflow: 'hidden' }}
                   >
-                    <p style={{ margin: 0, padding: '0 1.75rem 1.4rem 1.75rem', fontSize: '0.875rem', color: 'rgba(255,255,255,0.65)', lineHeight: '1.75' }}>{faq.a}</p>
+                    <p style={{ margin: 0, padding: '0 1.75rem 1.4rem 1.75rem', fontSize: '0.875rem', color: 'rgba(33,33,33,0.7)', lineHeight: '1.75' }}>{faq.a}</p>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -754,11 +754,11 @@ function FinalCTA() {
   }
 
   return (
-    <section id="cta" ref={ref} style={{ position: 'relative', isolation: 'isolate', overflow: 'hidden', background: 'var(--navy-deep)', color: '#fff' }}>
-      <motion.div style={{ y: bgY, position: 'absolute', inset: 0, opacity: 0.7 }}>
+    <section id="cta" ref={ref} style={{ position: 'relative', isolation: 'isolate', overflow: 'hidden', background: 'var(--paper)', color: 'var(--ink)' }}>
+      <motion.div style={{ y: bgY, position: 'absolute', inset: 0, opacity: 0.25 }}>
         <img src="/footage/clouds-above.jpg" alt="" style={{ height: '100%', width: '100%', objectFit: 'cover' }} loading="lazy" />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, var(--navy-deep) 0%, rgba(0,8,22,0.35) 25%, transparent 60%, var(--navy-deep) 100%)' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 40% 50%, rgba(255, 215, 0, 0.12) 0%, transparent 65%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, var(--paper) 0%, rgba(249,250,251,0.5) 25%, transparent 60%, var(--paper) 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 40% 50%, rgba(255, 215, 0, 0.05) 0%, transparent 65%)', pointerEvents: 'none' }} />
       </motion.div>
 
       <div className="cta-content-wrapper container-xl" style={{ position: 'relative', padding: 'clamp(5rem,10vw,12rem) clamp(1.25rem,5vw,4rem)' }}>
@@ -770,11 +770,11 @@ function FinalCTA() {
         >
           <div className="chapter-num" style={{ color: 'var(--gold)', marginBottom: '1.5rem' }}>Final boarding</div>
 
-          <h2 className="display-xl" style={{ fontSize: 'clamp(2.25rem,7.5vw,6.5rem)', lineHeight: 1.08, letterSpacing: '-0.02em', color: '#fff', maxWidth: '14ch' }}>
+          <h2 className="display-xl" style={{ fontSize: 'clamp(2.25rem,7.5vw,6.5rem)', lineHeight: 1.08, letterSpacing: '-0.02em', color: 'var(--navy)', maxWidth: '14ch' }}>
             Your <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>cockpit</span> is waiting.
           </h2>
 
-          <p style={{ marginTop: '1.5rem', color: 'rgba(255,255,255,0.85)', maxWidth: '38rem', fontSize: 'clamp(0.9375rem,1.5vw,1.05rem)', lineHeight: 1.7, fontFamily: 'var(--font-b)' }}>
+          <p style={{ marginTop: '1.5rem', color: 'rgba(33,33,33,0.75)', maxWidth: '38rem', fontSize: 'clamp(0.9375rem,1.5vw,1.05rem)', lineHeight: 1.7, fontFamily: 'var(--font-b)' }}>
             Visit our Dwarka center, sit in on a class, meet Capt. Navrang. No pressure.
             Just an honest look at the system that's been sending pilots into airline cockpits for fifteen years.
           </p>
@@ -783,13 +783,13 @@ function FinalCTA() {
             <motion.div
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
-              style={{ marginTop: '3rem', textAlign: 'center', padding: '3rem', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '1.25rem', background: 'rgba(15,23,42,0.55)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
+              style={{ marginTop: '3rem', textAlign: 'center', padding: '3rem', border: '1px solid rgba(0,39,76,0.08)', borderRadius: '1.25rem', background: '#ffffff', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
             >
               <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--red)', marginBottom: '0.8rem' }}>Application Received</div>
-              <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, textTransform: 'uppercase', color: '#fff', marginBottom: '0.6rem' }}>We'll contact you within 24 hours.</div>
-              <p style={{ fontFamily: 'var(--font-b)', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', marginBottom: '2rem' }}>Capt. Navrang Singh's team · Dwarka, New Delhi</p>
+              <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--navy)', marginBottom: '0.6rem' }}>We'll contact you within 24 hours.</div>
+              <p style={{ fontFamily: 'var(--font-b)', fontSize: '0.9rem', color: 'rgba(33,33,33,0.65)', marginBottom: '2rem' }}>Capt. Navrang Singh's team · Dwarka, New Delhi</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
-                <a href="tel:+919953777320" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', borderRadius: '0.6rem', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', textDecoration: 'none', fontSize: '0.9375rem', fontFamily: 'var(--font-h)', fontWeight: 600 }}>📞 Call Us</a>
+                <a href="tel:+919953777320" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', borderRadius: '0.6rem', border: '1px solid rgba(0,39,76,0.15)', color: 'var(--navy)', textDecoration: 'none', fontSize: '0.9375rem', fontFamily: 'var(--font-h)', fontWeight: 600 }}>📞 Call Us</a>
                 <a href="https://wa.me/919953777320" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', borderRadius: '0.6rem', border: '1px solid #25D366', color: '#25D366', textDecoration: 'none', fontSize: '0.9375rem', fontFamily: 'var(--font-h)', fontWeight: 600 }}>💬 WhatsApp</a>
                 <a href="/courses" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', borderRadius: '0.6rem', background: 'var(--red)', color: '#fff', textDecoration: 'none', fontSize: '0.9375rem', fontFamily: 'var(--font-h)', fontWeight: 700 }}>Explore Courses →</a>
               </div>
@@ -942,27 +942,27 @@ function BookingModal({ open, onClose }) {
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             className="booking-modal-card"
           >
-            <button onClick={handleClose} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1 }}>×</button>
+            <button onClick={handleClose} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', color: 'rgba(0,39,76,0.3)', cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1 }}>×</button>
 
             {status === 'success' ? (
               <div style={{ textAlign: 'center', padding: '1rem 0' }}>
                 <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.2em', color: 'var(--red)', textTransform: 'uppercase', marginBottom: '1rem' }}>Confirmed</div>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 900, textTransform: 'uppercase', color: '#fff', marginBottom: '0.8rem' }}>Demo Seat Reserved</div>
-                <p style={{ fontFamily: 'var(--font-b)', fontSize: '0.85rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, marginBottom: '1.5rem' }}>Our admissions team will reach out within 24 hours to confirm your demo class schedule with Capt. Navrang Singh.</p>
+                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--navy)', marginBottom: '0.8rem' }}>Demo Seat Reserved</div>
+                <p style={{ fontFamily: 'var(--font-b)', fontSize: '0.85rem', color: 'rgba(33,33,33,0.7)', lineHeight: 1.6, marginBottom: '1.5rem' }}>Our admissions team will reach out within 24 hours to confirm your demo class schedule with Capt. Navrang Singh.</p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
-                  <a href="tel:+919953777320" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', textDecoration: 'none', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>📞 Call Us</a>
+                  <a href="tel:+919953777320" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid rgba(0,39,76,0.2)', color: 'var(--navy)', textDecoration: 'none', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>📞 Call Us</a>
                   <a href="https://wa.me/919953777320" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid #25D366', color: '#25D366', textDecoration: 'none', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>💬 WhatsApp</a>
                   <a href="/courses" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', background: 'var(--red)', color: '#fff', textDecoration: 'none', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>Explore Courses →</a>
                 </div>
               </div>
             ) : status === 'error' ? (
               <div style={{ textAlign: 'center', padding: '1rem 0' }}>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.2em', color: '#fecaca', textTransform: 'uppercase', marginBottom: '1rem' }}>Failed</div>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 900, textTransform: 'uppercase', color: '#fff', marginBottom: '0.8rem' }}>Could not reserve seat</div>
-                <p style={{ fontFamily: 'var(--font-b)', fontSize: '0.85rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, marginBottom: '1.5rem' }}>Please try again, or call / WhatsApp admissions directly.</p>
+                <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.2em', color: 'var(--red)', textTransform: 'uppercase', marginBottom: '1rem' }}>Failed</div>
+                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--navy)', marginBottom: '0.8rem' }}>Could not reserve seat</div>
+                <p style={{ fontFamily: 'var(--font-b)', fontSize: '0.85rem', color: 'rgba(33,33,33,0.7)', lineHeight: 1.6, marginBottom: '1.5rem' }}>Please try again, or call / WhatsApp admissions directly.</p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
-                  <button type="button" onClick={() => setStatus('idle')} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', background: 'transparent', cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>Try again</button>
-                  <a href="tel:+919953777320" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', textDecoration: 'none', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>Call Us</a>
+                  <button type="button" onClick={() => setStatus('idle')} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid rgba(0,39,76,0.2)', color: 'var(--navy)', background: 'transparent', cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>Try again</button>
+                  <a href="tel:+919953777320" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid rgba(0,39,76,0.2)', color: 'var(--navy)', textDecoration: 'none', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>Call Us</a>
                   <a href="https://wa.me/919953777320" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid #25D366', color: '#25D366', textDecoration: 'none', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>WhatsApp</a>
                 </div>
               </div>
@@ -972,13 +972,13 @@ function BookingModal({ open, onClose }) {
                   <span style={{ width: '20px', height: '1px', background: 'var(--red)', display: 'block' }} />
                   <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.24em', color: 'var(--red)', textTransform: 'uppercase' }}>Free Demo Class</span>
                 </div>
-                <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.5rem', fontWeight: 900, textTransform: 'uppercase', color: '#fff', lineHeight: 1.05, marginBottom: '0.8rem' }}>
+                <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.5rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--navy)', lineHeight: 1.05, marginBottom: '0.8rem' }}>
                   Reserve Your<br />Demo Seat.
                 </h3>
-                <p style={{ fontFamily: 'var(--font-b)', fontSize: '0.82rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.65, marginBottom: '2rem' }}>
+                <p style={{ fontFamily: 'var(--font-b)', fontSize: '0.82rem', color: 'rgba(33,33,33,0.6)', lineHeight: 1.65, marginBottom: '2rem' }}>
                   A 90-minute introduction with Capt. Navrang Singh. Free, no commitment.
                 </p>
-                <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
+                <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'rgba(0,39,76,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
                   <FormField
                     id="m-name"
                     type="text"
@@ -1185,7 +1185,7 @@ function AirborneAdvantage() {
   }
 
   return (
-    <section id="advantage" style={{ position: 'relative', padding: 'clamp(4rem, 8vw, 10rem) clamp(1.5rem, 5vw, 4rem)', background: 'var(--navy-deep)', color: '#fff', borderTop: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+    <section id="advantage" style={{ position: 'relative', padding: 'clamp(4rem, 8vw, 10rem) clamp(1.5rem, 5vw, 4rem)', background: 'var(--paper)', color: 'var(--ink)', borderTop: '1px solid rgba(0,39,76,0.08)', overflow: 'hidden' }}>
       
       {/* Styles local block targeting desktop vs mobile views */}
       <style dangerouslySetInnerHTML={{ __html: `
@@ -1220,7 +1220,7 @@ function AirborneAdvantage() {
             right: 0;
             bottom: 0;
             width: 40px;
-            background: linear-gradient(to left, var(--navy-deep) 0%, transparent 100%);
+            background: linear-gradient(to left, var(--paper) 0%, transparent 100%);
             pointer-events: none;
             z-index: 10;
           }
@@ -1247,13 +1247,13 @@ function AirborneAdvantage() {
           .advantage-card-mobile {
             flex: 0 0 100%;
             scroll-snap-align: start;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
-            border: 1px solid rgba(216, 160, 39, 0.12);
+            background: #ffffff;
+            border: 1px solid rgba(0, 39, 76, 0.08);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border-radius: 16px;
             padding: 2.25rem 1.75rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 10px 30px rgba(0, 39, 76, 0.04);
             transition: border-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
             position: relative;
             overflow: hidden;
@@ -1299,7 +1299,7 @@ function AirborneAdvantage() {
             font-family: var(--font-h);
             font-size: 1.1rem;
             font-weight: 700;
-            color: #fff;
+            color: var(--navy);
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-bottom: 0.6rem;
@@ -1308,7 +1308,7 @@ function AirborneAdvantage() {
           .advantage-mobile-desc {
             font-family: var(--font-b);
             font-size: 0.8125rem;
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(33, 33, 33, 0.7);
             line-height: 1.6;
           }
 
@@ -1319,18 +1319,18 @@ function AirborneAdvantage() {
             justify-content: center;
             gap: 0.5rem;
             font-size: 0.7rem;
-            color: var(--gold);
+            color: var(--red);
             text-transform: uppercase;
             letter-spacing: 0.15em;
             font-weight: 700;
-            opacity: 0.7;
+            opacity: 0.8;
             animation: pulseHint 2s infinite ease-in-out;
             margin-bottom: 1.25rem;
           }
 
           @keyframes pulseHint {
-            0%, 100% { transform: translateX(0); opacity: 0.5; }
-            50% { transform: translateX(5px); opacity: 0.9; }
+            0%, 100% { transform: translateX(0); opacity: 0.6; }
+            50% { transform: translateX(5px); opacity: 1; }
           }
         }
       ` }} />
@@ -1338,10 +1338,10 @@ function AirborneAdvantage() {
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
         <div style={{ marginBottom: '4rem', textAlign: 'center' }}>
           <div style={{ fontSize: '0.6875rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: '1rem', fontWeight: 700 }}>Exclusive Benefits</div>
-          <h2 className="display-xl" style={{ fontSize: 'clamp(2rem, 5vw, 4.5rem)', color: '#fff', textTransform: 'uppercase' }}>
+          <h2 className="display-xl" style={{ fontSize: 'clamp(2rem, 5vw, 4.5rem)', color: 'var(--navy)', textTransform: 'uppercase' }}>
             The Airborne <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>Advantage.</span>
           </h2>
-          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9375rem', lineHeight: 1.7, maxWidth: '36rem', margin: '1.5rem auto 0', fontFamily: 'var(--font-b)' }}>
+          <p style={{ color: 'rgba(33,33,33,0.7)', fontSize: '0.9375rem', lineHeight: 1.7, maxWidth: '36rem', margin: '1.5rem auto 0', fontFamily: 'var(--font-b)' }}>
             What you get when you train at India's premier ground preparation academy. Every facility is built to support your launch.
           </p>
         </div>
@@ -1354,6 +1354,11 @@ function AirborneAdvantage() {
               customSize={true}
               glowColor="gold"
               className="h-full"
+              style={{
+                '--backdrop': '#ffffff',
+                '--backup-border': 'rgba(0,39,76,0.08)',
+                color: 'var(--navy)'
+              }}
             >
               <div style={{ position: 'relative', zIndex: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
@@ -1364,19 +1369,19 @@ function AirborneAdvantage() {
                     {cat.category}
                   </h3>
                 </div>
-                <p style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.5, fontFamily: 'var(--font-b)', marginBottom: '1.25rem' }}>
+                <p style={{ fontSize: '0.8125rem', color: 'rgba(33,33,33,0.7)', lineHeight: 1.5, fontFamily: 'var(--font-b)', marginBottom: '1.25rem' }}>
                   {cat.subheadline}
                 </p>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.25rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderTop: '1px solid rgba(0,39,76,0.08)', paddingTop: '1.25rem' }}>
                   {cat.benefits.map((b, j) => (
                     <div key={j} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
                       <span style={{ fontSize: '1.1rem', color: 'var(--gold)', flexShrink: 0, marginTop: '2px' }}>✓</span>
                       <div>
-                        <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.875rem', fontWeight: 700, color: '#fff', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                        <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.875rem', fontWeight: 700, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
                           {b.title}
                         </h4>
-                        <p style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.5, fontFamily: 'var(--font-b)' }}>
+                        <p style={{ fontSize: '0.8125rem', color: 'rgba(33,33,33,0.65)', lineHeight: 1.5, fontFamily: 'var(--font-b)' }}>
                           {b.desc}
                         </p>
                       </div>
@@ -1412,15 +1417,15 @@ function AirborneAdvantage() {
                     {cat.icon}
                   </div>
                   <h3 className="advantage-mobile-title" style={{ color: 'var(--gold)' }}>{cat.category}</h3>
-                  <p className="advantage-mobile-desc" style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '1.25rem', fontSize: '0.8125rem' }}>{cat.subheadline}</p>
+                  <p className="advantage-mobile-desc" style={{ color: 'rgba(33,33,33,0.7)', marginBottom: '1.25rem', fontSize: '0.8125rem' }}>{cat.subheadline}</p>
                   
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem', borderTop: '1px solid rgba(0,39,76,0.08)', paddingTop: '1rem' }}>
                     {cat.benefits.map((b, j) => (
                       <div key={j} style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start' }}>
                         <span style={{ fontSize: '1rem', color: 'var(--gold)', flexShrink: 0 }}>✓</span>
                         <div>
-                          <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.8125rem', fontWeight: 700, color: '#fff', textTransform: 'uppercase', marginBottom: '0.15rem' }}>{b.title}</h4>
-                          <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.4, fontFamily: 'var(--font-b)' }}>{b.desc}</p>
+                          <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '0.15rem' }}>{b.title}</h4>
+                          <p style={{ fontSize: '0.75rem', color: 'rgba(33,33,33,0.65)', lineHeight: 1.4, fontFamily: 'var(--font-b)' }}>{b.desc}</p>
                         </div>
                       </div>
                     ))}
@@ -1440,7 +1445,7 @@ function AirborneAdvantage() {
                   width: activeIndex === idx ? '20px' : '8px',
                   height: '8px',
                   borderRadius: '999px',
-                  background: activeIndex === idx ? 'var(--gold)' : 'rgba(255, 255, 255, 0.25)',
+                  background: activeIndex === idx ? 'var(--navy)' : 'rgba(0,39,76,0.2)',
                   border: 'none',
                   padding: 0,
                   cursor: 'pointer',

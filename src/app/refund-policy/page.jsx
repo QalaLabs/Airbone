@@ -14,22 +14,22 @@ export default function RefundPolicyPage() {
   return (
     <>
       <Header />
-      <main style={{ minHeight: '80vh', background: '#000810', padding: '4rem var(--margin) 6rem var(--margin)' }}>
+      <main style={{ minHeight: '80vh', background: 'var(--paper)', padding: '4rem var(--margin) 6rem var(--margin)' }}>
         <div style={{ maxWidth: '720px', margin: '0 auto' }}>
 
           {/* Header */}
           <div style={{ marginBottom: '3rem' }}>
             <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start' }}>Legal</p>
-            <h1 className="ov-h1" style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', marginTop: '1rem', textTransform: 'uppercase' }}>
-              Refund & Cancellation Policy
+            <h1 className="ov-h1" style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', marginTop: '1rem', textTransform: 'uppercase', color: 'var(--navy)' }}>
+              Refund &amp; Cancellation Policy
             </h1>
-            <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.82rem', marginTop: '0.75rem', fontFamily: 'var(--font-b)' }}>
+            <p style={{ color: 'rgba(33,33,33,0.55)', fontSize: '0.82rem', marginTop: '0.75rem', fontFamily: 'var(--font-b)' }}>
               Last Updated: {LAST_UPDATED} · Airborne Aviation Private Limited, Dwarka, New Delhi
             </p>
           </div>
 
           {/* Content */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', color: 'rgba(255,255,255,0.72)', fontFamily: 'var(--font-b)', fontSize: '0.92rem', lineHeight: '1.8' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', color: 'rgba(33,33,33,0.75)', fontFamily: 'var(--font-b)', fontSize: '0.92rem', lineHeight: '1.8' }}>
             
             <p>This policy applies to payments made for training programs, counseling, simulator sessions, workshops, and related services offered by Airborne Aviation Academy.</p>
 
@@ -100,9 +100,9 @@ export default function RefundPolicyPage() {
             <section>
               <p>For any refund or cancellation queries, please contact us at <a href="mailto:info@airborneaviation.in" style={{ color: '#D8A027', textDecoration: 'none' }}>info@airborneaviation.in</a> or call <a href="tel:+919953777320" style={{ color: '#D8A027', textDecoration: 'none' }}>+91 9953 777 320</a>.</p>
               
-              <div style={{ background: '#00162e', border: '1px solid rgba(255,255,255,0.08)', padding: '1.5rem', borderRadius: '1px', marginTop: '1rem' }}>
+              <div style={{ background: '#ffffff', border: '1px solid rgba(0,39,76,0.08)', padding: '1.5rem', borderRadius: '1px', marginTop: '1rem' }}>
                 <p style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                  <strong style={{ color: '#fff', fontFamily: 'var(--font-h)', fontSize: '0.92rem' }}>Airborne Aviation Private Limited</strong>
+                  <strong style={{ color: 'var(--navy)', fontFamily: 'var(--font-h)', fontSize: '0.92rem' }}>Airborne Aviation Private Limited</strong>
                   <span>E-549, 2nd Floor, Ramphal Chowk, Sector 7, Dwarka, New Delhi — 110075</span>
                   <span>Email: <a href="mailto:info@airborneaviation.in" style={{ color: '#D8A027', textDecoration: 'none' }}>info@airborneaviation.in</a></span>
                   <span>Phone: <a href="tel:+919953777320" style={{ color: '#D8A027', textDecoration: 'none' }}>+91 9953 777 320</a></span>
@@ -113,7 +113,7 @@ export default function RefundPolicyPage() {
           </div>
 
           {/* Bottom links */}
-          <div style={{ marginTop: '3.5rem', paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+          <div style={{ marginTop: '3.5rem', paddingTop: '2rem', borderTop: '1px solid rgba(0,39,76,0.08)', display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
             <Link href="/privacy" style={{ color: '#D8A027', textDecoration: 'none', fontSize: '0.88rem', fontFamily: 'var(--font-h)', fontWeight: 600 }}>Privacy Policy →</Link>
             <Link href="/terms" style={{ color: '#D8A027', textDecoration: 'none', fontSize: '0.88rem', fontFamily: 'var(--font-h)', fontWeight: 600 }}>Terms &amp; Conditions →</Link>
             <Link href="/contact" style={{ color: '#D8A027', textDecoration: 'none', fontSize: '0.88rem', fontFamily: 'var(--font-h)', fontWeight: 600 }}>Contact Us →</Link>

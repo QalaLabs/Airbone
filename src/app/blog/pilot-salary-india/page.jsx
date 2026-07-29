@@ -58,13 +58,13 @@ export default function PilotSalaryPage() {
       <JsonLd data={articlePageGraph} />
 
       <Header />
-      <main style={{ minHeight: '80vh', background: '#000810', padding: '4rem var(--margin) 6rem var(--margin)' }}>
+      <main style={{ minHeight: '80vh', background: 'var(--paper)', padding: '4rem var(--margin) 6rem var(--margin)' }}>
 
         {/* Breadcrumb */}
-        <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginBottom: '3rem', fontFamily: 'var(--font-h)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-          <Link href="/" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }}>Home</Link>
+        <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.75rem', color: 'rgba(33,33,33,0.5)', marginBottom: '3rem', fontFamily: 'var(--font-h)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+          <Link href="/" style={{ color: 'rgba(33,33,33,0.5)', textDecoration: 'none' }}>Home</Link>
           <span>/</span>
-          <Link href="/resources" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }}>Resources</Link>
+          <Link href="/blog" style={{ color: 'rgba(33,33,33,0.5)', textDecoration: 'none' }}>Blog</Link>
           <span>/</span>
           <span style={{ color: '#D8A027' }}>Pilot Salary India</span>
         </div>
@@ -76,13 +76,13 @@ export default function PilotSalaryPage() {
             <span style={{ fontSize: '0.65rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#DB241E', fontWeight: 700, display: 'block', marginBottom: '1rem', fontFamily: 'var(--font-h)' }}>
               Salary Guide · Updated June 2026
             </span>
-            <h1 style={{ fontFamily: 'var(--font-h)', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 900, color: '#FFFFFF', textTransform: 'uppercase', lineHeight: '1.15', marginBottom: '1.25rem' }}>
+            <h1 style={{ fontFamily: 'var(--font-h)', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 900, color: 'var(--navy)', textTransform: 'uppercase', lineHeight: '1.15', marginBottom: '1.25rem' }}>
               Pilot Salary in India — Complete 2026 Guide
             </h1>
-            <p style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.75', fontFamily: 'var(--font-b)' }}>
+            <p style={{ fontSize: '1.05rem', color: 'rgba(33,33,33,0.75)', lineHeight: '1.75', fontFamily: 'var(--font-b)' }}>
               What do pilots actually earn in India? This guide covers real-world salary ranges at every career stage — from freshly minted First Officers to senior Captains flying international routes. Data compiled from current airline pay scales and Airborne alumni placement records.
             </p>
-            <div style={{ display: 'flex', gap: '2rem', fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-h)', fontWeight: 600, letterSpacing: '0.05em', marginTop: '1.5rem' }}>
+            <div style={{ display: 'flex', gap: '2rem', fontSize: '0.78rem', color: 'rgba(33,33,33,0.55)', fontFamily: 'var(--font-h)', fontWeight: 600, letterSpacing: '0.05em', marginTop: '1.5rem' }}>
               <span>By Capt. Navrang Singh</span>
               <span>·</span>
               <span>10 min read</span>
@@ -91,11 +91,11 @@ export default function PilotSalaryPage() {
 
           {/* Salary Table */}
           <section style={{ marginBottom: '3rem' }}>
-            <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 800, color: '#D8A027', textTransform: 'uppercase', marginBottom: '1.5rem' }}>Indian Pilot Salary Table 2026</h2>
-            <div style={{ overflowX: 'auto', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '1px', background: '#00162e' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', color: '#fff', fontFamily: 'var(--font-b)', minWidth: '600px' }}>
+            <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '1.5rem' }}>Indian Pilot Salary Table 2026</h2>
+            <div style={{ overflowX: 'auto', border: '1px solid rgba(0,39,76,0.08)', borderRadius: '1px', background: '#ffffff' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', color: 'var(--navy)', fontFamily: 'var(--font-b)', minWidth: '600px' }}>
                 <thead>
-                  <tr style={{ background: '#000f1e', borderBottom: '2px solid rgba(255,255,255,0.1)', fontFamily: 'var(--font-h)', fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#D8A027' }}>
+                  <tr style={{ background: 'rgba(0,39,76,0.03)', borderBottom: '2px solid rgba(0,39,76,0.08)', fontFamily: 'var(--font-h)', fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#D8A027' }}>
                     <th style={{ padding: '1.1rem 1.25rem', textAlign: 'left' }}>Rank / Stage</th>
                     <th style={{ padding: '1.1rem 1.25rem', textAlign: 'left' }}>Typical Airline</th>
                     <th style={{ padding: '1.1rem 1.25rem', textAlign: 'left' }}>Monthly (CTC)</th>
@@ -104,9 +104,9 @@ export default function PilotSalaryPage() {
                 </thead>
                 <tbody>
                   {SALARY_TABLE.map((row, i) => (
-                    <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}>
+                    <tr key={i} style={{ borderBottom: '1px solid rgba(0,39,76,0.08)', background: i % 2 === 0 ? 'transparent' : 'rgba(0,39,76,0.01)' }}>
                       <td style={{ padding: '1.1rem 1.25rem', fontWeight: 700 }}>{row.rank}</td>
-                      <td style={{ padding: '1.1rem 1.25rem', color: 'rgba(255,255,255,0.7)' }}>{row.airline}</td>
+                      <td style={{ padding: '1.1rem 1.25rem', color: 'rgba(33,33,33,0.7)' }}>{row.airline}</td>
                       <td style={{ padding: '1.1rem 1.25rem', color: '#D8A027', fontWeight: 700, fontFamily: 'var(--font-h)' }}>{row.monthly}</td>
                       <td style={{ padding: '1.1rem 1.25rem', color: '#D8A027', fontWeight: 700, fontFamily: 'var(--font-h)' }}>{row.annual}</td>
                     </tr>
@@ -114,21 +114,21 @@ export default function PilotSalaryPage() {
                 </tbody>
               </table>
             </div>
-            <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)', marginTop: '0.75rem', fontFamily: 'var(--font-b)' }}>
+            <p style={{ fontSize: '0.75rem', color: 'rgba(33,33,33,0.5)', marginTop: '0.75rem', fontFamily: 'var(--font-b)' }}>
               * Figures are approximate CTC ranges compiled from industry sources and alumni data. Actual packages vary by airline, seniority, and aircraft type. Allowances (flying, night, layover) contribute significantly to take-home.
             </p>
           </section>
 
           {/* Career Growth Timeline */}
           <section style={{ marginBottom: '3rem' }}>
-            <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 800, color: '#D8A027', textTransform: 'uppercase', marginBottom: '1.5rem' }}>Career Growth Timeline</h2>
+            <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '1.5rem' }}>Career Growth Timeline</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
               {GROWTH_TIMELINE.map((item, i) => (
-                <div key={i} style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '1.5rem', padding: '1.25rem 0', borderBottom: i < GROWTH_TIMELINE.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none', alignItems: 'flex-start' }}>
+                <div key={i} style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '1.5rem', padding: '1.25rem 0', borderBottom: i < GROWTH_TIMELINE.length - 1 ? '1px solid rgba(0,39,76,0.08)' : 'none', alignItems: 'flex-start' }}>
                   <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.7rem', fontWeight: 700, color: '#DB241E', letterSpacing: '0.05em', textTransform: 'uppercase', paddingTop: '0.2rem' }}>{item.years}</div>
                   <div>
-                    <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.92rem', fontWeight: 700, color: '#fff', marginBottom: '0.3rem' }}>{item.stage}</div>
-                    <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.55)', fontFamily: 'var(--font-b)', lineHeight: '1.5' }}>{item.note}</div>
+                    <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.92rem', fontWeight: 700, color: 'var(--navy)', marginBottom: '0.3rem' }}>{item.stage}</div>
+                    <div style={{ fontSize: '0.82rem', color: 'rgba(33,33,33,0.7)', fontFamily: 'var(--font-b)', lineHeight: '1.5' }}>{item.note}</div>
                   </div>
                 </div>
               ))}
@@ -137,10 +137,10 @@ export default function PilotSalaryPage() {
 
           {/* Perks */}
           <section style={{ marginBottom: '3rem' }}>
-            <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 800, color: '#D8A027', textTransform: 'uppercase', marginBottom: '1.25rem' }}>Non-Monetary Benefits & Perks</h2>
+            <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '1.25rem' }}>Non-Monetary Benefits & Perks</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {PERKS.map((p, i) => (
-                <div key={i} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', fontFamily: 'var(--font-b)', lineHeight: '1.5' }}>
+                <div key={i} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', fontSize: '0.9rem', color: 'rgba(33,33,33,0.75)', fontFamily: 'var(--font-b)', lineHeight: '1.5' }}>
                   <span style={{ color: '#D8A027', fontWeight: 700, flexShrink: 0 }}>✓</span>
                   <span>{p}</span>
                 </div>
@@ -150,12 +150,12 @@ export default function PilotSalaryPage() {
 
           {/* FAQ */}
           <section style={{ marginBottom: '3.5rem' }}>
-            <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 800, color: '#D8A027', textTransform: 'uppercase', marginBottom: '1.5rem' }}>Frequently Asked Questions</h2>
+            <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '1.5rem' }}>Frequently Asked Questions</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {FAQS.map((faq, i) => (
-                <div key={i} style={{ background: '#00162e', border: '1px solid rgba(255,255,255,0.07)', padding: '1.25rem 1.5rem', borderRadius: '1px' }}>
-                  <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.88rem', fontWeight: 700, color: '#fff', marginBottom: '0.5rem' }}>{faq.q}</h3>
-                  <p style={{ fontSize: '0.83rem', color: 'rgba(255,255,255,0.6)', margin: 0, fontFamily: 'var(--font-b)', lineHeight: '1.6' }}>{faq.a}</p>
+                <div key={i} style={{ background: '#ffffff', border: '1px solid rgba(0,39,76,0.08)', padding: '1.25rem 1.5rem', borderRadius: '1px' }}>
+                  <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.88rem', fontWeight: 700, color: 'var(--navy)', marginBottom: '0.5rem' }}>{faq.q}</h3>
+                  <p style={{ fontSize: '0.83rem', color: 'rgba(33,33,33,0.7)', margin: 0, fontFamily: 'var(--font-b)', lineHeight: '1.6' }}>{faq.a}</p>
                 </div>
               ))}
             </div>
@@ -165,10 +165,10 @@ export default function PilotSalaryPage() {
           <div style={{ marginBottom: '3.5rem' }}>
             <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
               <span style={{ fontSize: '0.65rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#DB241E', fontWeight: 700, display: 'block', marginBottom: '0.75rem', fontFamily: 'var(--font-h)' }}>Admissions Open — July 2026</span>
-              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.4rem', fontWeight: 900, color: '#FFFFFF', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+              <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.4rem', fontWeight: 900, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
                 Ready to Earn a Pilot's Salary?
               </h2>
-              <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', lineHeight: '1.6', maxWidth: '420px', margin: '0 auto', fontFamily: 'var(--font-b)' }}>
+              <p style={{ fontSize: '0.85rem', color: 'rgba(33,33,33,0.7)', lineHeight: '1.6', maxWidth: '420px', margin: '0 auto', fontFamily: 'var(--font-b)' }}>
                 Begin with a free 90-minute demo class. Capt. Navrang Singh will give you an honest roadmap — timeline, costs, and realistic earning expectations.
               </p>
             </div>
@@ -176,8 +176,8 @@ export default function PilotSalaryPage() {
           </div>
 
           {/* Internal links */}
-          <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-            <p style={{ fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-h)', fontWeight: 700, marginBottom: '1rem' }}>Related Articles</p>
+          <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid rgba(0,39,76,0.08)' }}>
+            <p style={{ fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(33,33,33,0.55)', fontFamily: 'var(--font-h)', fontWeight: 700, marginBottom: '1rem' }}>Related Articles</p>
             <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
               <Link href="/blog/how-to-become-pilot-india" style={{ color: '#D8A027', textDecoration: 'none', fontSize: '0.88rem', fontFamily: 'var(--font-h)', fontWeight: 600 }}>How to Become a Pilot in India →</Link>
               <Link href="/blog/dgca-ground-school-guide" style={{ color: '#D8A027', textDecoration: 'none', fontSize: '0.88rem', fontFamily: 'var(--font-h)', fontWeight: 600 }}>DGCA Ground School Guide →</Link>
