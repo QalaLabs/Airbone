@@ -10,6 +10,7 @@ const PROGRAMS = [
     id: 'cpl',
     title: 'Commercial Pilot License (CPL)',
     tag: 'Flying Training',
+    duration: '12–18 Months',
     desc: 'Complete CPL path with flying training guidance and Indian CPL conversion support. Cost may vary ₹45–75 Lakh (typical ~₹65 Lakh). Duration: 12–18 months.',
     price: '₹65 Lakh*',
     href: '/courses/flying-training-india-abroad',
@@ -19,6 +20,7 @@ const PROGRAMS = [
     id: 'gd-pi',
     title: 'GD & PI Course',
     tag: 'GD / PI',
+    duration: '3 Months',
     desc: 'Group discussions, panel interviews, and personal development masterclasses led by retired Air India AGM Rajeet Khalsa. Duration: 3 months.',
     price: '₹30,000',
     href: '/courses/gd-pi',
@@ -28,6 +30,7 @@ const PROGRAMS = [
     id: 'airline-prep',
     title: 'Airline Interview Preparation',
     tag: 'Airline Prep',
+    duration: '3 Months',
     desc: 'Structured airline interview preparation — GD, PI, and soft skills for IndiGo, Air India, Akasa and more. Duration: 3 months.',
     price: '₹1,50,000',
     href: '/courses/airline-preparation',
@@ -37,6 +40,7 @@ const PROGRAMS = [
     id: 'atpl',
     title: 'ATPL Ground School',
     tag: 'Ground School',
+    duration: '2–3 Months',
     desc: 'DGCA ATPL written and viva preparation for commercial pilots upgrading toward command. Eligibility: 21 years. Duration: 2–3 months.',
     price: '₹1,50,000',
     href: '/courses/atpl',
@@ -46,6 +50,7 @@ const PROGRAMS = [
     id: 'dgca-ground-school',
     title: 'DGCA CPL Ground School',
     tag: 'Ground School',
+    duration: '3–6 Months',
     desc: 'Intensive ground school covering DGCA CPL subjects. Eligibility: 10+2 Physics & Maths. Duration: 3–6 months. Taught by Capt. Navrang Singh.',
     price: '₹2,70,000',
     href: '/courses/commercial-pilot-license-cpl',
@@ -55,6 +60,7 @@ const PROGRAMS = [
     id: 'cas-compass',
     title: 'CAS Compass & ADAPT',
     tag: 'Aptitude Test',
+    duration: '1 Month',
     desc: 'Structured preparation for airline pilot aptitude test batteries — numerical, spatial, psychomotor, and multi-tasking.',
     price: '₹30,000',
     href: '/courses/cas-compass-adapt',
@@ -64,6 +70,7 @@ const PROGRAMS = [
     id: 'cadet',
     title: 'Cadet Preparation',
     tag: 'Cadet Selection',
+    duration: 'Flexible',
     desc: 'The quickest entry into aviation. IndiGo, Air India, and Akasa cadet pilot program preparation.',
     price: '₹50,000',
     href: '/courses/cadet-preparation',
@@ -73,6 +80,7 @@ const PROGRAMS = [
     id: 'simulator',
     title: 'Airbus A320 Simulator FBS',
     tag: 'Simulator',
+    duration: 'Flexible',
     desc: 'In-house Airbus A320 FBS simulator. Eligibility: CPL. Type rating familiarisation and airline SIM prep.',
     price: '₹12,000',
     href: '/courses/a320-simulator',
@@ -82,6 +90,7 @@ const PROGRAMS = [
     id: 'flying-guide',
     title: 'Parent Centric Flying Guide',
     tag: 'Parents',
+    duration: 'Flexible',
     desc: 'Comprehensive CPL flight training guidance and Indian CPL conversion support — built for parents and aspirants.',
     price: 'Free',
     href: '/courses/flying-training-india-abroad',
@@ -91,6 +100,7 @@ const PROGRAMS = [
     id: 'cabin-crew',
     title: 'Cabin Crew Training',
     tag: 'Hospitality',
+    duration: '3–6 Months',
     desc: 'Cabin crew & aviation hospitality training with 100%* scholarship offer upon scoring ≥70%.',
     price: '₹59,000',
     href: '/courses/cabin-crew-training',
@@ -154,32 +164,58 @@ function ProgramCard({ program, index }) {
         }}
       />
 
-      {/* Tag */}
+      {/* Tag + Duration row */}
       <div
         style={{
-          display: 'inline-flex',
+          display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
-          gap: '0.3rem',
-          fontFamily: 'var(--font-h)',
-          fontSize: '0.55rem',
-          fontWeight: 800,
-          letterSpacing: '0.18em',
-          textTransform: 'uppercase',
-          color: hovered ? program.accent : 'var(--red)',
-          transition: 'color 0.4s',
           marginBottom: '1rem',
+          gap: '1rem',
+          flexWrap: 'wrap',
         }}
       >
-        <span
+        <div
           style={{
-            width: '5px',
-            height: '5px',
-            borderRadius: '50%',
-            background: hovered ? program.accent : 'var(--red)',
-            transition: 'background 0.4s',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.3rem',
+            fontFamily: 'var(--font-h)',
+            fontSize: '0.55rem',
+            fontWeight: 800,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color: hovered ? program.accent : 'var(--red)',
+            transition: 'color 0.4s',
           }}
-        />
-        {program.tag}
+        >
+          <span
+            style={{
+              width: '5px',
+              height: '5px',
+              borderRadius: '50%',
+              background: hovered ? program.accent : 'var(--red)',
+              transition: 'background 0.4s',
+            }}
+          />
+          {program.tag}
+        </div>
+        {program.duration && (
+          <span
+            style={{
+              fontFamily: 'var(--font-h)',
+              fontSize: '0.55rem',
+              fontWeight: 800,
+              letterSpacing: '0.18em',
+              textTransform: 'uppercase',
+              color: hovered ? program.accent : 'var(--red)',
+              transition: 'color 0.4s',
+              flexShrink: 0,
+            }}
+          >
+            {program.duration}
+          </span>
+        )}
       </div>
 
       {/* Title */}
