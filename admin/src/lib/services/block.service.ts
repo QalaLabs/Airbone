@@ -72,7 +72,7 @@ export class BlockService {
     const usageCount = await BlockRepository.getUsageCount(id);
     if (usageCount > 0) {
       throw new ConflictError(
-        `Cannot delete block type — it is placed on ${usageCount} page(s). Remove all instances first.`,
+        `Cannot delete block type - it is placed on ${usageCount} page(s). Remove all instances first.`,
       );
     }
 

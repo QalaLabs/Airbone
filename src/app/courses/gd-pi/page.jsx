@@ -11,7 +11,7 @@ import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
   title: 'GD & PI Course Delhi | ₹30,000 | Airborne Aviation',
-  description: 'Foundational GD & PI course in Dwarka — group discussion, personal interview and personality development with Rajeet Khalsa (ex-Air India AGM). 3 months. ₹30,000.',
+  description: 'Foundational GD & PI course in Dwarka - group discussion, personal interview and personality development with Rajeet Khalsa (ex-Air India AGM). 3 months. ₹30,000.',
   alternates: { canonical: '/courses/gd-pi' },
 }
 
@@ -39,7 +39,7 @@ const MODULES = [
   { module: 'Personality Development', detail: 'Professional presence, body language, first impression, interview confidence, handling difficult scenarios.' },
   { module: 'Communication & Diction', detail: 'English fluency, clarity, voice modulation, aviation phraseology in non-technical contexts.' },
   { module: 'Resume & Application', detail: 'Aviation resume format, what airlines look for, covering letter strategy.' },
-  { module: 'Mock Interview Rounds', detail: 'Full-length recorded mock interviews with debrief — airline-panel-style feedback by ex-industry professionals.' },
+  { module: 'Mock Interview Rounds', detail: 'Full-length recorded mock interviews with debrief - airline-panel-style feedback by ex-industry professionals.' },
 ]
 
 export default function GdPiCoursePage() {
@@ -75,7 +75,7 @@ export default function GdPiCoursePage() {
                 GD &amp; PI Course
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
-                Foundational 3-month GD &amp; PI Course for CPL holders and cadet applicants. Covers Group Discussion (GD), Personal Interview (PI), Personality Development (PD), and aviation communication — led by Rajeet Khalsa, retired AGM (Training) at Air India. Need the premium airline selection track? See{' '}
+                Foundational 3-month GD &amp; PI Course for CPL holders and cadet applicants. Covers Group Discussion (GD), Personal Interview (PI), Personality Development (PD), and aviation communication - led by Rajeet Khalsa, retired AGM (Training) at Air India. Need the premium airline selection track? See{' '}
                 <Link href="/courses/airline-preparation" style={{ color: 'var(--red)', fontWeight: 600 }}>Airline Interview Preparation (₹1,50,000)</Link>.
               </p>
             </div>
@@ -85,7 +85,7 @@ export default function GdPiCoursePage() {
                 Why GD &amp; PI Preparation Matters
               </h2>
               <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: 0 }}>
-                Having a CPL does not guarantee an airline seat. Every airline — IndiGo, Air India, Akasa Air, SpiceJet — runs a multi-round selection process where communication, personality, and situational judgement are assessed alongside technical competence. Candidates who have never trained for GD/PI consistently underperform in airline assessments, even when technically qualified.
+                Having a CPL does not guarantee an airline seat. Every airline - IndiGo, Air India, Akasa Air, SpiceJet - runs a multi-round selection process where communication, personality, and situational judgement are assessed alongside technical competence. Candidates who have never trained for GD/PI consistently underperform in airline assessments, even when technically qualified.
               </p>
             </div>
 
@@ -108,7 +108,7 @@ export default function GdPiCoursePage() {
                 Your Trainer | Rajeet Khalsa
               </h2>
               <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: 0 }}>
-                Rajeet Khalsa retired as AGM (Training) at Air India after 37+ years. A certified soft skills trainer and image consultant who trained cabin crew and airline professionals for India&apos;s national carrier. At Airborne, Rajeet runs GD/PI and personality modules — sessions built on real airline selection formats.
+                Rajeet Khalsa retired as AGM (Training) at Air India after 37+ years. A certified soft skills trainer and image consultant who trained cabin crew and airline professionals for India&apos;s national carrier. At Airborne, Rajeet runs GD/PI and personality modules - sessions built on real airline selection formats.
               </p>
             </div>
 

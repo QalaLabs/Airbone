@@ -77,7 +77,7 @@ export default function DashboardPage() {
             Operations Dashboard
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Live counts from your database — leads, admissions, students, and recorded fees.
+            Live counts from your database - leads, admissions, students, and recorded fees.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -171,7 +171,7 @@ export default function DashboardPage() {
                       ) : null}
                     </div>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                      <span className="truncate">{lead.email || "—"}</span>
+                      <span className="truncate">{lead.email || "-"}</span>
                       <span className="hidden sm:inline-block font-mono text-[11px]">{lead.phone}</span>
                     </div>
                   </div>

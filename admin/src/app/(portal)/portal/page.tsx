@@ -57,7 +57,7 @@ function ContinueLearningCard({ data }: { data: MePayload }) {
     <Link
       href={`/portal/courses/${courseId}`}
       className="group block"
-      aria-label={`Continue ${courseTitle} — ${pct}% complete`}
+      aria-label={`Continue ${courseTitle} - ${pct}% complete`}
     >
       <GlassCard hero className="flex flex-col gap-5 sm:flex-row sm:items-center">
         <div className="relative shrink-0">
@@ -67,7 +67,7 @@ function ContinueLearningCard({ data }: { data: MePayload }) {
           <p className="ab-eyebrow">Continue Learning</p>
           <p className="mt-1 truncate ab-display text-xl text-white sm:text-2xl">{courseTitle}</p>
           <p className="mt-1 text-xs text-white/50">
-            {pct === 0 ? "Start your first topic" : pct === 100 ? "Course complete — well done!" : `${pct}% complete`}
+            {pct === 0 ? "Start your first topic" : pct === 100 ? "Course complete - well done!" : `${pct}% complete`}
           </p>
           <ProgressBar value={pct} className="mt-3 max-w-xs" />
         </div>

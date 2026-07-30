@@ -14,23 +14,23 @@ export const revalidate = 60
 const COURSE_SEO = {
   'commercial-pilot-license-cpl': {
     title: 'CPL Course Delhi Commercial Pilot License | Airborne Aviation',
-    description: "Enrol in Airborne's DGCA Complied CPL course in Dwarka, Delhi — 2,500+ students trained. 200 flying hours, 6 DGCA exams, airline placement support. Fees ₹55–65L."
+    description: "Enrol in Airborne's DGCA Complied CPL course in Dwarka, Delhi - 2,500+ students trained. 200 flying hours, 6 DGCA exams, airline placement support. Fees ₹55–65L."
   },
   'cpl-ground-classes': {
     title: 'CPL Course Delhi Commercial Pilot License | Airborne Aviation',
-    description: "Enrol in Airborne's DGCA Complied CPL course in Dwarka, Delhi — 2,500+ students trained. 200 flying hours, 6 DGCA exams, airline placement support. Fees ₹55–65L."
+    description: "Enrol in Airborne's DGCA Complied CPL course in Dwarka, Delhi - 2,500+ students trained. 200 flying hours, 6 DGCA exams, airline placement support. Fees ₹55–65L."
   },
   'atpl': {
     title: 'ATPL Ground School India | All Subjects | Airborne Aviation',
-    description: 'ATPL ground school in Delhi by Airborne Aviation Academy. Complete airline transport pilot license exam prep — all subjects, DGCA-aligned. Enrol now.'
+    description: 'ATPL ground school in Delhi by Airborne Aviation Academy. Complete airline transport pilot license exam prep - all subjects, DGCA-aligned. Enrol now.'
   },
   'cadet-preparation': {
     title: 'Cadet Pilot Program Prep IndiGo, Air India, Akasa | Airborne',
-    description: 'Prepare for IndiGo, Air India & Akasa cadet pilot programs at Airborne, Dwarka — 2,500+ students trained. Aptitude tests, GD-PI, simulator prep join now.'
+    description: 'Prepare for IndiGo, Air India & Akasa cadet pilot programs at Airborne, Dwarka - 2,500+ students trained. Aptitude tests, GD-PI, simulator prep join now.'
   },
   'a320-simulator': {
     title: 'Airbus A320 Simulator Training Delhi | Airborne Aviation',
-    description: 'A320 simulator at Airborne Aviation Academy, Dwarka — 2,500+ students trained. Airline interview prep, type rating familiarisation, cadet selection practice. Book a session today.'
+    description: 'A320 simulator at Airborne Aviation Academy, Dwarka - 2,500+ students trained. Airline interview prep, type rating familiarisation, cadet selection practice. Book a session today.'
   },
   'cas-compass-adapt': {
     title: 'CAS Compass & ADAPT Test Preparation | Pilot Aptitude | Airborne',
@@ -50,11 +50,11 @@ const COURSE_SEO = {
   },
   'cabin-crew': {
     title: 'Cabin Crew Training Delhi Airline Veterans | Airborne Aviation',
-    description: 'Cabin crew training in Dwarka, Delhi by ex-Alliance Air & Air India AGM trainers — 2,500+ students trained. 3 structured pathways. ₹30K–₹54K. Small batches. Book free counselling.'
+    description: 'Cabin crew training in Dwarka, Delhi by ex-Alliance Air & Air India AGM trainers - 2,500+ students trained. 3 structured pathways. ₹30K–₹54K. Small batches. Book free counselling.'
   },
   'ground-school': {
     title: 'DGCA Ground School Delhi CPL & ATPL Classes | Airborne',
-    description: "Pass your DGCA CPL & ATPL exams with Airborne's expert-led ground school in Dwarka, Delhi — 2,500+ students trained. All subjects. Taught by airline pilots. Enrol now."
+    description: "Pass your DGCA CPL & ATPL exams with Airborne's expert-led ground school in Dwarka, Delhi - 2,500+ students trained. All subjects. Taught by airline pilots. Enrol now."
   }
 }
 
@@ -76,7 +76,7 @@ export async function generateMetadata({ params }) {
 
   return {
     title: `${course.title} | Airborne Aviation Academy`,
-    description: course.subtitle ?? `${course.title} — details, syllabus, and batch information.`,
+    description: course.subtitle ?? `${course.title} - details, syllabus, and batch information.`,
     alternates: { canonical: `/courses/${slug}` },
   }
 }

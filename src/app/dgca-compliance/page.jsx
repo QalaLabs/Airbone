@@ -18,7 +18,7 @@ const DGCA_POINTS = [
     desc: 'Our ATPL ground school program follows the DGCA Airline Transport Pilot License theoretical knowledge syllabus, preparing candidates for the transition from First Officer to Pilot-in-Command on scheduled operations.',
   },
   {
-    title: 'Simulator — DGCA FTD Level 5',
+    title: 'Simulator - DGCA FTD Level 5',
     desc: 'Our in-house Airbus A320 Flight Training Device (FTD) is used for familiarisation training, airline interview preparation, and cadet selection readiness. Students wishing to log FTD hours toward DGCA credit must do so under a DGCA-approved FTO using a licensed simulator.',
   },
   {
@@ -27,11 +27,11 @@ const DGCA_POINTS = [
   },
   {
     title: 'Medical Requirements',
-    desc: 'All students are advised to obtain a DGCA Class 1 Medical Certificate from an authorised DGCA Aviation Medical Examiner (AME) prior to beginning flight training. Airborne does not issue or certify medical fitness — this remains the sole prerogative of the DGCA and authorised AMEs.',
+    desc: 'All students are advised to obtain a DGCA Class 1 Medical Certificate from an authorised DGCA Aviation Medical Examiner (AME) prior to beginning flight training. Airborne does not issue or certify medical fitness - this remains the sole prerogative of the DGCA and authorised AMEs.',
   },
   {
     title: 'DGCA License Conversion Support',
-    desc: 'For students who complete flight training abroad, Airborne provides guidance and support for DGCA license conversion under CAR Section 7 — including document preparation, skill test preparation, and administrative facilitation.',
+    desc: 'For students who complete flight training abroad, Airborne provides guidance and support for DGCA license conversion under CAR Section 7 - including document preparation, skill test preparation, and administrative facilitation.',
   },
 ]
 

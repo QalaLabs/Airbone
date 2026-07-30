@@ -431,7 +431,7 @@ export default function CRMLeadsPage() {
             <p className="text-2xl font-bold text-white mt-1">
               {leads.length > 0
                 ? `${((leads.filter((l) => l.status === "Converted" || l.status === "Won").length / leads.length) * 100).toFixed(1)}%`
-                : "—"}
+                : "-"}
             </p>
           </CardContent>
         </Card>

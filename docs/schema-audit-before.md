@@ -1,4 +1,4 @@
-# Schema.org Audit — Before Implementation
+# Schema.org Audit - Before Implementation
 
 **Site:** Airborne Aviation Academy (`https://www.airborneaviation.in`)  
 **Audit date:** 2026-07-27  
@@ -13,8 +13,8 @@
 | Central schema utility | `src/utils/seo.js` (5 helpers only) |
 | `@id` entity linking | **None** |
 | Duplicate Organization graphs | **Yes** (LocalBusiness + EducationalOrganization on homepage) |
-| SearchAction | Absent (correct — no site search) |
-| AggregateRating / Review JSON-LD | Absent (correct — no verified star ratings) |
+| SearchAction | Absent (correct - no site search) |
+| AggregateRating / Review JSON-LD | Absent (correct - no verified star ratings) |
 | VideoObject | Absent (no page embeds) |
 | Knowledge graph completeness | **Low** |
 | AI discoverability score | **4/10** |
@@ -44,7 +44,7 @@ Nearly every static course page and blog post defined its own Course/FAQ/Article
 | Page | Types | Status | Errors / Warnings | Rich Results |
 |------|-------|--------|-------------------|--------------|
 | `/` | LocalBusiness, EducationalOrganization, FAQPage | Partial | Duplicate org entities; no WebSite; no Breadcrumb | LocalBusiness + FAQ possible |
-| `/about` | — | Missing | No Org/Person schema | None |
+| `/about` | - | Missing | No Org/Person schema | None |
 | `/contact` | LocalBusiness, BreadcrumbList | Partial | Duplicate org vs home | LocalBusiness |
 | `/courses` | BreadcrumbList, ItemList | OK-ish | ItemList URLs not `@id`-linked | ItemList |
 | `/courses/*` (static) | Course, FAQPage, BreadcrumbList | Partial | Provider not canonical; some descriptions had 100% claims; inconsistent CourseInstance | Course + FAQ |
@@ -71,7 +71,7 @@ Nearly every static course page and blog post defined its own Course/FAQ/Article
 | Invalid ratings | ✖ | N/A |
 | Invalid prices | Partial | Cabin crew `price: 0` scholarship Offer risk |
 | Missing images | ✔ | Few ImageObject nodes |
-| Missing videos | ✔ | No VideoObject (no embeds — skip) |
+| Missing videos | ✔ | No VideoObject (no embeds - skip) |
 | Missing publisher | Partial | Articles had publisher but not `@id` |
 | Missing author | Partial | Person name only |
 | Missing logo | Partial | URL string; not ImageObject `@id` |
@@ -92,7 +92,7 @@ Organization ──✕── Founder
      ✕── Website
 ```
 
-**Score: 2/10** — isolated blobs, not a graph.
+**Score: 2/10** - isolated blobs, not a graph.
 
 ---
 

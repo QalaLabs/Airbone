@@ -4,7 +4,7 @@ import { hash } from "argon2";
 async function main() {
   const p = new PrismaClient();
   const org = await p.organization.findFirst({ where: { slug: "airborne-aviation" } });
-  if (!org) throw new Error("org missing — run npm run db:seed:lms");
+  if (!org) throw new Error("org missing - run npm run db:seed:lms");
   const passwordHash = await hash("Admin@1234!");
   const admin = await p.user.upsert({
     where: { email_orgId: { email: "admin@airborneaviation.in", orgId: org.id } },

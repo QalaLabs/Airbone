@@ -148,7 +148,7 @@ export class MediaService {
     const usageCount = await MediaRepository.getUsageCount(id);
     if (usageCount > 0) {
       throw new ConflictError(
-        `Cannot delete asset — it is used in ${usageCount} place(s). Remove all references first.`,
+        `Cannot delete asset - it is used in ${usageCount} place(s). Remove all references first.`,
       );
     }
 
@@ -261,7 +261,7 @@ export class MediaFolderService {
 
     const hasContents = await MediaFolderRepository.hasChildren(ctx.orgId, id);
     if (hasContents) {
-      throw new ConflictError("Cannot delete folder — it contains files or sub-folders. Move or delete contents first.");
+      throw new ConflictError("Cannot delete folder - it contains files or sub-folders. Move or delete contents first.");
     }
 
     await MediaFolderRepository.delete(ctx.orgId, id);

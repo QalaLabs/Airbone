@@ -166,7 +166,7 @@ export default function PortalAttendancePage() {
               <tbody>
                 {records.map((a) => (
                   <tr key={a.id} className="border-t border-white/5 hover:bg-white/[0.02]">
-                    <td className="px-4 py-3 text-white/80">{a.session?.title ?? "—"}</td>
+                    <td className="px-4 py-3 text-white/80">{a.session?.title ?? "-"}</td>
                     <td className="px-4 py-3 text-xs text-white/50">
                       {a.session?.heldAt
                         ? new Date(a.session.heldAt).toLocaleDateString("en-IN", {
@@ -176,7 +176,7 @@ export default function PortalAttendancePage() {
                             hour: "2-digit",
                             minute: "2-digit",
                           })
-                        : "—"}
+                        : "-"}
                     </td>
                     <td className="px-4 py-3">
                       <StatusPill tone={STATUS_TONE[a.status] ?? "neutral"}>{a.status}</StatusPill>

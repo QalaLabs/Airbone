@@ -9,8 +9,8 @@ import { buildCoursePageGraph } from '@/lib/schema'
 import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
-  title: 'Multi-Engine Rating India — DGCA Complied | Airborne Aviation',
-  description: 'Add a DGCA Multi-Engine Rating to your PPL or CPL at Airborne Aviation Academy, Dwarka — 2,500+ students trained. Twin-engine aircraft training. PPL/CPL holders. Fees ₹3–5L. Enquire.',
+  title: 'Multi-Engine Rating India - DGCA Complied | Airborne Aviation',
+  description: 'Add a DGCA Multi-Engine Rating to your PPL or CPL at Airborne Aviation Academy, Dwarka - 2,500+ students trained. Twin-engine aircraft training. PPL/CPL holders. Fees ₹3–5L. Enquire.',
   alternates: { canonical: '/courses/multi-engine-rating' },
 }
 
@@ -36,7 +36,7 @@ const TRAINING_CONTENT = [
   { topic: 'Twin-Engine Systems', detail: 'Two-engine aircraft fuel, hydraulics, electrics, and systems management' },
   { topic: 'Asymmetric Flight', detail: 'Single-engine flying techniques, engine-out climb and approach procedures' },
   { topic: 'VMC Demonstration', detail: 'Visual Minimum Control speed demonstrations and loss of control prevention' },
-  { topic: 'Engine Failure Procedures', detail: 'Engine failure on takeoff, climb, cruise, and approach — full drill' },
+  { topic: 'Engine Failure Procedures', detail: 'Engine failure on takeoff, climb, cruise, and approach - full drill' },
   { topic: 'Multi-Engine Weight & Balance', detail: 'Performance calculations and loading for twin-engine aircraft' },
   { topic: 'Feathering & Restart', detail: 'Propeller feathering procedures and in-flight engine restart drills' },
 ]
@@ -72,10 +72,10 @@ export default function MultiEngineRatingPage() {
                 📍 Dwarka, Delhi · 1–2 Months · ₹3–5 Lakh
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
-                Multi-Engine Rating (MER) — Twin-Engine Training, Delhi
+                Multi-Engine Rating (MER) - Twin-Engine Training, Delhi
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
-                A Multi-Engine Rating (MER) adds a twin-engine aircraft endorsement to your existing DGCA PPL or CPL. It is an essential step for pilots targeting commercial airline operations — virtually every scheduled airline in India operates twin or multi-engine aircraft. The MER gives you the skills and licence authority to act as Pilot-in-Command of multi-engine aircraft.
+                A Multi-Engine Rating (MER) adds a twin-engine aircraft endorsement to your existing DGCA PPL or CPL. It is an essential step for pilots targeting commercial airline operations - virtually every scheduled airline in India operates twin or multi-engine aircraft. The MER gives you the skills and licence authority to act as Pilot-in-Command of multi-engine aircraft.
               </p>
             </div>
 
@@ -85,7 +85,7 @@ export default function MultiEngineRatingPage() {
                 What Is a Multi-Engine Rating?
               </h2>
               <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: 0 }}>
-                A Multi-Engine Rating (MER) is a DGCA endorsement that authorises a pilot to fly aircraft with two or more engines. It involves both theoretical training (twin-engine systems, asymmetric flight theory, performance calculations) and practical flying on a multi-engine aircraft — including engine-out procedures, asymmetric approaches, and feathering drills. The MER is a crucial milestone for any pilot building toward airline operations.
+                A Multi-Engine Rating (MER) is a DGCA endorsement that authorises a pilot to fly aircraft with two or more engines. It involves both theoretical training (twin-engine systems, asymmetric flight theory, performance calculations) and practical flying on a multi-engine aircraft - including engine-out procedures, asymmetric approaches, and feathering drills. The MER is a crucial milestone for any pilot building toward airline operations.
               </p>
             </div>
 
@@ -124,7 +124,7 @@ export default function MultiEngineRatingPage() {
             {/* MER + CPL path */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                MER + CPL + IR — Airline-Ready Pilot Profile
+                MER + CPL + IR - Airline-Ready Pilot Profile
               </h2>
               <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: 0 }}>
                 The combination of a DGCA CPL, Instrument Rating (IR), and Multi-Engine Rating (MER) is the standard profile expected by Indian airlines for First Officer positions. Pilots who hold all three ratings and have 200+ total hours are eligible to apply directly to IndiGo, Air India, Akasa Air, and other scheduled carriers.
@@ -138,7 +138,7 @@ export default function MultiEngineRatingPage() {
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
                 {[
-                  { q: 'Is Multi-Engine Rating mandatory for airlines in India?', a: 'Most scheduled airline operations in India use multi-engine aircraft (A320, B737). Airlines look for pilots who have logged multi-engine hours during their CPL flying — the MER is an essential part of a complete pilot profile.' },
+                  { q: 'Is Multi-Engine Rating mandatory for airlines in India?', a: 'Most scheduled airline operations in India use multi-engine aircraft (A320, B737). Airlines look for pilots who have logged multi-engine hours during their CPL flying - the MER is an essential part of a complete pilot profile.' },
                   { q: 'How long does Multi-Engine Rating training take?', a: '1–2 months. The MER involves ground school covering twin-engine systems and asymmetric flight, plus practical flying hours on a multi-engine aircraft.' },
                   { q: 'What aircraft is used for Multi-Engine Rating training?', a: 'Multi-Engine Rating training is conducted through our DGCA-approved partner FTOs on twin-engine piston aircraft. Contact Airborne admissions for current aircraft type and availability.' },
                 ].map((faq, i) => (

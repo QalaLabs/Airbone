@@ -23,12 +23,12 @@ export const PARENT_TESTIMONIALS = [
   {
     name: 'Mrs. Sharma',
     role: 'Parent of CPL student',
-    quote: 'Airborne treated our son like family. Capt. Navrang Sir explained every DGCA paper in language we understood — and the progress messages kept us calm.',
+    quote: 'Airborne treated our son like family. Capt. Navrang Sir explained every DGCA paper in language we understood - and the progress messages kept us calm.',
   },
   {
     name: 'Mr. Kapoor',
     role: 'Parent · Cadet pathway',
-    quote: 'Transparent fees, clear timelines in months, and Capt. Navrang’s mentorship — that combination sold us.',
+    quote: 'Transparent fees, clear timelines in months, and Capt. Navrang’s mentorship - that combination sold us.',
   },
 ]
 

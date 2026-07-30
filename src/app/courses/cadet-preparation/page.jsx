@@ -11,7 +11,7 @@ import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
   title: 'Cadet Pilot Program Prep IndiGo, Air India, Akasa | Airborne',
-  description: 'Prepare for IndiGo, Air India & Akasa cadet pilot programs at Airborne, Dwarka — 2,500+ students trained. Aptitude tests, GD-PI, simulator prep — join now.',
+  description: 'Prepare for IndiGo, Air India & Akasa cadet pilot programs at Airborne, Dwarka - 2,500+ students trained. Aptitude tests, GD-PI, simulator prep - join now.',
   alternates: { canonical: '/courses/cadet-preparation' },
 }
 
@@ -26,7 +26,7 @@ const coursePageGraph = buildCoursePageGraph({
     },
     {
       q: 'Does Airborne guarantee airline cadet selection?',
-      a: "No. Airline selection is entirely the airline's decision. Airborne prepares candidates to perform at their best at every stage — selection outcomes rest with the airline.",
+      a: "No. Airline selection is entirely the airline's decision. Airborne prepares candidates to perform at their best at every stage - selection outcomes rest with the airline.",
     },
   ],
 })
@@ -71,10 +71,10 @@ export default function CadetPreparationPage() {
                 📍 Dwarka, Delhi · ₹50,000
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
-                Cadet Pilot Program Preparation — IndiGo, Air India & Akasa
+                Cadet Pilot Program Preparation - IndiGo, Air India & Akasa
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
-                Airborne Aviation Academy prepares aspiring pilots for the cadet pilot programs of India's leading airlines — IndiGo, Air India, and Akasa Air. Our cadet preparation covers aptitude testing, psychometric evaluation, GD/PI, and the complete selection pathway from application to type rating.
+                Airborne Aviation Academy prepares aspiring pilots for the cadet pilot programs of India's leading airlines - IndiGo, Air India, and Akasa Air. Our cadet preparation covers aptitude testing, psychometric evaluation, GD/PI, and the complete selection pathway from application to type rating.
               </p>
             </div>
 
@@ -114,7 +114,7 @@ export default function CadetPreparationPage() {
             {/* Selection Stages */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                Cadet Program Selection Stages — What Airborne Prepares You For
+                Cadet Program Selection Stages - What Airborne Prepares You For
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                 {STAGES.map((s, i) => (
@@ -135,7 +135,7 @@ export default function CadetPreparationPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
                 {[
                   { q: 'What is the IndiGo JFO cadet program eligibility?', a: 'IndiGo JFO typically requires a valid DGCA CPL with IR, minimum 200 hours total time, and DGCA Class 1 Medical. IndiGo conducts online aptitude tests, SIM assessments, and panel interviews.' },
-                  { q: 'Does Airborne guarantee cadet selection?', a: "No. Airline selection is entirely the airline's decision. Airborne prepares candidates to perform at their best at every stage — selection outcomes rest with the airline." },
+                  { q: 'Does Airborne guarantee cadet selection?', a: "No. Airline selection is entirely the airline's decision. Airborne prepares candidates to perform at their best at every stage - selection outcomes rest with the airline." },
                 ].map((faq, i) => (
                   <div key={i} className="course-faq-item">
                     <h3 className="course-faq-q">{faq.q}</h3>
@@ -167,7 +167,7 @@ export default function CadetPreparationPage() {
         <CoursePageFooter
           whatsappText="Hi, I'm interested in Cadet Pilot Program Preparation at Airborne Aviation Academy, Dwarka. Please share details for IndiGo/Air India/Akasa cadet prep."
           nextCourses={[
-            { label: 'Airline Interview Preparation', href: '/courses/airline-preparation', note: 'Advanced GD/PI coaching by Rajeet Khalsa — ex-Air India AGM Training' },
+            { label: 'Airline Interview Preparation', href: '/courses/airline-preparation', note: 'Advanced GD/PI coaching by Rajeet Khalsa - ex-Air India AGM Training' },
             { label: 'A320 Simulator', href: '/courses/a320-simulator', note: 'Simulator assessment practice on our in-house A320 FTD' },
           ]}
           relatedCourses={[

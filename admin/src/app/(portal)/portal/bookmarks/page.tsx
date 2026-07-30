@@ -44,7 +44,7 @@ export default function PortalBookmarksPage() {
       <PortalPageHeader
         eyebrow="Saved for later"
         title="Bookmarks"
-        description="Topics you flagged mid-study — jump back in without hunting the curriculum tree."
+        description="Topics you flagged mid-study - jump back in without hunting the curriculum tree."
       />
 
       {bookmarks.length === 0 ? (

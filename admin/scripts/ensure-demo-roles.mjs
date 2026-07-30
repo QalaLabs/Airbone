@@ -100,7 +100,7 @@ async function ensureUser(prisma, orgId, demo) {
 
 async function main() {
   if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL missing — set it or add admin/.env");
+    throw new Error("DATABASE_URL missing - set it or add admin/.env");
   }
 
   const prisma = new PrismaClient();

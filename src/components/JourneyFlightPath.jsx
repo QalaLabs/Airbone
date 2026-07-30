@@ -9,7 +9,7 @@ const CHAPTERS = [
     num: '01', label: 'Dream',
     title: 'The sky was never the limit.',
     sub: 'It was the invitation.',
-    body: "Every pilot we've sent into an Air India or IndiGo uniform began with one quiet decision — that this dream deserves serious work. Not a brochure. Not a promise. A system.",
+    body: "Every pilot we've sent into an Air India or IndiGo uniform began with one quiet decision - that this dream deserves serious work. Not a brochure. Not a promise. A system.",
     image: '/footage/clouds-above.jpg',
     accent: '#DB241E',
     bg: 'radial-gradient(ellipse at 20% 60%, rgba(40,0,80,0.55) 0%, rgba(0,8,22,0.97) 100%)',
@@ -18,7 +18,7 @@ const CHAPTERS = [
     num: '02', label: 'Ground School',
     title: 'Concepts that stick at 40,000 ft.',
     sub: 'DGCA CPL & ATPL.',
-    body: "Capt. Navrang Singh strips DGCA CPL/ATPL syllabi down to first principles. Air Regulations, Technical General, Navigation, Meteorology, RTR — taught the way you'll actually use them in the cockpit.",
+    body: "Capt. Navrang Singh strips DGCA CPL/ATPL syllabi down to first principles. Air Regulations, Technical General, Navigation, Meteorology, RTR - taught the way you'll actually use them in the cockpit.",
     image: '/footage/classroom.jpg',
     accent: '#D8A027',
     bg: 'radial-gradient(ellipse at 75% 35%, rgba(0,30,90,0.5) 0%, rgba(0,8,22,0.97) 100%)',
@@ -54,7 +54,7 @@ const CHAPTERS = [
     num: '06', label: 'Cockpit',
     title: 'Four stripes. One uniform.',
     sub: 'IndiGo · Air India · Emirates.',
-    body: "Ruzal Dhral — IndiGo Cadet. Capt. Nipun Singh — Air India, restarted at 36. Capt. Himanish Sagwal — Emirates. The success club isn't a marketing slide. It's a roster.",
+    body: "Ruzal Dhral - IndiGo Cadet. Capt. Nipun Singh - Air India, restarted at 36. Capt. Himanish Sagwal - Emirates. The success club isn't a marketing slide. It's a roster.",
     image: '/footage/pilot-portrait.jpg',
     accent: '#D8A027',
     bg: 'radial-gradient(ellipse at 45% 30%, rgba(15,0,50,0.75) 0%, rgba(0,8,22,0.98) 100%)',
@@ -285,7 +285,7 @@ export default function JourneyFlightPath({ onBook }) {
                 />
 
                 {/*
-                  Trail — CRITICAL: do NOT set strokeDasharray or strokeDashoffset in JSX.
+                  Trail - CRITICAL: do NOT set strokeDasharray or strokeDashoffset in JSX.
                   They are managed entirely via DOM in the motion value event.
                   Only stroke color is React-managed (via style attribute, not inline style).
                 */}

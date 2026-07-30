@@ -1,4 +1,4 @@
-# Schema.org Knowledge Graph — Implementation Report
+# Schema.org Knowledge Graph - Implementation Report
 
 **Date:** 2026-07-27  
 **Project:** Airborne Aviation Academy  
@@ -85,14 +85,14 @@ FAQPage / Article → author/publisher → Person / Organization
 
 ### New
 
-- `src/lib/schema/constants.js` — verified org/founder facts
-- `src/lib/schema/ids.js` — `@id` builders
-- `src/lib/schema/organization.js` — Org, Person, Place, Services, Logo
-- `src/lib/schema/builders.js` — Course, FAQ, Article, Breadcrumb, sanitize
-- `src/lib/schema/graph.js` — page-level `@graph` composers
-- `src/lib/schema/courseRegistry.js` — course schema registry
-- `src/lib/schema/index.js` — public API
-- `src/components/JsonLd.jsx` — XSS-safe JSON-LD renderer
+- `src/lib/schema/constants.js` - verified org/founder facts
+- `src/lib/schema/ids.js` - `@id` builders
+- `src/lib/schema/organization.js` - Org, Person, Place, Services, Logo
+- `src/lib/schema/builders.js` - Course, FAQ, Article, Breadcrumb, sanitize
+- `src/lib/schema/graph.js` - page-level `@graph` composers
+- `src/lib/schema/courseRegistry.js` - course schema registry
+- `src/lib/schema/index.js` - public API
+- `src/components/JsonLd.jsx` - XSS-safe JSON-LD renderer
 - `docs/schema-audit-before.md`
 - `docs/schema-claim-verification.md`
 - `docs/schema-implementation-report.md`
@@ -100,15 +100,15 @@ FAQPage / Article → author/publisher → Person / Organization
 
 ### Updated
 
-- `src/utils/seo.js` — compatibility layer; FAQ claims cleaned
-- `src/app/page.jsx` — unified home graph; FAQ claim softened
-- `src/app/about/page.jsx` — about graph
-- `src/app/contact/page.jsx` — contact graph
-- `src/app/courses/page.jsx` — courses index graph
-- `src/app/courses/**/page.jsx` — course graphs (all static courses)
-- `src/app/courses/[slug]/page.jsx` — dynamic course graph
-- `src/app/blog/**` — article graphs
-- `src/app/resources/ResourcesClient.jsx` — resources graph (no invisible FAQ)
+- `src/utils/seo.js` - compatibility layer; FAQ claims cleaned
+- `src/app/page.jsx` - unified home graph; FAQ claim softened
+- `src/app/about/page.jsx` - about graph
+- `src/app/contact/page.jsx` - contact graph
+- `src/app/courses/page.jsx` - courses index graph
+- `src/app/courses/**/page.jsx` - course graphs (all static courses)
+- `src/app/courses/[slug]/page.jsx` - dynamic course graph
+- `src/app/blog/**` - article graphs
+- `src/app/resources/ResourcesClient.jsx` - resources graph (no invisible FAQ)
 
 ---
 
@@ -116,12 +116,12 @@ FAQPage / Article → author/publisher → Person / Organization
 
 | Signal | Impact |
 |--------|--------|
-| Entity resolution | Stronger — stable `@id` + `sameAs` social/maps |
-| Course rich results | Improved — Offer + CourseInstance + provider link |
-| FAQ rich results | Safer — visible FAQs only; claims cleaned |
-| Knowledge Graph readiness | Improved — Org↔Founder↔Course↔Service mesh |
+| Entity resolution | Stronger - stable `@id` + `sameAs` social/maps |
+| Course rich results | Improved - Offer + CourseInstance + provider link |
+| FAQ rich results | Safer - visible FAQs only; claims cleaned |
+| Knowledge Graph readiness | Improved - Org↔Founder↔Course↔Service mesh |
 | AI Search / answer engines | Better topical binding via `knowsAbout` + linked courses |
-| Risk reduction | High — removed absolute pass-rate claims from schema |
+| Risk reduction | High - removed absolute pass-rate claims from schema |
 
 ---
 
@@ -129,10 +129,10 @@ FAQPage / Article → author/publisher → Person / Organization
 
 | Concern | Result |
 |---------|--------|
-| Bundle size | Negligible — plain objects, no client schema libraries |
+| Bundle size | Negligible - plain objects, no client schema libraries |
 | Hydration | Home is client; graph built at module scope (SSR HTML includes JSON-LD) |
 | Duplicate rendering | Single `<JsonLd>` per page replaces 2–3 script tags |
-| CLS / blocking JS | None — static JSON-LD scripts |
+| CLS / blocking JS | None - static JSON-LD scripts |
 
 `npm run build` completed successfully (exit 0).
 

@@ -130,14 +130,14 @@ export default function TestimonialsPage() {
             <span className="text-sm font-medium">{row.original.rating}/5</span>
           </div>
         ) : (
-          <span className="text-muted-foreground text-sm">—</span>
+          <span className="text-muted-foreground text-sm">-</span>
         ),
     },
     {
       accessorKey: "course",
       header: "Course",
       cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">{row.original.course?.title ?? "—"}</span>
+        <span className="text-sm text-muted-foreground">{row.original.course?.title ?? "-"}</span>
       ),
     },
     {

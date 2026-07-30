@@ -6,26 +6,26 @@ import JsonLd from '@/components/JsonLd'
 import { buildArticlePageGraph } from '@/lib/schema'
 
 export const metadata = {
-  title: 'Pilot Training Cost in India 2026 — Complete CPL Fee Breakdown',
-  description: 'Complete breakdown of pilot training cost in India for 2026 — CPL ground school, flying hours, DGCA exam fees, medical, and total investment compared to training abroad.',
+  title: 'Pilot Training Cost in India 2026 - Complete CPL Fee Breakdown',
+  description: 'Complete breakdown of pilot training cost in India for 2026 - CPL ground school, flying hours, DGCA exam fees, medical, and total investment compared to training abroad.',
   alternates: { canonical: '/blog/pilot-training-cost-india' },
   openGraph: {
-    title: 'Pilot Training Cost in India 2026 — Complete CPL Fee Breakdown',
-    description: 'Full cost breakdown for becoming a commercial pilot in India — ground school, flying hours, exam fees, and total investment.',
+    title: 'Pilot Training Cost in India 2026 - Complete CPL Fee Breakdown',
+    description: 'Full cost breakdown for becoming a commercial pilot in India - ground school, flying hours, exam fees, and total investment.',
     url: 'https://www.airborneaviation.in/blog/pilot-training-cost-india',
     type: 'article',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Pilot Training Cost in India 2026 — Complete CPL Fee Breakdown',
-    description: 'Full cost breakdown for becoming a commercial pilot in India — ground school, flying hours, exam fees, and total investment.',
+    title: 'Pilot Training Cost in India 2026 - Complete CPL Fee Breakdown',
+    description: 'Full cost breakdown for becoming a commercial pilot in India - ground school, flying hours, exam fees, and total investment.',
   },
 }
 
 const FAQS = [
   {
     q: 'What is the total cost of CPL training in India?',
-    a: 'Total CPL training cost in India — including 200 flying hours, ground school, DGCA exam fees, and medical — typically ranges from ₹50 lakh onwards for complete flying training, or ₹2,70,000 for ground school alone if flying hours are arranged separately or already completed.',
+    a: 'Total CPL training cost in India - including 200 flying hours, ground school, DGCA exam fees, and medical - typically ranges from ₹50 lakh onwards for complete flying training, or ₹2,70,000 for ground school alone if flying hours are arranged separately or already completed.',
   },
   {
     q: 'Is pilot training cheaper in India or abroad?',
@@ -37,15 +37,15 @@ const FAQS = [
   },
   {
     q: 'Are there additional costs beyond ground school and flying hours?',
-    a: 'Yes — DGCA exam fees (₹25,000–₹40,000 for 6 papers), DGCA Class 1 Medical (₹10,000–₹25,000), and Student Pilot License (₹15,000–₹25,000) are separate from ground school and flying training fees. Airborne provides a full fee breakdown before enrolment.',
+    a: 'Yes - DGCA exam fees (₹25,000–₹40,000 for 6 papers), DGCA Class 1 Medical (₹10,000–₹25,000), and Student Pilot License (₹15,000–₹25,000) are separate from ground school and flying training fees. Airborne provides a full fee breakdown before enrolment.',
   },
 ]
 
 const articlePageGraph = buildArticlePageGraph({
   path: '/blog/pilot-training-cost-india',
-  headline: 'Pilot Training Cost in India 2026 — Complete CPL Fee Breakdown',
+  headline: 'Pilot Training Cost in India 2026 - Complete CPL Fee Breakdown',
   description:
-    'Complete breakdown of pilot training cost in India for 2026 — CPL ground school, flying hours, DGCA exam fees, medical, and total investment compared to training abroad.',
+    'Complete breakdown of pilot training cost in India for 2026 - CPL ground school, flying hours, DGCA exam fees, medical, and total investment compared to training abroad.',
   datePublished: '2026-06-15',
   dateModified: '2026-07-17',
   faqs: FAQS,
@@ -66,9 +66,9 @@ const COST_TABLE = [
 
 const INDIA_VS_ABROAD = [
   { factor: 'Total Cost (CPL)', india: '₹55–65 lakh', abroad: '₹35–65 lakh (USA / Philippines / Australia / Canada)' },
-  { factor: 'DGCA License', india: 'Issued directly by DGCA', abroad: 'Conversion required — 6 written exams + skill test' },
+  { factor: 'DGCA License', india: 'Issued directly by DGCA', abroad: 'Conversion required - 6 written exams + skill test' },
   { factor: 'Timeline to Airline Job', india: '12–18 months', abroad: '18–36 months including conversion' },
-  { factor: 'Loan Availability', india: 'Easy — Indian banks, education loan', abroad: 'Harder to finance from India' },
+  { factor: 'Loan Availability', india: 'Easy - Indian banks, education loan', abroad: 'Harder to finance from India' },
   { factor: 'Weather for Flying', india: 'Variable, monsoon disruptions', abroad: 'Generally more consistent (Philippines, USA)' },
 ]
 
@@ -97,10 +97,10 @@ export default function PilotTrainingCostIndiaPage() {
               Cost Guide · Updated July 2026
             </span>
             <h1 style={{ fontFamily: 'var(--font-h)', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 900, color: 'var(--navy)', textTransform: 'uppercase', lineHeight: '1.15', marginBottom: '1.25rem' }}>
-              Pilot Training Cost in India 2026 — Complete CPL Fee Breakdown
+              Pilot Training Cost in India 2026 - Complete CPL Fee Breakdown
             </h1>
             <p style={{ fontSize: '1.05rem', color: 'rgba(33,33,33,0.75)', lineHeight: '1.75', fontFamily: 'var(--font-b)' }}>
-              Every rupee it takes to become a commercial pilot in India — ground school, flying hours, DGCA exam fees, medical, and how the total compares to training abroad. By the faculty at Airborne Aviation Academy, Dwarka.
+              Every rupee it takes to become a commercial pilot in India - ground school, flying hours, DGCA exam fees, medical, and how the total compares to training abroad. By the faculty at Airborne Aviation Academy, Dwarka.
             </p>
             <div style={{ display: 'flex', gap: '2rem', fontSize: '0.78rem', color: 'rgba(33,33,33,0.55)', fontFamily: 'var(--font-h)', fontWeight: 600, letterSpacing: '0.05em', marginTop: '1.5rem' }}>
               <span>By Capt. Navrang Singh</span>
@@ -130,7 +130,7 @@ export default function PilotTrainingCostIndiaPage() {
           <section id="full-breakdown" style={{ marginBottom: '3rem', scrollMarginTop: '6rem' }}>
             <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '1.25rem' }}>Full CPL Fee Breakdown</h2>
             <p style={{ fontSize: '0.9rem', color: 'rgba(33,33,33,0.7)', fontFamily: 'var(--font-b)', lineHeight: '1.7', marginBottom: '1.5rem' }}>
-              Every Airborne Aviation course comes with a full fee breakdown provided at the time of enquiry — no hidden costs. Here is what each component of pilot training in India actually costs in 2026:
+              Every Airborne Aviation course comes with a full fee breakdown provided at the time of enquiry - no hidden costs. Here is what each component of pilot training in India actually costs in 2026:
             </p>
             <div className="course-table-wrap" style={{ overflowX: 'auto' }}>
               <table className="course-table" style={{ minWidth: '640px' }}>
@@ -156,7 +156,7 @@ export default function PilotTrainingCostIndiaPage() {
 
           {/* India vs Abroad */}
           <section id="india-vs-abroad" style={{ marginBottom: '3rem', scrollMarginTop: '6rem' }}>
-            <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '1.25rem' }}>India vs Abroad — Cost Comparison</h2>
+            <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '1.25rem' }}>India vs Abroad - Cost Comparison</h2>
             <div className="course-table-wrap" style={{ overflowX: 'auto', marginBottom: '1.5rem' }}>
               <table className="course-table" style={{ minWidth: '640px' }}>
                 <thead>
@@ -190,7 +190,7 @@ export default function PilotTrainingCostIndiaPage() {
                 { tip: 'Where you fly', detail: 'Flying hour costs vary by aircraft type, fuel prices, and the flying training organisation (FTO) you partner with.' },
                 { tip: 'How many attempts you need on DGCA exams', detail: 'Each re-attempt has its own examination fee. Strong ground school preparation reduces retake costs significantly.' },
                 { tip: 'Whether you train in India or abroad', detail: 'Training abroad may look cheaper upfront, but DGCA conversion costs and additional timeline add to the true total.' },
-                { tip: 'Medical and licensing fees', detail: 'Class 1 Medical and SPL fees are one-time costs required before flying training begins — factor these in early.' },
+                { tip: 'Medical and licensing fees', detail: 'Class 1 Medical and SPL fees are one-time costs required before flying training begins - factor these in early.' },
               ].map((s, i) => (
                 <div key={i} style={{ borderLeft: '3px solid #DB241E', paddingLeft: '1.5rem' }}>
                   <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.95rem', fontWeight: 700, color: 'var(--navy)', marginBottom: '0.4rem' }}>{s.tip}</h3>
@@ -225,12 +225,12 @@ export default function PilotTrainingCostIndiaPage() {
           {/* CTA & Lead Form */}
           <div style={{ marginBottom: '3.5rem' }}>
             <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
-              <span style={{ fontSize: '0.65rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#DB241E', fontWeight: 700, display: 'block', marginBottom: '0.75rem', fontFamily: 'var(--font-h)' }}>Admissions Open — July 2026</span>
+              <span style={{ fontSize: '0.65rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#DB241E', fontWeight: 700, display: 'block', marginBottom: '0.75rem', fontFamily: 'var(--font-h)' }}>Admissions Open - July 2026</span>
               <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.4rem', fontWeight: 900, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
                 Know Exactly What Your Training Will Cost
               </h2>
               <p style={{ fontSize: '0.85rem', color: 'rgba(33,33,33,0.7)', lineHeight: '1.6', maxWidth: '420px', margin: '0 auto', fontFamily: 'var(--font-b)' }}>
-                Talk to Airborne's admissions team for a full, personalised cost breakdown — no hidden fees, no surprises.
+                Talk to Airborne's admissions team for a full, personalised cost breakdown - no hidden fees, no surprises.
               </p>
             </div>
             <LeadForm courseName="DGCA CPL Ground School" source="Blog: Pilot Training Cost in India" />

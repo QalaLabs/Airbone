@@ -445,14 +445,14 @@ export default function LeadDetailPage() {
               <User className="h-4 w-4 text-primary" /> Profile
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Info label="Email" value={lead.email || "—"} icon={Mail} />
+              <Info label="Email" value={lead.email || "-"} icon={Mail} />
               <Info label="Phone" value={lead.phone} icon={Phone} mono />
-              <Info label="Course interest" value={lead.courseInterest || "—"} />
+              <Info label="Course interest" value={lead.courseInterest || "-"} />
               <Info label="Counselor" value={lead.counselor?.name || "Unassigned"} />
-              <Info label="City" value={lead.city || "—"} />
+              <Info label="City" value={lead.city || "-"} />
               <Info
                 label="Last activity"
-                value={lead.lastActivityAt ? formatDateTime(lead.lastActivityAt) : "—"}
+                value={lead.lastActivityAt ? formatDateTime(lead.lastActivityAt) : "-"}
               />
             </div>
 
@@ -526,7 +526,7 @@ export default function LeadDetailPage() {
                   {lead.scoreHistory.map((h) => (
                     <div key={h.id} className="flex justify-between text-xs p-3 rounded-xl bg-secondary/30 border border-white/5">
                       <span className="text-white font-bold">{h.score}</span>
-                      <span className="text-muted-foreground">{h.reason || "—"}</span>
+                      <span className="text-muted-foreground">{h.reason || "-"}</span>
                       <span className="text-muted-foreground">{formatDateTime(h.createdAt)}</span>
                     </div>
                   ))}

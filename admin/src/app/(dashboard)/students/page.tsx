@@ -98,12 +98,12 @@ export default function StudentsPage() {
     {
       accessorKey: "course",
       header: "Enrolled Course",
-      cell: ({ row }) => <span className="text-xs font-semibold text-foreground">{row.original.course?.title ?? "—"}</span>,
+      cell: ({ row }) => <span className="text-xs font-semibold text-foreground">{row.original.course?.title ?? "-"}</span>,
     },
     {
       accessorKey: "campus",
       header: "Campus",
-      cell: ({ row }) => <span className="text-xs font-semibold text-muted-foreground">{row.original.campus?.name ?? "—"}</span>,
+      cell: ({ row }) => <span className="text-xs font-semibold text-muted-foreground">{row.original.campus?.name ?? "-"}</span>,
     },
     {
       accessorKey: "status",
@@ -246,11 +246,11 @@ export default function StudentsPage() {
                 </div>
                 <div>
                   <span className="text-muted-foreground font-semibold block">Course</span>
-                  <span className="text-white font-medium">{selectedStudent.course?.title ?? "—"}</span>
+                  <span className="text-white font-medium">{selectedStudent.course?.title ?? "-"}</span>
                 </div>
                 <div>
                   <span className="text-muted-foreground font-semibold block">Campus</span>
-                  <span className="text-white font-medium">{selectedStudent.campus?.name ?? "—"}</span>
+                  <span className="text-white font-medium">{selectedStudent.campus?.name ?? "-"}</span>
                 </div>
               </div>
               <p className="text-[11px] text-muted-foreground pt-2 border-t border-white/10">

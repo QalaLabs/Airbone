@@ -198,7 +198,7 @@ export default function CRMSalesAnalyticsPage() {
               <p className="text-2xl font-bold text-white mt-1">
                 {analyticsData.conversionRate?.win_rate
                   ? `${analyticsData.conversionRate.win_rate}%`
-                  : "—"}
+                  : "-"}
               </p>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-500/10">
@@ -212,7 +212,7 @@ export default function CRMSalesAnalyticsPage() {
             <div>
               <p className="text-xs text-muted-foreground font-semibold">Avg Deal Size</p>
               <p className="text-2xl font-bold text-white mt-1">
-                {totalDeals > 0 ? `₹${(totalRevenue / totalDeals).toFixed(2)}L` : "—"}
+                {totalDeals > 0 ? `₹${(totalRevenue / totalDeals).toFixed(2)}L` : "-"}
               </p>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/10">

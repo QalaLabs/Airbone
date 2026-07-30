@@ -1,5 +1,5 @@
 -- Phase C: batches, timetable, assignments, question bank enhancements, curriculum fields
--- Additive only — no DROP TABLE / DROP COLUMN
+-- Additive only - no DROP TABLE / DROP COLUMN
 
 -- Enums
 DO $$ BEGIN

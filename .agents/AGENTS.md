@@ -36,7 +36,7 @@
 - Set LinkedIn href placeholder to `#` (no URL was provided).
 
 ### Logo Assets
-- Generated `logo-white.png` and `logo-white.webp` via `scripts/generate-logo-white.py` — navy elements turned white, red elements preserved. Assets saved to `public/images/`.
+- Generated `logo-white.png` and `logo-white.webp` via `scripts/generate-logo-white.py` - navy elements turned white, red elements preserved. Assets saved to `public/images/`.
 
 ### Mobile / Responsive CSS (`src/app/index.css`)
 - Added strict `max-width` + `overflow-x: hidden` constraints to `.container-md`, `.container-lg`, `.container-xl`, `.container-fluid`.
@@ -48,5 +48,5 @@
 
 ### Build Status
 - `npm run build` passed cleanly: 42 static pages generated, 0 errors.
-- `testimonials` proxy returns `502` in dev when Admin OS is offline — this is expected behaviour (the fail-safe Supabase fallback handles leads; testimonials simply won't render).
+- `testimonials` proxy returns `502` in dev when Admin OS is offline - this is expected behaviour (the fail-safe Supabase fallback handles leads; testimonials simply won't render).
 

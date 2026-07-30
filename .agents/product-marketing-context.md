@@ -1,4 +1,4 @@
-# Product Marketing Context — Airborne Aviation Academy
+# Product Marketing Context - Airborne Aviation Academy
 
 *Last updated: 2026-07-01*
 
@@ -6,7 +6,7 @@
 
 ## Product Overview
 
-**One-liner:** India's most trusted DGCA CPL ground school — capped at 25 students per batch, taught by an active airline captain.
+**One-liner:** India's most trusted DGCA CPL ground school - capped at 25 students per batch, taught by an active airline captain.
 
 **What it does:** Airborne Aviation Academy prepares aspiring commercial pilots for DGCA CPL ground school examinations (all 5 papers), cadet airline selection tests (CASS/COMPASS/ADAPT), and simulator proficiency. It also offers PPL, ATPL, and CPL flying training coordination, plus career placement support for airline recruitment.
 
@@ -50,16 +50,16 @@
 
 | Persona | Cares about | Challenge | Value we promise |
 |---------|-------------|-----------|------------------|
-| **The Aspirant** (18–22, just finished Class 12) | Getting into an airline as fast as possible | Overwhelmed by syllabus; doesn't know if rote learning or conceptual understanding is the right approach | "You'll understand aviation, not memorise it — and pass first attempt" |
+| **The Aspirant** (18–22, just finished Class 12) | Getting into an airline as fast as possible | Overwhelmed by syllabus; doesn't know if rote learning or conceptual understanding is the right approach | "You'll understand aviation, not memorise it - and pass first attempt" |
 | **The Restarter** (26–36, career-changer) | Whether it's too late; ROI on course fees | Fear of wasting money on another institute; age anxiety | Real alumni proof: Capt. Nipun Singh got into Air India at 36 |
-| **The Cadet Aspirant** (18–25) | Getting into IndiGo/Air India cadet program specifically | CASS / COMPASS / ADAPT tests are black-box and terrifying | In-house hardware + dedicated prep course — one of very few institutes with actual CASS simulators |
+| **The Cadet Aspirant** (18–25) | Getting into IndiGo/Air India cadet program specifically | CASS / COMPASS / ADAPT tests are black-box and terrifying | In-house hardware + dedicated prep course - one of very few institutes with actual CASS simulators |
 | **The Parent** (40–55) | Son/daughter's safety, career stability, money not wasted | Which institute is legitimate vs a money trap | 100% pass rate, named alumni at IndiGo/Air India/Emirates, active captain as instructor |
 
 ---
 
 ## Problems & Pain Points
 
-**Core problem:** Most DGCA ground schools in India rely on rote learning, have large class sizes (50–100 students), and are taught by retired or non-flying instructors. Students pass exams but don't understand aviation — and fail in airline selection tests or struggle in actual flying.
+**Core problem:** Most DGCA ground schools in India rely on rote learning, have large class sizes (50–100 students), and are taught by retired or non-flying instructors. Students pass exams but don't understand aviation - and fail in airline selection tests or struggle in actual flying.
 
 **Why alternatives fall short:**
 - Large batch sizes → no personal attention → students fall behind silently
@@ -77,39 +77,39 @@
 - "What if I spend ₹2–3L and still fail?"
 - "Am I too old to start now?"
 - "How do I know this institute won't just take my money?"
-- "I've already failed once — I need to be sure this time."
+- "I've already failed once - I need to be sure this time."
 
 ---
 
 ## Competitive Landscape
 
 **Direct competitors (same solution, same market):**
-- **Golden Epaulettes** (goldenepaulettes.com) — Dominant SEO player. 50+ blog posts. Falls short: no evidence of small batch sizes or active-captain instructors.
-- **FMS Aviation Academy** — Same Ramphal Chowk location. Falls short: no standout differentiators in public messaging; no named alumni proof.
-- **HM Aviation** — Claims 15+ years, 2300+ pilots. Falls short: larger operation = less personal, no active-captain angle.
-- **Poetic Pilot Academy** — Same area, basic blog content. Falls short: no hardware/simulator advantage evident.
-- **Ground School For Aviators** — Dwarka-specific pages. Falls short: no credibility signals comparable to Airborne's alumni.
+- **Golden Epaulettes** (goldenepaulettes.com) - Dominant SEO player. 50+ blog posts. Falls short: no evidence of small batch sizes or active-captain instructors.
+- **FMS Aviation Academy** - Same Ramphal Chowk location. Falls short: no standout differentiators in public messaging; no named alumni proof.
+- **HM Aviation** - Claims 15+ years, 2300+ pilots. Falls short: larger operation = less personal, no active-captain angle.
+- **Poetic Pilot Academy** - Same area, basic blog content. Falls short: no hardware/simulator advantage evident.
+- **Ground School For Aviators** - Dwarka-specific pages. Falls short: no credibility signals comparable to Airborne's alumni.
 
 **Indirect competitors:**
-- **Online DGCA prep platforms** (YouTube, Telegram groups, PDFs) — Free but zero personalisation, no exam strategy, no accountability.
-- **Self-study** — Students who think they can self-prepare. Falls short when they encounter exam pressure and gaps in understanding.
+- **Online DGCA prep platforms** (YouTube, Telegram groups, PDFs) - Free but zero personalisation, no exam strategy, no accountability.
+- **Self-study** - Students who think they can self-prepare. Falls short when they encounter exam pressure and gaps in understanding.
 
 ---
 
 ## Differentiation
 
 **Key differentiators (things competitors cannot easily copy):**
-1. **Capt. Navrang Singh** — Active commercial airline captain teaching ground school. Not retired. Real current-day airline operational knowledge.
-2. **Max 25 students per batch** — Strictly enforced. Every student gets personal attention. This is a verifiable, credible claim.
-3. **In-house Airbus A320 FTD Level 5 simulator** at Dwarka campus — Extremely rare in Delhi. Students train on real hardware, not mock-ups.
-4. **In-house CASS/COMPASS/ADAPT hardware** — Most institutes don't have this. Airborne can offer dedicated cadet selection test prep.
-5. **Named, verifiable alumni** — Ruzal Dhral (IndiGo), Capt. Nipun Singh (Air India, started at 36), Capt. Himanish Sagwal (Emirates). Real names, real airlines, publicly verifiable.
-6. **100% first-attempt DGCA pass rate** — Strong claim backed by 15 years of operation.
-7. **Concept-first teaching philosophy** — Explicit rejection of rote learning. Rare positioning in this market.
+1. **Capt. Navrang Singh** - Active commercial airline captain teaching ground school. Not retired. Real current-day airline operational knowledge.
+2. **Max 25 students per batch** - Strictly enforced. Every student gets personal attention. This is a verifiable, credible claim.
+3. **In-house Airbus A320 FTD Level 5 simulator** at Dwarka campus - Extremely rare in Delhi. Students train on real hardware, not mock-ups.
+4. **In-house CASS/COMPASS/ADAPT hardware** - Most institutes don't have this. Airborne can offer dedicated cadet selection test prep.
+5. **Named, verifiable alumni** - Ruzal Dhral (IndiGo), Capt. Nipun Singh (Air India, started at 36), Capt. Himanish Sagwal (Emirates). Real names, real airlines, publicly verifiable.
+6. **100% first-attempt DGCA pass rate** - Strong claim backed by 15 years of operation.
+7. **Concept-first teaching philosophy** - Explicit rejection of rote learning. Rare positioning in this market.
 
 **How we do it differently:** Small batches, active captain instruction, proprietary hardware, concept-based teaching.
 
-**Why that's better:** Students understand aviation, not just exam answers — so they perform better in airline interviews, type ratings, and actual flying careers.
+**Why that's better:** Students understand aviation, not just exam answers - so they perform better in airline interviews, type ratings, and actual flying careers.
 
 **Why customers choose Airborne:**
 - "Capt. Navrang Sir actually flies. He knows what airlines are looking for right now."
@@ -124,8 +124,8 @@
 | Objection | Response |
 |-----------|----------|
 | "It's too expensive compared to other institutes." | Compare cost of re-taking exams (fees + 6–12 months delay + lost income) vs passing first time. One failure costs more than the difference. |
-| "I live outside Delhi — it's not practical." | Many students relocate to Dwarka. Affordable PG accommodation nearby. The batch cap means they get a spot worth travelling for. |
-| "I've already failed once — is it too late?" | Capt. Nipun Singh joined Air India at 36. This is literally our alumni story. We specialise in restarts. |
+| "I live outside Delhi - it's not practical." | Many students relocate to Dwarka. Affordable PG accommodation nearby. The batch cap means they get a spot worth travelling for. |
+| "I've already failed once - is it too late?" | Capt. Nipun Singh joined Air India at 36. This is literally our alumni story. We specialise in restarts. |
 | "How do I know this is legit?" | Named alumni, active-captain instructor, 15 years of operation. Call Ruzal Dhral directly if you want. |
 | "The batch is full / how long is the waitlist?" | Max 25 is a feature, not a bug. Being on a waitlist confirms quality. |
 
@@ -140,15 +140,15 @@
 
 **Push (frustrations driving them away from current approach):**
 - Failed DGCA exam at another institute
-- Large class sizes at current institute — instructor doesn't know them
+- Large class sizes at current institute - instructor doesn't know them
 - Instructor is retired, doesn't understand current airline requirements
 - Self-study materials are fragmented and confusing
 
 **Pull (what attracts them to Airborne):**
 - "An active airline captain teaches here"
-- The A320 simulator — tangible, impressive, shareable
+- The A320 simulator - tangible, impressive, shareable
 - Named alumni at real airlines (IndiGo, Air India, Emirates)
-- Max 25 batch cap — "they actually care about you"
+- Max 25 batch cap - "they actually care about you"
 
 **Habit (what keeps them stuck with their current approach):**
 - Already paid fees elsewhere and don't want to write it off
@@ -168,14 +168,14 @@
 **How they describe the problem:**
 - "Mere institute mein teacher sirf syllabus cover karta hai, samajhta koi nahi."
 - "I passed 3 papers on rote but failed Meteorology twice because I didn't actually understand it."
-- "I have no idea what CASS actually tests — nobody explains it properly."
+- "I have no idea what CASS actually tests - nobody explains it properly."
 - "Every institute claims 100% result but nobody shows you their alumni."
-- "The batch has 80 students — the teacher doesn't even know my name."
+- "The batch has 80 students - the teacher doesn't even know my name."
 
 **How they describe Airborne / what they say after joining:**
-- "Sir actually flies — he tells us exactly what airlines are looking for in interviews."
+- "Sir actually flies - he tells us exactly what airlines are looking for in interviews."
 - "The simulator session made everything from ground school make sense."
-- "I called Ruzal bhaiya from IndiGo before joining — that's when I decided."
+- "I called Ruzal bhaiya from IndiGo before joining - that's when I decided."
 - "Max 25 students means you actually get doubt clearing in every class."
 
 **Words to use:**
@@ -192,14 +192,14 @@
 
 | Term | Meaning for audience |
 |------|---------------------|
-| DGCA | Directorate General of Civil Aviation — India's aviation regulator; issues CPL |
-| CPL | Commercial Pilot Licence — licence to fly commercially |
-| ATPL | Airline Transport Pilot Licence — senior licence |
-| PPL | Private Pilot Licence — recreational licence |
-| CASS | Computerised Adaptive Simulation System — IndiGo cadet selection test |
+| DGCA | Directorate General of Civil Aviation - India's aviation regulator; issues CPL |
+| CPL | Commercial Pilot Licence - licence to fly commercially |
+| ATPL | Airline Transport Pilot Licence - senior licence |
+| PPL | Private Pilot Licence - recreational licence |
+| CASS | Computerised Adaptive Simulation System - IndiGo cadet selection test |
 | COMPASS | Air India cadet selection assessment |
 | ADAPT | Akasa Air cadet selection test |
-| FTD Level 5 | Flight Training Device — the simulator classification Airborne holds |
+| FTD Level 5 | Flight Training Device - the simulator classification Airborne holds |
 | Ground school | Theory training for DGCA exams (as opposed to actual flying) |
 | 5 papers | The 5 DGCA CPL exam subjects: Air Navigation, Meteorology, Air Regulations, Technical General, RTR |
 
@@ -207,7 +207,7 @@
 
 ## Brand Voice
 
-**Tone:** Authoritative but warm. Confident without arrogance. Straight-talking — no marketing fluff.
+**Tone:** Authoritative but warm. Confident without arrogance. Straight-talking - no marketing fluff.
 
 **Style:** Direct and specific. Cites real names, real numbers, real outcomes. Never vague. The voice of an active airline captain: precise, calm, no-nonsense.
 
@@ -231,14 +231,14 @@
 - Founded 2010, Dwarka campus opened 2016
 
 **Notable alumni:**
-- Ruzal Dhral — IndiGo (first officer)
-- Capt. Nipun Singh — Air India (started career at age 36, a restart story)
-- Capt. Himanish Sagwal — Emirates
+- Ruzal Dhral - IndiGo (first officer)
+- Capt. Nipun Singh - Air India (started career at age 36, a restart story)
+- Capt. Himanish Sagwal - Emirates
 
 **Key assets:**
 - Airbus A320 FTD Level 5 simulator on campus
 - In-house CASS/COMPASS/ADAPT test hardware
-- Capt. Navrang Singh — active commercial airline captain, 15+ years teaching
+- Capt. Navrang Singh - active commercial airline captain, 15+ years teaching
 
 **Value themes:**
 
@@ -247,7 +247,7 @@
 | Small batches = real attention | Max 25, enforced strictly |
 | Active-captain instruction = current knowledge | Capt. Navrang flies commercially + teaches |
 | Hardware advantage = practical edge | A320 FTD + CASS hardware in-house |
-| Alumni in top airlines = outcomes | IndiGo, Air India, Emirates — named, verifiable |
+| Alumni in top airlines = outcomes | IndiGo, Air India, Emirates - named, verifiable |
 | Concept-first = exam performance | 100% pass rate, 15 years |
 
 ---

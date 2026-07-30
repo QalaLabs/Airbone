@@ -156,7 +156,7 @@ function PortalAccessPanel() {
         method: "POST",
         body: JSON.stringify({ studentId, password }),
       }),
-    onSuccess: () => toast({ title: "Portal access provisioned — student can sign in" }),
+    onSuccess: () => toast({ title: "Portal access provisioned - student can sign in" }),
     onError: (err: Error) => toast({ title: "Provision failed", description: err.message, variant: "destructive" }),
   });
 

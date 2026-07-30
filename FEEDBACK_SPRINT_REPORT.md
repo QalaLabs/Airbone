@@ -1,4 +1,4 @@
-# Feedback Sprint Final Report — 24 Jul MD
+# Feedback Sprint Final Report - 24 Jul MD
 
 **Source:** `Airborne Aviation Website Feedback _ 24_7 (1).md`  
 **Branch:** `feature/post-delivery-phase2`  
@@ -23,9 +23,9 @@
 ## 3. Implemented Now
 
 ### General / Chrome
-- Glass morphosis header (light frosted) — `Header.jsx` + `.site-header`
+- Glass morphosis header (light frosted) - `Header.jsx` + `.site-header`
 - Light theme shells for Courses / About / Contact / Blog
-- Breadcrumb component — `Breadcrumb.jsx` (+ used on `/courses`, `/blog`)
+- Breadcrumb component - `Breadcrumb.jsx` (+ used on `/courses`, `/blog`)
 - DGCA Approved → **DGCA Complied** (layout SEO, courses listing, GlobalRouteMap, course copy; FTO FAQ removed)
 - Timeline unit: weeks → months on airline prep / listing / cards
 - Footer LinkedIn + pilot-sequence program links + Blog link
@@ -43,7 +43,7 @@
 - Header column **DGCA Complied**
 
 ### Course pages (coder + local)
-- ATPL, CPL, Cabin, Cadet, A320 FBS, Airline Prep, PPL, Ground School — content/fees/FAQs per MD
+- ATPL, CPL, Cabin, Cadet, A320 FBS, Airline Prep, PPL, Ground School - content/fees/FAQs per MD
 - New route **`/courses/gd-pi`** (₹30,000)
 - `courseFees.js` updated
 - `CourseReviews` on CPL + ATPL
@@ -60,7 +60,7 @@
 
 | Item | Why |
 |------|-----|
-| W2 Share interlinking logic | Documentation ask — logic: homepage ProgramGrid order = listing priority; CPL GS links flying guide / ATPL / GD-PI; remove IR & dispatcher from primary nav surfaces |
+| W2 Share interlinking logic | Documentation ask - logic: homepage ProgramGrid order = listing priority; CPL GS links flying guide / ATPL / GD-PI; remove IR & dispatcher from primary nav surfaces |
 | G7 Remove `""` | Ambiguous artifact; no actionable empty-quote pattern found beyond encoding cleanup |
 
 ## 5. Needs Client Clarification
@@ -75,7 +75,7 @@
 | CD1 Exact institute lists per airline | Placeholders used |
 | CPL URL rename | Target slug not specified (“Change URL to”) |
 | Dedicated Airline Prep page vs GD&PI | Both routes exist; confirm if content should diverge further |
-| Full site light theme incl. homepage 3D hero | Hero kept cinematic dark; chrome + content pages lightened — confirm if hero must go light |
+| Full site light theme incl. homepage 3D hero | Hero kept cinematic dark; chrome + content pages lightened - confirm if hero must go light |
 
 ## 6. Files Modified (primary)
 
@@ -95,19 +95,19 @@ Manual browser pass recommended on local `npm run dev` for glass header + light 
 
 - Marketing `npm run build` ✅  
 - Lint ✅ (warnings only)  
-- Admin / CRM / LMS not in this marketing-only change set — untouched this sprint  
+- Admin / CRM / LMS not in this marketing-only change set - untouched this sprint  
 - Lead forms still present on course/contact pages
 
 ## 9. Build Status
 
-**PASS** — Next.js static generation succeeded including `/blog` and `/courses/gd-pi`.
+**PASS** - Next.js static generation succeeded including `/blog` and `/courses/gd-pi`.
 
 ## 10. Remaining Technical Debt
 
-- Homepage still partially dark (3D / FAQ / Advantage) — intentional cinematic sections
+- Homepage still partially dark (3D / FAQ / Advantage) - intentional cinematic sections
 - Course pages still need reviews injected on remaining slugs
 - Instrument Rating / Aviation English / Flight Dispatcher pages still exist (removed from listing only)
 - Jobs weekly scrape + Resources lead magnets blocked on client assets
-- LinkedIn URL is placeholder company URL — confirm real profile
+- LinkedIn URL is placeholder company URL - confirm real profile
 - About page body may still have dark-section leftovers beyond hero/stats (spot-check)
 - Prefer visual QA on tablet/mobile for contact + courses table padding

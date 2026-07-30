@@ -99,7 +99,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
           <Link
             href="/portal"
             className="group flex items-center gap-2.5"
-            aria-label="Airborne Student Portal — Dashboard"
+            aria-label="Airborne Student Portal - Dashboard"
           >
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--ab-red)] shadow-[0_8px_24px_var(--ab-red-glow)] transition-transform group-hover:scale-105">
               <Plane className="h-5 w-5 text-white" aria-hidden="true" />

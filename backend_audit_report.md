@@ -1,7 +1,7 @@
-# AIRBORNE AVIATION — BACKEND & INFRASTRUCTURE AUDIT REPORT
+# AIRBORNE AVIATION - BACKEND & INFRASTRUCTURE AUDIT REPORT
 
 ## ━━━━━━━━━━━━━━━━━━━━━━━
-## PHASE 1 — ARCHITECTURE REVIEW
+## PHASE 1 - ARCHITECTURE REVIEW
 ## ━━━━━━━━━━━━━━━━━━━━━━━
 
 **Stack Summary:**
@@ -31,7 +31,7 @@ sequenceDiagram
 ```
 
 ## ━━━━━━━━━━━━━━━━━━━━━━━
-## PHASE 2 — DATABASE AUDIT
+## PHASE 2 - DATABASE AUDIT
 ## ━━━━━━━━━━━━━━━━━━━━━━━
 
 * **Local Database / Schema**: N/A. This repository contains no database configurations, schemas, or migrations.
@@ -41,7 +41,7 @@ sequenceDiagram
 **Database Health Score: N/A** *(Decoupled)*
 
 ## ━━━━━━━━━━━━━━━━━━━━━━━
-## PHASE 3 — LEAD MANAGEMENT AUDIT
+## PHASE 3 - LEAD MANAGEMENT AUDIT
 ## ━━━━━━━━━━━━━━━━━━━━━━━
 
 **Lead Flow Trace:**
@@ -58,7 +58,7 @@ sequenceDiagram
 * **Can leads be lost?** **YES**. There is a 100% chance of permanent lead loss if the network drops or the Admin API is down. There is no dead-letter queue, no retry mechanism, and no local fallback storage.
 
 ## ━━━━━━━━━━━━━━━━━━━━━━━
-## PHASE 4 — API AUDIT
+## PHASE 4 - API AUDIT
 ## ━━━━━━━━━━━━━━━━━━━━━━━
 
 All API routes (`/api/lead`, `/api/public-proxy/*`) were audited.
@@ -71,7 +71,7 @@ All API routes (`/api/lead`, `/api/public-proxy/*`) were audited.
 **API Health Score: 15 / 100**
 
 ## ━━━━━━━━━━━━━━━━━━━━━━━
-## PHASE 5 — SECURITY AUDIT
+## PHASE 5 - SECURITY AUDIT
 ## ━━━━━━━━━━━━━━━━━━━━━━━
 
 * **Auth & Admin**: Protected via an environmental `INTAKE_KEY` sent via headers to the upstream server.
@@ -89,7 +89,7 @@ All API routes (`/api/lead`, `/api/public-proxy/*`) were audited.
 **Security Score: 10 / 100**
 
 ## ━━━━━━━━━━━━━━━━━━━━━━━
-## PHASE 6 — PERFORMANCE AUDIT
+## PHASE 6 - PERFORMANCE AUDIT
 ## ━━━━━━━━━━━━━━━━━━━━━━━
 
 * **Caching**: Good. The proxy routes use Next.js Incremental Static Regeneration (ISR) via `next: { revalidate: 60 }`. This shields the upstream Admin API from heavy read traffic.
@@ -99,7 +99,7 @@ All API routes (`/api/lead`, `/api/public-proxy/*`) were audited.
 **Performance Score: 75 / 100**
 
 ## ━━━━━━━━━━━━━━━━━━━━━━━
-## PHASE 7 — RESILIENCY AUDIT
+## PHASE 7 - RESILIENCY AUDIT
 ## ━━━━━━━━━━━━━━━━━━━━━━━
 
 **Simulations:**
@@ -110,7 +110,7 @@ All API routes (`/api/lead`, `/api/public-proxy/*`) were audited.
 **Resiliency Score: 10 / 100**
 
 ## ━━━━━━━━━━━━━━━━━━━━━━━
-## PHASE 8 — OPERATIONS AUDIT
+## PHASE 8 - OPERATIONS AUDIT
 ## ━━━━━━━━━━━━━━━━━━━━━━━
 
 * **Monitoring & Alerting**: None.

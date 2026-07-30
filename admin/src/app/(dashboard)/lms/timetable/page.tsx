@@ -131,7 +131,7 @@ export default function LmsTimetablePage() {
               <div className="min-w-0 flex-1">
                 <p className="font-semibold">{slot.title}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {slot.batch.name} · {slot.course?.title ?? "—"}
+                  {slot.batch.name} · {slot.course?.title ?? "-"}
                 </p>
                 <div className="mt-1.5 flex flex-wrap gap-3 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">

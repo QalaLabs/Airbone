@@ -47,7 +47,7 @@ const SUBJECTS = [
 
 const ELIGIBILITY = [
   { req: 'Age', detail: 'Minimum 17 years at PPL issuance (16+ to begin SPL training)' },
-  { req: 'Education', detail: 'Class 10 (any stream) — no specific subjects required' },
+  { req: 'Education', detail: 'Class 10 (any stream) - no specific subjects required' },
   { req: 'Medical', detail: 'DGCA Class 2 Medical Certificate from approved AME' },
   { req: 'Flying Hours', detail: 'Minimum 40 hours total flying, including 10 hours solo' },
   { req: 'Language', detail: 'Basic English communication ability' },
@@ -92,10 +92,10 @@ export default function PPLPage() {
                 📍 Dwarka, Delhi · 3–6 Months · ₹25,00,000 Complete (incl. flying)
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
-                Private Pilot License (PPL) — Learn to Fly in India
+                Private Pilot License (PPL) - Learn to Fly in India
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
-                The Private Pilot License (PPL) is the first step in your aviation journey — the license that puts you in the left seat and lets you fly. Airborne Aviation Academy provides PPL ground school in Dwarka, Delhi, alongside access to DGCA-approved partner flying training organisations (FTOs) for your practical flying hours.
+                The Private Pilot License (PPL) is the first step in your aviation journey - the license that puts you in the left seat and lets you fly. Airborne Aviation Academy provides PPL ground school in Dwarka, Delhi, alongside access to DGCA-approved partner flying training organisations (FTOs) for your practical flying hours.
               </p>
             </div>
 
@@ -105,7 +105,7 @@ export default function PPLPage() {
                 What Is a Private Pilot License?
               </h2>
               <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: 0 }}>
-                A Private Pilot License (PPL) issued by DGCA India allows you to fly as Pilot-in-Command (PIC) of a single-engine aircraft for private, recreational, or business purposes — not for commercial hire. PPL requires a minimum of 40 flying hours including 10 hours solo flight. It is the recommended stepping stone before CPL, and all PPL hours count toward CPL requirements.
+                A Private Pilot License (PPL) issued by DGCA India allows you to fly as Pilot-in-Command (PIC) of a single-engine aircraft for private, recreational, or business purposes - not for commercial hire. PPL requires a minimum of 40 flying hours including 10 hours solo flight. It is the recommended stepping stone before CPL, and all PPL hours count toward CPL requirements.
               </p>
             </div>
 
@@ -152,7 +152,7 @@ export default function PPLPage() {
             {/* PPL to CPL path */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                PPL to CPL — Your Path Forward
+                PPL to CPL - Your Path Forward
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                 {PPL_TO_CPL.map((s, i) => (
@@ -213,7 +213,7 @@ export default function PPLPage() {
         <CoursePageFooter
           whatsappText="Hi, I'm interested in the Private Pilot License (PPL) course at Airborne Aviation Academy. Please share details and fee."
           nextCourses={[
-            { label: 'CPL Ground School', href: '/courses/commercial-pilot-license-cpl', note: 'Step up from PPL to CPL ground school — all PPL hours count toward your CPL' },
+            { label: 'CPL Ground School', href: '/courses/commercial-pilot-license-cpl', note: 'Step up from PPL to CPL ground school - all PPL hours count toward your CPL' },
             { label: 'Instrument Rating', href: '/courses/instrument-rating', note: 'Add an Instrument Rating to fly in all weather conditions' },
           ]}
           relatedCourses={[

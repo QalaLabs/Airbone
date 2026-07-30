@@ -6,7 +6,7 @@ import JsonLd from '@/components/JsonLd'
 import { buildArticlePageGraph } from '@/lib/schema'
 
 export const metadata = {
-  title: 'Pilot Salary in India 2026 — CPL vs ATPL Income Guide | Airborne',
+  title: 'Pilot Salary in India 2026 - CPL vs ATPL Income Guide | Airborne',
   description: 'Complete pilot salary guide for India in 2026. First Officer vs Captain pay at IndiGo, Air India, Akasa, Vistara. CPL salary expectations, growth timeline, and perks explained.',
   alternates: { canonical: '/blog/pilot-salary-india' },
 }
@@ -20,7 +20,7 @@ const FAQS = [
 
 const articlePageGraph = buildArticlePageGraph({
   path: '/blog/pilot-salary-india',
-  headline: 'Pilot Salary in India 2026 — CPL vs ATPL Income Guide',
+  headline: 'Pilot Salary in India 2026 - CPL vs ATPL Income Guide',
   description: 'Complete pilot salary guide for India covering First Officer and Captain pay bands across major carriers.',
   datePublished: '2026-02-15',
   dateModified: '2026-06-01',
@@ -77,10 +77,10 @@ export default function PilotSalaryPage() {
               Salary Guide · Updated June 2026
             </span>
             <h1 style={{ fontFamily: 'var(--font-h)', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 900, color: 'var(--navy)', textTransform: 'uppercase', lineHeight: '1.15', marginBottom: '1.25rem' }}>
-              Pilot Salary in India — Complete 2026 Guide
+              Pilot Salary in India - Complete 2026 Guide
             </h1>
             <p style={{ fontSize: '1.05rem', color: 'rgba(33,33,33,0.75)', lineHeight: '1.75', fontFamily: 'var(--font-b)' }}>
-              What do pilots actually earn in India? This guide covers real-world salary ranges at every career stage — from freshly minted First Officers to senior Captains flying international routes. Data compiled from current airline pay scales and Airborne alumni placement records.
+              What do pilots actually earn in India? This guide covers real-world salary ranges at every career stage - from freshly minted First Officers to senior Captains flying international routes. Data compiled from current airline pay scales and Airborne alumni placement records.
             </p>
             <div style={{ display: 'flex', gap: '2rem', fontSize: '0.78rem', color: 'rgba(33,33,33,0.55)', fontFamily: 'var(--font-h)', fontWeight: 600, letterSpacing: '0.05em', marginTop: '1.5rem' }}>
               <span>By Capt. Navrang Singh</span>
@@ -164,12 +164,12 @@ export default function PilotSalaryPage() {
           {/* CTA & Lead Form */}
           <div style={{ marginBottom: '3.5rem' }}>
             <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
-              <span style={{ fontSize: '0.65rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#DB241E', fontWeight: 700, display: 'block', marginBottom: '0.75rem', fontFamily: 'var(--font-h)' }}>Admissions Open — July 2026</span>
+              <span style={{ fontSize: '0.65rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#DB241E', fontWeight: 700, display: 'block', marginBottom: '0.75rem', fontFamily: 'var(--font-h)' }}>Admissions Open - July 2026</span>
               <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.4rem', fontWeight: 900, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
                 Ready to Earn a Pilot's Salary?
               </h2>
               <p style={{ fontSize: '0.85rem', color: 'rgba(33,33,33,0.7)', lineHeight: '1.6', maxWidth: '420px', margin: '0 auto', fontFamily: 'var(--font-b)' }}>
-                Begin with a free 90-minute demo class. Capt. Navrang Singh will give you an honest roadmap — timeline, costs, and realistic earning expectations.
+                Begin with a free 90-minute demo class. Capt. Navrang Singh will give you an honest roadmap - timeline, costs, and realistic earning expectations.
               </p>
             </div>
             <LeadForm courseName="CPL & Airline Preparation" source="Blog: Pilot Salary India" />
