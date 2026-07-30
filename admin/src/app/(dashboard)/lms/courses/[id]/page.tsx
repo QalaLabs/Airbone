@@ -638,7 +638,7 @@ function ContentManager({ topic, courseId }: { topic: Topic; courseId: string })
             {type === "NOTES" && (
               <textarea
                 rows={4}
-                placeholder="Notes body (optional — can also use URL)"
+                placeholder="Notes body (optional - can also use URL)"
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 className="w-full rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm focus:outline-none"
@@ -1086,7 +1086,7 @@ function CurriculumTab({ course }: { course: Course }) {
       <Dialog open={!!settingsModule} onOpenChange={(v) => !v && setSettingsModule(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Module settings — {settingsModule?.title}</DialogTitle>
+            <DialogTitle>Module settings - {settingsModule?.title}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>

@@ -165,14 +165,14 @@ export default function CRMMeetingsPage() {
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground font-semibold">Conversion Rate</p>
             <p className="text-2xl font-bold text-white mt-1">
-              {conversionRate !== null ? `${conversionRate}%` : "—"}
+              {conversionRate !== null ? `${conversionRate}%` : "-"}
             </p>
           </CardContent>
         </Card>
         <Card className="bg-card border-white/10 shadow-lg">
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground font-semibold">Avg Duration</p>
-            <p className="text-2xl font-bold text-white mt-1">—</p>
+            <p className="text-2xl font-bold text-white mt-1">-</p>
           </CardContent>
         </Card>
       </div>

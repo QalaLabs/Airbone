@@ -235,7 +235,7 @@ export default function LeadsPage() {
       accessorKey: "courseInterest",
       header: "Course Interest",
       cell: ({ row }) => (
-        <span className="text-xs font-semibold text-foreground">{row.original.courseInterest ?? "—"}</span>
+        <span className="text-xs font-semibold text-foreground">{row.original.courseInterest ?? "-"}</span>
       ),
     },
     {
@@ -253,7 +253,7 @@ export default function LeadsPage() {
       header: "Follow-up",
       cell: ({ row }) => {
         const due = row.original.nextFollowUp;
-        if (!due) return <span className="text-xs text-muted-foreground">—</span>;
+        if (!due) return <span className="text-xs text-muted-foreground">-</span>;
         const overdue = new Date(due) < new Date() && !["CONVERTED", "LOST"].includes(row.original.status);
         return (
           <span className={`text-xs font-semibold ${overdue ? "text-rose-400" : "text-muted-foreground"}`}>

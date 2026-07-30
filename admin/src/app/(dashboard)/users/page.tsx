@@ -72,7 +72,7 @@ export default function UsersPage() {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       toast({
         title: "User invite created",
-        description: "Account invite is ready. Email delivery is not enabled yet — share the invite link with the user manually.",
+        description: "Account invite is ready. Email delivery is not enabled yet - share the invite link with the user manually.",
       });
       setNewUserOpen(false);
     },

@@ -218,31 +218,31 @@ export default function CRMDashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <StatCard
           title="Total Pipeline"
-          value={revenueSummary?.total_pipeline ? formatValue(revenueSummary.total_pipeline) : "—"}
+          value={revenueSummary?.total_pipeline ? formatValue(revenueSummary.total_pipeline) : "-"}
           icon={TrendingUp}
           iconColor="text-blue-500"
         />
         <StatCard
           title="Won This Month"
-          value={revenueSummary?.won_this_month ? formatValue(revenueSummary.won_this_month) : "—"}
+          value={revenueSummary?.won_this_month ? formatValue(revenueSummary.won_this_month) : "-"}
           icon={DollarSign}
           iconColor="text-emerald-500"
         />
         <StatCard
           title="Active Leads"
-          value={revenueSummary?.active_leads ? String(revenueSummary.active_leads) : "—"}
+          value={revenueSummary?.active_leads ? String(revenueSummary.active_leads) : "-"}
           icon={Users}
           iconColor="text-purple-500"
         />
         <StatCard
           title="Win Rate"
-          value={revenueSummary?.win_rate ? `${revenueSummary.win_rate}%` : "—"}
+          value={revenueSummary?.win_rate ? `${revenueSummary.win_rate}%` : "-"}
           icon={Target}
           iconColor="text-amber-500"
         />
         <StatCard
           title="Avg Deal Size"
-          value={revenueSummary?.avg_deal_size ? formatValue(revenueSummary.avg_deal_size) : "—"}
+          value={revenueSummary?.avg_deal_size ? formatValue(revenueSummary.avg_deal_size) : "-"}
           icon={Target}
           iconColor="text-cyan-500"
         />

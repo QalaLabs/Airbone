@@ -66,7 +66,7 @@ async function main() {
     where: { orgId_slug: { orgId: org.id, slug: jobSlug } },
     create: {
       orgId: org.id,
-      title: 'IndiGo Cadet Pilot Intake — Guidance Track',
+      title: 'IndiGo Cadet Pilot Intake - Guidance Track',
       slug: jobSlug,
       description:
         'Airborne mentoring track for aspirants targeting the next IndiGo cadet pilot selection window. Includes aptitude prep, GD/PI coaching, and Class 1 medical guidance.',
@@ -85,7 +85,7 @@ async function main() {
       metadata: { demo: true, airline: 'IndiGo' },
     },
     update: {
-      title: 'IndiGo Cadet Pilot Intake — Guidance Track',
+      title: 'IndiGo Cadet Pilot Intake - Guidance Track',
       status: 'PUBLISHED',
       publishedAt: new Date(),
       closesAt: null,
@@ -100,7 +100,7 @@ async function main() {
     where: { orgId_slug: { orgId: org.id, slug: resSlug } },
     create: {
       orgId: org.id,
-      title: 'DGCA CPL Ground School — Syllabus Overview',
+      title: 'DGCA CPL Ground School - Syllabus Overview',
       slug: resSlug,
       description:
         'One-page overview of all 5 DGCA CPL theoretical papers taught at Airborne Aviation Academy, Dwarka.',
@@ -124,7 +124,7 @@ async function main() {
   console.log('RESOURCE', JSON.stringify(resource))
 
   // ── Demo Testimonial ─────────────────────────────────────────────────────
-  // No unique slug — find by author + demo metadata, else create
+  // No unique slug - find by author + demo metadata, else create
   let testimonial = await prisma.testimonial.findFirst({
     where: {
       orgId: org.id,
@@ -139,7 +139,7 @@ async function main() {
         status: 'APPROVED',
         isFeatured: true,
         content:
-          'Capt. Navrang made DGCA subjects click. Air Regulations and Technical finally made sense — cleared all papers on the first attempt and moved into the cockpit with confidence.',
+          'Capt. Navrang made DGCA subjects click. Air Regulations and Technical finally made sense - cleared all papers on the first attempt and moved into the cockpit with confidence.',
         authorTitle: 'First Officer · Air India',
         rating: 5,
         batchYear: 2023,
@@ -155,7 +155,7 @@ async function main() {
         authorName: 'Capt. Nipun Singh',
         authorTitle: 'First Officer · Air India',
         content:
-          'Capt. Navrang made DGCA subjects click. Air Regulations and Technical finally made sense — cleared all papers on the first attempt and moved into the cockpit with confidence.',
+          'Capt. Navrang made DGCA subjects click. Air Regulations and Technical finally made sense - cleared all papers on the first attempt and moved into the cockpit with confidence.',
         rating: 5,
         batchYear: 2023,
         status: 'APPROVED',

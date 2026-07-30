@@ -42,7 +42,7 @@ export default function PortalCoursesPage() {
       <PortalPageHeader
         eyebrow="Flight deck"
         title="My Courses"
-        description="Your enrolled programmes — pick up where you left off or start a new module."
+        description="Your enrolled programmes - pick up where you left off or start a new module."
       />
 
       {enrollments.length === 0 ? (
@@ -64,7 +64,7 @@ export default function PortalCoursesPage() {
                 key={e.id}
                 href={`/portal/courses/${e.courseId}`}
                 className="group block"
-                aria-label={`Open ${e.course.title} — ${pct}% complete`}
+                aria-label={`Open ${e.course.title} - ${pct}% complete`}
               >
                 <GlassCard soft className="h-full transition-all group-hover:border-white/20">
                   <div className="flex items-start gap-4">

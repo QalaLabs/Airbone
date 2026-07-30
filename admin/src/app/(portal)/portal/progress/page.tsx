@@ -128,7 +128,7 @@ export default function PortalProgressPage() {
           <StatTile
             icon={TrendingUp}
             label="Activity streak"
-            value={streak > 0 ? `${streak} day${streak !== 1 ? "s" : ""}` : "—"}
+            value={streak > 0 ? `${streak} day${streak !== 1 ? "s" : ""}` : "-"}
             sub={streak > 0 ? "Consecutive days with activity" : "Complete an assessment to start your streak"}
           />
         </Stagger>

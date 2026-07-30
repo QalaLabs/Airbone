@@ -49,7 +49,7 @@ const mktLocal = parseEnv(fs.readFileSync(path.join(root, ".env.local"), "utf8")
 
 console.log(JSON.stringify({ adminPreview, mktPreview, action: "resync-preview-env" }));
 
-// Admin Preview — core
+// Admin Preview - core
 const adminCwd = path.join(root, "admin");
 const adminPairs = [
   ["DATABASE_URL", adminLocal.DATABASE_URL],
@@ -65,9 +65,9 @@ const adminPairs = [
 ];
 for (const [k, v] of adminPairs) setPreview(adminCwd, k, v);
 
-// Marketing Preview — point at admin Preview (with bypass won't help server-to-server!)
+// Marketing Preview - point at admin Preview (with bypass won't help server-to-server!)
 // Server-side fetch from marketing→admin needs either unprotected API or shared secret path.
-// Public leads API is not SSO-gated if Vercel protection applies to all routes — CRITICAL.
+// Public leads API is not SSO-gated if Vercel protection applies to all routes - CRITICAL.
 // Test: marketing serverless cannot send x-vercel-protection-bypass unless we bake it into ADMIN fetch.
 // For RC: set ADMIN_API_URL to admin preview; if protection blocks, lead stays on fallback.
 const adminBypassPath = path.join(root, "admin/.vercel-bypass-secret");

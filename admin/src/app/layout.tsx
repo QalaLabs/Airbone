@@ -4,7 +4,7 @@ import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
   title: { default: "Airborne OS", template: "%s | Airborne OS" },
-  description: "Airborne Aviation Academy — Operations Platform",
+  description: "Airborne Aviation Academy - Operations Platform",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

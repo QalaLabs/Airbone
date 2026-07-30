@@ -51,7 +51,7 @@ export default function CoursePageFooter({
               Prefer WhatsApp?
             </div>
             <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 800, color: 'var(--navy)' }}>
-              Message us — response within 2 minutes
+              Message us - response within 2 minutes
             </div>
             <div style={{ fontSize: '0.78rem', color: 'rgba(0, 39, 76, 0.55)', marginTop: '0.25rem' }}>
               +91 9953 777 320 · Dwarka Admissions
@@ -110,7 +110,7 @@ export default function CoursePageFooter({
             },
             {
               icon: '📍',
-              label: 'Visit — Dwarka',
+              label: 'Visit - Dwarka',
               value: 'E-549, Ramphal Chowk, Sector 7, Dwarka, Delhi 110075',
               href: 'https://maps.google.com/?q=Airborne+Aviation+Academy+Dwarka+Delhi',
             },
@@ -149,7 +149,7 @@ export default function CoursePageFooter({
       {/* ── Recommended Next Courses ─────────────────────── */}
       {nextCourses.length > 0 && (
         <div style={dividerStyle}>
-          <h2 style={sectionH2Style}>Recommended Next — Your Learning Path</h2>
+          <h2 style={sectionH2Style}>Recommended Next - Your Learning Path</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
             {nextCourses.map((c, i) => (
               <Link

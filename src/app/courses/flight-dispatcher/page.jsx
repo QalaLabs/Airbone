@@ -9,8 +9,8 @@ import { buildCoursePageGraph } from '@/lib/schema'
 import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
-  title: 'Flight Dispatcher Course Delhi — DGCA | Airborne Aviation',
-  description: 'Become a licensed Flight Dispatcher at Airborne Aviation Academy, Dwarka Delhi — 2,500+ students trained. DGCA-aligned curriculum. 10+2 eligible. 3–6 months. Fees ₹1–2L. Enquire now.',
+  title: 'Flight Dispatcher Course Delhi - DGCA | Airborne Aviation',
+  description: 'Become a licensed Flight Dispatcher at Airborne Aviation Academy, Dwarka Delhi - 2,500+ students trained. DGCA-aligned curriculum. 10+2 eligible. 3–6 months. Fees ₹1–2L. Enquire now.',
   alternates: { canonical: '/courses/flight-dispatcher' },
 }
 
@@ -84,10 +84,10 @@ export default function FlightDispatcherPage() {
                 📍 Dwarka, Delhi · 3–6 Months · ₹1–2 Lakh
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
-                Flight Dispatcher Course — Aviation Operations Training, Delhi
+                Flight Dispatcher Course - Aviation Operations Training, Delhi
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
-                Flight Dispatchers co-authorise every commercial flight alongside the captain — a critical, licenced operations role at every airline. Airborne Aviation Academy's Flight Dispatcher course prepares candidates for the DGCA Flight Dispatcher License (FDL) examination, covering flight planning, meteorology, air regulations, and aircraft performance.
+                Flight Dispatchers co-authorise every commercial flight alongside the captain - a critical, licenced operations role at every airline. Airborne Aviation Academy's Flight Dispatcher course prepares candidates for the DGCA Flight Dispatcher License (FDL) examination, covering flight planning, meteorology, air regulations, and aircraft performance.
               </p>
             </div>
 
@@ -97,7 +97,7 @@ export default function FlightDispatcherPage() {
                 What Does a Flight Dispatcher Do?
               </h2>
               <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: '0 0 1.25rem 0' }}>
-                A licensed Flight Dispatcher (also called a Flight Operations Officer or Airline Dispatcher) co-signs every flight plan along with the aircraft captain. They are responsible for route planning, fuel calculations, alternate aerodrome selection, weather briefing, NOTAM review, and ATC slot coordination — all before the aircraft moves.
+                A licensed Flight Dispatcher (also called a Flight Operations Officer or Airline Dispatcher) co-signs every flight plan along with the aircraft captain. They are responsible for route planning, fuel calculations, alternate aerodrome selection, weather briefing, NOTAM review, and ATC slot coordination - all before the aircraft moves.
               </p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
                 {['Co-signs every flight plan', 'Monitors weather en-route', 'Coordinates fuel load', 'Reviews all NOTAMs', 'Manages ATC slots', 'Supports in-flight decisions'].map((item, i) => (
@@ -118,7 +118,7 @@ export default function FlightDispatcherPage() {
                   '10+2 from any stream (no Physics/Maths requirement)',
                   'Minimum age: 18 years',
                   'Basic English communication ability',
-                  'No prior aviation experience required — course starts from fundamentals',
+                  'No prior aviation experience required - course starts from fundamentals',
                 ].map((item, i) => (
                   <li key={i} className="course-list-item">{item}</li>
                 ))}

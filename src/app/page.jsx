@@ -47,7 +47,7 @@ const Home3DSection = dynamic(() => import('@/components/Home3DSection'), {
 })
 
 /* ─────────────────────────────────────
-   FLOATING NAV — Light glassmorphism pill
+   FLOATING NAV - Light glassmorphism pill
 ───────────────────────────────────── */
 function FloatingNav({ onBook }) {
   const [scrolled, setScrolled] = useState(false)
@@ -277,7 +277,7 @@ function FloatingNav({ onBook }) {
 }
 
 /* ─────────────────────────────────────
-   HERO — Editorial full-screen, parallax
+   HERO - Editorial full-screen, parallax
 ───────────────────────────────────── */
 function RevealLine({ children, delay = 0 }) {
   return (
@@ -312,7 +312,7 @@ function HeroChapter({ onBook }) {
       <motion.div className="hero-parallax-bg" style={{ y: yBg, scale, position: 'absolute', inset: 0, willChange: 'transform' }}>
         <Image
           src="/footage/hero-cockpit.jpg"
-          alt="Sunrise from a commercial cockpit above the clouds — Airborne Aviation Academy"
+          alt="Sunrise from a commercial cockpit above the clouds - Airborne Aviation Academy"
           fill
           priority
           fetchPriority="high"
@@ -365,7 +365,7 @@ function HeroChapter({ onBook }) {
         >
           <p className="hero-support">
             India&apos;s most disciplined DGCA ground school for CPL &amp; ATPL. Mentor-led training under
-            Capt. Navrang Singh — clearing exams, building careers, restarting dreams.
+            Capt. Navrang Singh - clearing exams, building careers, restarting dreams.
           </p>
 
           <div className="hero-btn-container">
@@ -405,7 +405,7 @@ function HeroChapter({ onBook }) {
 }
 
 /* ─────────────────────────────────────
-   BOARDING STRIP — Animated stats below hero
+   BOARDING STRIP - Animated stats below hero
 ───────────────────────────────────── */
 function BoardingStrip() {
   const stats = [
@@ -443,7 +443,7 @@ function BoardingStrip() {
 }
 
 /* ─────────────────────────────────────
-   FOUNDER — Dark navy, stat grid
+   FOUNDER - Dark navy, stat grid
 ───────────────────────────────────── */
 function FounderSection() {
   return (
@@ -467,7 +467,7 @@ function FounderSection() {
             Capt. Navrang <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>Singh.</span>
           </h2>
           <p style={{ marginTop: '1.5rem', color: 'rgba(33,33,33,0.75)', fontSize: '0.9375rem', lineHeight: 1.7, maxWidth: '28rem', fontFamily: 'var(--font-b)' }}>
-            Capt. Navrang Singh strips DGCA syllabi down to first principles. Air Regulations, Technical General, Navigation, Meteorology, RTR — taught the way you'll actually use them in the cockpit.
+            Capt. Navrang Singh strips DGCA syllabi down to first principles. Air Regulations, Technical General, Navigation, Meteorology, RTR - taught the way you'll actually use them in the cockpit.
           </p>
 
           <div style={{ marginTop: '2.5rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'rgba(0,39,76,0.08)', maxWidth: '28rem', width: '100%' }}>
@@ -495,7 +495,7 @@ function FounderSection() {
         >
           <img
             src="/team/navrang_portrait.jpg"
-            alt="Capt. Navrang Singh — Chief Instructor, Airborne Aviation Academy"
+            alt="Capt. Navrang Singh - Chief Instructor, Airborne Aviation Academy"
             style={{ height: '100%', width: '100%', objectFit: 'cover', objectPosition: 'top center' }}
             loading="lazy"
           />
@@ -511,7 +511,7 @@ function FounderSection() {
 }
 
 /* ─────────────────────────────────────
-   THE SUCCESS CLUB — live testimonials from API only
+   THE SUCCESS CLUB - live testimonials from API only
 ───────────────────────────────────── */
 function TestimonialsSection() {
   const [activeIndex, setActiveIndex] = useState(0)
@@ -645,7 +645,7 @@ function TestimonialsSection() {
 const HOME_FAQS = [
   { q: 'What is the eligibility to join CPL ground school at Airborne?', a: 'Class 12 with Physics and Mathematics. You must also hold or be eligible for a DGCA Class 2 Medical. Age 17+ at time of first solo flight. No prior aviation experience required.' },
   { q: 'How long is the CPL ground school program?', a: "Airborne's CPL ground school runs 3–6 months for the full DGCA subject battery. Complete CPL with flying takes 12–18 months. Batches are capped at 25 students. Weekend and weekday batches available from our Dwarka, Delhi campus." },
-  { q: 'What is the fee for CPL ground school?', a: 'CPL ground school at Airborne is ₹2,70,000. This covers all DGCA subjects, study materials, and viva preparation. Flying training (done at an FTO of your choice) is a separate cost — speak to our admissions team for current FTO tie-up rates.' },
+  { q: 'What is the fee for CPL ground school?', a: 'CPL ground school at Airborne is ₹2,70,000. This covers all DGCA subjects, study materials, and viva preparation. Flying training (done at an FTO of your choice) is a separate cost - speak to our admissions team for current FTO tie-up rates.' },
   { q: 'Where is Airborne Aviation Academy located?', a: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7, Dwarka, New Delhi 110075. Contact: +91 9953 777 320.' },
   { q: 'What are the office hours?', a: 'Monday to Saturday, 9:30 AM – 6:00 PM. Closed on Sundays.' },
   { q: 'Can I do CPL and ATPL ground school together?', a: 'Yes, and Airborne recommends it. The CPL and ATPL syllabi overlap significantly in Air Navigation, Meteorology, and Technical subjects. Completing both together improves exam efficiency and reduces total preparation time.' },
@@ -710,7 +710,7 @@ function HomepageFAQ() {
 }
 
 /* ─────────────────────────────────────
-   FINAL CTA — Preserves existing /api/lead integration
+   FINAL CTA - Preserves existing /api/lead integration
 ───────────────────────────────────── */
 function FinalCTA() {
   const ref = useRef(null)
@@ -878,7 +878,7 @@ function FinalCTA() {
 }
 
 /* ─────────────────────────────────────
-   BOOKING MODAL — Preserved intact, connects to /api/lead
+   BOOKING MODAL - Preserved intact, connects to /api/lead
 ───────────────────────────────────── */
 function BookingModal({ open, onClose }) {
   const [status, setStatus] = useState('idle')
@@ -1041,7 +1041,7 @@ function BookingModal({ open, onClose }) {
 }
 
 /* ─────────────────────────────────────
-   PREMIUM CURSOR — Preserved intact
+   PREMIUM CURSOR - Preserved intact
 ───────────────────────────────────── */
 function PremiumCursor() {
   const dot = useRef(null)
@@ -1086,7 +1086,7 @@ function PremiumCursor() {
 }
 
 /* ─────────────────────────────────────
-   AIRBORNE ADVANTAGE — 17 items grid
+   AIRBORNE ADVANTAGE - 17 items grid
 ───────────────────────────────────── */
 function AirborneAdvantage() {
   const [activeIndex, setActiveIndex] = useState(0)
@@ -1104,11 +1104,11 @@ function AirborneAdvantage() {
         </svg>
       ),
       benefits: [
-        { title: 'Founder-Led Instruction', desc: 'All 5 DGCA papers taught directly by Capt. Navrang — no junior staff on core subjects.' },
+        { title: 'Founder-Led Instruction', desc: 'All 5 DGCA papers taught directly by Capt. Navrang - no junior staff on core subjects.' },
         { title: 'Personalized Pacing', desc: 'Classes paced to your speed, not the average student.' },
         { title: '1-on-1 Mentorship', desc: 'Individual doubt-solving sessions with Capt. Navrang until the concept is clear.' },
-        { title: 'CPL Test Series', desc: 'Full DGCA mock exam series — first-attempt preparation only.' },
-        { title: 'Life-Long Career Guidance', desc: 'Support beyond CPL — type rating, airline applications.' },
+        { title: 'CPL Test Series', desc: 'Full DGCA mock exam series - first-attempt preparation only.' },
+        { title: 'Life-Long Career Guidance', desc: 'Support beyond CPL - type rating, airline applications.' },
       ]
     },
     {
@@ -1122,7 +1122,7 @@ function AirborneAdvantage() {
       ),
       benefits: [
         { title: 'Airbus A320 Simulator', desc: 'In-house Airbus A320 FTD Level 5 simulator for cockpit familiarization.' },
-        { title: 'Dedicated RTR Lab', desc: 'Dedicated RTR Lab — simulated RT communication environment.' },
+        { title: 'Dedicated RTR Lab', desc: 'Dedicated RTR Lab - simulated RT communication environment.' },
         { title: 'Airline Interview Prep', desc: 'GD & PI masterclass by Rajeet Khalsa, retired Air India AGM (37+ years).' },
         { title: 'Psychomotor Prep', desc: 'CASS / COMPASS / ADAPT psychomotor test preparation.' },
       ]
@@ -1137,7 +1137,7 @@ function AirborneAdvantage() {
         </svg>
       ),
       benefits: [
-        { title: 'Student Library', desc: 'Student library — open after class hours.' },
+        { title: 'Student Library', desc: 'Student library - open after class hours.' },
         { title: 'Campus Cafeteria', desc: 'On-campus cafeteria and lounge area.' },
         { title: 'Class 2 Medical Desk', desc: 'In-house Class II medical facility at the centre.' },
         { title: 'Hostel Support', desc: 'Hostel assistance for outstation students.' },
@@ -1463,7 +1463,7 @@ function AirborneAdvantage() {
 }
 
 /* ─────────────────────────────────────
-   PILOT CAREER OUTLOOK — Salary & Perks
+   PILOT CAREER OUTLOOK - Salary & Perks
 ───────────────────────────────────── */
 function PilotCareerOutlook() {
   const stages = [
@@ -1649,7 +1649,7 @@ function PilotCareerOutlook() {
 }
 
 /* ─────────────────────────────────────
-   ROOT PAGE — All sections orchestrated
+   ROOT PAGE - All sections orchestrated
 ───────────────────────────────────── */
 export default function HomePage() {
   const [bookingOpen, setBookingOpen] = useState(false)

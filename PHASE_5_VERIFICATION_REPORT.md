@@ -20,7 +20,7 @@
 | Hostel assistance | Already Correct | |
 | Full DGCA mock test series | Already Correct | CPL Test Series |
 
-**DB overlay:** None — hardcoded in `page.jsx` Advantage.
+**DB overlay:** None - hardcoded in `page.jsx` Advantage.
 
 ---
 
@@ -39,7 +39,7 @@
 
 | Item | Status | Notes |
 |------|--------|-------|
-| Trainer | Already Correct | **Rajeet Khalsa** (not Rajeev) — GOD/PRD + live |
+| Trainer | Already Correct | **Rajeet Khalsa** (not Rajeev) - GOD/PRD + live |
 | AGM Training · Air India · 37+ yrs · GD/PI | Already Correct | |
 
 **Requires Manual Review:** Phase 5 brief spells “Rajeev”; approved copy = **Rajeet**. Left unchanged.
@@ -53,7 +53,7 @@
 | Cadet | ₹45,000 | ₹50,000 | Already Correct vs GOD |
 | A320 | ₹40,000 | ₹10,000/hr | Already Correct vs GOD |
 
-**Root cause of audit ₹45k / ₹40k:** Admin DB seed had `fee: 45000` / `40000` — `/courses` listing used `formatFee(course.fee)` and overlaid wrong prices.
+**Root cause of audit ₹45k / ₹40k:** Admin DB seed had `fee: 45000` / `40000` - `/courses` listing used `formatFee(course.fee)` and overlaid wrong prices.
 
 | Fix | Status |
 |-----|--------|
@@ -95,7 +95,7 @@
 
 ## 7. Campus Content
 
-Same as §1 — Already Correct / Fixed parent + Class II wording.
+Same as §1 - Already Correct / Fixed parent + Class II wording.
 
 ---
 
@@ -116,7 +116,7 @@ Not Applicable (no layout redesign). Form Step 2 wraps choice chips; PIN field u
 
 ## 10. Build
 
-**Result:** ✅ `npm run build` — 45 pages, 0 failures.
+**Result:** ✅ `npm run build` - 45 pages, 0 failures.
 
 ---
 

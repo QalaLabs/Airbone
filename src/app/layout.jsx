@@ -51,7 +51,7 @@ export const metadata = {
         url: 'https://www.airborneaviation.in/campus/og_image.jpg',
         width: 945,
         height: 630,
-        alt: 'Airborne Aviation Academy — DGCA CPL Ground School, Dwarka Delhi',
+        alt: 'Airborne Aviation Academy - DGCA CPL Ground School, Dwarka Delhi',
       },
     ],
     locale: 'en_IN',

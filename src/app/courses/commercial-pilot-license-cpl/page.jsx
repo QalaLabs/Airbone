@@ -10,16 +10,16 @@ import { buildCoursePageGraph } from '@/lib/schema'
 import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
-  title: 'Commercial Pilot License Ground Classes in Delhi — DGCA Complied | Airborne Aviation',
+  title: 'Commercial Pilot License Ground Classes in Delhi - DGCA Complied | Airborne Aviation',
   description: 'Clear all 5 DGCA CPL papers on your first attempt. DGCA Complied CPL Ground School in Dwarka, Delhi by Capt. Navrang Singh.',
   alternates: { canonical: '/courses/commercial-pilot-license-cpl' },
   openGraph: {
-    title: 'Commercial Pilot License Ground Classes in Delhi — DGCA Complied | Airborne Aviation',
+    title: 'Commercial Pilot License Ground Classes in Delhi - DGCA Complied | Airborne Aviation',
     description: 'Clear all 5 DGCA CPL papers on your first attempt. DGCA Complied CPL Ground School in Dwarka, Delhi by Capt. Navrang Singh.',
     url: 'https://www.airborneaviation.in/courses/commercial-pilot-license-cpl',
   },
   twitter: {
-    title: 'Commercial Pilot License Ground Classes in Delhi — DGCA Complied | Airborne Aviation',
+    title: 'Commercial Pilot License Ground Classes in Delhi - DGCA Complied | Airborne Aviation',
     description: 'Clear all 5 DGCA CPL papers on your first attempt. DGCA Complied CPL Ground School in Dwarka, Delhi by Capt. Navrang Singh.',
   },
 }
@@ -31,7 +31,7 @@ const CPL_FAQS = [
   },
   {
     q: 'How much does CPL Ground School cost at Airborne?',
-    a: '₹2,70,000 covering DGCA CPL theory subjects including RTR, taught directly by Capt. Navrang Singh. All subjects included — no separate fees per paper.',
+    a: '₹2,70,000 covering DGCA CPL theory subjects including RTR, taught directly by Capt. Navrang Singh. All subjects included - no separate fees per paper.',
   },
   {
     q: 'How much does the full CPL cost in India?',
@@ -67,7 +67,7 @@ const SUBJECTS = [
 
 const FEE_ROWS = [
   { component: 'DGCA Ground School (all subjects)', amount: '₹2,70,000' },
-  { component: 'Flying Training — 200 hours', amount: '₹55 Lakh' },
+  { component: 'Flying Training - 200 hours', amount: '₹55 Lakh' },
   { component: 'DGCA Exam Fees (Regular Session) (5 papers)', amount: '₹2,500/Exam' },
   { component: 'DGCA Exam Fees (on-Demand) (5 papers)', amount: '₹5,000/Exam' },
   { component: 'DGCA Class 2 Medical', amount: '₹10,000' },
@@ -116,17 +116,17 @@ export default function CPLPage() {
                 Dwarka, Delhi · 3–6 Months · ₹2,70,000
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
-                Commercial Pilot License Ground Classes in Delhi — DGCA Complied
+                Commercial Pilot License Ground Classes in Delhi - DGCA Complied
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75', maxWidth: '100%' }}>
-                Airborne Aviation Academy offers a DGCA Complied Commercial Pilot License (CPL) Ground School in Dwarka, Delhi. The CPL Ground School covers DGCA theory subjects including RTR — taught personally by Capt. Navrang Singh. Structured concept-focused preparation for DGCA exams. Batches capped at 25 seats. ₹2,70,000.
+                Airborne Aviation Academy offers a DGCA Complied Commercial Pilot License (CPL) Ground School in Dwarka, Delhi. The CPL Ground School covers DGCA theory subjects including RTR - taught personally by Capt. Navrang Singh. Structured concept-focused preparation for DGCA exams. Batches capped at 25 seats. ₹2,70,000.
               </p>
             </div>
 
             {/* Subjects */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                DGCA Ground School — Curriculum Subjects
+                DGCA Ground School - Curriculum Subjects
               </h2>
               <div className="course-subject-grid">
                 {SUBJECTS.map((s, i) => (
@@ -141,7 +141,7 @@ export default function CPLPage() {
             {/* Fee Breakdown */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                CPL Course Fees — Full Breakdown
+                CPL Course Fees - Full Breakdown
               </h2>
               <div className="course-table-wrap" style={{ overflowX: 'auto' }}>
                 <table className="course-table" style={{ minWidth: "600px" }}>
@@ -198,9 +198,9 @@ export default function CPLPage() {
               </h2>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                 {[
-                  { title: 'Founder Teaches Every Class', body: 'All five DGCA papers personally taught by Capt. Navrang Singh — no junior staff on core subjects.' },
+                  { title: 'Founder Teaches Every Class', body: 'All five DGCA papers personally taught by Capt. Navrang Singh - no junior staff on core subjects.' },
                   { title: 'First-Principles Approach', body: 'No question banks. DGCA syllabi taught from fundamentals up.' },
-                  { title: 'Small Batches — Max 25', body: 'Training paced according to each student\'s learning speed.' },
+                  { title: 'Small Batches - Max 25', body: 'Training paced according to each student\'s learning speed.' },
                   { title: '1-on-1 Doubt Sessions', body: 'Individual doubt-solving sessions with Capt. Navrang Singh until concepts are clear.' },
                 ].map((c, i) => (
                   <div key={i} style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', padding: '1.5rem', borderRadius: '4px' }}>
@@ -257,7 +257,7 @@ export default function CPLPage() {
         <CoursePageFooter
           whatsappText="Hi, I'm interested in the CPL Ground School at Airborne Aviation Academy, Dwarka. Please share next batch details and fee."
           nextCourses={[
-            { label: 'ATPL Ground School', href: '/courses/atpl', note: 'Prepare for ATPL exams and upgrade to Captain — CPL holders only' },
+            { label: 'ATPL Ground School', href: '/courses/atpl', note: 'Prepare for ATPL exams and upgrade to Captain - CPL holders only' },
             { label: 'Parent Centric Flying Guide', href: '/courses/flying-training-india-abroad', note: 'Comprehensive CPL flight training guidance and Indian CPL conversion support' },
             { label: 'GD & PI Course', href: '/courses/gd-pi', note: 'Group discussion and interview coaching' },
           ]}

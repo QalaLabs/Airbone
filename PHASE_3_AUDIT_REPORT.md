@@ -10,8 +10,8 @@ Source of truth: `scratch/pdf_content.txt` (Qala Labs Full Website Copy, June 20
 
 - Audit named homepage “Why Students Choose Airborne” with cards Zero Rote Learning / In-House A320 Simulator.
 - Those cards lived on **About** (`/about`), not homepage.
-- Homepage section is `The Airborne Advantage.` (`src/app/page.jsx` `#advantage`) — different approved grid (Founder-Led, A320 SIM, FOR PARENTS, etc.). Left untouched.
-- Fee transparency + instructor continuity exact PRD blocks were missing from About; partial echoes exist on ground-school / CPL / blog — not duplicated onto homepage Advantage.
+- Homepage section is `The Airborne Advantage.` (`src/app/page.jsx` `#advantage`) - different approved grid (Founder-Led, A320 SIM, FOR PARENTS, etc.). Left untouched.
+- Fee transparency + instructor continuity exact PRD blocks were missing from About; partial echoes exist on ground-school / CPL / blog - not duplicated onto homepage Advantage.
 
 **Changes Made**
 
@@ -33,11 +33,11 @@ Source of truth: `scratch/pdf_content.txt` (Qala Labs Full Website Copy, June 20
 | Check | Result |
 |-------|--------|
 | Live route | `/courses/cadet-preparation` |
-| PRD URL | `/courses/cadet-preparation` — **match** |
-| Audit brief expected | `/courses/cadet-pilot-preparation` — **conflicts with PRD** |
+| PRD URL | `/courses/cadet-preparation` - **match** |
+| Audit brief expected | `/courses/cadet-pilot-preparation` - **conflicts with PRD** |
 | Nav / footer / CTAs / breadcrumbs / sitemap / JSON-LD | All use `/courses/cadet-preparation` |
 | Old slug redirect | `/courses/cadet-pilot-program` → `/courses/cadet-preparation` (`next.config.js`) |
-| `/courses/cadet-pilot-preparation` | Not in codebase; **not renamed** — flag for stakeholder decision |
+| `/courses/cadet-pilot-preparation` | Not in codebase; **not renamed** - flag for stakeholder decision |
 
 **Decision:** No route rename. PRD wins over audit brief when they conflict.
 
@@ -45,15 +45,15 @@ Source of truth: `scratch/pdf_content.txt` (Qala Labs Full Website Copy, June 20
 
 ## SEO
 
-**Title:** `Cadet Pilot Program Prep IndiGo, Air India, Akasa | Airborne` — ✅ Already Correct
+**Title:** `Cadet Pilot Program Prep IndiGo, Air India, Akasa | Airborne` - ✅ Already Correct
 
-**Metadata:** Description matches PRD intent — ✅ Already Correct
+**Metadata:** Description matches PRD intent - ✅ Already Correct
 
-**Canonical:** `/courses/cadet-preparation` — ✅ Correct per PRD
+**Canonical:** `/courses/cadet-preparation` - ✅ Correct per PRD
 
-**OpenGraph / Twitter:** Inherit from page metadata + root `layout.jsx` — ✅ Consistent (no page-level override needed)
+**OpenGraph / Twitter:** Inherit from page metadata + root `layout.jsx` - ✅ Consistent (no page-level override needed)
 
-**JSON-LD:** Course + FAQPage + BreadcrumbList present; URLs use `cadet-preparation` — ✅
+**JSON-LD:** Course + FAQPage + BreadcrumbList present; URLs use `cadet-preparation` - ✅
 
 ------------------------------------------------
 
@@ -64,7 +64,7 @@ Source of truth: `scratch/pdf_content.txt` (Qala Labs Full Website Copy, June 20
 | H2 | Before | After | Notes |
 |----|--------|-------|-------|
 | What Is a Cadet Pilot Program? | Same | Unchanged | ✅ |
-| Cadet Program Selection Stages — What Airborne Prepares You For | Merged single H2 | Unchanged | PRD lists as **one** H2 line; audit brief wants split — **not split** |
+| Cadet Program Selection Stages - What Airborne Prepares You For | Merged single H2 | Unchanged | PRD lists as **one** H2 line; audit brief wants split - **not split** |
 | FAQs | `Frequently Asked Questions` | `FAQs` | ✅ Fixed to match PRD |
 
 ------------------------------------------------
@@ -73,10 +73,10 @@ Source of truth: `scratch/pdf_content.txt` (Qala Labs Full Website Copy, June 20
 
 **Pages Audited**
 
-- `src/app/about/page.jsx` — Why Choose section
-- `src/app/courses/cadet-preparation/page.jsx` — H2 + SEO
-- `src/app/page.jsx`, `src/components/ProgramGrid.jsx` — cadet price
-- Cross-check: ground-school, CPL, blog cost page (fee/instructor echoes — left as-is, no contradiction with new About copy)
+- `src/app/about/page.jsx` - Why Choose section
+- `src/app/courses/cadet-preparation/page.jsx` - H2 + SEO
+- `src/app/page.jsx`, `src/components/ProgramGrid.jsx` - cadet price
+- Cross-check: ground-school, CPL, blog cost page (fee/instructor echoes - left as-is, no contradiction with new About copy)
 
 **Changes**
 
@@ -86,7 +86,7 @@ Source of truth: `scratch/pdf_content.txt` (Qala Labs Full Website Copy, June 20
    - Instructor Continuity – Same Teacher, Start to Finish
 3. Cadet price cards: `₹45,000` → `₹50,000` (homepage + ProgramGrid)
 
-**Flagged (not changed — out of Phase 3 scope / need confirmation)**
+**Flagged (not changed - out of Phase 3 scope / need confirmation)**
 
 - FTO wording conflicts (some pages vs dgca-compliance “not an FTO”)
 - DGCA paper count 5 vs 6
@@ -96,7 +96,7 @@ Source of truth: `scratch/pdf_content.txt` (Qala Labs Full Website Copy, June 20
 
 ## Build
 
-**Result:** ✅ `npm run build` succeeded — 45 pages, 0 failures. Expected `ECONNREFUSED` fetch warnings (Admin OS offline during SSG). Route `/courses/cadet-preparation` present.
+**Result:** ✅ `npm run build` succeeded - 45 pages, 0 failures. Expected `ECONNREFUSED` fetch warnings (Admin OS offline during SSG). Route `/courses/cadet-preparation` present.
 
 ------------------------------------------------
 

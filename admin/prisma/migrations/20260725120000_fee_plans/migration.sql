@@ -1,5 +1,5 @@
 -- Phase 1B: FeePlan templates + optional Admission.feePlanId
--- Additive only — no DROP TABLE / DROP COLUMN
+-- Additive only - no DROP TABLE / DROP COLUMN
 
 CREATE TABLE IF NOT EXISTS "fee_plans" (
   "id" UUID NOT NULL DEFAULT gen_random_uuid(),

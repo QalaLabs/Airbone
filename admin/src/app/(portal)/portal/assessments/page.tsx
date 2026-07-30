@@ -47,7 +47,7 @@ export default function PortalAssessmentsPage() {
       <PortalPageHeader
         eyebrow="Flight checks"
         title="Assessments"
-        description="Module quizzes, scores, and remaining attempts — your checkride readiness at a glance."
+        description="Module quizzes, scores, and remaining attempts - your checkride readiness at a glance."
         action={
           <StatusPill tone="brand">
             {passed}/{items.length} passed

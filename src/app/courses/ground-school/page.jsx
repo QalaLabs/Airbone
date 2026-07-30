@@ -39,7 +39,7 @@ const GROUND_SCHOOL_FAQS = [
   },
   {
     q: 'Can I join without a CPL in progress?',
-    a: 'Yes. Students pursuing any aviation path — CPL, ATPL, or general DGCA exam preparation — can join. Minimum eligibility is Class 12 with Physics and Mathematics.',
+    a: 'Yes. Students pursuing any aviation path - CPL, ATPL, or general DGCA exam preparation - can join. Minimum eligibility is Class 12 with Physics and Mathematics.',
   },
 ]
 
@@ -58,12 +58,12 @@ const SUBJECTS = [
 ]
 
 const ADVANTAGES = [
-  { icon: '👨‍✈️', title: 'Founder Teaches Every Class', body: 'Capt. Navrang Singh personally leads training from Day 1 to CPL issue — no delegated instructors.' },
+  { icon: '👨‍✈️', title: 'Founder Teaches Every Class', body: 'Capt. Navrang Singh personally leads training from Day 1 to CPL issue - no delegated instructors.' },
   { icon: '🏫', title: 'Dedicated RTR Lab', body: 'Simulated RT communication environment for phraseology practice before the actual test.' },
   { icon: '📚', title: 'Library Access', body: 'Students can study even after class hours in our on-campus library.' },
   { icon: '📊', title: 'Weekly Parent Reports', body: 'Mock exam scores and progress compiled and sent to parents every Friday.' },
   { icon: '🩺', title: 'In-House Class 2 Medical', body: 'Class 2 medical facility available at the Ramphal Chowk centre.' },
-  { icon: '🎒', title: 'Goodies for Every Student', body: 'Bag, keychain, notebook, pen, T-shirt — and all study material is yours to keep.' },
+  { icon: '🎒', title: 'Goodies for Every Student', body: 'Bag, keychain, notebook, pen, T-shirt - and all study material is yours to keep.' },
 ]
 
 export default function GroundSchoolPage() {
@@ -98,10 +98,10 @@ export default function GroundSchoolPage() {
                 📍 Dwarka, Delhi · 3–6 Months · ₹2,70,000
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
-                DGCA Ground School Classes in Dwarka, Delhi — DGCA Complied
+                DGCA Ground School Classes in Dwarka, Delhi - DGCA Complied
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
-                Airborne Aviation Academy offers DGCA Complied ground school classes in Dwarka, New Delhi. All DGCA subjects covered by Capt. Navrang Singh — who has personally trained 2,500+ aviation aspirants since 2009. Duration: 3–6 months.
+                Airborne Aviation Academy offers DGCA Complied ground school classes in Dwarka, New Delhi. All DGCA subjects covered by Capt. Navrang Singh - who has personally trained 2,500+ aviation aspirants since 2009. Duration: 3–6 months.
               </p>
             </div>
 
@@ -135,14 +135,14 @@ export default function GroundSchoolPage() {
             {/* Instructor */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                Your Instructor — Capt. Navrang Singh
+                Your Instructor - Capt. Navrang Singh
               </h2>
               <div style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', padding: '2rem', borderRadius: '4px' }}>
                 <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.8', margin: 0 }}>
-                  Capt. Navrang Singh is the co-founder of Airborne Aviation Academy and has been teaching DGCA ground school personally since 2009. With 15+ years of flight instruction experience, he strips DGCA syllabi down to first principles — Air Regulations, Technical General, Navigation, Meteorology, RTR — taught the way you will actually use them in the cockpit.
+                  Capt. Navrang Singh is the co-founder of Airborne Aviation Academy and has been teaching DGCA ground school personally since 2009. With 15+ years of flight instruction experience, he strips DGCA syllabi down to first principles - Air Regulations, Technical General, Navigation, Meteorology, RTR - taught the way you will actually use them in the cockpit.
                 </p>
                 <div style={{ marginTop: '1.5rem', display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
-                  {['15+ Years Teaching', '2,500+ Students', '100% First-Attempt Pass Rate', 'Personal Classes — No Substitutes'].map((stat, i) => (
+                  {['15+ Years Teaching', '2,500+ Students', '100% First-Attempt Pass Rate', 'Personal Classes - No Substitutes'].map((stat, i) => (
                     <span key={i} style={{ fontSize: '0.75rem', fontFamily: 'var(--font-h)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--navy)', background: 'rgba(216,160,39,0.08)', border: '1px solid rgba(216,160,39,0.2)', padding: '0.35rem 0.85rem', borderRadius: '2px' }}>{stat}</span>
                   ))}
                 </div>
@@ -204,9 +204,9 @@ export default function GroundSchoolPage() {
         <CoursePageFooter
           whatsappText="Hi, I'm interested in the DGCA Ground School at Airborne Aviation Academy, Dwarka. Please share current batch details."
           nextCourses={[
-            { label: 'Commercial Pilot License (CPL)', href: '/courses/commercial-pilot-license-cpl', note: 'Ground school leads directly to DGCA CPL — complete your pilot journey' },
-            { label: 'Instrument Rating', href: '/courses/instrument-rating', note: 'Add IR to your CPL — essential for airline operations' },
-            { label: 'ATPL Ground School', href: '/courses/atpl', note: 'Upgrade to Captain with ATPL — built on your CPL foundation' },
+            { label: 'Commercial Pilot License (CPL)', href: '/courses/commercial-pilot-license-cpl', note: 'Ground school leads directly to DGCA CPL - complete your pilot journey' },
+            { label: 'Instrument Rating', href: '/courses/instrument-rating', note: 'Add IR to your CPL - essential for airline operations' },
+            { label: 'ATPL Ground School', href: '/courses/atpl', note: 'Upgrade to Captain with ATPL - built on your CPL foundation' },
           ]}
           relatedCourses={[
             { label: 'CPL Ground School', href: '/courses/commercial-pilot-license-cpl' },

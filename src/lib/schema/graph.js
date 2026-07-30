@@ -62,7 +62,7 @@ export function buildHomeGraph(faqs = []) {
     buildCourseStub('cabin-crew-training', 'Cabin Crew Training', '/courses/cabin-crew-training'),
   ]
 
-  const image = buildPrimaryImage('/footage/hero-cockpit.jpg', `${ORG.name} — pilot training in Dwarka, Delhi`)
+  const image = buildPrimaryImage('/footage/hero-cockpit.jpg', `${ORG.name} - pilot training in Dwarka, Delhi`)
 
   return asGraph([
     ...coreEntities({ includeServices: true, includeCatalog: true, includeLeadership: true }),
@@ -204,7 +204,7 @@ export function buildCoursesIndexGraph(items) {
       path: '/courses',
       name: 'Pilot Training Courses | Airborne Aviation Academy',
       description:
-        'Browse DGCA-aligned aviation courses at Airborne Aviation Academy, Dwarka Delhi — CPL ground school, ATPL, cabin crew, A320 simulator, and cadet preparation.',
+        'Browse DGCA-aligned aviation courses at Airborne Aviation Academy, Dwarka Delhi - CPL ground school, ATPL, cabin crew, A320 simulator, and cadet preparation.',
       mainEntity: `${absUrl('/courses')}#itemlist`,
     }),
     buildBreadcrumbList(

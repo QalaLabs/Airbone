@@ -71,7 +71,7 @@ export default function CASCompassAdaptPage() {
                 CAS Compass & ADAPT Pilot Aptitude Test Preparation | Dwarka, Delhi
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
-                Airborne Aviation Academy offers structured preparation for the CAS Compass and ADAPT pilot aptitude test batteries used in airline and cadet selection. Our program covers all five domains — numerical, spatial, multi-tasking, psychomotor, and personality — with timed drills, hardware practice, and expert debrief.
+                Airborne Aviation Academy offers structured preparation for the CAS Compass and ADAPT pilot aptitude test batteries used in airline and cadet selection. Our program covers all five domains - numerical, spatial, multi-tasking, psychomotor, and personality - with timed drills, hardware practice, and expert debrief.
               </p>
             </div>
 
@@ -89,7 +89,7 @@ export default function CASCompassAdaptPage() {
                 What Is The CAS Compass Test?
               </h2>
               <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: 0 }}>
-                CAS Compass is an aviation-specific psychometric assessment evaluating cognitive ability, procedural learning, instrument interpretation, and suitability for pilot training — used by several Indian and international airline cadet programs as a first-round screening tool.
+                CAS Compass is an aviation-specific psychometric assessment evaluating cognitive ability, procedural learning, instrument interpretation, and suitability for pilot training - used by several Indian and international airline cadet programs as a first-round screening tool.
               </p>
             </div>
 

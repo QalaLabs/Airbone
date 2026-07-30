@@ -145,7 +145,7 @@ function AssistantInner() {
           }
           description={
             unavailable
-              ? "Currently unavailable — AI is not configured for this environment."
+              ? "Currently unavailable - AI is not configured for this environment."
               : "Ask about DGCA topics, air law, navigation, meteorology, and more."
           }
         />
@@ -342,7 +342,7 @@ function AssistantInner() {
         <p className="mt-2 text-center text-[10px] text-white/25">
           {unavailable
             ? "AI study assistant is not configured in this environment"
-            : "Press Enter to send · Shift+Enter for new line · AI may make mistakes — verify with official DGCA material"}
+            : "Press Enter to send · Shift+Enter for new line · AI may make mistakes - verify with official DGCA material"}
         </p>
       </MotionSection>
     </div>

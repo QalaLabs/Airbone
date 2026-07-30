@@ -9,7 +9,7 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { certNo } = await params;
-  return { title: `Certificate ${certNo} — Airborne Aviation` };
+  return { title: `Certificate ${certNo} - Airborne Aviation` };
 }
 
 export default async function CertificatePrintPage({ params }: PageProps) {

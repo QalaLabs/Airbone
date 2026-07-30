@@ -6,7 +6,7 @@ import JsonLd from '@/components/JsonLd'
 import { buildArticlePageGraph } from '@/lib/schema'
 
 export const metadata = {
-  title: 'How to Become a Pilot in India After 12th — Step-by-Step 2026',
+  title: 'How to Become a Pilot in India After 12th - Step-by-Step 2026',
   description: 'Complete guide to becoming a commercial pilot in India after 12th. CPL eligibility, DGCA exams, flying hours, costs, and airline placement tips from Airborne Aviation Academy, Dwarka.',
   alternates: { canonical: '/blog/how-to-become-pilot-india' },
 }
@@ -20,7 +20,7 @@ const FAQS = [
 
 const articlePageGraph = buildArticlePageGraph({
   path: '/blog/how-to-become-pilot-india',
-  headline: 'How to Become a Pilot in India After 12th — Step-by-Step Guide 2026',
+  headline: 'How to Become a Pilot in India After 12th - Step-by-Step Guide 2026',
   description: 'Complete step-by-step guide to becoming a commercial pilot in India after Class 12, written by Capt. Navrang Singh.',
   datePublished: '2026-01-15',
   dateModified: '2026-06-01',
@@ -32,7 +32,7 @@ const STEPS = [
     num: '01',
     title: 'Confirm Class 12 Eligibility',
     body: 'The DGCA requires Physics and Mathematics in your 10+2 with a minimum 50% aggregate. If you passed without these, NIOS exam is a valid path to meet the requirement before applying.',
-    note: 'DGCA Class 1 Medical check is recommended before you invest in training. Common disqualifiers include uncorrected vision beyond limits and colour blindness — get this done first.',
+    note: 'DGCA Class 1 Medical check is recommended before you invest in training. Common disqualifiers include uncorrected vision beyond limits and colour blindness - get this done first.',
   },
   {
     num: '02',
@@ -43,7 +43,7 @@ const STEPS = [
   {
     num: '03',
     title: 'Enrol in DGCA Ground School',
-    body: 'Ground school builds the theoretical foundation for 6 DGCA written exams: Air Navigation, Meteorology, Air Regulations, Technical General, Technical Specific, and Radio Telephony. Exams are held 4 times per year. First-attempt passes require structured, conceptual preparation — not rote memorisation.',
+    body: 'Ground school builds the theoretical foundation for 6 DGCA written exams: Air Navigation, Meteorology, Air Regulations, Technical General, Technical Specific, and Radio Telephony. Exams are held 4 times per year. First-attempt passes require structured, conceptual preparation - not rote memorisation.',
     note: null,
   },
   {
@@ -55,7 +55,7 @@ const STEPS = [
   {
     num: '05',
     title: 'Clear All 6 DGCA Written Exams',
-    body: 'Each subject requires a minimum 70% score. Failed attempts carry a penalty — preparation quality is critical. Most students who join Airborne achieve first-attempt clears across all subjects.',
+    body: 'Each subject requires a minimum 70% score. Failed attempts carry a penalty - preparation quality is critical. Most students who join Airborne achieve first-attempt clears across all subjects.',
     note: null,
   },
   {
@@ -66,8 +66,8 @@ const STEPS = [
   },
   {
     num: '07',
-    title: 'Airline Preparation — GD/PI & Type Rating',
-    body: 'Airlines run structured cadet selection processes including CAS Compass and ADAPT aptitude tests, group discussions, simulator assessments, and technical interviews. A CPL alone does not secure a seat — targeted preparation is critical.',
+    title: 'Airline Preparation - GD/PI & Type Rating',
+    body: 'Airlines run structured cadet selection processes including CAS Compass and ADAPT aptitude tests, group discussions, simulator assessments, and technical interviews. A CPL alone does not secure a seat - targeted preparation is critical.',
     note: null,
   },
 ]
@@ -100,7 +100,7 @@ export default function HowToBecomePilotPage() {
               How to Become a Pilot in India After 12th
             </h1>
             <p style={{ fontSize: '1.05rem', color: 'rgba(33,33,33,0.75)', lineHeight: '1.75', marginBottom: '1.5rem', fontFamily: 'var(--font-b)' }}>
-              A complete, honest roadmap — from Class 12 to the airline cockpit. Written by the faculty at Airborne Aviation Academy, Dwarka, who have guided 2,500+ students into aviation careers.
+              A complete, honest roadmap - from Class 12 to the airline cockpit. Written by the faculty at Airborne Aviation Academy, Dwarka, who have guided 2,500+ students into aviation careers.
             </p>
             <div style={{ display: 'flex', gap: '2rem', fontSize: '0.78rem', color: 'rgba(33,33,33,0.55)', fontFamily: 'var(--font-h)', fontWeight: 600, letterSpacing: '0.05em' }}>
               <span>By Capt. Navrang Singh</span>
@@ -136,10 +136,10 @@ export default function HowToBecomePilotPage() {
             <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(33,33,33,0.55)', fontWeight: 700, marginBottom: '1.25rem' }}>Programs at Airborne Aviation Academy</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {[
-                { label: 'CPL Ground School — Complete DGCA Prep', href: '/courses/cpl-ground-classes' },
-                { label: 'A320 Simulator Training — Type Rating Familiarisation', href: '/courses/a320-simulator' },
-                { label: 'Cadet Preparation — IndiGo, Air India, Akasa', href: '/courses/cadet-preparation' },
-                { label: 'Flying Training India vs Abroad — Cost Comparison', href: '/courses/flying-training-india-abroad' },
+                { label: 'CPL Ground School - Complete DGCA Prep', href: '/courses/cpl-ground-classes' },
+                { label: 'A320 Simulator Training - Type Rating Familiarisation', href: '/courses/a320-simulator' },
+                { label: 'Cadet Preparation - IndiGo, Air India, Akasa', href: '/courses/cadet-preparation' },
+                { label: 'Flying Training India vs Abroad - Cost Comparison', href: '/courses/flying-training-india-abroad' },
               ].map((c) => (
                 <Link key={c.href} href={c.href} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--navy)', textDecoration: 'none', fontSize: '0.88rem', fontFamily: 'var(--font-h)', fontWeight: 600, padding: '0.5rem 0', borderBottom: '1px solid rgba(0,39,76,0.08)' }}>
                   <span>{c.label}</span>
@@ -165,12 +165,12 @@ export default function HowToBecomePilotPage() {
           {/* CTA & Lead Form */}
           <div style={{ marginBottom: '3.5rem' }}>
             <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
-              <span style={{ fontSize: '0.65rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#DB241E', fontWeight: 700, display: 'block', marginBottom: '0.75rem', fontFamily: 'var(--font-h)' }}>Admissions Open — July 2026</span>
+              <span style={{ fontSize: '0.65rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#DB241E', fontWeight: 700, display: 'block', marginBottom: '0.75rem', fontFamily: 'var(--font-h)' }}>Admissions Open - July 2026</span>
               <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.4rem', fontWeight: 900, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
                 Start Your Pilot Journey Today
               </h2>
               <p style={{ fontSize: '0.85rem', color: 'rgba(33,33,33,0.7)', lineHeight: '1.6', maxWidth: '400px', margin: '0 auto', fontFamily: 'var(--font-b)' }}>
-                Book a free 90-minute demo class with Capt. Navrang Singh. Get honest counselling and a personalised roadmap — no obligation.
+                Book a free 90-minute demo class with Capt. Navrang Singh. Get honest counselling and a personalised roadmap - no obligation.
               </p>
             </div>
             <LeadForm courseName="Complete Pilot Training Roadmap" source="Blog: How to Become a Pilot in India" />

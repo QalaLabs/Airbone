@@ -138,7 +138,7 @@ async function main() {
       data: {
         orgId: org.id,
         slug: courseSlug,
-        title: "DGCA Ground School — Navigation Fundamentals",
+        title: "DGCA Ground School - Navigation Fundamentals",
         description:
           "A comprehensive DGCA-aligned ground school course covering Air Navigation, Meteorology, Air Law and ATC procedures. Designed for CPL and PPL aspirants preparing for DGCA written examinations.",
         isPublished: true,
@@ -228,7 +228,7 @@ async function main() {
       title: "Introduction to ICAO Charts",
       contents: [
         {
-          title: "ICAO Chart Types — Lecture Notes",
+          title: "ICAO Chart Types - Lecture Notes",
           type: "PDF",
           url: "https://www.w3.org/WAI/WCAG21/Techniques/pdf/pdf-sample.pdf",
         },
@@ -266,7 +266,7 @@ async function main() {
       title: "Directional Gyro & Compass",
       contents: [
         {
-          title: "DI & Compass Alignment — Video",
+          title: "DI & Compass Alignment - Video",
           type: "VIDEO",
           url: "https://www.w3schools.com/html/mov_bbb.mp4",
         },
@@ -311,7 +311,7 @@ async function main() {
     {
       title: "Aircraft Airworthiness Rules",
       contents: [
-        { title: "CAR Section 2 — Airworthiness", type: "PDF", url: "https://www.w3.org/WAI/WCAG21/Techniques/pdf/pdf-sample.pdf" },
+        { title: "CAR Section 2 - Airworthiness", type: "PDF", url: "https://www.w3.org/WAI/WCAG21/Techniques/pdf/pdf-sample.pdf" },
       ],
     },
     {
@@ -666,14 +666,14 @@ async function main() {
 
   // ── 10. Attendance sessions ───────────────────────────────────────────────
   const existingSession = await prisma.lmsAttendanceSession.findFirst({
-    where: { courseId: lmsCourse.id, title: "Navigation Charts — Intro Class" },
+    where: { courseId: lmsCourse.id, title: "Navigation Charts - Intro Class" },
   });
   if (!existingSession) {
     const session1 = await prisma.lmsAttendanceSession.create({
       data: {
         orgId: org.id,
         courseId: lmsCourse.id,
-        title: "Navigation Charts — Intro Class",
+        title: "Navigation Charts - Intro Class",
         heldAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
       },
     });
@@ -690,7 +690,7 @@ async function main() {
       data: {
         orgId: org.id,
         courseId: lmsCourse.id,
-        title: "Instruments & Errors — Lecture 2",
+        title: "Instruments & Errors - Lecture 2",
         heldAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
       },
     });
@@ -736,7 +736,7 @@ async function main() {
         courseId: lmsCourse.id,
         certificateNo: "ABC-NAV-2024-0001",
         verificationCode: "VERIFY-NAV-0001",
-        title: "DGCA Ground School — Navigation Fundamentals — Certificate of Completion",
+        title: "DGCA Ground School - Navigation Fundamentals - Certificate of Completion",
         status: "ISSUED",
         issuedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
         issuedBy: adminUser?.id,

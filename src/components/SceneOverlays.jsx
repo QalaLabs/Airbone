@@ -72,7 +72,7 @@ export function TrainingOverlay({ visible }) {
         <h2 className="cockpit-headline">Where Pilots<br /><em>Are Forged</em></h2>
         <p className="cockpit-subtitle">
           Not memorized. Understood. Capt. Navrang Singh's Concept Clarity method 
-          means you walk into the DGCA examination knowing — not guessing.
+          means you walk into the DGCA examination knowing - not guessing.
         </p>
         <div className="subject-tags" style={{ marginTop: '1.5rem' }}>
           {['Air Navigation', 'Meteorology', 'Air Regulations', 'Technical General', 'RTR (A)', 'DGCA CPL'].map(s => (
@@ -135,7 +135,7 @@ export function AircraftOverlay({ visible }) {
 }
 
 /* ────────────────────────────────────────────────────────────────
-   ACT 6: COCKPIT (real footage — 3 sub-phases)
+   ACT 6: COCKPIT (real footage - 3 sub-phases)
 ──────────────────────────────────────────────────────────────── */
 /* ── Startup sequence phase definitions ── */
 const STARTUP_PHASES = [
@@ -147,7 +147,7 @@ const STARTUP_PHASES = [
     hudStatus: 'COLD + DARK',
     hudPhase:  'PRE-FLIGHT',
     headline:  (<>The Cockpit<br /><em>Awaits</em></>),
-    subtitle:  'Two seats. One mission. The cockpit is not a room — it is a command.',
+    subtitle:  'Two seats. One mission. The cockpit is not a room - it is a command.',
   },
   {
     threshold: 0.18,
@@ -177,7 +177,7 @@ const STARTUP_PHASES = [
     hudStatus: 'AVIONICS',
     hudPhase:  'BOOT SEQ',
     headline:  (<>Glass Cockpit<br /><em>Active</em></>),
-    subtitle:  'Flight management, PFD, ND, ECAM — your digital co-pilot is awake.',
+    subtitle:  'Flight management, PFD, ND, ECAM - your digital co-pilot is awake.',
   },
   {
     threshold: 0.65,

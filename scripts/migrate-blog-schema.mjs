@@ -8,7 +8,7 @@ const blogs = [
   {
     dir: 'how-to-become-pilot-india',
     path: '/blog/how-to-become-pilot-india',
-    headline: 'How to Become a Pilot in India After 12th — Step-by-Step Guide 2026',
+    headline: 'How to Become a Pilot in India After 12th - Step-by-Step Guide 2026',
     description:
       'Complete step-by-step guide to becoming a commercial pilot in India after Class 12, written by Capt. Navrang Singh.',
     datePublished: '2026-01-15',
@@ -17,7 +17,7 @@ const blogs = [
   {
     dir: 'dgca-ground-school-guide',
     path: '/blog/dgca-ground-school-guide',
-    headline: 'DGCA Ground School Guide — What to Expect',
+    headline: 'DGCA Ground School Guide - What to Expect',
     description: 'What DGCA ground school covers, how to prepare, and how Airborne structures CPL/ATPL theory training.',
     datePublished: '2026-02-01',
     dateModified: '2026-06-01',
@@ -25,7 +25,7 @@ const blogs = [
   {
     dir: 'pilot-salary-india',
     path: '/blog/pilot-salary-india',
-    headline: 'Pilot Salary in India — CPL to Airline Captain',
+    headline: 'Pilot Salary in India - CPL to Airline Captain',
     description: 'Pilot salary ranges in India from CPL holders to airline captains, explained for aspirants and parents.',
     datePublished: '2026-02-15',
     dateModified: '2026-06-01',
@@ -33,7 +33,7 @@ const blogs = [
   {
     dir: 'pilot-training-cost-india',
     path: '/blog/pilot-training-cost-india',
-    headline: 'Pilot Training Cost in India — Complete Breakdown',
+    headline: 'Pilot Training Cost in India - Complete Breakdown',
     description: 'Complete cost breakdown for becoming a commercial pilot in India, including ground school and flying hours.',
     datePublished: '2026-03-01',
     dateModified: '2026-06-01',

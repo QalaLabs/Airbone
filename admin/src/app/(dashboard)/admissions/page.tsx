@@ -154,7 +154,7 @@ const STAGES = [
 
 function money(v: number | string | null | undefined) {
   const n = Number(v ?? 0);
-  return Number.isFinite(n) ? `₹${n.toLocaleString("en-IN")}` : "—";
+  return Number.isFinite(n) ? `₹${n.toLocaleString("en-IN")}` : "-";
 }
 
 function docStatusClass(status: string) {
@@ -452,8 +452,8 @@ function PaymentsPanel({ admissionId, fallback }: { admissionId: string; fallbac
           {list.map((p) => (
             <div key={p.id} className="flex items-center justify-between text-xs p-2.5 rounded-lg border border-white/5 bg-slate-900/60">
               <div>
-                <p className="font-mono font-bold text-white">{p.receiptNo ?? "—"}</p>
-                <p className="text-[10px] text-muted-foreground">{p.paidAt ? formatDate(p.paidAt) : "—"} · {p.method}</p>
+                <p className="font-mono font-bold text-white">{p.receiptNo ?? "-"}</p>
+                <p className="text-[10px] text-muted-foreground">{p.paidAt ? formatDate(p.paidAt) : "-"} · {p.method}</p>
               </div>
               <div className="text-right">
                 <p className="font-bold text-emerald-400">{money(p.amount)}</p>

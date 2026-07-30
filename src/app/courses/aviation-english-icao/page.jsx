@@ -10,7 +10,7 @@ import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
   title: 'Aviation English ICAO Level 4 Delhi | Airborne Aviation',
-  description: 'Achieve ICAO English Level 4 for your DGCA CPL or RTR licence at Airborne Aviation Academy, Dwarka Delhi — 2,500+ students trained. Structured aviation English course. Fees ₹50K–1L.',
+  description: 'Achieve ICAO English Level 4 for your DGCA CPL or RTR licence at Airborne Aviation Academy, Dwarka Delhi - 2,500+ students trained. Structured aviation English course. Fees ₹50K–1L.',
   alternates: { canonical: '/courses/aviation-english-icao' },
 }
 
@@ -27,7 +27,7 @@ const coursePageGraph = buildCoursePageGraph({
   },
   {
     q: 'Where is the ICAO English Level 4 test taken?',
-    a: 'ICAO ELP testing is conducted by DGCA-approved test centres in India (not at Airborne). Airborne prepares candidates for the test — the actual ELP assessment is at the DGCA-approved evaluator centre.'
+    a: 'ICAO ELP testing is conducted by DGCA-approved test centres in India (not at Airborne). Airborne prepares candidates for the test - the actual ELP assessment is at the DGCA-approved evaluator centre.'
   },
   {
     q: 'What are the 6 components of ICAO English proficiency?',
@@ -39,16 +39,16 @@ const coursePageGraph = buildCoursePageGraph({
 const ICAO_LEVELS = [
   { level: 'Level 1', label: 'Pre-elementary', note: 'Cannot pass basic communication tests' },
   { level: 'Level 2', label: 'Elementary', note: 'Limited communication ability' },
-  { level: 'Level 3', label: 'Pre-operational', note: 'Emerging ability — below DGCA minimum' },
+  { level: 'Level 3', label: 'Pre-operational', note: 'Emerging ability - below DGCA minimum' },
   { level: 'Level 4', label: 'Operational', note: '✓ DGCA CPL & RTR minimum (target level)', highlight: true },
-  { level: 'Level 5', label: 'Extended', note: 'Strong communicator — extended license validity' },
-  { level: 'Level 6', label: 'Expert', note: 'Native/near-native proficiency — lifelong license' },
+  { level: 'Level 5', label: 'Extended', note: 'Strong communicator - extended license validity' },
+  { level: 'Level 6', label: 'Expert', note: 'Native/near-native proficiency - lifelong license' },
 ]
 
 const CURRICULUM = [
   { topic: 'Pronunciation & Clarity', detail: 'Accent reduction, phoneme accuracy, vowel/consonant precision for aviation environments' },
   { topic: 'Aviation Phraseology', detail: 'ICAO standard phraseology, R/T communications, ATC interaction language' },
-  { topic: 'Grammar & Sentence Structure', detail: 'Tense accuracy, conditional sentences, passive voice — all common in ATC communications' },
+  { topic: 'Grammar & Sentence Structure', detail: 'Tense accuracy, conditional sentences, passive voice - all common in ATC communications' },
   { topic: 'Aviation Vocabulary', detail: 'Technical terms, plain English equivalents, situation-specific vocabulary banks' },
   { topic: 'Comprehension Practice', detail: 'Listening to ATC audio, ATIS broadcasts, cockpit voice recordings at varying speed and accent' },
   { topic: 'Fluency Building', detail: 'Conversation sessions, role-play scenarios, reducing hesitation in high-pressure situations' },
@@ -86,10 +86,10 @@ export default function AviationEnglishPage() {
                 📍 Dwarka, Delhi · 1–3 Months · ₹50K–1L
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
-                Aviation English — ICAO Level 4 Proficiency Course, Delhi
+                Aviation English - ICAO Level 4 Proficiency Course, Delhi
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
-                ICAO English Level 4 (Operational) is a mandatory requirement for your DGCA CPL and RTR(A) licence. Airborne Aviation Academy prepares candidates at Ramphal Chowk, Dwarka — structured training across all six ICAO ELP components, with mock test sessions and individual pronunciation coaching.
+                ICAO English Level 4 (Operational) is a mandatory requirement for your DGCA CPL and RTR(A) licence. Airborne Aviation Academy prepares candidates at Ramphal Chowk, Dwarka - structured training across all six ICAO ELP components, with mock test sessions and individual pronunciation coaching.
               </p>
             </div>
 
@@ -99,7 +99,7 @@ export default function AviationEnglishPage() {
                 What Is ICAO English Level 4?
               </h2>
               <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: '0 0 1.5rem 0' }}>
-                ICAO (International Civil Aviation Organisation) rates pilot English Language Proficiency (ELP) on a 6-point scale. Level 4 — Operational — is the minimum required for DGCA CPL issuance and RTR(A) certification. The test evaluates six components: Pronunciation, Structure, Vocabulary, Fluency, Comprehension, and Interactions. All six must reach Level 4 to pass.
+                ICAO (International Civil Aviation Organisation) rates pilot English Language Proficiency (ELP) on a 6-point scale. Level 4 - Operational - is the minimum required for DGCA CPL issuance and RTR(A) certification. The test evaluates six components: Pronunciation, Structure, Vocabulary, Fluency, Comprehension, and Interactions. All six must reach Level 4 to pass.
               </p>
               {/* ICAO Levels Table */}
               <div className="course-table-wrap" style={{ overflowX: 'auto' }}>
@@ -131,8 +131,8 @@ export default function AviationEnglishPage() {
               </h2>
               <ul className="course-list">
                 {[
-                  'All CPL aspirants — DGCA CPL issuance requires ICAO ELP Level 4 minimum',
-                  'RTR (Aero) applicants — RTR(A) certification requires ICAO Level 4',
+                  'All CPL aspirants - DGCA CPL issuance requires ICAO ELP Level 4 minimum',
+                  'RTR (Aero) applicants - RTR(A) certification requires ICAO Level 4',
                   'Cabin crew candidates applying to international airlines (some require Level 4)',
                   'Pilots trained abroad seeking DGCA license conversion',
                 ].map((item, i) => (
@@ -165,7 +165,7 @@ export default function AviationEnglishPage() {
                 {[
                   { q: 'Is ICAO English Level 4 mandatory for CPL in India?', a: 'Yes. DGCA India requires a minimum ICAO English Language Proficiency (ELP) Level 4 for CPL issuance and RTR(A) certification. Candidates must demonstrate Level 4 proficiency across all six ICAO ELP components.' },
                   { q: 'How long does the Aviation English ICAO L4 course take?', a: '1–3 months depending on current proficiency level. Students with strong English foundations may be test-ready in 4–6 weeks. Those needing more structured improvement typically take 2–3 months.' },
-                  { q: 'Where is the ICAO English Level 4 test taken?', a: 'ICAO ELP testing is conducted by DGCA-approved test centres in India — not at Airborne. Airborne prepares candidates for the test. The actual ELP assessment is at the DGCA-approved evaluator centre.' },
+                  { q: 'Where is the ICAO English Level 4 test taken?', a: 'ICAO ELP testing is conducted by DGCA-approved test centres in India - not at Airborne. Airborne prepares candidates for the test. The actual ELP assessment is at the DGCA-approved evaluator centre.' },
                   { q: 'What are the 6 ICAO ELP components?', a: 'Pronunciation, Structure (grammar), Vocabulary, Fluency, Comprehension, and Interactions. Level 4 (Operational) must be achieved in all six components simultaneously.' },
                 ].map((faq, i) => (
                   <div key={i} className="course-faq-item">

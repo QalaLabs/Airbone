@@ -201,7 +201,7 @@ export default function CRMDealsPage() {
             <div>
               <p className="text-xs text-muted-foreground font-semibold">Avg Sales Cycle</p>
               <p className="text-2xl font-bold text-white mt-1">
-                {avgCycle !== null ? `${avgCycle} days` : "—"}
+                {avgCycle !== null ? `${avgCycle} days` : "-"}
               </p>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/10">

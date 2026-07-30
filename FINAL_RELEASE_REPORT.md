@@ -1,4 +1,4 @@
-# FINAL RELEASE REPORT — Airborne Aviation RC 1.0
+# FINAL RELEASE REPORT - Airborne Aviation RC 1.0
 
 **Branch:** `release/rc-1.0` @ `f7e5f9c` (+ merge `6b4dcd5`)  
 **Date:** 2026-07-25  
@@ -16,11 +16,11 @@ Preview (RC):
 |---|---|
 | Branch | `release/rc-1.0` |
 | Includes | Phase A (via `main` PR #5) + B + C + D + RC stabilization |
-| Tip commit | `f7e5f9c` — lead bypass, R2/Inngest graceful, TEACHER demo |
+| Tip commit | `f7e5f9c` - lead bypass, R2/Inngest graceful, TEACHER demo |
 | Remote | `origin/release/rc-1.0` pushed |
 | PR link | https://github.com/QalaLabs/Airbone/pull/new/release/rc-1.0 |
 
-Phases already linear on branch history — no duplicate migrations/models/routes introduced in merge.
+Phases already linear on branch history - no duplicate migrations/models/routes introduced in merge.
 
 ---
 
@@ -29,16 +29,16 @@ Phases already linear on branch history — no duplicate migrations/models/route
 | Step | Result |
 |---|---|
 | Base | `feature/phase-d-portal-ux` (A→D history) |
-| `git merge main` | Clean ort merge — absorbed Phase A PR #5 (`29a3f4e`) |
+| `git merge main` | Clean ort merge - absorbed Phase A PR #5 (`29a3f4e`) |
 | Conflicts | None |
-| Migrations | Still **4** files — no duplicates |
+| Migrations | Still **4** files - no duplicates |
 | Prisma models | No schema change this RC |
 
 ---
 
 ## 3. Environment Matrix
 
-Presence only — never print secret values.  
+Presence only - never print secret values.  
 App uses `AUTH_SECRET` / `AUTH_URL` (Auth.js v5), not legacy `NEXTAUTH_*` names.
 
 ### Admin
@@ -49,7 +49,7 @@ App uses `AUTH_SECRET` / `AUTH_URL` (Auth.js v5), not legacy `NEXTAUTH_*` names.
 | DIRECT_URL | Required (migrate) | Configured | Configured | Configured |
 | AUTH_SECRET | Required | Configured | Configured | Configured |
 | AUTH_URL | Required* | localhost | Configured (per Preview URL) | Configured |
-| AUTH_TRUST_HOST | Recommended | — | Configured | — |
+| AUTH_TRUST_HOST | Recommended | - | Configured | - |
 | PUBLIC_INTAKE_KEY | Required | Configured | Configured | Configured |
 | PUBLIC_ORG_SLUG | Optional | Configured | Configured | Configured |
 | NEXT_PUBLIC_APP_URL | Optional | Configured | Configured | Configured |
@@ -68,7 +68,7 @@ App uses `AUTH_SECRET` / `AUTH_URL` (Auth.js v5), not legacy `NEXTAUTH_*` names.
 | SUPABASE_URL | Required (fallback) | Configured | Configured | Configured |
 | SUPABASE_ANON_KEY | Required (fallback) | Configured | Configured | Configured |
 | SUPABASE_SERVICE_ROLE_KEY | Optional | Missing | Missing | Missing |
-| ADMIN_PROTECTION_BYPASS | Preview-only | — | Configured | Not needed (no SSO on prod API host) |
+| ADMIN_PROTECTION_BYPASS | Preview-only | - | Configured | Not needed (no SSO on prod API host) |
 | N8N / Voice webhooks | Optional | Empty | Empty | Empty |
 
 ### Graceful optional behaviour
@@ -102,7 +102,7 @@ All APPLIED. No `migrate reset`. No `db push`.
 
 Provision: `cd admin && node scripts/ensure-demo-roles.mjs` (idempotent; TEACHER **created** on live DB this session).
 
-**Product note:** TEACHER is a first-class role — not substituted with ADMIN.
+**Product note:** TEACHER is a first-class role - not substituted with ADMIN.
 
 ---
 
@@ -121,7 +121,7 @@ Provision: `cd admin && node scripts/ensure-demo-roles.mjs` (idempotent; TEACHER
 | Authed Student portal | PASS 200 |
 | Cookies / sessions / RBAC | PASS (3 roles) |
 | SSR HTML | PASS (large HTML payloads) |
-| Full browser hydration / Lighthouse / tablet visual | Not automated — residual risk §11 |
+| Full browser hydration / Lighthouse / tablet visual | Not automated - residual risk §11 |
 
 ---
 
@@ -143,8 +143,8 @@ Provision: `cd admin && node scripts/ensure-demo-roles.mjs` (idempotent; TEACHER
 
 ## 8. Production Deployment Checklist
 
-1. Open PR: `release/rc-1.0` → `main` — review + merge  
-2. Confirm Production env (Admin + Marketing) per §3 — set `AUTH_URL` / `ADMIN_API_URL` to **Production hostnames**  
+1. Open PR: `release/rc-1.0` → `main` - review + merge  
+2. Confirm Production env (Admin + Marketing) per §3 - set `AUTH_URL` / `ADMIN_API_URL` to **Production hostnames**  
 3. Do **not** set `ADMIN_PROTECTION_BYPASS` on Production unless SSO blocks server-to-server  
 4. Optional: add R2 + Inngest before demoing uploads/background jobs  
 5. `cd admin && npx prisma migrate status` (expect up to date)  
@@ -226,4 +226,4 @@ Cert sample: `VERIFY-NAV-0001`
 
 ### RC commit included in git (no Preview-only critical fixes)
 
-`f7e5f9c` — lead optional bypass header, adminApi bypass header, STORAGE_UNAVAILABLE, Inngest safe emit, ensure-demo-roles, TEACHER seed.
+`f7e5f9c` - lead optional bypass header, adminApi bypass header, STORAGE_UNAVAILABLE, Inngest safe emit, ensure-demo-roles, TEACHER seed.

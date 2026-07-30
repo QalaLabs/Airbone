@@ -440,9 +440,9 @@ export default function GlobalRouteMap() {
       <div className="grm-header-wrap container-fluid" style={{ position:'relative', zIndex:20, padding:'2.5rem clamp(1.25rem,4vw,3.5rem) 0', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <motion.div initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.7 }}
           style={{ display:'flex', alignItems:'center', gap:'0.65rem', marginBottom:'0.5rem' }}>
-          <span style={{ color: '#DB241E', fontWeight: 900, fontSize: '0.85rem' }}>—</span>
+          <span style={{ color: '#DB241E', fontWeight: 900, fontSize: '0.85rem' }}>-</span>
           <span style={{ fontFamily:'var(--font-h)', fontSize:'0.62rem', fontWeight:800, letterSpacing:'0.28em', textTransform:'uppercase', color:'#fff' }}>One Headquarters.</span>
-          <span style={{ color: '#DB241E', fontWeight: 900, fontSize: '0.85rem' }}>—</span>
+          <span style={{ color: '#DB241E', fontWeight: 900, fontSize: '0.85rem' }}>-</span>
         </motion.div>
         
         <motion.h2 initial={{ opacity:0, y:28 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.85, delay:0.1, ease:[0.16,1,0.3,1] }}
@@ -452,7 +452,7 @@ export default function GlobalRouteMap() {
         
         <motion.p initial={{ opacity:0, y:16 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.7, delay:0.25 }}
           style={{ marginTop:'0.8rem', color:'rgba(255,255,255,0.7)', fontSize:'0.95rem', lineHeight:1.65, maxWidth:'700px', fontFamily:'var(--font-b)' }}>
-          From Ramphal Chowk, Dwarka — our pilots command cockpits on every continent. <br/>
+          From Ramphal Chowk, Dwarka - our pilots command cockpits on every continent. <br/>
           <span style={{ color: 'rgba(255,255,255,0.45)' }}>We train here. They fly everywhere.</span>
         </motion.p>
         

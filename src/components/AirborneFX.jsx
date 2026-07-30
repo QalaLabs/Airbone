@@ -370,7 +370,7 @@ export function JourneyMap() {
             <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>One route map.</span>
           </h2>
           <p style={{ marginTop: '1.5rem', color: 'rgba(255,255,255,0.65)', fontSize: '0.9375rem', lineHeight: 1.7, maxWidth: '28rem' }}>
-            From Dwarka to Dubai, Doha and beyond — every dot on this map is a cockpit one of our pilots now commands.
+            From Dwarka to Dubai, Doha and beyond - every dot on this map is a cockpit one of our pilots now commands.
           </p>
 
           <ul style={{ marginTop: '2rem', listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>

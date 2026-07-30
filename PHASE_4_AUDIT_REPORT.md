@@ -43,7 +43,7 @@ Source: `scratch/pdf_content.txt` (★ NEW PAGE). Appendix SEO conflicts flagged
 **Changes**
 - Title → `ATPL Ground School India | All Subjects | Airborne Aviation`
 - Meta/OG/Twitter align; drop `3-month` meta (body/FAQ stay 4–6 months)
-- FAQ H2 → `FAQs — ATPL Ground School`
+- FAQ H2 → `FAQs - ATPL Ground School`
 
 **Files:** `src/app/courses/atpl/page.jsx`
 
@@ -66,9 +66,9 @@ Source: `scratch/pdf_content.txt` (★ NEW PAGE). Appendix SEO conflicts flagged
 **Files:** `src/app/courses/flying-training-india-abroad/page.jsx`
 
 **⚠ Manual Review**
-1. H1 live `…Which Path Is Right for You?` vs PRD `…Complete Guide for 2026` — left live
-2. Technical General exemption / Composite Paper — **not in PRD NEW PAGE**. Not invented.
-3. PDF conflict: table India ₹55–65L vs FAQ India ₹65–75L — table + FAQ each follow own PRD block
+1. H1 live `…Which Path Is Right for You?` vs PRD `…Complete Guide for 2026` - left live
+2. Technical General exemption / Composite Paper - **not in PRD NEW PAGE**. Not invented.
+3. PDF conflict: table India ₹55–65L vs FAQ India ₹65–75L - table + FAQ each follow own PRD block
 
 --------------------------------
 
@@ -101,7 +101,7 @@ Copy/H2/FAQ updates on airline, cas, flying. ATPL FAQ Qs already matched.
 
 ## Build
 
-**Result:** ✅ `npm run build` — 45 pages, 0 failures. Expected Admin OS `ECONNREFUSED` during SSG.
+**Result:** ✅ `npm run build` - 45 pages, 0 failures. Expected Admin OS `ECONNREFUSED` during SSG.
 
 --------------------------------
 
@@ -109,4 +109,4 @@ Copy/H2/FAQ updates on airline, cas, flying. ATPL FAQ Qs already matched.
 
 **✅ Corrected Successfully** for ★ NEW PAGE mismatches.
 
-**⚠ Requires Manual Review** — flying H1 subtitle, Technical General exemption wording, PDF table-vs-FAQ cost conflict.
+**⚠ Requires Manual Review** - flying H1 subtitle, Technical General exemption wording, PDF table-vs-FAQ cost conflict.
