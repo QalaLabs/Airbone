@@ -22,6 +22,29 @@ export const revalidate = 60
 export default async function CoursesPage() {
   const courses = await fetchPublic('/courses', { limit: 20 }) ?? []
 
+  const COURSE_ORDER = {
+    'flying-training-india-abroad': 1,
+    'flying-training': 1,
+    'gd-pi': 2,
+    'airline-preparation': 3,
+    'atpl': 4,
+    'commercial-pilot-license-cpl': 5,
+    'cpl-ground-classes': 5,
+    'cas-compass-adapt': 6,
+    'cadet-preparation': 7,
+    'a320-simulator': 8,
+    'cabin-crew-training': 10,
+    'cabin-crew': 10,
+    'private-pilot-license': 11,
+    'multi-engine-rating': 12
+  }
+
+  courses.sort((a, b) => {
+    const orderA = COURSE_ORDER[a.slug] ?? 100
+    const orderB = COURSE_ORDER[b.slug] ?? 100
+    return orderA - orderB
+  })
+
   const flagship = courses.find((c) => c.metadata?.flagship === true) ?? courses[0] ?? null
   const supporting = flagship ? courses.filter((c) => c.id !== flagship.id) : []
 
@@ -289,16 +312,17 @@ export default async function CoursesPage() {
               <tbody>
                 {[
                   { name: 'Commercial Pilot License (CPL)', slug: 'flying-training-india-abroad', dur: '12–18 months', fee: '₹65 Lakh* (45–75 Lacs)', dgca: '✓' },
-                  { name: 'DGCA CPL Ground School', slug: 'commercial-pilot-license-cpl', dur: '3–6 months', fee: '₹2,70,000', dgca: '✓' },
                   { name: 'GD & PI Course', slug: 'gd-pi', dur: '3 months', fee: '₹30,000', dgca: '—' },
                   { name: 'Airline Interview Preparation', slug: 'airline-preparation', dur: '3 months', fee: '₹1,50,000', dgca: '—' },
                   { name: 'ATPL Ground School', slug: 'atpl', dur: '2–3 months · Age 21+', fee: '₹1,50,000', dgca: '✓' },
+                  { name: 'DGCA CPL Ground School', slug: 'commercial-pilot-license-cpl', dur: '3–6 months', fee: '₹2,70,000', dgca: '✓' },
+                  { name: 'CAS Compass & ADAPT', slug: 'cas-compass-adapt', dur: '1 month', fee: '₹30,000', dgca: '—' },
+                  { name: 'Cadet Pilot Preparation', slug: 'cadet-preparation', dur: 'Flexible', fee: '₹50,000', dgca: '—' },
+                  { name: 'Airbus A320 Simulator FBS', slug: 'a320-simulator', dur: 'Flexible', fee: '₹12,000', dgca: '✓' },
+                  { name: 'Parent Centric Flying Guide', slug: 'flying-training-india-abroad', dur: 'Guidance', fee: 'Free', dgca: '—' },
+                  { name: 'Cabin Crew Training', slug: 'cabin-crew-training', dur: '3–6 months', fee: '₹0* Scholarship / ₹59,000', dgca: '—' },
                   { name: 'Private Pilot License (PPL)', slug: 'private-pilot-license', dur: '3–6 months', fee: '₹25,00,000', dgca: '✓' },
                   { name: 'Multi-Engine Rating', slug: 'multi-engine-rating', dur: '1–2 months', fee: '₹3–5L', dgca: '✓' },
-                  { name: 'Airbus A320 Simulator FBS', slug: 'a320-simulator', dur: 'Flexible', fee: '₹12,000', dgca: '✓' },
-                  { name: 'Cabin Crew Training', slug: 'cabin-crew-training', dur: '3–6 months', fee: '₹0* Scholarship / ₹59,000', dgca: '—' },
-                  { name: 'Cadet Pilot Preparation', slug: 'cadet-preparation', dur: 'Flexible', fee: '₹50,000', dgca: '—' },
-                  { name: 'Parent Centric Flying Guide', slug: 'flying-training-india-abroad', dur: 'Guidance', fee: 'Free', dgca: '—' },
                 ].map((row, idx) => (
                   <tr
                     key={idx}
