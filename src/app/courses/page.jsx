@@ -1,13 +1,133 @@
-import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-import LeadForm from '@/components/LeadForm'
 import Breadcrumb from '@/components/Breadcrumb'
 import JsonLd from '@/components/JsonLd'
-import { fetchPublic } from '@/lib/adminApi'
-import { displayCourseFee } from '@/lib/courseFees'
+import ProgramCard from '@/components/ProgramCard'
 import { buildCoursesIndexGraph } from '@/lib/schema'
 import { COURSES_INDEX_ITEMS } from '@/lib/schema/courseRegistry'
+
+const ALL_COURSES = [
+  {
+    id: 'cpl',
+    title: 'Commercial Pilot License (CPL)',
+    tag: 'Flying Training',
+    duration: '12–18 Months',
+    desc: 'Complete CPL path with flying training guidance and Indian CPL conversion support. Cost may vary ₹45–75 Lakh (typical ~₹65 Lakh). Duration: 12–18 months.',
+    price: '₹65 Lakh*',
+    href: '/courses/flying-training-india-abroad',
+    accent: 'var(--red)',
+  },
+  {
+    id: 'gd-pi',
+    title: 'GD & PI Course',
+    tag: 'GD / PI',
+    duration: '3 Months',
+    desc: 'Group discussions, panel interviews, and personal development masterclasses led by retired Air India AGM Rajeet Khalsa. Duration: 3 months.',
+    price: '₹30,000',
+    href: '/courses/gd-pi',
+    accent: 'var(--gold)',
+  },
+  {
+    id: 'airline-prep',
+    title: 'Airline Interview Preparation',
+    tag: 'Airline Prep',
+    duration: '3 Months',
+    desc: 'Structured airline interview preparation - GD, PI, and soft skills for IndiGo, Air India, Akasa and more. Duration: 3 months.',
+    price: '₹1,50,000',
+    href: '/courses/airline-preparation',
+    accent: 'var(--red)',
+  },
+  {
+    id: 'atpl',
+    title: 'ATPL Ground School',
+    tag: 'Ground School',
+    duration: '2–3 Months',
+    desc: 'DGCA ATPL written and viva preparation for commercial pilots upgrading toward command. Eligibility: 21 years. Duration: 2–3 months.',
+    price: '₹1,50,000',
+    href: '/courses/atpl',
+    accent: 'var(--gold)',
+  },
+  {
+    id: 'dgca-ground-school',
+    title: 'DGCA CPL Ground School',
+    tag: 'Ground School',
+    duration: '3–6 Months',
+    desc: 'Intensive ground school covering DGCA CPL subjects. Eligibility: 10+2 Physics & Maths. Duration: 3–6 months. Taught by Capt. Navrang Singh.',
+    price: '₹2,70,000',
+    href: '/courses/commercial-pilot-license-cpl',
+    accent: 'var(--gold)',
+  },
+  {
+    id: 'cas-compass',
+    title: 'CASS Compass & ADAPT',
+    tag: 'Aptitude Test',
+    duration: '1 Month',
+    desc: 'Structured preparation for airline pilot aptitude test batteries - numerical, spatial, psychomotor, and multi-tasking.',
+    price: '₹30,000',
+    href: '/courses/cas-compass-adapt',
+    accent: 'var(--gold)',
+  },
+  {
+    id: 'cadet',
+    title: 'Cadet Preparation',
+    tag: 'Cadet Selection',
+    duration: 'Flexible',
+    desc: 'The quickest entry into aviation. IndiGo, Air India, and Akasa cadet pilot program preparation.',
+    price: '₹50,000',
+    href: '/courses/cadet-preparation',
+    accent: 'var(--red)',
+  },
+  {
+    id: 'simulator',
+    title: 'Airbus A320 Simulator FBS',
+    tag: 'Simulator',
+    duration: 'Flexible',
+    desc: 'In-house Airbus A320 FBS simulator. Eligibility: CPL. Type rating familiarisation and airline SIM prep.',
+    price: '₹12,000',
+    href: '/courses/a320-simulator',
+    accent: 'var(--gold)',
+  },
+  {
+    id: 'flying-guide',
+    title: 'Parent Centric Flying Guide',
+    tag: 'Parents',
+    duration: 'Flexible',
+    desc: 'Comprehensive CPL flight training guidance and Indian CPL conversion support - built for parents and aspirants.',
+    price: 'Free',
+    href: '/courses/flying-training-india-abroad',
+    accent: 'var(--red)',
+  },
+  {
+    id: 'cabin-crew',
+    title: 'Cabin Crew Training',
+    tag: 'Hospitality',
+    duration: '3–6 Months',
+    desc: 'Cabin crew & aviation hospitality training with 100%* scholarship offer upon scoring ≥70%.',
+    price: '₹59,000',
+    href: '/courses/cabin-crew-training',
+    accent: 'var(--gold)',
+  },
+  {
+    id: 'ppl',
+    title: 'Private Pilot License',
+    tag: 'Flying Training',
+    duration: '3–6 Months',
+    desc: 'Initial pilot license program. Complete flight training hours and ground school preparation for private pilot license certification.',
+    price: '₹25,00,000',
+    href: '/courses/private-pilot-license',
+    accent: 'var(--red)',
+  },
+  {
+    id: 'me',
+    title: 'Multi-Engine Rating',
+    tag: 'Flying Training',
+    duration: '1–2 Months',
+    desc: 'Advanced multi-engine flight training rating. Build proficiency on multi-engine aircraft systems, operations, and check-rides.',
+    price: '₹3–5 Lakh*',
+    href: '/courses/multi-engine-rating',
+    accent: 'var(--red)',
+  },
+]
 
 export const metadata = {
   title: 'Pilot Training Courses in Delhi CPL, ATPL, Cabin Crew | Airborne',
@@ -20,37 +140,6 @@ const coursesIndexGraph = buildCoursesIndexGraph(COURSES_INDEX_ITEMS)
 export const revalidate = 60
 
 export default async function CoursesPage() {
-  const courses = await fetchPublic('/courses', { limit: 20 }) ?? []
-
-  const COURSE_ORDER = {
-    'flying-training-india-abroad': 1,
-    'flying-training': 1,
-    'gd-pi': 2,
-    'airline-preparation': 3,
-    'atpl': 4,
-    'commercial-pilot-license-cpl': 5,
-    'cpl-ground-classes': 5,
-    'cas-compass-adapt': 6,
-    'cadet-preparation': 7,
-    'a320-simulator': 8,
-    'cabin-crew-training': 10,
-    'cabin-crew': 10,
-    'private-pilot-license': 11,
-    'multi-engine-rating': 12
-  }
-
-  courses.sort((a, b) => {
-    const orderA = COURSE_ORDER[a.slug] ?? 100
-    const orderB = COURSE_ORDER[b.slug] ?? 100
-    return orderA - orderB
-  })
-
-  const flagship = courses.find((c) => c.metadata?.flagship === true) ?? courses[0] ?? null
-  const supporting = flagship ? courses.filter((c) => c.id !== flagship.id) : []
-
-  // Helper: pull extra display fields from metadata JSON
-  const meta = (course, key, fallback = null) =>
-    course?.metadata?.[key] ?? fallback
 
   return (
     <>
@@ -72,278 +161,70 @@ export default async function CoursesPage() {
           </p>
         </div>
 
-        {/* Empty state */}
-        {courses.length === 0 && (
-          <div style={{ padding: '6rem 2rem', textAlign: 'center', background: 'var(--navy-95)', border: '1px dashed rgba(255,255,255,0.12)', borderRadius: '6px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '1rem', marginBottom: '1rem' }}>
-              Course catalog is being updated.
-            </p>
-            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.875rem' }}>
-              Contact us at <a href="tel:+919953777320" style={{ color: 'var(--gold)' }}>+91 9953 777 320</a> for current batch information.
-            </p>
-          </div>
-        )}
-
-        {/* Flagship Program */}
-        {flagship && (
+        {/* Heading Section */}
+        <div style={{ marginBottom: '2.5rem' }}>
           <div
-            className="cpl-hero-banner cpl-grid-layout"
             style={{
-              borderRadius: '12px',
-              marginBottom: '5rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              marginBottom: '1rem',
             }}
           >
-            <div className="cpl-badge-ribbon">FLAGSHIP</div>
-
-            {/* Left Info Column */}
-            <div>
-              <span className="badge" style={{ borderColor: 'var(--gold)', background: 'rgba(216,160,39,0.15)', color: 'var(--gold)', marginBottom: '1.25rem', boxShadow: 'none' }}>
-                ⭐ {meta(flagship, 'batch', 'Next batch — contact us')}
-              </span>
-              <h2 className="ov-h1" style={{ fontSize: 'clamp(1.8rem, 4.5vw, 2.8rem)', fontWeight: 900, textTransform: 'uppercase', lineHeight: '1.1' }}>
-                <Link href={`/courses/${flagship.slug}`} style={{ color: 'var(--navy)', textDecoration: 'none' }}>
-                  {flagship.title}
-                </Link>
-              </h2>
-              <p style={{ fontSize: '0.98rem', color: 'var(--gold)', fontWeight: 700, margin: '1rem 0 1.5rem 0', letterSpacing: '0.05em' }}>
-                {flagship.subtitle ?? meta(flagship, 'tagline', '')}
-              </p>
-              <p style={{ fontSize: '0.88rem', color: 'rgba(33,33,33,0.75)', lineHeight: '1.75', marginBottom: '2rem' }}>
-                {flagship.description ?? ''}
-              </p>
-
-              {/* Subjects from curriculum */}
-              {Array.isArray(flagship.curriculum) && flagship.curriculum.length > 0 && (
-                <div style={{ marginBottom: '2.5rem' }}>
-                  <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(0, 39, 76, 0.65)', fontWeight: 700, marginBottom: '1rem' }}>
-                    Core Program Syllabus
-                  </h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
-                    {flagship.curriculum.map((m) => (
-                      <div key={m.module} style={{ background: 'rgba(0, 39, 76, 0.04)', borderLeft: '2px solid var(--gold)', padding: '0.75rem 1rem', fontSize: '0.82rem', color: 'var(--navy)', fontWeight: 600 }}>
-                        ✓ {m.module}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                {displayCourseFee(flagship.slug, flagship.fee) && (
-                  <div>
-                    <span style={{ fontSize: '0.62rem', color: 'rgba(0, 39, 76, 0.5)', textTransform: 'uppercase', display: 'block', marginBottom: '0.2rem' }}>Tuition Fee</span>
-                    <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.6rem', fontWeight: 900, color: 'var(--gold)' }}>
-                      {displayCourseFee(flagship.slug, flagship.fee)}
-                    </span>
-                  </div>
-                )}
-                <div>
-                  <Link href={`/courses/${flagship.slug}`} className="btn btn-ghost" style={{ padding: '0.9rem 2rem', textDecoration: 'none' }}>
-                    Detailed Curriculum →
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            {/* Image */}
-            {meta(flagship, 'image') && (
-              <div className="cpl-banner-image-wrap" style={{ borderRadius: '8px' }}>
-                <Link href={`/courses/${flagship.slug}`} style={{ display: 'block' }}>
-                  <img src={meta(flagship, 'image')} alt={flagship.title} className="cpl-banner-image" />
-                </Link>
-              </div>
-            )}
-
-            {/* Lead Form */}
-            <div>
-              <LeadForm
-                courseName={flagship.title}
-                source="Flagship Featured Banner"
-                successMessage="Your enquiry has been received."
-              />
-            </div>
+            <span
+              style={{
+                height: '1px',
+                width: '2rem',
+                background: 'var(--red)',
+              }}
+            />
+            <span
+              className="chapter-num"
+              style={{
+                color: 'var(--red)',
+                fontFamily: 'var(--font-h)',
+                fontSize: '0.625rem',
+                letterSpacing: '0.25em',
+                textTransform: 'uppercase',
+                fontWeight: 800,
+              }}
+            >
+              AT A GLANCE
+            </span>
           </div>
-        )}
+          <h2
+            className="display-xl"
+            style={{
+              fontSize: 'clamp(2rem, 4vw, 3.2rem)',
+              color: 'var(--navy)',
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              margin: 0,
+              lineHeight: 1.1,
+            }}
+          >
+            ALL COURSES AT AIRBORNE
+          </h2>
+        </div>
 
-        {/* Supporting Courses */}
-        {supporting.length > 0 && (
-          <>
-            <div style={{ marginBottom: '2.5rem' }}>
-              <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start', color: 'var(--red)' }}>Supporting Programs</p>
-              <h2 className="ov-h2" style={{ marginTop: '0.5rem', color: '#fff' }}>Simulator &amp; Cadet Preparation Packages</h2>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem' }}>
-              {supporting.map((course) => (
-                <div
-                  key={course.id}
-                  className="course-page-card"
-                >
-                  {meta(course, 'image') && (
-                    <Link
-                      href={`/courses/${course.slug}`}
-                      style={{ display: 'block', width: '100%', height: '160px', overflow: 'hidden' }}
-                      tabIndex={-1}
-                      aria-hidden="true"
-                    >
-                      <img
-                        src={meta(course, 'image')}
-                        alt={course.title}
-                        className="course-card-image"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderBottom: '2.5px solid var(--gold)' }}
-                      />
-                    </Link>
-                  )}
-
-                  <div style={{ padding: '2rem', flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                        <span style={{ fontSize: '0.625rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--red)', fontWeight: 800 }}>
-                          {course.duration ?? ''}
-                        </span>
-                        {meta(course, 'availability') && (
-                          <span className="badge" style={{ fontSize: '0.55rem', padding: '0.2rem 0.5rem', margin: 0, borderColor: 'rgba(216,160,39,0.3)', background: 'rgba(216,160,39,0.05)', color: 'var(--gold)', boxShadow: 'none' }}>
-                            {meta(course, 'availability')}
-                          </span>
-                        )}
-                      </div>
-
-                      <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.15rem', fontWeight: 800, color: '#fff', marginBottom: '0.8rem', textTransform: 'uppercase', lineHeight: '1.3' }}>
-                        <Link href={`/courses/${course.slug}`} style={{ color: 'inherit', textDecoration: 'none' }}>
-                          {course.title}
-                        </Link>
-                      </h3>
-
-                      <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.6', marginBottom: '1.5rem', fontFamily: 'var(--font-b)' }}>
-                        {course.subtitle ?? ''}
-                      </p>
-                    </div>
-
-                    <div>
-                      {displayCourseFee(course.slug, course.fee) && (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.25rem', marginBottom: '1.5rem' }}>
-                          <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)' }}>Tuition Rate</span>
-                          <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.15rem', fontWeight: 700, color: 'var(--gold)' }}>
-                            {displayCourseFee(course.slug, course.fee)}
-                          </span>
-                        </div>
-                      )}
-
-                      <Link
-                        href={`/courses/${course.slug}`}
-                        className="btn btn-ghost"
-                        style={{ width: '100%', justifyContent: 'center', padding: '0.75rem 1rem', textDecoration: 'none', textAlign: 'center', display: 'block', background: 'rgba(255,255,255,0.06)', color: 'var(--gold)', borderColor: 'rgba(216,160,39,0.3)' }}
-                      >
-                        View Curriculum →
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* Course Comparison Table */}
-        <div style={{ marginTop: '5rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '4rem' }}>
-          <div style={{ marginBottom: '2.5rem' }}>
-            <p className="ov-eyebrow" style={{ margin: 0, justifyContent: 'flex-start', color: 'var(--red)' }}>At a Glance</p>
-            <h2 className="ov-h2" style={{ marginTop: '0.5rem', textTransform: 'uppercase', color: 'var(--navy)' }}>All Courses at Airborne</h2>
-          </div>
-
-          <style dangerouslySetInnerHTML={{ __html: `
-            .compare-row {
-              transition: background 0.2s;
-            }
-            .compare-course-link {
-              color: var(--navy);
-              text-decoration: none;
-              border-bottom: 1px solid rgba(216,160,39,0.35);
-              transition: color 0.2s, border-color 0.2s;
-              cursor: pointer;
-              outline: none;
-              padding-bottom: 1px;
-            }
-            .compare-course-link:hover {
-              color: var(--red);
-              border-color: var(--red);
-            }
-            .compare-course-link:focus-visible {
-              outline: 2px solid #D8A027;
-              outline-offset: 3px;
-              border-radius: 2px;
-            }
-            .courses-listing.theme-light .course-table-wrap {
-              background: #fff !important;
-              border: 1px solid rgba(0,39,76,0.08) !important;
-              box-shadow: 0 10px 30px rgba(0,39,76,0.06) !important;
-              border-radius: 8px;
-              padding: 0.5rem;
-            }
-            .courses-listing.theme-light .course-table th {
-              background: rgba(0,39,76,0.04) !important;
-              color: rgba(0,39,76,0.75) !important;
-              border-bottom-color: rgba(0,39,76,0.08) !important;
-            }
-            .courses-listing.theme-light .course-table td {
-              color: rgba(33,33,33,0.75) !important;
-              border-bottom-color: rgba(0,39,76,0.06) !important;
-              padding-top: 1.35rem !important;
-              padding-bottom: 1.35rem !important;
-            }
-            .courses-listing.theme-light .course-table tr:nth-child(even) {
-              background: rgba(0,39,76,0.02) !important;
-            }
-            .courses-listing.theme-light .course-table tr:hover {
-              background: rgba(216,160,39,0.08) !important;
-            }
-          `}} />
-
-          <div className="course-table-wrap" style={{ overflowX: 'auto' }}>
-            <table className="course-table" style={{ minWidth: '800px' }}>
-              <thead>
-                <tr>
-                  <th style={{ padding: '1.2rem 1.5rem' }}>Course</th>
-                  <th style={{ padding: '1.2rem 1.5rem' }}>Duration</th>
-                  <th style={{ padding: '1.2rem 1.5rem' }}>Est. Fee</th>
-                  <th style={{ padding: '1.2rem 1.5rem', textAlign: 'center' }}>DGCA Complied</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { name: 'Commercial Pilot License (CPL)', slug: 'flying-training-india-abroad', dur: '12–18 months', fee: '₹65 Lakh* (45–75 Lacs)', dgca: '✓' },
-                  { name: 'GD & PI Course', slug: 'gd-pi', dur: '3 months', fee: '₹30,000', dgca: '—' },
-                  { name: 'Airline Interview Preparation', slug: 'airline-preparation', dur: '3 months', fee: '₹1,50,000', dgca: '—' },
-                  { name: 'ATPL Ground School', slug: 'atpl', dur: '2–3 months · Age 21+', fee: '₹1,50,000', dgca: '✓' },
-                  { name: 'DGCA CPL Ground School', slug: 'commercial-pilot-license-cpl', dur: '3–6 months', fee: '₹2,70,000', dgca: '✓' },
-                  { name: 'CAS Compass & ADAPT', slug: 'cas-compass-adapt', dur: '1 month', fee: '₹30,000', dgca: '—' },
-                  { name: 'Cadet Pilot Preparation', slug: 'cadet-preparation', dur: 'Flexible', fee: '₹50,000', dgca: '—' },
-                  { name: 'Airbus A320 Simulator FBS', slug: 'a320-simulator', dur: 'Flexible', fee: '₹12,000', dgca: '✓' },
-                  { name: 'Parent Centric Flying Guide', slug: 'flying-training-india-abroad', dur: 'Guidance', fee: 'Free', dgca: '—' },
-                  { name: 'Cabin Crew Training', slug: 'cabin-crew-training', dur: '3–6 months', fee: '₹0* Scholarship / ₹59,000', dgca: '—' },
-                  { name: 'Private Pilot License (PPL)', slug: 'private-pilot-license', dur: '3–6 months', fee: '₹25,00,000', dgca: '✓' },
-                  { name: 'Multi-Engine Rating', slug: 'multi-engine-rating', dur: '1–2 months', fee: '₹3–5L', dgca: '✓' },
-                ].map((row, idx) => (
-                  <tr
-                    key={idx}
-                    className="compare-row"
-                  >
-                    <td style={{ padding: '1.35rem 1.5rem', fontWeight: 700 }}>
-                      {row.slug ? (
-                        <Link href={`/courses/${row.slug}`} className="compare-course-link">
-                          {row.name}
-                        </Link>
-                      ) : row.name}
-                    </td>
-                    <td style={{ padding: '1.35rem 1.5rem' }}>{row.dur}</td>
-                    <td style={{ padding: '1.35rem 1.5rem', fontWeight: 700, color: 'var(--gold)' }}>{row.fee}</td>
-                    <td style={{ padding: '1.35rem 1.5rem', textAlign: 'center', fontWeight: 900, color: row.dgca === '✓' ? 'var(--red)' : 'rgba(0,39,76,0.25)', fontSize: row.dgca === '✓' ? '1.1rem' : '0.9rem' }}>{row.dgca}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {/* Course Cards Grid */}
+        <div style={{ marginBottom: '5rem' }}>
+          <div className="program-grid-4x2">
+            {ALL_COURSES.map((program, idx) => (
+              <ProgramCard key={program.id} program={program} index={idx} />
+            ))}
           </div>
         </div>
+
+        <style>{`
+          .program-grid-4x2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+            gap: 1.5rem;
+          }
+        `}</style>
+
+
         </div>
 
       </main>

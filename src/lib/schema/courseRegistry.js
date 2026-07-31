@@ -132,9 +132,9 @@ export const COURSE_SCHEMA = {
   },
   'cas-compass-adapt': {
     slug: 'cas-compass-adapt',
-    name: 'CAS / Compass / ADAPT Prep',
+    name: 'CASS / Compass / ADAPT Prep',
     description:
-      'Structured preparation for DGCA CAS Compass and ADAPT pilot aptitude screening tests at Airborne Aviation Academy, Dwarka.',
+      'Structured preparation for DGCA CASS Compass and ADAPT pilot aptitude screening tests at Airborne Aviation Academy, Dwarka.',
     path: '/courses/cas-compass-adapt',
     courseMode: 'onsite',
   },
@@ -208,7 +208,7 @@ export const COURSES_INDEX_ITEMS = [
   { name: 'ATPL Ground School', path: '/courses/atpl', courseSlug: 'atpl' },
   { name: 'Cadet Pilot Program Prep', path: '/courses/cadet-preparation', courseSlug: 'cadet-preparation' },
   { name: 'Airbus A320 Simulator FBS', path: '/courses/a320-simulator', courseSlug: 'a320-simulator' },
-  { name: 'CAS / Compass / ADAPT Prep', path: '/courses/cas-compass-adapt', courseSlug: 'cas-compass-adapt' },
+  { name: 'CASS / Compass / ADAPT Prep', path: '/courses/cas-compass-adapt', courseSlug: 'cas-compass-adapt' },
   { name: 'Cabin Crew Training', path: '/courses/cabin-crew-training', courseSlug: 'cabin-crew-training' },
   { name: 'DGCA Ground School', path: '/courses/ground-school', courseSlug: 'ground-school' },
 ]

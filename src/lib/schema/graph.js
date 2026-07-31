@@ -57,7 +57,7 @@ export function buildHomeGraph(faqs = []) {
     buildCourseStub('cadet-preparation', 'Cadet Pilot Program Preparation', '/courses/cadet-preparation'),
     buildCourseStub('airline-preparation', 'Airline Interview Preparation', '/courses/airline-preparation'),
     buildCourseStub('gd-pi', 'GD & PI Course', '/courses/gd-pi'),
-    buildCourseStub('cas-compass-adapt', 'CAS / Compass / ADAPT Prep', '/courses/cas-compass-adapt'),
+    buildCourseStub('cas-compass-adapt', 'CASS / Compass / ADAPT Prep', '/courses/cas-compass-adapt'),
     buildCourseStub('a320-simulator', 'Airbus A320 Simulator FBS', '/courses/a320-simulator'),
     buildCourseStub('cabin-crew-training', 'Cabin Crew Training', '/courses/cabin-crew-training'),
   ]

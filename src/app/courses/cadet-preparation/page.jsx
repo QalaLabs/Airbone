@@ -173,7 +173,7 @@ export default function CadetPreparationPage() {
           relatedCourses={[
             { label: 'CPL Ground School', href: '/courses/commercial-pilot-license-cpl' },
             { label: 'ATPL Ground School', href: '/courses/atpl' },
-            { label: 'CAS Compass & ADAPT', href: '/courses/cas-compass-adapt' },
+            { label: 'CASS Compass & ADAPT', href: '/courses/cas-compass-adapt' },
             { label: 'All Courses', href: '/courses' },
           ]}
         />
