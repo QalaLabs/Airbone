@@ -29,7 +29,7 @@ const PROGRAMS = [
   { label: 'A320 Simulator FBS',       href: '/courses/a320-simulator' },
   { label: 'CASS / Compass / ADAPT',    href: '/courses/cas-compass-adapt' },
   { label: 'Cabin Crew Training',      href: '/courses/cabin-crew-training' },
-  { label: 'Parent Centric Guide',     href: '/courses/flying-training-india-abroad' },
+  { label: "Securing Your Child's Future in Aviation", href: '/courses/flying-training-india-abroad' },
 ]
 
 const SOCIAL_LINKS = [
