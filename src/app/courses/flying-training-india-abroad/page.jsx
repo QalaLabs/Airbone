@@ -46,7 +46,7 @@ const flyingGuideGraph = buildArticlePageGraph({
 
 const COMPARISON = [
   { param: 'Total Cost', india: '₹55–65 lakh (CPL)', abroad: '₹35–65 lakh depending on country' },
-  { param: 'Duration', india: '18–24 months', abroad: '12–18 months training + 12–18 months conversion' },
+  { param: 'Duration', india: '12–18 months', abroad: '12–18 months training + 12–18 months conversion' },
   { param: 'DGCA CPL Direct', india: 'Yes - issued directly by DGCA', abroad: 'No - requires conversion to DGCA CPL' },
   { param: 'Airline Eligibility', india: 'Immediately after CPL + required hours', abroad: 'After conversion + DGCA Skill Test' },
   { param: 'Weather', india: 'Variable - monsoon disruptions', abroad: 'Generally more consistent (Philippines, USA)' },
