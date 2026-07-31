@@ -302,9 +302,11 @@ img, video { display: block; max-width: 100%; }
   font-size: var(--h1); font-weight: 900;
   text-transform: uppercase; letter-spacing: .02em;
   line-height: .95; color: var(--white);
-  text-shadow: 0 4px 60px rgba(0,0,0,0.6);
 }
 .ov-h1 em { color: var(--red); font-style: normal; display: block; }
+.ov-dream .ov-h1 {
+  text-shadow: 0 4px 60px rgba(0,0,0,0.6);
+}
 
 .ov-h2 {
   font-family: var(--font-h);
@@ -2535,6 +2537,14 @@ html { scroll-behavior: smooth; }
 .theme-light .ov-h1,
 .theme-light .ov-h2 {
   color: var(--navy) !important;
+}
+.theme-light .ov-h1,
+.theme-light .ov-h2,
+.theme-light .display-xl,
+.course-main-wrapper .ov-h1,
+.course-main-wrapper .display-xl {
+  text-shadow: none !important;
+  box-shadow: none !important;
 }
 .theme-light .ov-body {
   color: rgba(33, 33, 33, 0.7) !important;
