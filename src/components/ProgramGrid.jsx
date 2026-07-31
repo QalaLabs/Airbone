@@ -89,7 +89,7 @@ const PROGRAMS = [
   },
   {
     id: 'flying-guide',
-    title: 'Parent Centric Flying Guide',
+    title: "Securing Your Child's Future in Aviation",
     tag: 'Parents',
     duration: 'Flexible',
     desc: 'Comprehensive CPL flight training guidance and Indian CPL conversion support - built for parents and aspirants.',

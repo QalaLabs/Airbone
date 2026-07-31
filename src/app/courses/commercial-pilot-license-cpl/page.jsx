@@ -258,7 +258,7 @@ export default function CPLPage() {
           whatsappText="Hi, I'm interested in the CPL Ground School at Airborne Aviation Academy, Dwarka. Please share next batch details and fee."
           nextCourses={[
             { label: 'ATPL Ground School', href: '/courses/atpl', note: 'Prepare for ATPL exams and upgrade to Captain - CPL holders only' },
-            { label: 'Parent Centric Flying Guide', href: '/courses/flying-training-india-abroad', note: 'Comprehensive CPL flight training guidance and Indian CPL conversion support' },
+            { label: "Securing Your Child's Future in Aviation", href: '/courses/flying-training-india-abroad', note: 'Comprehensive CPL flight training guidance and Indian CPL conversion support' },
             { label: 'GD & PI Course', href: '/courses/gd-pi', note: 'Group discussion and interview coaching' },
           ]}
           relatedCourses={[

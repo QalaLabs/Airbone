@@ -8,7 +8,7 @@ import CourseReviews from '@/components/CourseReviews'
 import { buildArticlePageGraph } from '@/lib/schema'
 
 export const metadata = {
-  title: 'Parent Centric Flying Guide | CPL India vs Abroad | Airborne',
+  title: "Securing Your Child's Future in Aviation | CPL India vs Abroad | Airborne",
   description: 'Comprehensive CPL flight training guidance and Indian CPL conversion support for parents and aspirants. India vs abroad cost, timeline, and DGCA pathway.',
   alternates: { canonical: '/courses/flying-training-india-abroad' },
 }
@@ -30,7 +30,7 @@ const FLYING_FAQS = [
 
 const flyingGuideGraph = buildArticlePageGraph({
   path: '/courses/flying-training-india-abroad',
-  headline: 'Parent Centric Flying Guide - Comprehensive CPL Flight Training Guidance and Indian CPL Conversion Support',
+  headline: "Securing Your Child's Future in Aviation - Comprehensive CPL Flight Training Guidance and Indian CPL Conversion Support",
   description:
     'A structured comparison of CPL flight training in India versus abroad, covering cost, timeline, DGCA license conversion, and airline hiring outcomes - built for parents and aspirants.',
   datePublished: '2026-01-10',
@@ -40,7 +40,7 @@ const flyingGuideGraph = buildArticlePageGraph({
   breadcrumbs: [
     { name: 'Home', path: '/' },
     { name: 'Courses', path: '/courses' },
-    { name: 'Parent Centric Flying Guide', path: '/courses/flying-training-india-abroad' },
+    { name: "Securing Your Child's Future in Aviation", path: '/courses/flying-training-india-abroad' },
   ],
 })
 
@@ -74,11 +74,11 @@ export default function FlyingTrainingIndiaAbroadPage() {
           <span>/</span>
           <Link href="/courses" >Courses</Link>
           <span>/</span>
-          <span className="current">Parent Centric Guide</span>
+          <span className="current">Securing Your Child&apos;s Future in Aviation</span>
         </div>
 
         <div className="course-hero-image-wrap" style={{ borderRadius: '8px' }}>
-          <img src="/footage/cockpit_instruments_closeup.jpg" alt="Parent Centric Flying Guide - CPL India vs Abroad" className="course-hero-image" />
+          <img src="/footage/cockpit_instruments_closeup.jpg" alt="Securing Your Child's Future in Aviation - CPL India vs Abroad" className="course-hero-image" />
           <div className="course-hero-overlay" style={{ background: 'linear-gradient(to top, rgba(0, 39, 76, 0.4) 0%, transparent 100%)' }} />
         </div>
 
@@ -88,7 +88,7 @@ export default function FlyingTrainingIndiaAbroadPage() {
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
-                Parent Centric Guide - Airborne Aviation Academy
+                Securing Your Child&apos;s Future in Aviation - Airborne Aviation Academy
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
                 Comprehensive CPL Flight Training Guidance and Indian CPL Conversion Support
