@@ -29,7 +29,6 @@ const coursePageGraph = buildCoursePageGraph({
 
 const USE_CASES = [
   { use: 'Type Rating Familiarisation', who: 'CPL holders preparing for A320 Type Rating', outcome: 'Cockpit familiarisation before SIM assessment' },
-  { use: 'Cadet Selection SIM Prep', who: 'Students applying to IndiGo JFO / airline cadet programs', outcome: 'Perform confidently at airline SIM assessment' },
   { use: 'Instrument Approach Practice', who: 'IR students / pilots', outcome: 'ILS, VOR, NDB approach proficiency' },
   { use: 'Emergency Procedure Training', who: 'CPL students and rated pilots', outcome: 'Engine failures, MAYDAY calls, evacuation procedures' },
   { use: 'Airline Interview SIM Check', who: 'Candidates at final stage of airline selection', outcome: 'Structured SIM debrief and performance feedback' },
