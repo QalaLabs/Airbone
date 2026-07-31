@@ -67,7 +67,7 @@ const STEPS = [
   {
     num: '07',
     title: 'Airline Preparation - GD/PI & Type Rating',
-    body: 'Airlines run structured cadet selection processes including CAS Compass and ADAPT aptitude tests, group discussions, simulator assessments, and technical interviews. A CPL alone does not secure a seat - targeted preparation is critical.',
+    body: 'Airlines run structured cadet selection processes including CASS Compass and ADAPT aptitude tests, group discussions, simulator assessments, and technical interviews. A CPL alone does not secure a seat - targeted preparation is critical.',
     note: null,
   },
 ]

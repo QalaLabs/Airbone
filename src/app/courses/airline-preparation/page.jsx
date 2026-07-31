@@ -420,7 +420,7 @@ export default function AirlinePreparationPage() {
           relatedCourses={[
             { label: 'GD & PI Course', href: '/courses/gd-pi' },
             { label: 'A320 Simulator FBS', href: '/courses/a320-simulator' },
-            { label: 'CAS / Compass / ADAPT Prep', href: '/courses/cas-compass-adapt' },
+            { label: 'CASS / Compass / ADAPT Prep', href: '/courses/cas-compass-adapt' },
             { label: 'CPL Ground School', href: '/courses/commercial-pilot-license-cpl' },
             { label: 'All Courses', href: '/courses' },
           ]}

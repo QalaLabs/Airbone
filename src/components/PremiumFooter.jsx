@@ -27,7 +27,7 @@ const PROGRAMS = [
   { label: 'DGCA CPL Ground Classes',  href: '/courses/commercial-pilot-license-cpl' },
   { label: 'Cadet Pilot Program',      href: '/courses/cadet-preparation' },
   { label: 'A320 Simulator FBS',       href: '/courses/a320-simulator' },
-  { label: 'CAS / Compass / ADAPT',    href: '/courses/cas-compass-adapt' },
+  { label: 'CASS / Compass / ADAPT',    href: '/courses/cas-compass-adapt' },
   { label: 'Cabin Crew Training',      href: '/courses/cabin-crew-training' },
   { label: 'Parent Centric Guide',     href: '/courses/flying-training-india-abroad' },
 ]

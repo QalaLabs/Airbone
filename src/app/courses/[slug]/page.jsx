@@ -33,8 +33,8 @@ const COURSE_SEO = {
     description: 'A320 simulator at Airborne Aviation Academy, Dwarka - 2,500+ students trained. Airline interview prep, type rating familiarisation, cadet selection practice. Book a session today.'
   },
   'cas-compass-adapt': {
-    title: 'CAS Compass & ADAPT Test Preparation | Pilot Aptitude | Airborne',
-    description: 'Prepare for DGCA CAS Compass and ADAPT pilot aptitude screening tests at Airborne Aviation Academy, Dwarka. Structured preparation for cadet pilot selection.'
+    title: 'CASS Compass & ADAPT Test Preparation | Pilot Aptitude | Airborne',
+    description: 'Prepare for DGCA CASS Compass and ADAPT pilot aptitude screening tests at Airborne Aviation Academy, Dwarka. Structured preparation for cadet pilot selection.'
   },
   'airline-preparation': {
     title: 'Airline Interview Prep Delhi | GD/PI & Personality | Airborne',
