@@ -10,8 +10,8 @@ import { buildCoursePageGraph } from '@/lib/schema'
 import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
-  title: 'CAS Compass & ADAPT Test Preparation | Pilot Aptitude | Airborne',
-  description: 'Prepare for DGCA CAS Compass and ADAPT pilot aptitude screening tests at Airborne Aviation Academy, Dwarka. Structured preparation for cadet pilot selection.',
+  title: 'CASS Compass & ADAPT Test Preparation | Pilot Aptitude | Airborne',
+  description: 'Prepare for DGCA CASS Compass and ADAPT pilot aptitude screening tests at Airborne Aviation Academy, Dwarka. Structured preparation for cadet pilot selection.',
   alternates: { canonical: '/courses/cas-compass-adapt' },
 }
 
@@ -24,7 +24,7 @@ const coursePageGraph = buildCoursePageGraph({
       a: 'Performance on timed tests improves substantially with familiarity and practice under time pressure. Structured preparation reduces first-exposure anxiety and helps candidates perform closer to their actual ability ceiling.',
     },
     {
-      q: 'Which airlines use CAS Compass or ADAPT?',
+      q: 'Which airlines use CASS Compass or ADAPT?',
       a: "Several Indian airlines use aptitude screening tools in cadet and direct entry selection. Airborne's preparation covers cognitive, spatial, and psychomotor components common across all major airline aptitude test formats.",
     },
   ],
@@ -51,11 +51,11 @@ export default function CASCompassAdaptPage() {
           <span>/</span>
           <Link href="/courses" >Courses</Link>
           <span>/</span>
-          <span className="current">CAS Compass & ADAPT Prep</span>
+          <span className="current">CASS Compass & ADAPT Prep</span>
         </div>
 
         <div className="course-hero-image-wrap" style={{ borderRadius: '8px' }}>
-          <img src="/footage/classroom_instructor.jpg" alt="CAS Compass and ADAPT Test Preparation at Airborne Aviation Academy" className="course-hero-image" />
+          <img src="/footage/classroom_instructor.jpg" alt="CASS Compass and ADAPT Test Preparation at Airborne Aviation Academy" className="course-hero-image" />
           <div className="course-hero-overlay" style={{ background: 'linear-gradient(to top, rgba(0, 39, 76, 0.4) 0%, transparent 100%)' }} />
         </div>
 
@@ -68,10 +68,10 @@ export default function CASCompassAdaptPage() {
                 📍 Dwarka, Delhi · ₹30,000
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
-                CAS Compass & ADAPT Pilot Aptitude Test Preparation | Dwarka, Delhi
+                CASS Compass & ADAPT Pilot Aptitude Test Preparation | Dwarka, Delhi
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
-                Airborne Aviation Academy offers structured preparation for the CAS Compass and ADAPT pilot aptitude test batteries used in airline and cadet selection. Our program covers all five domains — numerical, spatial, multi-tasking, psychomotor, and personality — with timed drills, hardware practice, and expert debrief.
+                Airborne Aviation Academy offers structured preparation for the CASS Compass and ADAPT pilot aptitude test batteries used in airline and cadet selection. Our program covers all five domains - numerical, spatial, multi-tasking, psychomotor, and personality - with timed drills, hardware practice, and expert debrief.
               </p>
             </div>
 
@@ -86,10 +86,10 @@ export default function CASCompassAdaptPage() {
 
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                What Is The CAS Compass Test?
+                What Is The CASS Compass Test?
               </h2>
               <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: 0 }}>
-                CAS Compass is an aviation-specific psychometric assessment evaluating cognitive ability, procedural learning, instrument interpretation, and suitability for pilot training — used by several Indian and international airline cadet programs as a first-round screening tool.
+                CASS Compass is an aviation-specific psychometric assessment evaluating cognitive ability, procedural learning, instrument interpretation, and suitability for pilot training - used by several Indian and international airline cadet programs as a first-round screening tool.
               </p>
             </div>
 
@@ -120,7 +120,7 @@ export default function CASCompassAdaptPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
                 {[
                   { q: 'Can aptitude test scores be improved with preparation?', a: 'Performance on timed tests improves substantially with familiarity and practice under time pressure. Structured preparation reduces first-exposure anxiety and helps candidates perform closer to their actual ability ceiling.' },
-                  { q: 'Which airlines use CAS Compass or ADAPT?', a: "Several Indian airlines use aptitude screening tools in cadet and direct entry selection. Airborne's preparation covers cognitive, spatial, and psychomotor components common across all major airline aptitude test formats." },
+                  { q: 'Which airlines use CASS Compass or ADAPT?', a: "Several Indian airlines use aptitude screening tools in cadet and direct entry selection. Airborne's preparation covers cognitive, spatial, and psychomotor components common across all major airline aptitude test formats." },
                 ].map((faq, i) => (
                   <div key={i} className="course-faq-item">
                     <h3 className="course-faq-q">{faq.q}</h3>
@@ -137,16 +137,16 @@ export default function CASCompassAdaptPage() {
               <div className="course-sidebar-card">
                 <span className="course-sidebar-label">Course Fee</span>
                 <div className="course-sidebar-price">₹30,000</div>
-                <span className="course-sidebar-note">All 5 domains · CAS Compass + ADAPT</span>
+                <span className="course-sidebar-note">All 5 domains · CASS Compass + ADAPT</span>
               </div>
-              <LeadForm courseName="CAS Compass & ADAPT Preparation" source="Course Detail: cas-compass-adapt" />
+              <LeadForm courseName="CASS Compass & ADAPT Preparation" source="Course Detail: cas-compass-adapt" />
             </div>
           </div>
 
         </div>
         <CourseReviews />
         <CoursePageFooter
-          whatsappText="Hi, I want to prepare for the CAS Compass / ADAPT pilot aptitude test at Airborne Aviation Academy, Dwarka. Please share details."
+          whatsappText="Hi, I want to prepare for the CASS Compass / ADAPT pilot aptitude test at Airborne Aviation Academy, Dwarka. Please share details."
           nextCourses={[
             { label: 'Cadet Pilot Preparation', href: '/courses/cadet-preparation', note: 'Full GD/PI and SIM prep for IndiGo, Air India & Akasa cadet programs' },
             { label: 'A320 Simulator', href: '/courses/a320-simulator', note: 'Practice the SIM assessment with our in-house A320 FTD' },

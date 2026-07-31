@@ -6,8 +6,8 @@ import JsonLd from '@/components/JsonLd'
 import { buildBlogIndexGraph } from '@/lib/schema'
 
 export const metadata = {
-  title: 'Aviation Blog — Pilot Training Guides | Airborne Aviation',
-  description: 'Guides on becoming a pilot in India, CPL costs, DGCA ground school, and pilot salaries — from Airborne Aviation Academy, Dwarka Delhi.',
+  title: 'Aviation Blog - Pilot Training Guides | Airborne Aviation',
+  description: 'Guides on becoming a pilot in India, CPL costs, DGCA ground school, and pilot salaries - from Airborne Aviation Academy, Dwarka Delhi.',
   alternates: { canonical: '/blog' },
 }
 
@@ -17,11 +17,11 @@ const POSTS = [
   {
     slug: 'how-to-become-pilot-india',
     title: 'How to Become a Pilot in India After Class 12',
-    excerpt: 'Step-by-step roadmap from Class 12 to CPL — medicals, ground school, flying hours, and airline entry.',
+    excerpt: 'Step-by-step roadmap from Class 12 to CPL - medicals, ground school, flying hours, and airline entry.',
   },
   {
     slug: 'pilot-training-cost-india',
-    title: 'Pilot Training Cost in India — Full Breakdown',
+    title: 'Pilot Training Cost in India - Full Breakdown',
     excerpt: 'Transparent cost ranges for ground school, flying training, medicals, and exams.',
   },
   {
@@ -49,7 +49,7 @@ export default function BlogIndexPage() {
             Aviation <em style={{ color: 'var(--gold)', fontStyle: 'normal' }}>Blog</em>
           </h1>
           <p style={{ marginTop: '1rem', color: 'rgba(33,33,33,0.65)', maxWidth: '40rem', lineHeight: 1.7 }}>
-            Practical guides for aspirants and parents — written from Dwarka training floor experience.
+            Practical guides for aspirants and parents - written from Dwarka training floor experience.
           </p>
 
           <div style={{ display: 'grid', gap: '1.25rem', marginTop: '3rem' }}>

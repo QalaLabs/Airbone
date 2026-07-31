@@ -29,12 +29,12 @@
 | Article / BlogPosting | ✅ | Article with author/publisher `@id` |
 | BreadcrumbList | ✅ | |
 | ImageObject | ✅ | Logo + primary images |
-| VideoObject | ⏭️ | Skipped — no embeds |
+| VideoObject | ⏭️ | Skipped - no embeds |
 | Service | ✅ | Counselling / guidance services |
-| Review | ⏭️ | Skipped — no star ratings |
-| AggregateRating | ⏭️ | Skipped — do not fabricate |
-| Event | ⏭️ | Skipped — no dated events |
-| LearningResource | ⏭️ | Deferred — Course covers primary need |
+| Review | ⏭️ | Skipped - no star ratings |
+| AggregateRating | ⏭️ | Skipped - do not fabricate |
+| Event | ⏭️ | Skipped - no dated events |
+| LearningResource | ⏭️ | Deferred - Course covers primary need |
 | EducationalOccupationalCredential | ✅ | Select courses |
 | WebSite | ✅ | No SearchAction |
 | Offer / OfferCatalog | ✅ | |
@@ -54,8 +54,8 @@
 
 **Manual QA (recommended before deploy):**
 
-1. [Google Rich Results Test](https://search.google.com/test/rich-results) — `/`, `/about`, `/contact`, `/courses/commercial-pilot-license-cpl`, `/blog/how-to-become-pilot-india`  
-2. [Schema.org Validator](https://validator.schema.org/) — paste View Source JSON-LD  
+1. [Google Rich Results Test](https://search.google.com/test/rich-results) - `/`, `/about`, `/contact`, `/courses/commercial-pilot-license-cpl`, `/blog/how-to-become-pilot-india`  
+2. [Schema.org Validator](https://validator.schema.org/) - paste View Source JSON-LD  
 3. Confirm View Source contains `application/ld+json` (SSR)  
 4. Confirm no duplicate Organization names as separate unrelated entities  
 5. Confirm FAQ questions in DOM match FAQ schema text exactly  

@@ -41,7 +41,7 @@ export default function StudentDetailPage() {
       return {
         ...res,
         name: (res.name as string) || `${firstName} ${lastName}`.trim() || "Unknown Student",
-        studentId: (res.studentId as string) || (res.studentCode as string) || "—",
+        studentId: (res.studentId as string) || (res.studentCode as string) || "-",
       } as Student;
     },
     enabled: !!id,
@@ -140,13 +140,13 @@ export default function StudentDetailPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Course</p>
-                  <p className="text-sm font-medium">{student.course?.title ?? "—"}</p>
+                  <p className="text-sm font-medium">{student.course?.title ?? "-"}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Campus</p>
                   <div className="flex items-center gap-2 text-sm font-medium">
                     <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-                    {student.campus?.name ?? "—"}
+                    {student.campus?.name ?? "-"}
                   </div>
                 </div>
                 {student.admission && (

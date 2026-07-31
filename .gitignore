@@ -5,11 +5,12 @@ node_modules/
 
 # Build outputs
 .next/
+.next-dev/
 out/
 dist/
 build/
 
-# Environment — NEVER commit
+# Environment - NEVER commit
 .env
 .env.local
 .env.development.local

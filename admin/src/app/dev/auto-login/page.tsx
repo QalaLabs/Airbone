@@ -46,7 +46,7 @@ function AutoLoginInner() {
         return;
       }
 
-      setStatus("OK — opening dashboard…");
+      setStatus("OK - opening dashboard…");
       router.replace(creds.next);
       router.refresh();
     })();

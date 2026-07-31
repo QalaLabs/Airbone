@@ -103,7 +103,7 @@ export default function RefundPolicyPage() {
               <div style={{ background: '#ffffff', border: '1px solid rgba(0,39,76,0.08)', padding: '1.5rem', borderRadius: '1px', marginTop: '1rem' }}>
                 <p style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                   <strong style={{ color: 'var(--navy)', fontFamily: 'var(--font-h)', fontSize: '0.92rem' }}>Airborne Aviation Private Limited</strong>
-                  <span>E-549, 2nd Floor, Ramphal Chowk, Sector 7, Dwarka, New Delhi — 110075</span>
+                  <span>E-549, 2nd Floor, Ramphal Chowk, Sector 7, Dwarka, New Delhi - 110075</span>
                   <span>Email: <a href="mailto:info@airborneaviation.in" style={{ color: '#D8A027', textDecoration: 'none' }}>info@airborneaviation.in</a></span>
                   <span>Phone: <a href="tel:+919953777320" style={{ color: '#D8A027', textDecoration: 'none' }}>+91 9953 777 320</a></span>
                 </p>

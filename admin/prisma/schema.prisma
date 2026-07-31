@@ -1,5 +1,5 @@
 // ============================================================
-// AIRBORNE AVIATION ACADEMY — PRISMA SCHEMA
+// AIRBORNE AVIATION ACADEMY - PRISMA SCHEMA
 // Engine: PostgreSQL 15+  |  ORM: Prisma 6
 // ============================================================
 
@@ -24,7 +24,7 @@ enum UserRole {
   ADMISSIONS_COUNSELOR
   PLACEMENT_MANAGER
   SUPPORT_STAFF
-  // SMS / LMS portal roles (additive — do not remove staff roles)
+  // SMS / LMS portal roles (additive - do not remove staff roles)
   TEACHER
   STUDENT
 }
@@ -696,7 +696,7 @@ model Student {
   orgId          String        @db.Uuid
   campusId       String?       @db.Uuid
   leadId         String?       @unique @db.Uuid
-  // Optional portal login link (SMS) — staff CRM Student stays intact without userId
+  // Optional portal login link (SMS) - staff CRM Student stays intact without userId
   userId         String?       @unique @db.Uuid
   studentCode    String        @db.VarChar(50)
   firstName      String        @db.VarChar(100)
@@ -1477,7 +1477,7 @@ model Testimonial {
   @@map("testimonials")
 }
 
-// ─── SMS / LMS (additive — does NOT replace marketing Course CMS) ────────────
+// ─── SMS / LMS (additive - does NOT replace marketing Course CMS) ────────────
 // Hierarchy: LmsCourse → LmsStage → LmsModule → LmsChapter → LmsTopic → LmsContent
 // Marketing website `Course` / `Resource` models stay untouched.
 
@@ -1606,7 +1606,7 @@ model LmsModule {
   unlockRules Json @default("{}")
   passPercent Int @default(70)
   maxAttempts Int @default(3)
-  // Phase C — random quiz sets (null = use all questions)
+  // Phase C - random quiz sets (null = use all questions)
   quizQuestionCount  Int?
   randomizeQuestions Boolean @default(false)
 
@@ -2073,7 +2073,7 @@ model LmsAssignmentSubmission {
 }
 
 // ─── FRONTEND FAILSAFE (exists in Supabase; must stay in schema to prevent DROP) ──
-// Written by marketing site lead fallback — not Admin CRM. Do not remove.
+// Written by marketing site lead fallback - not Admin CRM. Do not remove.
 
 model FallbackLead {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid

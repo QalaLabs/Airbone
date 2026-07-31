@@ -195,7 +195,7 @@ export default function LmsAttendancePage() {
 
         <div>
           <label className="text-xs text-muted-foreground">Session title</label>
-          <Input className="mt-1" placeholder="e.g. Navigation & Charts — Lecture 3" value={sessionTitle} onChange={(e) => setSessionTitle(e.target.value)} />
+          <Input className="mt-1" placeholder="e.g. Navigation & Charts - Lecture 3" value={sessionTitle} onChange={(e) => setSessionTitle(e.target.value)} />
         </div>
 
         <div>

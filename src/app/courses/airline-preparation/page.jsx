@@ -10,7 +10,7 @@ import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
   title: 'Comprehensive Airline Preparation Program | DGCA + A320 + ADAPT + GD/PI | Airborne Delhi',
-  description: 'CPL to First Officer in 2.5 months. DGCA Ground Refresher, ADAPT Screening, A320 Systems & Sim Prep, and GD/PI — all in one program. 4 hrs/day. ₹1,50,000. Airborne Aviation Academy, Dwarka Delhi.',
+  description: 'CPL to First Officer in 2.5 months. DGCA Ground Refresher, ADAPT Screening, A320 Systems & Sim Prep, and GD/PI - all in one program. 4 hrs/day. ₹1,50,000. Airborne Aviation Academy, Dwarka Delhi.',
   alternates: { canonical: '/courses/airline-preparation' },
 }
 
@@ -23,15 +23,15 @@ const coursePageGraph = buildCoursePageGraph({
     },
     {
       q: 'Who is this program for?',
-      a: 'CPL holders preparing for airline selection — IndiGo, Air India, Akasa Air, and similar carriers. The curriculum is built around airline hiring filters: written tests, ADAPT psychometric screening, simulator checks, and HR/GD/PI rounds.',
+      a: 'CPL holders preparing for airline selection - IndiGo, Air India, Akasa Air, and similar carriers. The curriculum is built around airline hiring filters: written tests, ADAPT psychometric screening, simulator checks, and HR/GD/PI rounds.',
     },
     {
       q: 'How is this different from the GD & PI Course?',
-      a: 'The GD & PI Course (₹30,000) covers only communication skills and interview prep. This program is the full pre-airline track — it adds DGCA ground subject refresher, ADAPT test training, and A320 systems preparation on top of GD/PI coaching.',
+      a: 'The GD & PI Course (₹30,000) covers only communication skills and interview prep. This program is the full pre-airline track - it adds DGCA ground subject refresher, ADAPT test training, and A320 systems preparation on top of GD/PI coaching.',
     },
     {
       q: 'What is the daily schedule?',
-      a: 'Each day runs 4 hours: 2 hours of Navigation or Technical General, 1 hour of Meteorology or ADAPT training, and 1 hour of A320 Systems or Simulator Orientation. The schedule is designed for focused, daily progression — not cramming.',
+      a: 'Each day runs 4 hours: 2 hours of Navigation or Technical General, 1 hour of Meteorology or ADAPT training, and 1 hour of A320 Systems or Simulator Orientation. The schedule is designed for focused, daily progression - not cramming.',
     },
     {
       q: 'Do I need to know A320 systems before joining?',
@@ -49,21 +49,21 @@ const MODULES = [
     number: '01',
     title: 'Advanced DGCA Ground Refresher',
     tag: '2 hrs/day',
-    description: 'Navigation, Technical General, Meteorology, and Air Regulation — rebuilt from the ground up for airline written examinations. Not a CPL recap. A systematic re-engagement with the concepts airlines actually test.',
+    description: 'Navigation, Technical General, Meteorology, and Air Regulation - rebuilt from the ground up for airline written examinations. Not a CPL recap. A systematic re-engagement with the concepts airlines actually test.',
     topics: ['Earth & Geometry · Direction · Magnetic Compass', 'Dead Reckoning · GPS & GNSS · ILS · TCAS', 'Pressure Instruments · Gyro Theory · RADAR', 'METARs & SIGMETs · Air Regulation · RVSM · LVP'],
   },
   {
     number: '02',
     title: 'ADAPT Screening Preparation',
     tag: '1 hr/day',
-    description: 'Most CPL holders walk into ADAPT cold — and fail. We run you through cognitive drills, mental arithmetic, physics principles, and simulated test environments until the format feels routine.',
+    description: 'Most CPL holders walk into ADAPT cold - and fail. We run you through cognitive drills, mental arithmetic, physics principles, and simulated test environments until the format feels routine.',
     topics: ['Distance · Time · Speed · Area calculations', 'Ohm\'s Law · Power · Optics · Classical Mechanics', 'Numerical Series · Mental Arithmetic', 'Psychometric Test Modules I, II & III', 'Full simulated ADAPT test environment run'],
   },
   {
     number: '03',
     title: 'Airbus A320 Preparation',
     tag: '1 hr/day',
-    description: 'System-by-system walkthrough of the A320 — from Air Conditioning to the APU, from Auto Flight to the FMS. The final weeks shift to cockpit orientation sessions that simulate what you\'ll face in a type rating assessment.',
+    description: 'System-by-system walkthrough of the A320 - from Air Conditioning to the APU, from Auto Flight to the FMS. The final weeks shift to cockpit orientation sessions that simulate what you\'ll face in a type rating assessment.',
     topics: ['Air Conditioning · Pressurization · Auto Flight', 'Flight Controls · Fuel · Hydraulic · Electrical', 'Landing Gear · Navigation · Surveillance', 'APU · Engines · Cockpit Windows', 'Sim/Cockpit Mock Orientation (8 sessions)'],
   },
   {
@@ -189,7 +189,7 @@ export default function AirlinePreparationPage() {
                 Getting a CPL is one thing. Getting a seat on the flight deck is another.
               </p>
               <p className="ov-body" style={{ marginTop: '0.75rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
-                This program bridges the gap between commercial pilot training and airline hiring standards. In 2.5 months — 4 focused hours every day — you cover DGCA ground subjects at airline examination depth, ADAPT psychometric screening, Airbus A320 systems end-to-end, and full GD/PI preparation. Four areas airlines actually screen for, in one structured program.
+                This program bridges the gap between commercial pilot training and airline hiring standards. In 2.5 months - 4 focused hours every day - you cover DGCA ground subjects at airline examination depth, ADAPT psychometric screening, Airbus A320 systems end-to-end, and full GD/PI preparation. Four areas airlines actually screen for, in one structured program.
               </p>
               <p style={{ marginTop: '0.75rem', color: 'rgba(0, 39, 76, 0.55)', fontSize: '0.9rem', lineHeight: '1.7' }}>
                 Looking for just the interview track?{' '}
@@ -229,7 +229,7 @@ export default function AirlinePreparationPage() {
             <div className="course-section-divider">
               <h2 className="course-section-title">Daily Schedule Structure</h2>
               <p style={{ fontSize: '0.88rem', color: 'rgba(0, 39, 76, 0.6)', lineHeight: '1.7', marginBottom: '1.25rem' }}>
-                Every day is 4 hours — structured so you build depth in each area without letting any one subject crowd out the others.
+                Every day is 4 hours - structured so you build depth in each area without letting any one subject crowd out the others.
               </p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1px', background: 'rgba(0, 39, 76, 0.1)', border: '1px solid rgba(0, 39, 76, 0.1)' }}>
                 {[
@@ -247,7 +247,7 @@ export default function AirlinePreparationPage() {
 
             {/* SECTION 3: Master Study Plan */}
             <div className="course-section-divider">
-              <h2 className="course-section-title">Master Study Plan — Lecture by Lecture</h2>
+              <h2 className="course-section-title">Master Study Plan - Lecture by Lecture</h2>
               <p style={{ fontSize: '0.88rem', color: 'rgba(0, 39, 76, 0.6)', lineHeight: '1.7', marginBottom: '1.25rem' }}>
                 Lectures 1 through 32. Every session is mapped. You know exactly what gets covered, when.
               </p>
@@ -292,9 +292,9 @@ export default function AirlinePreparationPage() {
               <div style={{ display: 'inline-block', background: 'rgba(219,36,30,0.08)', border: '1px solid rgba(219,36,30,0.2)', borderRadius: '4px', padding: '0.4rem 0.9rem', fontSize: '0.72rem', fontFamily: 'var(--font-h)', fontWeight: 700, letterSpacing: '0.08em', color: '#DB241E', textTransform: 'uppercase', marginBottom: '1rem' }}>
                 Technical Transition Phase
               </div>
-              <h2 className="course-section-title">Specialization Blocks — Technical General & ADAPT Mastery</h2>
+              <h2 className="course-section-title">Specialization Blocks - Technical General & ADAPT Mastery</h2>
               <p style={{ fontSize: '0.88rem', color: 'rgba(0, 39, 76, 0.6)', lineHeight: '1.7', marginBottom: '1.25rem' }}>
-                From Lecture 32 onward, the focus shifts. This is where CPL general knowledge gets upgraded into airline-testing depth — and ADAPT preparation moves from theory into timed simulation.
+                From Lecture 32 onward, the focus shifts. This is where CPL general knowledge gets upgraded into airline-testing depth - and ADAPT preparation moves from theory into timed simulation.
               </p>
               <div style={{ overflowX: 'auto', borderRadius: '4px', border: '1px solid rgba(0, 39, 76, 0.1)' }}>
                 <table style={{ width: '100%', minWidth: '560px', borderCollapse: 'collapse', background: '#fff' }}>
@@ -332,7 +332,7 @@ export default function AirlinePreparationPage() {
                   'Pilots who have cleared DGCA exams but need to sharpen their airline-exam-level knowledge',
                   'Candidates who have failed ADAPT screening and need structured test preparation',
                   'Pilots approaching type rating and wanting A320 systems groundwork before simulator sessions',
-                  'Anyone who wants the full airline-readiness package — not just interview prep',
+                  'Anyone who wants the full airline-readiness package - not just interview prep',
                 ].map((item, i) => (
                   <div key={i} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', padding: '0.75rem 1rem', border: '1px solid rgba(0, 39, 76, 0.07)', borderLeft: '3px solid #DB241E', background: 'rgba(0, 39, 76, 0.015)' }}>
                     <span style={{ color: 'var(--red)', fontWeight: 700, flexShrink: 0 }}>✓</span>
@@ -349,11 +349,11 @@ export default function AirlinePreparationPage() {
                 {[
                   {
                     q: 'What does the program cover?',
-                    a: 'Four modules — DGCA Ground Refresher (Navigation, Technical General, Meteorology, Air Regulation), ADAPT Screening Prep (psychometric, mental math, physics), A320 Systems & Simulator Orientation, and GD/PI coaching. 2.5 months, 4 hours per day.',
+                    a: 'Four modules - DGCA Ground Refresher (Navigation, Technical General, Meteorology, Air Regulation), ADAPT Screening Prep (psychometric, mental math, physics), A320 Systems & Simulator Orientation, and GD/PI coaching. 2.5 months, 4 hours per day.',
                   },
                   {
                     q: 'How is this different from the GD & PI Course?',
-                    a: 'The GD & PI Course (₹30,000) covers only interview and communication preparation. This program adds DGCA ground subject refresher, ADAPT test training, and A320 systems preparation — making it the full pre-airline package.',
+                    a: 'The GD & PI Course (₹30,000) covers only interview and communication preparation. This program adds DGCA ground subject refresher, ADAPT test training, and A320 systems preparation - making it the full pre-airline package.',
                   },
                   {
                     q: 'Do I need A320 knowledge before joining?',
@@ -369,7 +369,7 @@ export default function AirlinePreparationPage() {
                   },
                   {
                     q: 'How many hours per day is the program?',
-                    a: '4 hours per day — 2 hours of Navigation or Technical General, 1 hour of Meteorology or ADAPT, and 1 hour of A320 Systems or Sim Orientation.',
+                    a: '4 hours per day - 2 hours of Navigation or Technical General, 1 hour of Meteorology or ADAPT, and 1 hour of A320 Systems or Sim Orientation.',
                   },
                 ].map((faq, i) => (
                   <div key={i} className="course-faq-item">
@@ -420,7 +420,7 @@ export default function AirlinePreparationPage() {
           relatedCourses={[
             { label: 'GD & PI Course', href: '/courses/gd-pi' },
             { label: 'A320 Simulator FBS', href: '/courses/a320-simulator' },
-            { label: 'CAS / Compass / ADAPT Prep', href: '/courses/cas-compass-adapt' },
+            { label: 'CASS / Compass / ADAPT Prep', href: '/courses/cas-compass-adapt' },
             { label: 'CPL Ground School', href: '/courses/commercial-pilot-license-cpl' },
             { label: 'All Courses', href: '/courses' },
           ]}

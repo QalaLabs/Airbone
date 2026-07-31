@@ -38,7 +38,7 @@ export function buildPlace() {
   return {
     '@type': 'Place',
     '@id': id.place(),
-    name: `${ORG.name} — Dwarka Centre`,
+    name: `${ORG.name} - Dwarka Centre`,
     address: ADDRESS,
     geo: GEO,
     telephone: ORG.telephone[0],

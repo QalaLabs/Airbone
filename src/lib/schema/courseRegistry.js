@@ -39,7 +39,7 @@ export const COURSE_SCHEMA = {
       },
       {
         q: 'Can I join DGCA Ground School without a CPL in progress?',
-        a: 'Yes. Students pursuing any aviation path — CPL, ATPL, or general DGCA exam preparation — can join ground school. Minimum eligibility is Class 12 with Physics and Mathematics.',
+        a: 'Yes. Students pursuing any aviation path - CPL, ATPL, or general DGCA exam preparation - can join ground school. Minimum eligibility is Class 12 with Physics and Mathematics.',
       },
     ],
   },
@@ -90,7 +90,7 @@ export const COURSE_SCHEMA = {
     slug: 'atpl',
     name: 'ATPL Ground School',
     description:
-      'Airline Transport Pilot License ground school in Dwarka, Delhi — DGCA ATPL theory subjects with onsite and online training support at Airborne Aviation Academy.',
+      'Airline Transport Pilot License ground school in Dwarka, Delhi - DGCA ATPL theory subjects with onsite and online training support at Airborne Aviation Academy.',
     path: '/courses/atpl',
     price: '150000',
     duration: 'P2M',
@@ -115,7 +115,7 @@ export const COURSE_SCHEMA = {
     slug: 'cadet-preparation',
     name: 'Cadet Pilot Program Preparation',
     description:
-      'Preparation for IndiGo, Air India, Akasa and other cadet pilot selection processes — aptitude, GD/PI, and simulator familiarisation support.',
+      'Preparation for IndiGo, Air India, Akasa and other cadet pilot selection processes - aptitude, GD/PI, and simulator familiarisation support.',
     path: '/courses/cadet-preparation',
     courseMode: 'onsite',
     imagePath: '/footage/pilot-portrait.jpg',
@@ -124,7 +124,7 @@ export const COURSE_SCHEMA = {
     slug: 'a320-simulator',
     name: 'Airbus A320 Simulator FBS',
     description:
-      'A320 FTD Level 5 simulator sessions at Airborne Aviation Academy, Dwarka — airline interview prep, type-rating familiarisation, and cadet selection practice.',
+      'A320 FTD Level 5 simulator sessions at Airborne Aviation Academy, Dwarka - airline interview prep, type-rating familiarisation, and cadet selection practice.',
     path: '/courses/a320-simulator',
     courseMode: 'onsite',
     imagePath: '/footage/cockpit_instruments_closeup.jpg',
@@ -132,9 +132,9 @@ export const COURSE_SCHEMA = {
   },
   'cas-compass-adapt': {
     slug: 'cas-compass-adapt',
-    name: 'CAS / Compass / ADAPT Prep',
+    name: 'CASS / Compass / ADAPT Prep',
     description:
-      'Structured preparation for DGCA CAS Compass and ADAPT pilot aptitude screening tests at Airborne Aviation Academy, Dwarka.',
+      'Structured preparation for DGCA CASS Compass and ADAPT pilot aptitude screening tests at Airborne Aviation Academy, Dwarka.',
     path: '/courses/cas-compass-adapt',
     courseMode: 'onsite',
   },
@@ -208,7 +208,7 @@ export const COURSES_INDEX_ITEMS = [
   { name: 'ATPL Ground School', path: '/courses/atpl', courseSlug: 'atpl' },
   { name: 'Cadet Pilot Program Prep', path: '/courses/cadet-preparation', courseSlug: 'cadet-preparation' },
   { name: 'Airbus A320 Simulator FBS', path: '/courses/a320-simulator', courseSlug: 'a320-simulator' },
-  { name: 'CAS / Compass / ADAPT Prep', path: '/courses/cas-compass-adapt', courseSlug: 'cas-compass-adapt' },
+  { name: 'CASS / Compass / ADAPT Prep', path: '/courses/cas-compass-adapt', courseSlug: 'cas-compass-adapt' },
   { name: 'Cabin Crew Training', path: '/courses/cabin-crew-training', courseSlug: 'cabin-crew-training' },
   { name: 'DGCA Ground School', path: '/courses/ground-school', courseSlug: 'ground-school' },
 ]

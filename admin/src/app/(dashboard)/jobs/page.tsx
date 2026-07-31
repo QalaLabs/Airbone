@@ -97,13 +97,13 @@ export default function JobsPage() {
       accessorKey: "jobType",
       header: "Type",
       cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">{row.original.jobType?.replace(/_/g, " ") ?? "—"}</span>
+        <span className="text-sm text-muted-foreground">{row.original.jobType?.replace(/_/g, " ") ?? "-"}</span>
       ),
     },
     {
       accessorKey: "location",
       header: "Location",
-      cell: ({ row }) => <span className="text-sm text-muted-foreground">{row.original.location ?? "—"}</span>,
+      cell: ({ row }) => <span className="text-sm text-muted-foreground">{row.original.location ?? "-"}</span>,
     },
     {
       accessorKey: "applicationCount",

@@ -1,4 +1,4 @@
-# Claim Verification Report — Schema Safety
+# Claim Verification Report - Schema Safety
 
 **Date:** 2026-07-27  
 **Rule:** Marketing claims must not be fabricated. Unverified absolute claims must not appear in Schema.org JSON-LD.
@@ -13,10 +13,10 @@
 | **100% first-attempt pass rate** | CPL course schema + body | Same as above | Unverified | Yes | **No** | Removed from Course `description` in registry; body revised |
 | **India's most trusted DGCA CPL ground school** | `seo.js` Org description; Home3D overlays | Superlative; no ranking evidence | Unverified | Yes | **No** | Org schema description rewritten to factual DGCA-aligned academy copy |
 | **2,500+ / 2500+ students / pilots trained** | Meta descriptions, About, homepage stats, FAQ, course copy | Consistently used on site since 2009 narrative; no independent verification file | Self-claimed | Yes | **Caution** | Kept in some UI marketing; **removed from homepage FAQ answer feeding schema**; avoided as sole Org description proof point |
-| **Highest / largest / best / No.1 in Delhi NCR** | Not found as primary schema claims | — | — | — | — | No schema use |
+| **Highest / largest / best / No.1 in Delhi NCR** | Not found as primary schema claims | - | - | - | - | No schema use |
 | **Batch capped at 25** | FAQ + course pages | Stated operational policy on site | Operational claim | Yes | **Yes** | Keep |
 | **Founded 2009 / brand 2012** | About timeline | On-page timeline | Site-stated | Yes | **Yes** | `foundingDate: 2009` used |
-| **Capt. Navrang Singh — 15+ years training** | About bio | On-page bio | Site-stated | Yes | **Yes** | Used in Person description |
+| **Capt. Navrang Singh - 15+ years training** | About bio | On-page bio | Site-stated | Yes | **Yes** | Used in Person description |
 | **Fee ₹2,70,000 CPL ground school** | Course pages, FAQ | On-page pricing | Site-stated | Yes | **Yes** | Used in Offer |
 | **A320 FTD Level 5 in Dwarka** | FAQ / simulator page | On-page | Site-stated | Yes | **Yes** | Used in Course/Service copy |
 | **Alumni at IndiGo, Air India, etc.** | Homepage FAQ | On-page alumni narrative | Site-stated (not quantified) | Yes | **Yes** (qualitative) | Kept qualitative airline names; dropped “Over 2,500 pilots…” from FAQ answer |

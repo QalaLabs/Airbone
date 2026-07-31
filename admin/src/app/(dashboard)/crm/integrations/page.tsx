@@ -128,7 +128,7 @@ export default function CRMIntegrationsPage() {
             <p className="text-xs text-amber-400">
               {googleConfigured
                 ? "Configured via backend Qala Integration record."
-                : "Requires Google Ads developer token + OAuth client on the backend (qala_omni.integrations.google_ads_bridge). Not wired to a live sync endpoint yet — backend work pending."}
+                : "Requires Google Ads developer token + OAuth client on the backend (qala_omni.integrations.google_ads_bridge). Not wired to a live sync endpoint yet - backend work pending."}
             </p>
           </CardContent>
         </Card>

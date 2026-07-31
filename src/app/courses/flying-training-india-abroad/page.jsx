@@ -8,7 +8,7 @@ import CourseReviews from '@/components/CourseReviews'
 import { buildArticlePageGraph } from '@/lib/schema'
 
 export const metadata = {
-  title: 'Parent Centric Flying Guide | CPL India vs Abroad | Airborne',
+  title: "Securing Your Child's Future in Aviation | CPL India vs Abroad | Airborne",
   description: 'Comprehensive CPL flight training guidance and Indian CPL conversion support for parents and aspirants. India vs abroad cost, timeline, and DGCA pathway.',
   alternates: { canonical: '/courses/flying-training-india-abroad' },
 }
@@ -30,9 +30,9 @@ const FLYING_FAQS = [
 
 const flyingGuideGraph = buildArticlePageGraph({
   path: '/courses/flying-training-india-abroad',
-  headline: 'Parent Centric Flying Guide — Comprehensive CPL Flight Training Guidance and Indian CPL Conversion Support',
+  headline: "Securing Your Child's Future in Aviation - Comprehensive CPL Flight Training Guidance and Indian CPL Conversion Support",
   description:
-    'A structured comparison of CPL flight training in India versus abroad, covering cost, timeline, DGCA license conversion, and airline hiring outcomes — built for parents and aspirants.',
+    'A structured comparison of CPL flight training in India versus abroad, covering cost, timeline, DGCA license conversion, and airline hiring outcomes - built for parents and aspirants.',
   datePublished: '2026-01-10',
   dateModified: '2026-07-01',
   imagePath: '/footage/cockpit_instruments_closeup.jpg',
@@ -40,17 +40,17 @@ const flyingGuideGraph = buildArticlePageGraph({
   breadcrumbs: [
     { name: 'Home', path: '/' },
     { name: 'Courses', path: '/courses' },
-    { name: 'Parent Centric Flying Guide', path: '/courses/flying-training-india-abroad' },
+    { name: "Securing Your Child's Future in Aviation", path: '/courses/flying-training-india-abroad' },
   ],
 })
 
 const COMPARISON = [
   { param: 'Total Cost', india: '₹55–65 lakh (CPL)', abroad: '₹35–65 lakh depending on country' },
-  { param: 'Duration', india: '18–24 months', abroad: '12–18 months training + 12–18 months conversion' },
-  { param: 'DGCA CPL Direct', india: 'Yes — issued directly by DGCA', abroad: 'No — requires conversion to DGCA CPL' },
+  { param: 'Duration', india: '12–18 months', abroad: '12–18 months training + 12–18 months conversion' },
+  { param: 'DGCA CPL Direct', india: 'Yes - issued directly by DGCA', abroad: 'No - requires conversion to DGCA CPL' },
   { param: 'Airline Eligibility', india: 'Immediately after CPL + required hours', abroad: 'After conversion + DGCA Skill Test' },
-  { param: 'Weather', india: 'Variable — monsoon disruptions', abroad: 'Generally more consistent (Philippines, USA)' },
-  { param: 'Forex Risk', india: 'None — INR fees', abroad: 'High — USD/EUR exposure' },
+  { param: 'Weather', india: 'Variable - monsoon disruptions', abroad: 'Generally more consistent (Philippines, USA)' },
+  { param: 'Forex Risk', india: 'None - INR fees', abroad: 'High - USD/EUR exposure' },
   { param: 'Ground School', india: 'Integrated during training', abroad: 'DGCA exams required for conversion' },
   { param: 'Support Network', india: 'Family proximity, no visa dependency', abroad: 'Isolated environment; visa complications possible' },
 ]
@@ -74,11 +74,11 @@ export default function FlyingTrainingIndiaAbroadPage() {
           <span>/</span>
           <Link href="/courses" >Courses</Link>
           <span>/</span>
-          <span className="current">Parent Centric Guide</span>
+          <span className="current">Securing Your Child&apos;s Future in Aviation</span>
         </div>
 
         <div className="course-hero-image-wrap" style={{ borderRadius: '8px' }}>
-          <img src="/footage/cockpit_instruments_closeup.jpg" alt="Parent Centric Flying Guide — CPL India vs Abroad" className="course-hero-image" />
+          <img src="/footage/cockpit_instruments_closeup.jpg" alt="Securing Your Child's Future in Aviation - CPL India vs Abroad" className="course-hero-image" />
           <div className="course-hero-overlay" style={{ background: 'linear-gradient(to top, rgba(0, 39, 76, 0.4) 0%, transparent 100%)' }} />
         </div>
 
@@ -88,20 +88,20 @@ export default function FlyingTrainingIndiaAbroadPage() {
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
-                Parent Centric Guide — Airborne Aviation Academy
+                Securing Your Child&apos;s Future in Aviation - Airborne Aviation Academy
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
                 Comprehensive CPL Flight Training Guidance and Indian CPL Conversion Support
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
-                Built for parents and aspirants. The India vs abroad debate is one of the most common questions Airborne&apos;s admissions team receives. The answer depends on your budget, timeline, and final career goal — not on where your batchmate trained. This guide lays out the actual comparison based on 2025–26 data, including DGCA conversion requirements if you train outside India.
+                Built for parents and aspirants. The India vs abroad debate is one of the most common questions Airborne&apos;s admissions team receives. The answer depends on your budget, timeline, and final career goal - not on where your batchmate trained. This guide lays out the actual comparison based on 2025–26 data, including DGCA conversion requirements if you train outside India.
               </p>
             </div>
 
             {/* India vs Abroad Table */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                India vs Abroad — Key Comparison
+                India vs Abroad - Key Comparison
               </h2>
               <div style={{ border: '1px solid rgba(0, 39, 76, 0.08)', borderRadius: '8px', overflow: 'hidden', overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem', fontFamily: 'var(--font-b)', minWidth: '600px' }}>
@@ -128,7 +128,7 @@ export default function FlyingTrainingIndiaAbroadPage() {
             {/* DGCA License Conversion */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                DGCA License Conversion — What Pilots Trained Abroad Must Know
+                DGCA License Conversion - What Pilots Trained Abroad Must Know
               </h2>
               <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', marginBottom: '1rem' }}>
                 If you train abroad, you return with a foreign CPL (FAA, EASA, CAAP Philippines, CASA Australia, Transport Canada, UK CAA, CAA NZ). To fly commercially in India, you must convert it to a DGCA CPL. Conversion typically takes 6–18 months and includes:
@@ -148,7 +148,7 @@ export default function FlyingTrainingIndiaAbroadPage() {
             {/* Which Is Better Decision Table */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                Which Is Better — Training in India or Abroad?
+                Which Is Better - Training in India or Abroad?
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0', border: '1px solid rgba(0, 39, 76, 0.08)', borderRadius: '8px', overflow: 'hidden' }}>
                 {DECISION.map((d, i) => (
@@ -167,7 +167,7 @@ export default function FlyingTrainingIndiaAbroadPage() {
                 How Airborne Aviation Helps
               </h2>
               <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: '0 0 1rem 0' }}>
-                If you train in India, Airborne provides CPL ground school, DGCA exam prep, and airline placement preparation from the same campus. If you train abroad and return for conversion, Airborne offers DGCA conversion ground school — all subjects covered in structured batches — plus the 200-hour Indian aircraft coordination through our partner ATOs.
+                If you train in India, Airborne provides CPL ground school, DGCA exam prep, and airline placement preparation from the same campus. If you train abroad and return for conversion, Airborne offers DGCA conversion ground school - all subjects covered in structured batches - plus the 200-hour Indian aircraft coordination through our partner ATOs.
               </p>
               <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: 0 }}>
                 Book a free 30-minute counselling session with Capt. Navrang Singh's team to get a cost and timeline breakdown specific to your profile.
@@ -177,7 +177,7 @@ export default function FlyingTrainingIndiaAbroadPage() {
             {/* FAQ */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                FAQs — Flying Training India vs Abroad
+                FAQs - Flying Training India vs Abroad
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
                 {[
@@ -204,8 +204,8 @@ export default function FlyingTrainingIndiaAbroadPage() {
         <CoursePageFooter
           whatsappText="Hi, I want a free counselling session to compare flying training in India vs abroad. Please share details from Airborne Aviation Academy."
           nextCourses={[
-            { label: 'CPL Ground School', href: '/courses/commercial-pilot-license-cpl', note: 'Begin DGCA CPL ground school in Dwarka — next batch July 2026' },
-            { label: 'DGCA Ground School', href: '/courses/ground-school', note: 'All 5 DGCA subjects by Capt. Navrang Singh — ₹2,70,000' },
+            { label: 'CPL Ground School', href: '/courses/commercial-pilot-license-cpl', note: 'Begin DGCA CPL ground school in Dwarka - next batch July 2026' },
+            { label: 'DGCA Ground School', href: '/courses/ground-school', note: 'All 5 DGCA subjects by Capt. Navrang Singh - ₹2,70,000' },
           ]}
           relatedCourses={[
             { label: 'CPL Ground School', href: '/courses/commercial-pilot-license-cpl' },

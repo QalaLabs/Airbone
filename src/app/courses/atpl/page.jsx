@@ -11,16 +11,16 @@ import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
   title: 'ATPL Ground School India | All Subjects | Airborne Aviation',
-  description: 'ATPL ground school in Delhi by Airborne Aviation Academy. Complete airline transport pilot license exam prep — all subjects, DGCA-aligned. Enrol now.',
+  description: 'ATPL ground school in Delhi by Airborne Aviation Academy. Complete airline transport pilot license exam prep - all subjects, DGCA-aligned. Enrol now.',
   alternates: { canonical: '/courses/atpl' },
   openGraph: {
     title: 'ATPL Ground School India | All Subjects | Airborne Aviation',
-    description: 'ATPL ground school in Delhi by Airborne Aviation Academy. Complete airline transport pilot license exam prep — all subjects, DGCA-aligned. Enrol now.',
+    description: 'ATPL ground school in Delhi by Airborne Aviation Academy. Complete airline transport pilot license exam prep - all subjects, DGCA-aligned. Enrol now.',
     url: 'https://www.airborneaviation.in/courses/atpl',
   },
   twitter: {
     title: 'ATPL Ground School India | All Subjects | Airborne Aviation',
-    description: 'ATPL ground school in Delhi by Airborne Aviation Academy. Complete airline transport pilot license exam prep — all subjects, DGCA-aligned. Enrol now.',
+    description: 'ATPL ground school in Delhi by Airborne Aviation Academy. Complete airline transport pilot license exam prep - all subjects, DGCA-aligned. Enrol now.',
   },
 }
 
@@ -99,7 +99,7 @@ export default function ATPLPage() {
                 Our ATPL Program Prepares Commercial Pilots for the DGCA ATPL Written and Viva Examinations
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75', maxWidth: '100%' }}>
-                Airborne Aviation Academy offers ATPL (Airline Transport Pilot License) ground school classes in Dwarka, Delhi. Our ATPL program prepares commercial pilots for the DGCA ATPL written and Viva — the final certification step before command. Eligibility: 21 years. Duration: 2–3 months.
+                Airborne Aviation Academy offers ATPL (Airline Transport Pilot License) ground school classes in Dwarka, Delhi. Our ATPL program prepares commercial pilots for the DGCA ATPL written and Viva - the final certification step before command. Eligibility: 21 years. Duration: 2–3 months.
               </p>
             </div>
 
@@ -131,7 +131,7 @@ export default function ATPLPage() {
             {/* CPL vs ATPL */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                ATPL vs CPL — Key Differences
+                ATPL vs CPL - Key Differences
               </h2>
               <div className="course-table-wrap" style={{ overflowX: 'auto' }}>
                 <table className="course-table" style={{ minWidth: "600px" }}>
@@ -174,7 +174,7 @@ export default function ATPLPage() {
             {/* FAQ */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                FAQs — ATPL Ground School
+                FAQs - ATPL Ground School
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
                 {[

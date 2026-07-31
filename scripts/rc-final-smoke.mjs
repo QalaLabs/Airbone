@@ -75,7 +75,7 @@ const leadRes = await fetch(withBypass(mktBase + "/api/lead", mktBypass), {
     email: `rc.final.${Date.now()}@example.com`,
     phone: "9876501234",
     course: "CPL Ground School",
-    message: "RC final smoke — discard",
+    message: "RC final smoke - discard",
     source: "contact form",
   }),
 });

@@ -29,11 +29,11 @@ const coursePageGraph = buildCoursePageGraph({
   faqs: [
   {
     q: 'Who teaches the cabin crew program at Airborne?',
-    a: 'Capt. Mukul Mitra Barua (ex-cabin & cockpit crew, Alliance Air) and Rajeet Khalsa (retired AGM Training, Air India, 37+ years). Not generalist coaches — real airline industry professionals.'
+    a: 'Capt. Mukul Mitra Barua (ex-cabin & cockpit crew, Alliance Air) and Rajeet Khalsa (retired AGM Training, Air India, 37+ years). Not generalist coaches - real airline industry professionals.'
   },
   {
     q: 'What is the cabin crew course fee at Airborne?',
-    a: 'Tuition ₹59,000. 100%* scholarship offer upon scoring ≥70% on the eligibility assessment. *Terms apply — Batch scholarship conditions explained at counselling.'
+    a: 'Tuition ₹59,000. 100%* scholarship offer upon scoring ≥70% on the eligibility assessment. *Terms apply - Batch scholarship conditions explained at counselling.'
   },
   {
     q: 'Can boys join the cabin crew program?',
@@ -132,10 +132,10 @@ export default function CabinCrewTrainingPage() {
                 📍 Dwarka, Delhi · 3–6 Months · ₹59,000
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
-                Cabin Crew & Aviation Hospitality Training — Dwarka, Delhi
+                Cabin Crew & Aviation Hospitality Training - Dwarka, Delhi
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
-                Structured cabin crew training for serious aviation aspirants — from scholarship-based finishing to communication, GD/PI, personality development, and hospitality foundation pathways. Trained by airline veterans — ex-Alliance Air cabin and cockpit crew, and a retired Air India AGM (Training) — not generalist coaches.
+                Structured cabin crew training for serious aviation aspirants - from scholarship-based finishing to communication, GD/PI, personality development, and hospitality foundation pathways. Trained by airline veterans - ex-Alliance Air cabin and cockpit crew, and a retired Air India AGM (Training) - not generalist coaches.
               </p>
             </div>
 
@@ -147,9 +147,9 @@ export default function CabinCrewTrainingPage() {
               <div className="course-subject-grid">
                 <div style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', padding: '2rem', borderRadius: '4px' }}>
                   <div style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', fontWeight: 800, color: 'var(--navy)', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Capt. Mukul Mitra Barua</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--navy)', fontFamily: 'var(--font-h)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '1rem' }}>Lead Trainer — Aviation Training & Safety</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--navy)', fontFamily: 'var(--font-h)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '1rem' }}>Lead Trainer - Aviation Training & Safety</div>
                   <p style={{ fontSize: '0.82rem', color: 'rgba(0, 39, 76, 0.65)', lineHeight: '1.7', margin: '0 0 1rem 0' }}>
-                    Capt. Mukul's career in aviation began in the cabin and progressed to the cockpit. With years flying with Alliance Air — first as cabin crew and later as cockpit crew — he gives students a rare 360° view of airline operations. Leads training in flight safety, SMS, DGR, and AVSEC.
+                    Capt. Mukul's career in aviation began in the cabin and progressed to the cockpit. With years flying with Alliance Air - first as cabin crew and later as cockpit crew - he gives students a rare 360° view of airline operations. Leads training in flight safety, SMS, DGR, and AVSEC.
                   </p>
                   <p style={{ fontSize: '0.8rem', color: 'rgba(0, 39, 76, 0.45)', fontStyle: 'italic', margin: 0, borderLeft: '2px solid rgba(216,160,39,0.3)', paddingLeft: '0.75rem' }}>
                     "Cabin crew is not about looking the part. It is about being the calmest person on board when something goes wrong."
@@ -157,12 +157,12 @@ export default function CabinCrewTrainingPage() {
                 </div>
                 <div style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', padding: '2rem', borderRadius: '4px' }}>
                   <div style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', fontWeight: 800, color: 'var(--navy)', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Rajeet Khalsa</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--navy)', fontFamily: 'var(--font-h)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '1rem' }}>Lead Trainer — Soft Skills & Professional Readiness</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--navy)', fontFamily: 'var(--font-h)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '1rem' }}>Lead Trainer - Soft Skills & Professional Readiness</div>
                   <p style={{ fontSize: '0.82rem', color: 'rgba(0, 39, 76, 0.65)', lineHeight: '1.7', margin: '0 0 1rem 0' }}>
                     Rajeet Khalsa retired as AGM (Training) at Air India, where she spent decades training cabin crew for India's national carrier. A certified soft skills trainer and image consultant with 37+ years of experience. Leads communication, grooming, confidence building, and personality development.
                   </p>
                   <p style={{ fontSize: '0.8rem', color: 'rgba(0, 39, 76, 0.45)', fontStyle: 'italic', margin: 0, borderLeft: '2px solid rgba(216,160,39,0.3)', paddingLeft: '0.75rem' }}>
-                    "You are being assessed from the moment you walk in. Every cabin crew interview is won or lost on professional presence — that is what we build."
+                    "You are being assessed from the moment you walk in. Every cabin crew interview is won or lost on professional presence - that is what we build."
                   </p>
                 </div>
               </div>
@@ -171,7 +171,7 @@ export default function CabinCrewTrainingPage() {
             {/* Batch 1 Scholarship Banner */}
             <div className="course-section-divider">
               <div style={{ background: 'rgba(219,36,30,0.06)', border: '1px solid rgba(219,36,30,0.3)', borderRadius: '6px', padding: '1.5rem 2rem' }}>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.75rem', letterSpacing: '0.2em', color: '#DB241E', textTransform: 'uppercase', marginBottom: '0.5rem' }}>⚡ Limited Time — Batch 1 Only</div>
+                <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.75rem', letterSpacing: '0.2em', color: '#DB241E', textTransform: 'uppercase', marginBottom: '0.5rem' }}>⚡ Limited Time - Batch 1 Only</div>
                 <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 800, color: 'var(--navy)', marginBottom: '0.75rem' }}>100%* Scholarship</div>
                 <p style={{ fontSize: '0.85rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.6', margin: '0 0 0.5rem 0' }}>
                   <strong>*Upon Scoring ≥70%</strong>
@@ -220,7 +220,7 @@ export default function CabinCrewTrainingPage() {
             {/* Curriculum */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
-                What You Will Learn — Curriculum
+                What You Will Learn - Curriculum
               </h2>
               <div style={{ border: '1px solid rgba(0, 39, 76, 0.08)', borderRadius: '8px', overflow: 'hidden', overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem', fontFamily: 'var(--font-b)', minWidth: '500px' }}>
@@ -277,11 +277,11 @@ export default function CabinCrewTrainingPage() {
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
                 {[
-                  { q: 'Who teaches the cabin crew program at Airborne?', a: 'Capt. Mukul Mitra Barua (ex-cabin & cockpit crew, Alliance Air) and Rajeet Khalsa (retired AGM Training, Air India, 37+ years). Not generalist coaches — real airline industry professionals.' },
-                  { q: 'What is the cabin crew course fee?', a: 'Tuition ₹59,000. 100%* scholarship offer upon scoring ≥70% on the assessment. *Terms apply — explained at counselling.' },
+                  { q: 'Who teaches the cabin crew program at Airborne?', a: 'Capt. Mukul Mitra Barua (ex-cabin & cockpit crew, Alliance Air) and Rajeet Khalsa (retired AGM Training, Air India, 37+ years). Not generalist coaches - real airline industry professionals.' },
+                  { q: 'What is the cabin crew course fee?', a: 'Tuition ₹59,000. 100%* scholarship offer upon scoring ≥70% on the assessment. *Terms apply - explained at counselling.' },
                   { q: 'Can boys join the cabin crew program?', a: 'Yes. The program is open to all candidates meeting eligibility criteria. Airlines hire male cabin crew across domestic and international carriers.' },
                   { q: 'Does Airborne guarantee cabin crew placement?', a: 'No institute can guarantee airline selection. Airborne provides structured interview preparation, resume coaching, mock interviews, and career guidance. Final selection rests with the airline.' },
-                  { q: 'Why are your fees higher than other institutes?', a: 'Because this is airline-standard training — taught by actual airline professionals, not generalist coaches. Compare trainers, structure, and outcomes — not just price.' },
+                  { q: 'Why are your fees higher than other institutes?', a: 'Because this is airline-standard training - taught by actual airline professionals, not generalist coaches. Compare trainers, structure, and outcomes - not just price.' },
                 ].map((faq, i) => (
                   <div key={i} className="course-faq-item">
                     <h3 className="course-faq-q">{faq.q}</h3>

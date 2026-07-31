@@ -9,7 +9,7 @@ import SubmitButton from '@/components/SubmitButton'
 const COURSES = [
   'CPL Ground Classes (₹2,70,000)',
   'Cadet Pilot Program (₹50,000)',
-  'CAS Compass & ADAPT (₹30,000)',
+  'CASS Compass & ADAPT (₹30,000)',
   'GD & PI Course (₹30,000)',
   'Airline Interview Preparation (₹1,50,000)',
   'Airbus A320 Simulator FBS (₹12,000)',

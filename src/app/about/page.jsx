@@ -24,7 +24,7 @@ const FOUNDERS = [
     name: 'Deepak Aggarwal',
     role: 'Co-founder & Business Head',
     image: '/team/deepak_portrait.jpg',
-    bio: 'Deepak Aggarwal is the strategic force behind Airborne\'s larger vision and business operations. With over two decades of experience in training partnerships, regulatory compliance, and high-stakes execution, he leads commercial growth, parent counselling frameworks, and institutional partnerships — making the journey to the cockpit more transparent, structured, and empowering for aspiring aviation professionals and their families.',
+    bio: 'Deepak Aggarwal is the strategic force behind Airborne\'s larger vision and business operations. With over two decades of experience in training partnerships, regulatory compliance, and high-stakes execution, he leads commercial growth, parent counselling frameworks, and institutional partnerships - making the journey to the cockpit more transparent, structured, and empowering for aspiring aviation professionals and their families.',
     accent: 'Business strategy, partnerships & parent trust'
   },
   {
@@ -245,7 +245,7 @@ export default function AboutPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '2rem' }}>
             {[
               { title: 'Transparent Fees With No Mid-Course Surprises', text: 'Full fee breakdown provided before enrolment. Flying hours, ground school, DGCA exams and medical costs are clearly communicated upfront. No hidden mid-course charges.' },
-              { title: 'Instructor Continuity – Same Teacher, Start to Finish', text: 'Students are mentored by the same instructor throughout the journey. Capt. Navrang leads ground school from Day 1 to CPL issue — continuity that rotating part-time instructors cannot match.' },
+              { title: 'Instructor Continuity – Same Teacher, Start to Finish', text: 'Students are mentored by the same instructor throughout the journey. Capt. Navrang leads ground school from Day 1 to CPL issue - continuity that rotating part-time instructors cannot match.' },
             ].map((v) => (
               <div key={v.title}>
                 <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.95rem', fontWeight: 800, color: '#D8A027', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
@@ -262,7 +262,7 @@ export default function AboutPage() {
         {/* CTA & Lead Form */}
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
-            <span style={{ fontSize: '0.65rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#DB241E', fontWeight: 700, display: 'block', marginBottom: '0.75rem', fontFamily: 'var(--font-h)' }}>Admissions Open — July 2026</span>
+            <span style={{ fontSize: '0.65rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#DB241E', fontWeight: 700, display: 'block', marginBottom: '0.75rem', fontFamily: 'var(--font-h)' }}>Admissions Open - July 2026</span>
             <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.8rem', fontWeight: 900, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
               Begin Your Training With Airborne
             </h2>

@@ -1,5 +1,5 @@
 # caveman
-- Use terse, fragment-based responses — drop articles, filler words, and pleasantries. Confidence: 0.95
+- Use terse, fragment-based responses - drop articles, filler words, and pleasantries. Confidence: 0.95
 - Stick to direct technical substance without explanations or summaries. Confidence: 0.85
 
 # workflow

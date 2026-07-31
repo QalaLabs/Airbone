@@ -5,11 +5,11 @@ import JsonLd from '@/components/JsonLd'
 import { buildContactGraph } from '@/lib/schema'
 
 export const metadata = {
-  title: 'Contact Airborne Aviation Academy — Dwarka, Delhi | Capt. Navrang Singh',
+  title: 'Contact Airborne Aviation Academy - Dwarka, Delhi | Capt. Navrang Singh',
   description: 'Contact Airborne Aviation Academy, Dwarka Delhi. Led by Capt. Navrang Singh. E-549, Ramphal Chowk, Sector 7. CPL, ATPL, DGCA ground classes. +91 9953 777 320.',
   alternates: { canonical: 'https://www.airborneaviation.in/contact/' },
   openGraph: {
-    title: 'Contact Airborne Aviation Academy — Dwarka, Delhi | Capt. Navrang Singh',
+    title: 'Contact Airborne Aviation Academy - Dwarka, Delhi | Capt. Navrang Singh',
     description: 'Contact Airborne Aviation Academy, Dwarka Delhi. Led by Capt. Navrang Singh. E-549, Ramphal Chowk, Sector 7.',
     url: 'https://www.airborneaviation.in/contact/',
     type: 'website',
@@ -17,7 +17,7 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Contact Airborne Aviation Academy — Dwarka, Delhi | Capt. Navrang Singh',
+    title: 'Contact Airborne Aviation Academy - Dwarka, Delhi | Capt. Navrang Singh',
     description: 'Contact Airborne Aviation Academy, Dwarka Delhi. Led by Capt. Navrang Singh.',
     images: ['https://www.airborneaviation.in/footage/hero-cockpit.jpg'],
   },
@@ -34,8 +34,8 @@ const CONTACT = [
   { label: 'WhatsApp Support', value: '+91 9953 777 320', href: 'https://wa.me/919953777320' },
   { label: 'Electronic Mail', value: 'info@airborneaviation.in', href: 'mailto:info@airborneaviation.in' },
   { label: 'Office Timings', value: 'Mon – Sat: 9:30 AM – 6:00 PM', sub: '(Closed on Sundays)' },
-  { label: 'Head Office', value: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7, Dwarka, New Delhi — 110075', href: MAPS_URL },
-  { label: 'Registered Office', value: 'B-104, Himachal Apartment, Sector 5, Dwarka, New Delhi — 110078' },
+  { label: 'Head Office', value: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7, Dwarka, New Delhi - 110075', href: MAPS_URL },
+  { label: 'Registered Office', value: 'B-104, Himachal Apartment, Sector 5, Dwarka, New Delhi - 110078' },
 ]
 
 const contactPageGraph = buildContactGraph()
@@ -116,7 +116,7 @@ export default function ContactPage() {
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                  title="Airborne Aviation Academy — Official Google Maps Location"
+                  title="Airborne Aviation Academy - Official Google Maps Location"
                 />
               </div>
             </div>
@@ -142,7 +142,7 @@ export default function ContactPage() {
               >
                 <p style={{ fontSize: '0.88rem', color: 'rgba(33,33,33,0.75)', lineHeight: '1.6', margin: 0 }}>
                   E-549, 2nd Floor, Ramphal Chowk,<br />
-                  Sector 7, Dwarka, New Delhi — 110075
+                  Sector 7, Dwarka, New Delhi - 110075
                 </p>
               </a>
               <p style={{ fontSize: '0.78rem', color: '#D8A027', lineHeight: '1.5', margin: '0 0 1.25rem', fontStyle: 'italic' }}>

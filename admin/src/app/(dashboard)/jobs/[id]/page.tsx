@@ -78,7 +78,7 @@ export default function JobDetailPage() {
     {
       accessorKey: "applicantPhone",
       header: "Phone",
-      cell: ({ row }) => <span className="text-sm text-muted-foreground">{row.original.applicantPhone ?? "—"}</span>,
+      cell: ({ row }) => <span className="text-sm text-muted-foreground">{row.original.applicantPhone ?? "-"}</span>,
     },
     {
       accessorKey: "status",
@@ -162,12 +162,12 @@ export default function JobDetailPage() {
                 <div className="flex items-center gap-2 text-sm">
                   <Briefcase className="h-4 w-4 text-muted-foreground shrink-0" />
                   <span className="text-muted-foreground">Type:</span>
-                  <span className="font-medium">{job.jobType?.replace(/_/g, " ") ?? "—"}</span>
+                  <span className="font-medium">{job.jobType?.replace(/_/g, " ") ?? "-"}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
                   <span className="text-muted-foreground">Location:</span>
-                  <span className="font-medium">{job.location ?? "—"}</span>
+                  <span className="font-medium">{job.location ?? "-"}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Clock className="h-4 w-4 text-muted-foreground shrink-0" />

@@ -193,7 +193,7 @@ export function buildCourseEntity({
   const courseInstance = {
     '@type': 'CourseInstance',
     '@id': instanceId,
-    name: startDate ? `${name} — Upcoming Batch` : name,
+    name: startDate ? `${name} - Upcoming Batch` : name,
     courseMode,
     location: { '@id': id.place() },
     courseWorkload: isoDuration || duration || undefined,

@@ -143,7 +143,7 @@ export default function LmsCertificatesPage() {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-xs text-muted-foreground">
-                  {c.issuedAt ? new Date(c.issuedAt).toLocaleDateString("en-IN") : "—"}
+                  {c.issuedAt ? new Date(c.issuedAt).toLocaleDateString("en-IN") : "-"}
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
@@ -221,7 +221,7 @@ export default function LmsCertificatesPage() {
                 onChange={(e) => {
                   setSelectedCourseId(e.target.value);
                   const course = (courses ?? []).find((c) => c.id === e.target.value);
-                  if (course && !certTitle) setCertTitle(`${course.title} — Certificate of Completion`);
+                  if (course && !certTitle) setCertTitle(`${course.title} - Certificate of Completion`);
                 }}
               >
                 <option value="">Select course…</option>
@@ -231,7 +231,7 @@ export default function LmsCertificatesPage() {
 
             <div>
               <label className="text-xs text-muted-foreground">Certificate title *</label>
-              <Input className="mt-1" placeholder="e.g. Navigation Fundamentals — Certificate of Completion" value={certTitle} onChange={(e) => setCertTitle(e.target.value)} />
+              <Input className="mt-1" placeholder="e.g. Navigation Fundamentals - Certificate of Completion" value={certTitle} onChange={(e) => setCertTitle(e.target.value)} />
             </div>
 
             <div className="grid grid-cols-2 gap-2">

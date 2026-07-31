@@ -57,12 +57,12 @@ export function buildHomeGraph(faqs = []) {
     buildCourseStub('cadet-preparation', 'Cadet Pilot Program Preparation', '/courses/cadet-preparation'),
     buildCourseStub('airline-preparation', 'Airline Interview Preparation', '/courses/airline-preparation'),
     buildCourseStub('gd-pi', 'GD & PI Course', '/courses/gd-pi'),
-    buildCourseStub('cas-compass-adapt', 'CAS / Compass / ADAPT Prep', '/courses/cas-compass-adapt'),
+    buildCourseStub('cas-compass-adapt', 'CASS / Compass / ADAPT Prep', '/courses/cas-compass-adapt'),
     buildCourseStub('a320-simulator', 'Airbus A320 Simulator FBS', '/courses/a320-simulator'),
     buildCourseStub('cabin-crew-training', 'Cabin Crew Training', '/courses/cabin-crew-training'),
   ]
 
-  const image = buildPrimaryImage('/footage/hero-cockpit.jpg', `${ORG.name} — pilot training in Dwarka, Delhi`)
+  const image = buildPrimaryImage('/footage/hero-cockpit.jpg', `${ORG.name} - pilot training in Dwarka, Delhi`)
 
   return asGraph([
     ...coreEntities({ includeServices: true, includeCatalog: true, includeLeadership: true }),
@@ -204,7 +204,7 @@ export function buildCoursesIndexGraph(items) {
       path: '/courses',
       name: 'Pilot Training Courses | Airborne Aviation Academy',
       description:
-        'Browse DGCA-aligned aviation courses at Airborne Aviation Academy, Dwarka Delhi — CPL ground school, ATPL, cabin crew, A320 simulator, and cadet preparation.',
+        'Browse DGCA-aligned aviation courses at Airborne Aviation Academy, Dwarka Delhi - CPL ground school, ATPL, cabin crew, A320 simulator, and cadet preparation.',
       mainEntity: `${absUrl('/courses')}#itemlist`,
     }),
     buildBreadcrumbList(

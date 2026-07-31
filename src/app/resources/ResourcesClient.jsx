@@ -172,7 +172,7 @@ export default function ResourcesClient() {
               No resources published yet.
             </p>
             <p style={{ color: 'rgba(33,33,33,0.5)', fontSize: '0.8rem' }}>
-              Check back soon — guides and handbooks are being uploaded.
+              Check back soon - guides and handbooks are being uploaded.
             </p>
           </div>
         )}

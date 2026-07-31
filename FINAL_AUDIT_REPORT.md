@@ -1,15 +1,15 @@
-# Airborne Aviation — Final Website Audit Report
+# Airborne Aviation - Final Website Audit Report
 
 **GOD file:** `C:\Users\pc\Downloads\Airborne_Page_Content_v6.md` (Qala Labs Full Website Copy, June 2026)  
 **Codebase:** `C:\Users\pc\Desktop\Airbone`  
 **Audit date:** 2026-07-23  
-**Method:** PRD inventory vs live `src/app` routes/metadata/H1/H2/contact. OCR workflow **not run** (CLI not installed — see footer).
+**Method:** PRD inventory vs live `src/app` routes/metadata/H1/H2/contact. OCR workflow **not run** (CLI not installed - see footer).
 
 ---
 
 ## Executive Verdict
 
-**⚠ Partial compliance — production-capable, GOD-file gaps remain**
+**⚠ Partial compliance - production-capable, GOD-file gaps remain**
 
 | Area | Score |
 |------|-------|
@@ -59,10 +59,10 @@ This report = PRD compliance audit only (not OCR code-review session).
 
 | Check | GOD | Live | Status |
 |-------|-----|------|--------|
-| SEO Title | `Pilot Training in Delhi DGCA Approved \| Airborne Aviation` | `Pilot Training in Delhi \| DGCA Approved \| Airborne Aviation` | ⚠ Near — pipe/spacing differ |
+| SEO Title | `Pilot Training in Delhi DGCA Approved \| Airborne Aviation` | `Pilot Training in Delhi \| DGCA Approved \| Airborne Aviation` | ⚠ Near - pipe/spacing differ |
 | Meta Desc | 2000+ graduates… Enrol today | 2,500+ pilots… Book free demo | ❌ Wording + student count framing differ |
 | Schema | Org + WebSite + Breadcrumb + LocalBusiness | LocalBusiness + EducationalOrganization + FAQPage | ⚠ Partial (no WebSite/Breadcrumb on home) |
-| H1 | `Pilot Training Academy in Dwarka, Delhi DGCA Approved` | `From Classroom` / `To Cockpit` | ❌ **vs GOD** — intentional client override (2026-07-23) |
+| H1 | `Pilot Training Academy in Dwarka, Delhi DGCA Approved` | `From Classroom` / `To Cockpit` | ❌ **vs GOD** - intentional client override (2026-07-23) |
 | Tagline | Ab India Bharega Udaan | Same | ✅ |
 | Hero support | CPL & ATPL… Capt. Navrang… | Same intent | ✅ |
 | H2 Programs | Pilot Training Programs at Airborne… | ProgramGrid uses similar | ⚠ Verify exact H2 |
@@ -71,7 +71,7 @@ This report = PRD compliance audit only (not OCR code-review session).
 | Pilot Salary 2026 | Required ★ | Present | ✅ |
 | FAQ | Required | Present | ✅ |
 
-**Flag:** GOD H1 vs client “From Classroom to Cockpit” — stakeholder must pick one as canonical.
+**Flag:** GOD H1 vs client “From Classroom to Cockpit” - stakeholder must pick one as canonical.
 
 ---
 
@@ -103,7 +103,7 @@ This report = PRD compliance audit only (not OCR code-review session).
 **Redirects (alt GOD SEO slugs):** cadet-pilot-program, atpl-ground-classes, airbus-a320-sim-training, etc. → live slugs ✅
 
 **Index-only / codebase-extra (no full GOD PAGE):**  
-`private-pilot-license`, `instrument-rating`, `multi-engine-rating`, `aviation-english-icao`, `flight-dispatcher` — ℹ exist live; GOD has table/SEO pkg only or absent.
+`private-pilot-license`, `instrument-rating`, `multi-engine-rating`, `aviation-english-icao`, `flight-dispatcher` - ℹ exist live; GOD has table/SEO pkg only or absent.
 
 ---
 
@@ -143,7 +143,7 @@ This report = PRD compliance audit only (not OCR code-review session).
 
 ### Out of GOD file (live only)
 
-`/privacy` · `/terms` · `/refund-policy` · `/dgca-compliance` · APIs (`/api/lead`, OTP, public-proxy) — ℹ Not scored against GOD copy.
+`/privacy` · `/terms` · `/refund-policy` · `/dgca-compliance` · APIs (`/api/lead`, OTP, public-proxy) - ℹ Not scored against GOD copy.
 
 ---
 
@@ -169,19 +169,19 @@ This report = PRD compliance audit only (not OCR code-review session).
 
 ## Conflicts Requiring Stakeholder Decision
 
-1. **Homepage H1** — GOD: Pilot Training Academy… · Client: From Classroom / To Cockpit · **Live = client**
-2. **Flying H1** — GOD: Complete Guide for 2026 · Live: Which Path Is Right for You?
-3. **CPL total cost** — GOD table ₹55–65L vs form Q1 ~₹80L vs blogs ₹65–75L
-4. **Student count** — GOD home meta 2000+ · Live 2,500+
-5. **FTO claims** — some pages vs `/dgca-compliance` “not an FTO” (prior Phase 3 flag)
-6. **DGCA papers** — 5 vs 6 across pages
+1. **Homepage H1** - GOD: Pilot Training Academy… · Client: From Classroom / To Cockpit · **Live = client**
+2. **Flying H1** - GOD: Complete Guide for 2026 · Live: Which Path Is Right for You?
+3. **CPL total cost** - GOD table ₹55–65L vs form Q1 ~₹80L vs blogs ₹65–75L
+4. **Student count** - GOD home meta 2000+ · Live 2,500+
+5. **FTO claims** - some pages vs `/dgca-compliance` “not an FTO” (prior Phase 3 flag)
+6. **DGCA papers** - 5 vs 6 across pages
 
 ---
 
 ## Priority Fix List (if aligning to GOD)
 
 ### 🔴 High
-1. Decide homepage H1 (GOD vs client) — document decision
+1. Decide homepage H1 (GOD vs client) - document decision
 2. Fix CPL page SEO title to GOD string
 3. Fix `/courses` SEO title to GOD string
 4. Align homepage meta description to GOD (or update GOD to 2,500+)
@@ -230,10 +230,10 @@ Reports: `PHASE_3_AUDIT_REPORT.md` · `PHASE_4_AUDIT_REPORT.md`
 
 | # | Conflict | Resolution |
 |---|----------|------------|
-| 1 | Homepage H1 GOD vs client | **Client wins** — keep `From Classroom` / `To Cockpit` (explicit client feedback) |
-| 2 | Flying H1 | **GOD wins** — `Flying Training in India vs Abroad \| Complete Guide for 2026` |
+| 1 | Homepage H1 GOD vs client | **Client wins** - keep `From Classroom` / `To Cockpit` (explicit client feedback) |
+| 2 | Flying H1 | **GOD wins** - `Flying Training in India vs Abroad \| Complete Guide for 2026` |
 
-## 🔴 SEO Titles — DONE
+## 🔴 SEO Titles - DONE
 
 | Page | New title |
 |------|-----------|

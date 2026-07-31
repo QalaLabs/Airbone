@@ -6,21 +6,21 @@ import JsonLd from '@/components/JsonLd'
 import { buildArticlePageGraph } from '@/lib/schema'
 
 export const metadata = {
-  title: 'DGCA Ground School Guide — All Subjects, Exams & Prep Strategy 2026',
+  title: 'DGCA Ground School Guide - All Subjects, Exams & Prep Strategy 2026',
   description: 'Complete DGCA ground school guide for CPL and ATPL aspirants. Covers all 6 exam subjects, exam schedule, pass criteria, preparation strategies, and common mistakes. By Airborne Aviation Academy.',
   alternates: { canonical: '/blog/dgca-ground-school-guide' },
 }
 
 const FAQS = [
-  { q: 'How many times does DGCA conduct CPL exams per year?', a: 'DGCA conducts CPL written examinations 4 times per year — in January, April, July, and October. You can attempt subjects in any order, but must complete all 6 within the validity period of your Student Pilot License.' },
-  { q: 'What is the passing percentage for DGCA CPL exams?', a: 'You must score a minimum of 70% in each subject to pass a DGCA CPL written examination. There is no aggregate — each subject is independently scored and must be passed individually.' },
+  { q: 'How many times does DGCA conduct CPL exams per year?', a: 'DGCA conducts CPL written examinations 4 times per year - in January, April, July, and October. You can attempt subjects in any order, but must complete all 6 within the validity period of your Student Pilot License.' },
+  { q: 'What is the passing percentage for DGCA CPL exams?', a: 'You must score a minimum of 70% in each subject to pass a DGCA CPL written examination. There is no aggregate - each subject is independently scored and must be passed individually.' },
   { q: 'How many attempts are allowed for DGCA CPL exams?', a: 'There is no official limit on attempts, but the SPL (Student Pilot License) validity constrains you to clear all papers within a set period. Multiple failures can result in suspension of examination privileges and affect airline applications.' },
   { q: 'Can I study for DGCA exams on my own?', a: 'Technically yes, but the failure rate for self-study candidates is significantly higher. DGCA exams are conceptual, not rote-based. Subjects like Air Navigation and Meteorology require systematic, mentor-led understanding of applied principles.' },
 ]
 
 const articlePageGraph = buildArticlePageGraph({
   path: '/blog/dgca-ground-school-guide',
-  headline: 'DGCA Ground School Guide — All Subjects, Exams & Prep Strategy 2026',
+  headline: 'DGCA Ground School Guide - All Subjects, Exams & Prep Strategy 2026',
   description: 'Complete DGCA ground school guide for CPL and ATPL aspirants covering subjects, exam schedule, and preparation strategy.',
   datePublished: '2026-02-01',
   dateModified: '2026-06-01',
@@ -38,10 +38,10 @@ const SUBJECTS = [
 
 const STRATEGY = [
   { tip: 'Start with Air Navigation from Day 1', detail: 'Navigation is the most time-consuming subject. Begin it immediately and work through it systematically alongside flying. Do not leave it to the last.' },
-  { tip: 'Clear RT Early — Build Confidence', detail: 'Radio Telephony is the least demanding. Clear it in your first exam session to begin your pass tally and build examination confidence.' },
+  { tip: 'Clear RT Early - Build Confidence', detail: 'Radio Telephony is the least demanding. Clear it in your first exam session to begin your pass tally and build examination confidence.' },
   { tip: 'Use DGCA Study Material, Not just Third-Party Books', detail: 'The questions in DGCA exams come from approved JAR and DGCA syllabus. Study primary texts. Third-party answer banks alone will not build the conceptual understanding needed for applied questions.' },
   { tip: 'Attempt 2–3 Subjects Per Session Maximum', detail: 'Do not attempt all 6 in one session. Splitting across 2–3 sessions with proper preparation ensures higher first-attempt scores and reduces the risk of retakes.' },
-  { tip: 'Air Regulations Changes Annually — Verify Current CAARs', detail: 'DGCA updates Civil Aviation Regulations periodically. Always verify the latest version before your exam. Your ground school faculty should flag any regulatory changes.' },
+  { tip: 'Air Regulations Changes Annually - Verify Current CAARs', detail: 'DGCA updates Civil Aviation Regulations periodically. Always verify the latest version before your exam. Your ground school faculty should flag any regulatory changes.' },
 ]
 
 export default function DGCAGroundSchoolGuidePage() {
@@ -69,10 +69,10 @@ export default function DGCAGroundSchoolGuidePage() {
               Exam Guide · Updated June 2026
             </span>
             <h1 style={{ fontFamily: 'var(--font-h)', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 900, color: 'var(--navy)', textTransform: 'uppercase', lineHeight: '1.15', marginBottom: '1.25rem' }}>
-              DGCA Ground School — Complete Exam Guide 2026
+              DGCA Ground School - Complete Exam Guide 2026
             </h1>
             <p style={{ fontSize: '1.05rem', color: 'rgba(33,33,33,0.75)', lineHeight: '1.75', fontFamily: 'var(--font-b)' }}>
-              Everything you need to know about the 6 DGCA CPL written examinations — subject breakdown, difficulty levels, preparation strategy, and the most common mistakes candidates make. By the faculty at Airborne Aviation Academy, Dwarka.
+              Everything you need to know about the 6 DGCA CPL written examinations - subject breakdown, difficulty levels, preparation strategy, and the most common mistakes candidates make. By the faculty at Airborne Aviation Academy, Dwarka.
             </p>
             <div style={{ display: 'flex', gap: '2rem', fontSize: '0.78rem', color: 'rgba(33,33,33,0.55)', fontFamily: 'var(--font-h)', fontWeight: 600, letterSpacing: '0.05em', marginTop: '1.5rem' }}>
               <span>By Capt. Navrang Singh</span>
@@ -106,7 +106,7 @@ export default function DGCAGroundSchoolGuidePage() {
 
           {/* Subjects Breakdown */}
           <section style={{ marginBottom: '3rem' }}>
-            <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '1.5rem' }}>The 6 CPL Subjects — Detailed Breakdown</h2>
+            <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '1.5rem' }}>The 6 CPL Subjects - Detailed Breakdown</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               {SUBJECTS.map((s, i) => (
                 <div key={i} style={{ background: '#ffffff', border: '1px solid rgba(0,39,76,0.08)', borderLeft: `3px solid ${s.difficulty === 'Hard' ? '#DB241E' : s.difficulty === 'Medium' ? '#D8A027' : 'rgba(33,33,33,0.3)'}`, padding: '1.5rem', borderRadius: '1px' }}>
@@ -124,7 +124,7 @@ export default function DGCAGroundSchoolGuidePage() {
 
           {/* Preparation Strategy */}
           <section style={{ marginBottom: '3rem' }}>
-            <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '1.5rem' }}>Preparation Strategy — What Actually Works</h2>
+            <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '1.5rem' }}>Preparation Strategy - What Actually Works</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               {STRATEGY.map((s, i) => (
                 <div key={i} style={{ borderLeft: '3px solid #DB241E', paddingLeft: '1.5rem' }}>
@@ -160,9 +160,9 @@ export default function DGCAGroundSchoolGuidePage() {
           {/* CTA & Lead Form */}
           <div style={{ marginBottom: '3.5rem' }}>
             <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
-              <span style={{ fontSize: '0.65rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#DB241E', fontWeight: 700, display: 'block', marginBottom: '0.75rem', fontFamily: 'var(--font-h)' }}>Admissions Open — July 2026</span>
+              <span style={{ fontSize: '0.65rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#DB241E', fontWeight: 700, display: 'block', marginBottom: '0.75rem', fontFamily: 'var(--font-h)' }}>Admissions Open - July 2026</span>
               <h2 style={{ fontFamily: 'var(--font-h)', fontSize: '1.4rem', fontWeight: 900, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
-                Clear Your DGCA Exams — First Attempt
+                Clear Your DGCA Exams - First Attempt
               </h2>
               <p style={{ fontSize: '0.85rem', color: 'rgba(33,33,33,0.7)', lineHeight: '1.6', maxWidth: '420px', margin: '0 auto', fontFamily: 'var(--font-b)' }}>
                 Join Airborne's mentor-led CPL ground school in Dwarka. Batches limited to 25 students. Book a free demo class to assess your readiness.

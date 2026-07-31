@@ -17,7 +17,7 @@ Source: `scratch/pdf_content.txt` (★ NEW PAGE blocks). Appendix SEO blocks fla
 
 **Files:** `src/app/courses/airline-preparation/page.jsx`
 
-**Note:** Audit brief spelled “Rajeev” — PRD = **Rajeet**. Kept Rajeet.
+**Note:** Audit brief spelled “Rajeev” - PRD = **Rajeet**. Kept Rajeet.
 
 --------------------------------
 
@@ -44,7 +44,7 @@ Source: `scratch/pdf_content.txt` (★ NEW PAGE blocks). Appendix SEO blocks fla
 **Changes**
 - Title → `ATPL Ground School India | All Subjects | Airborne Aviation`
 - Meta/OG/Twitter desc aligned; removed conflicting `3-month` meta (body/FAQ stay 4–6 months)
-- FAQ H2 → `FAQs — ATPL Ground School`
+- FAQ H2 → `FAQs - ATPL Ground School`
 
 **Files:** `src/app/courses/atpl/page.jsx`
 
@@ -61,16 +61,16 @@ Source: `scratch/pdf_content.txt` (★ NEW PAGE blocks). Appendix SEO blocks fla
 - Comparison costs: India `₹55–65 lakh` · Abroad `₹35–65 lakh`
 - Duration kept: India 18–24 · Abroad 12–18 + 12–18 conversion
 - Row labels aligned to audit set (Total Cost, Duration, DGCA CPL Direct, Airline Eligibility, Weather, Forex Risk, Ground School, Support Network)
-- H2s → Key Comparison / DGCA conversion PRD heading / Training in India or Abroad / How Airborne Aviation Helps / FAQs — Flying…
+- H2s → Key Comparison / DGCA conversion PRD heading / Training in India or Abroad / How Airborne Aviation Helps / FAQs - Flying…
 - FAQs → PRD three Qs
 - Conversion bullets → 6 papers + Skill Test + Medical; cost ₹5–15L; timeline 6–18 months
 
 **Files:** `src/app/courses/flying-training-india-abroad/page.jsx`
 
 **⚠ Manual Review**
-1. H1 live = `…Which Path Is Right for You?` · PRD = `…Complete Guide for 2026` — left live (matches audit brief)
-2. Audit asked Technical General exemption / Air Regulation / Composite Paper — **not in PRD NEW PAGE** (PRD = full 6 papers). Not invented.
-3. PRD comparison India ₹55–65L vs PRD FAQ India ₹65–75L — internal PDF conflict; table uses comparison block, FAQ uses FAQ block verbatim.
+1. H1 live = `…Which Path Is Right for You?` · PRD = `…Complete Guide for 2026` - left live (matches audit brief)
+2. Audit asked Technical General exemption / Air Regulation / Composite Paper - **not in PRD NEW PAGE** (PRD = full 6 papers). Not invented.
+3. PRD comparison India ₹55–65L vs PRD FAQ India ₹65–75L - internal PDF conflict; table uses comparison block, FAQ uses FAQ block verbatim.
 
 --------------------------------
 
@@ -107,7 +107,7 @@ Source: `scratch/pdf_content.txt` (★ NEW PAGE blocks). Appendix SEO blocks fla
 
 ## Build
 
-**Result:** ✅ `npm run build` — 45 pages, 0 failures. Expected Admin OS `ECONNREFUSED` during SSG.
+**Result:** ✅ `npm run build` - 45 pages, 0 failures. Expected Admin OS `ECONNREFUSED` during SSG.
 
 --------------------------------
 

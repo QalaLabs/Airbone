@@ -255,7 +255,7 @@ export default function MultiStepLeadForm({ courseName = '', source = 'Multi-Ste
     <div style={cardStyle}>
       <ProgressIndicator step={step} total={STEP_LABELS.length} />
       <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.85rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
-        Step {step + 1} of {STEP_LABELS.length} — {STEP_LABELS[step]}
+        Step {step + 1} of {STEP_LABELS.length} - {STEP_LABELS[step]}
       </h3>
 
       {/* Step 0: Details */}
@@ -313,7 +313,7 @@ export default function MultiStepLeadForm({ courseName = '', source = 'Multi-Ste
           {courseCategory === 'cabin-crew' ? (
             <>
               <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)', marginBottom: '1.25rem', lineHeight: 1.6 }}>
-                These help our counsellor prepare for your session — they never block your application.
+                These help our counsellor prepare for your session - they never block your application.
               </p>
               <YesNo label="Do you have any visible tattoos?" value={screening.tattoo} onChange={(v) => setScreening((s) => ({ ...s, tattoo: v }))} />
               <YesNo label="Any known hearing impairment?" value={screening.hearing} onChange={(v) => setScreening((s) => ({ ...s, hearing: v }))} />
@@ -321,10 +321,10 @@ export default function MultiStepLeadForm({ courseName = '', source = 'Multi-Ste
               <FormField id="msf-height" label="Height (cm)" type="tel" placeholder="Height in cm" dark value={screening.height || ''} onChange={(v) => setScreening((s) => ({ ...s, height: v.replace(/\D/g, '') }))} maxLength={3} />
               <FormField id="msf-weight" label="Weight (kg)" type="tel" placeholder="Weight in kg" dark value={screening.weight || ''} onChange={(v) => setScreening((s) => ({ ...s, weight: v.replace(/\D/g, '') }))} maxLength={3} />
               {screening.height && Number(screening.height) < 157 && (
-                <p style={{ fontSize: '0.75rem', color: '#D8A027', marginBottom: '1rem' }}>Note: minimum height guidance for cabin crew is 157cm — our counsellor will discuss this with you.</p>
+                <p style={{ fontSize: '0.75rem', color: '#D8A027', marginBottom: '1rem' }}>Note: minimum height guidance for cabin crew is 157cm - our counsellor will discuss this with you.</p>
               )}
               {screening.height && screening.weight && Number(screening.height) > 0 && (Number(screening.weight) / ((Number(screening.height) / 100) ** 2)) > 25 && (
-                <p style={{ fontSize: '0.75rem', color: '#D8A027', marginBottom: '1rem' }}>Note: BMI guidance for cabin crew is typically ≤25 — our counsellor will discuss fitness requirements with you. This does not block your enquiry.</p>
+                <p style={{ fontSize: '0.75rem', color: '#D8A027', marginBottom: '1rem' }}>Note: BMI guidance for cabin crew is typically ≤25 - our counsellor will discuss fitness requirements with you. This does not block your enquiry.</p>
               )}
             </>
           ) : (
@@ -339,7 +339,7 @@ export default function MultiStepLeadForm({ courseName = '', source = 'Multi-Ste
               />
               {screening.canAfford === 'No' && (
                 <p style={{ fontSize: '0.78rem', color: '#D8A027', marginBottom: '1rem', lineHeight: 1.6 }}>
-                  No problem — we&apos;ll mark this as a financing-priority enquiry. Our admissions team will reach out with EMI and education loan guidance options.
+                  No problem - we&apos;ll mark this as a financing-priority enquiry. Our admissions team will reach out with EMI and education loan guidance options.
                 </p>
               )}
               <ChoiceGroup

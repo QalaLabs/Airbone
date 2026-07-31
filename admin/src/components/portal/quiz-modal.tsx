@@ -73,7 +73,7 @@ export function QuizModal({ moduleId, courseId, onClose, onPass }: QuizModalProp
       setSubmitted(true);
       void queryClient.invalidateQueries({ queryKey: ["lms-player", courseId] });
       if (data.passed) {
-        toast({ title: "Assessment passed!", description: `Score: ${data.scorePercent}% — next module unlocked.` });
+        toast({ title: "Assessment passed!", description: `Score: ${data.scorePercent}% - next module unlocked.` });
         onPass();
       } else {
         toast({
@@ -151,7 +151,7 @@ export function QuizModal({ moduleId, courseId, onClose, onPass }: QuizModalProp
         <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
           <div>
             <h2 id="quiz-modal-title" className="font-semibold text-white">
-              {quiz.module.title} — Assessment
+              {quiz.module.title} - Assessment
             </h2>
             <p className="text-xs text-white/50 mt-0.5">
               Pass ≥ {quiz.module.passPercent}% · Attempt {quiz.attemptsUsed + 1} of {quiz.module.maxAttempts}
