@@ -5,6 +5,7 @@ import ToastContainer from '@/components/Toast'
 import GlobalCursor from '@/components/GlobalCursor'
 import WhatsAppFloat from '@/components/WhatsAppFloat'
 import StickyMobileCTA from '@/components/StickyMobileCTA'
+import ClarityInit from '@/components/ClarityInit'
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -111,6 +112,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           />
         </noscript>
         {/* End Google Tag Manager (noscript) */}
+        <ClarityInit />
         <GlobalCursor />
         <ToastContainer />
         {children}
