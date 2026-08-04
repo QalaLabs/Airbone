@@ -36,6 +36,7 @@
   --margin: clamp(24px, 5.5vw, 96px);
   --ease:  cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --easeC: cubic-bezier(0.16, 1, 0.3, 1);
+  --mobile-bottom-nav-height: 56px;
 }
 
 /* ── LAYOUT PRIMITIVES ── */
@@ -755,14 +756,14 @@ img, video { display: block; max-width: 100%; }
   font-size: 0.85rem;
   font-weight: 800;
   text-transform: uppercase;
-  color: var(--white);
+  color: var(--navy);
   margin-bottom: 0.5rem;
   letter-spacing: 0.08em;
 }
 .timeline-text {
   font-family: var(--font-b);
   font-size: 0.88rem;
-  color: var(--w70);
+  color: rgba(33, 33, 33, 0.75);
   line-height: 1.6;
 }
 
@@ -2748,6 +2749,27 @@ html { scroll-behavior: smooth; }
 @media (max-width: 768px) {
   .sticky-mobile-cta {
     display: grid;
+  }
+
+  body {
+    padding-bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 24px) !important;
+  }
+
+  .pf-root, footer {
+    padding-bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 24px) !important;
+  }
+
+  .grm-cta-bar {
+    margin-bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 24px) !important;
+  }
+
+  .pf-cta-block {
+    margin-bottom: 2rem !important;
+  }
+
+  .whatsapp-float {
+    bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 16px) !important;
+    z-index: 850 !important;
   }
 }
 

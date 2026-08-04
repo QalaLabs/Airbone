@@ -181,7 +181,6 @@ export default function InstrumentRatingPage() {
           ]}
           relatedCourses={[
             { label: 'A320 Simulator', href: '/courses/a320-simulator' },
-            { label: 'Multi-Engine Rating', href: '/courses/multi-engine-rating' },
             { label: 'PPL', href: '/courses/private-pilot-license' },
             { label: 'All Courses', href: '/courses' },
           ]}

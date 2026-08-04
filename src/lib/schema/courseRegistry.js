@@ -140,9 +140,10 @@ export const COURSE_SCHEMA = {
   },
   'airline-preparation': {
     slug: 'airline-preparation',
-    name: 'Comprehensive Airline Preparation Program',
+    name: 'Airline Preparation',
+    tag: 'Airline Prep',
     description:
-      'Transition from CPL holder to First Officer. 2.5-month airline preparation program at Airborne, Dwarka covering DGCA Ground Refresher, ADAPT Screening, A320 Systems & Sim Prep, and GD/PI. 4 hours/day. ₹1,50,000.',
+      'Transition from CPL holder to First Officer. 2.5-month airline preparation program at Airborne, Dwarka covering DGCA Ground Refresher, ADAPT Screening, A320 Systems & Sim Prep, and GD/PI. 4 hours/day. ₹1,25,000.',
     path: '/courses/airline-preparation',
     courseMode: 'onsite',
     includeInstructor: false,
@@ -198,17 +199,26 @@ export const COURSE_SCHEMA = {
     courseMode: 'onsite',
     includeInstructor: false,
   },
+  'securing-your-childs-future-in-aviation': {
+    slug: 'securing-your-childs-future-in-aviation',
+    name: "Securing Your Child's Future in Aviation",
+    description:
+      'Comprehensive CPL flight training guidance and Indian CPL conversion support built for parents and aspirants.',
+    path: '/courses/securing-your-childs-future-in-aviation',
+    courseMode: 'onsite',
+    includeInstructor: false,
+  },
 }
 
 export const COURSES_INDEX_ITEMS = [
-  { name: 'Flying Training India vs Abroad', path: '/courses/flying-training-india-abroad' },
-  { name: 'DGCA CPL Ground School', path: '/courses/commercial-pilot-license-cpl', courseSlug: 'commercial-pilot-license-cpl' },
+  { name: 'DGCA CPL Ground Classes', path: '/courses/commercial-pilot-license-cpl', courseSlug: 'commercial-pilot-license-cpl' },
+  { name: 'Commercial Pilot License (CPL)', path: '/courses/flying-training-india-abroad', courseSlug: 'flying-training-india-abroad' },
+  { name: 'Cadet Preparation', path: '/courses/cadet-preparation', courseSlug: 'cadet-preparation' },
+  { name: 'Airline Preparation', path: '/courses/airline-preparation', courseSlug: 'airline-preparation' },
   { name: 'GD & PI Course', path: '/courses/gd-pi', courseSlug: 'gd-pi' },
-  { name: 'Airline Interview Preparation', path: '/courses/airline-preparation', courseSlug: 'airline-preparation' },
+  { name: 'CASS Compass Adapt', path: '/courses/cas-compass-adapt', courseSlug: 'cas-compass-adapt' },
   { name: 'ATPL Ground School', path: '/courses/atpl', courseSlug: 'atpl' },
-  { name: 'Cadet Pilot Program Prep', path: '/courses/cadet-preparation', courseSlug: 'cadet-preparation' },
   { name: 'Airbus A320 Simulator FBS', path: '/courses/a320-simulator', courseSlug: 'a320-simulator' },
-  { name: 'CASS / Compass / ADAPT Prep', path: '/courses/cas-compass-adapt', courseSlug: 'cas-compass-adapt' },
+  { name: "Securing Your Child's Future in Aviation", path: '/courses/securing-your-childs-future-in-aviation', courseSlug: 'securing-your-childs-future-in-aviation' },
   { name: 'Cabin Crew Training', path: '/courses/cabin-crew-training', courseSlug: 'cabin-crew-training' },
-  { name: 'DGCA Ground School', path: '/courses/ground-school', courseSlug: 'ground-school' },
 ]

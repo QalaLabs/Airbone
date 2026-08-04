@@ -218,7 +218,6 @@ export default function PPLPage() {
           ]}
           relatedCourses={[
             { label: 'DGCA Ground School', href: '/courses/ground-school' },
-            { label: 'Multi-Engine Rating', href: '/courses/multi-engine-rating' },
             { label: 'Flying Training India vs Abroad', href: '/courses/flying-training-india-abroad' },
             { label: 'All Courses', href: '/courses' },
           ]}

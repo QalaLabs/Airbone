@@ -7,15 +7,17 @@ import FormField from '@/components/FormField'
 import SubmitButton from '@/components/SubmitButton'
 
 const COURSES = [
-  'CPL Ground Classes (₹2,70,000)',
-  'Cadet Pilot Program (₹50,000)',
-  'CASS Compass & ADAPT (₹30,000)',
+  'DGCA CPL Ground Classes (₹2,70,000)',
+  'Commercial Pilot License (CPL)',
+  'Cadet Preparation (₹50,000)',
+  'Airline Preparation (₹1,25,000)',
   'GD & PI Course (₹30,000)',
-  'Airline Interview Preparation (₹1,50,000)',
+  'CASS Compass Adapt (₹30,000)',
+  'ATPL Ground School (₹1,50,000)',
   'Airbus A320 Simulator FBS (₹12,000)',
+  "Securing Your Child's Future in Aviation",
   'Cabin Crew Training (₹59,000)',
-  'ATPL Ground Classes (₹1,50,000)',
-  'Private Pilot Licence (PPL)',
+  'Private Pilot License (PPL)',
 ]
 
 export default function Modal({ type = 'demo', isOpen, onClose }) {

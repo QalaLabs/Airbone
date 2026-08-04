@@ -20,16 +20,17 @@ const QUICK_LINKS = [
 
 /* Pilot training sequence (homepage order) */
 const PROGRAMS = [
-  { label: 'CPL Flying Training',      href: '/courses/flying-training-india-abroad' },
-  { label: 'GD & PI Course',           href: '/courses/gd-pi' },
-  { label: 'Airline Interview Prep',   href: '/courses/airline-preparation' },
-  { label: 'ATPL Ground School',       href: '/courses/atpl' },
   { label: 'DGCA CPL Ground Classes',  href: '/courses/commercial-pilot-license-cpl' },
-  { label: 'Cadet Pilot Program',      href: '/courses/cadet-preparation' },
-  { label: 'A320 Simulator FBS',       href: '/courses/a320-simulator' },
-  { label: 'CASS / Compass / ADAPT',    href: '/courses/cas-compass-adapt' },
+  { label: 'Commercial Pilot License (CPL)', href: '/courses/flying-training-india-abroad' },
+  { label: 'Cadet Preparation',      href: '/courses/cadet-preparation' },
+  { label: 'Airline Preparation',   href: '/courses/airline-preparation' },
+  { label: 'GD & PI Course',           href: '/courses/gd-pi' },
+  { label: 'CASS Compass Adapt',    href: '/courses/cas-compass-adapt' },
+  { label: 'ATPL Ground School',       href: '/courses/atpl' },
+  { label: 'Airbus A320 Simulator FBS',       href: '/courses/a320-simulator' },
+  { label: "Securing Your Child's Future in Aviation", href: '/courses/securing-your-childs-future-in-aviation' },
   { label: 'Cabin Crew Training',      href: '/courses/cabin-crew-training' },
-  { label: "Securing Your Child's Future in Aviation", href: '/courses/flying-training-india-abroad' },
+  { label: 'Private Pilot License (PPL)', href: '/courses/private-pilot-license' },
 ]
 
 const SOCIAL_LINKS = [
@@ -59,7 +60,7 @@ export default function PremiumFooter({ onBookDemo }) {
         <div className="pf-inner pf-cta-inner">
           <div className="pf-cta-eyebrow">
             <span className="pf-red-line" />
-            <span className="pf-eyebrow-text">ADMISSIONS OPEN · JULY 2026 BATCH</span>
+            <span className="pf-eyebrow-text">ADMISSIONS OPEN · UPCOMING BATCH</span>
             <span className="pf-red-line" />
           </div>
           <h2 className="pf-cta-heading">

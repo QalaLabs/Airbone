@@ -56,8 +56,9 @@ const PATHWAYS = [
     title: 'Elite Cabin Crew Finishing Batch',
     duration: '3 Months',
     classTime: '90 Minutes',
-    regular: '₹59,000',
+    regular: '₹54,000',
     scholarship: '100%* (score ≥70%)',
+    scholarshipPrice: '₹0 (for scholarship winners)',
     best: 'Near-selection candidates needing final polish',
     focus: ['Final grooming polish', 'Professional presence', 'Service behaviour refinement', 'GD and PI readiness', 'Interview finishing support'],
   },
@@ -66,8 +67,9 @@ const PATHWAYS = [
     title: 'Advanced Communication, GD/PI & Personality',
     duration: '3 Months',
     classTime: '90 Minutes',
-    regular: '₹59,000',
+    regular: '₹30,000',
     scholarship: '100%* (score ≥70%)',
+    scholarshipPrice: '₹30,000 (for scholarship winners)',
     best: 'Candidates with communication or confidence gaps',
     focus: ['Spoken communication improvement', 'GD practice', 'PI preparation', 'Personality development', 'Confidence building'],
   },
@@ -76,8 +78,9 @@ const PATHWAYS = [
     title: 'Basic Communication & Global Hospitality',
     duration: '6 Months',
     classTime: '90 Minutes',
-    regular: '₹59,000',
+    regular: '₹30,000',
     scholarship: '100%* (score ≥70%)',
+    scholarshipPrice: '₹54,000 (for scholarship winners)',
     best: 'Beginners needing complete foundation',
     focus: ['Communication foundation', 'Hospitality standards', 'Grooming basics', 'Professional readiness', 'Zero-to-selection journey'],
   },
@@ -205,6 +208,9 @@ export default function CabinCrewTrainingPage() {
                       <div>
                         <div style={{ fontSize: '0.65rem', color: 'rgba(219,36,30,0.9)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.2rem' }}>Batch 1 Scholarship</div>
                         <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#DB241E' }}>{p.scholarship}</div>
+                        {p.scholarshipPrice && (
+                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#DB241E', marginTop: '0.2rem' }}>{p.scholarshipPrice}</div>
+                        )}
                       </div>
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
@@ -321,9 +327,6 @@ export default function CabinCrewTrainingPage() {
         <CourseReviews />
         <CoursePageFooter
           whatsappText="Hi, I'm interested in the Cabin Crew Training program at Airborne Aviation Academy, Dwarka. Please share batch details and fee structure."
-          nextCourses={[
-            { label: 'Aviation English ICAO L4', href: '/courses/aviation-english-icao', note: 'Advance your English communication skills for international airline selections' },
-          ]}
           relatedCourses={[
             { label: 'Flight Dispatcher', href: '/courses/flight-dispatcher' },
             { label: 'Airline Interview Prep', href: '/courses/airline-preparation' },

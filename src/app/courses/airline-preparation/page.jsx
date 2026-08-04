@@ -10,7 +10,7 @@ import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
   title: 'Comprehensive Airline Preparation Program | DGCA + A320 + ADAPT + GD/PI | Airborne Delhi',
-  description: 'CPL to First Officer in 2.5 months. DGCA Ground Refresher, ADAPT Screening, A320 Systems & Sim Prep, and GD/PI - all in one program. 4 hrs/day. ₹1,50,000. Airborne Aviation Academy, Dwarka Delhi.',
+  description: 'CPL to First Officer in 2.5 months. DGCA Ground Refresher, ADAPT Screening, A320 Systems & Sim Prep, and GD/PI - all in one program. 4 hrs/day. ₹1,25,000. Airborne Aviation Academy, Dwarka Delhi.',
   alternates: { canonical: '/courses/airline-preparation' },
 }
 
@@ -180,7 +180,7 @@ export default function AirlinePreparationPage() {
             {/* SECTION 1: Hero / Introduction */}
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
-                📍 Dwarka, Delhi · 2.5 Months · 4 Hrs/Day · ₹1,50,000
+                📍 Dwarka, Delhi · 2.5 Months · 4 Hrs/Day · ₹1,25,000
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
                 Comprehensive Airline Preparation Program
@@ -387,7 +387,7 @@ export default function AirlinePreparationPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               <div className="course-sidebar-card">
                 <span className="course-sidebar-label">Course Fee</span>
-                <div className="course-sidebar-price">₹1,50,000</div>
+                <div className="course-sidebar-price">₹1,25,000</div>
                 <span className="course-sidebar-note">Full airline preparation program</span>
                 <div style={{ margin: '1.25rem 0', borderTop: '1px solid rgba(0, 39, 76, 0.08)' }} />
                 <span className="course-sidebar-label">Duration</span>
@@ -403,7 +403,7 @@ export default function AirlinePreparationPage() {
                   ))}
                 </div>
               </div>
-              <LeadForm courseName="Comprehensive Airline Preparation Program (₹1,50,000)" source="Course Detail: airline-preparation" />
+              <LeadForm courseName="Comprehensive Airline Preparation Program (₹1,25,000)" source="Course Detail: airline-preparation" />
             </div>
           </div>
 
@@ -412,7 +412,7 @@ export default function AirlinePreparationPage() {
         <CourseReviews />
 
         <CoursePageFooter
-          whatsappText="Hi, I'm interested in the Comprehensive Airline Preparation Program (₹1,50,000) at Airborne Aviation Academy. Please share details."
+          whatsappText="Hi, I'm interested in the Comprehensive Airline Preparation Program (₹1,25,000) at Airborne Aviation Academy. Please share details."
           nextCourses={[
             { label: 'GD & PI Course (₹30,000)', href: '/courses/gd-pi', note: 'Foundational interview track if you want only GD/PI preparation' },
             { label: 'Cadet Pilot Preparation', href: '/courses/cadet-preparation', note: 'Full aptitude, SIM and interview prep for IndiGo, Air India & Akasa cadet programs' },
