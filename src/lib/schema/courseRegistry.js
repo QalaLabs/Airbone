@@ -53,7 +53,7 @@ export const COURSE_SCHEMA = {
     duration: 'P3M',
     courseMode: 'onsite',
     maximumAttendeeCapacity: 25,
-    imagePath: '/campus/classroom_navrang.jpg',
+    imagePath: '/campus/cpl-ground-school-pilot.jpg',
     teaches: [
       'Air Navigation',
       'Aviation Meteorology',
@@ -109,7 +109,7 @@ export const COURSE_SCHEMA = {
     duration: 'P1M',
     courseMode: 'onsite',
     includeInstructor: false,
-    imagePath: '/footage/cabin-crew.jpg',
+    imagePath: '/footage/cabin-crew-training-hero.jpg',
   },
   'cadet-preparation': {
     slug: 'cadet-preparation',
@@ -118,7 +118,7 @@ export const COURSE_SCHEMA = {
       'Preparation for IndiGo, Air India, Akasa and other cadet pilot selection processes - aptitude, GD/PI, and simulator familiarisation support.',
     path: '/courses/cadet-preparation',
     courseMode: 'onsite',
-    imagePath: '/footage/pilot-portrait.jpg',
+    imagePath: '/campus/cadet-pilot-training.jpg',
   },
   'a320-simulator': {
     slug: 'a320-simulator',
@@ -140,10 +140,9 @@ export const COURSE_SCHEMA = {
   },
   'airline-preparation': {
     slug: 'airline-preparation',
-    name: 'Airline Preparation',
-    tag: 'Airline Prep',
+    name: 'Comprehensive Airline Preparation Program',
     description:
-      'Transition from CPL holder to First Officer. 2.5-month airline preparation program at Airborne, Dwarka covering DGCA Ground Refresher, ADAPT Screening, A320 Systems & Sim Prep, and GD/PI. 4 hours/day. ₹1,25,000.',
+      'Transition from CPL holder to First Officer. 2.5-month airline preparation program at Airborne, Dwarka covering DGCA Ground Refresher, ADAPT Screening, A320 Systems & Sim Prep, and GD/PI. 4 hours/day. ₹1,50,000.',
     path: '/courses/airline-preparation',
     courseMode: 'onsite',
     includeInstructor: false,
@@ -199,15 +198,6 @@ export const COURSE_SCHEMA = {
     courseMode: 'onsite',
     includeInstructor: false,
   },
-  'securing-your-childs-future-in-aviation': {
-    slug: 'securing-your-childs-future-in-aviation',
-    name: "Securing Your Child's Future in Aviation",
-    description:
-      'Comprehensive CPL flight training guidance and Indian CPL conversion support built for parents and aspirants.',
-    path: '/courses/securing-your-childs-future-in-aviation',
-    courseMode: 'onsite',
-    includeInstructor: false,
-  },
 }
 
 export const COURSES_INDEX_ITEMS = [
@@ -219,6 +209,6 @@ export const COURSES_INDEX_ITEMS = [
   { name: 'CASS Compass Adapt', path: '/courses/cas-compass-adapt', courseSlug: 'cas-compass-adapt' },
   { name: 'ATPL Ground School', path: '/courses/atpl', courseSlug: 'atpl' },
   { name: 'Airbus A320 Simulator FBS', path: '/courses/a320-simulator', courseSlug: 'a320-simulator' },
-  { name: "Securing Your Child's Future in Aviation", path: '/courses/securing-your-childs-future-in-aviation', courseSlug: 'securing-your-childs-future-in-aviation' },
+  { name: "Securing Your Child's Future in Aviation", path: '/courses/flying-training-india-abroad', courseSlug: 'flying-training-india-abroad' },
   { name: 'Cabin Crew Training', path: '/courses/cabin-crew-training', courseSlug: 'cabin-crew-training' },
 ]

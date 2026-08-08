@@ -55,7 +55,7 @@ export default function CASCompassAdaptPage() {
         </div>
 
         <div className="course-hero-image-wrap" style={{ borderRadius: '8px' }}>
-          <img src="/footage/classroom_instructor.jpg" alt="CASS Compass and ADAPT Test Preparation at Airborne Aviation Academy" className="course-hero-image" />
+          <img src="/footage/cass-compass-adapt-hero.jpg" alt="CASS Compass and ADAPT Test Preparation at Airborne Aviation Academy" className="course-hero-image" />
           <div className="course-hero-overlay" style={{ background: 'linear-gradient(to top, rgba(0, 39, 76, 0.4) 0%, transparent 100%)' }} />
         </div>
 

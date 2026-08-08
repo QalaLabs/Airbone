@@ -102,7 +102,7 @@ export default function CPLPage() {
 
         {/* Hero Image */}
         <div className="course-hero-image-wrap" style={{ borderRadius: '8px' }}>
-          <img src="/campus/classroom_navrang.jpg" alt="CPL Ground School at Airborne Aviation Academy, Dwarka Delhi" className="course-hero-image" />
+          <img src="/campus/cpl-ground-school-pilot.jpg" alt="CPL Ground School at Airborne Aviation Academy, Dwarka Delhi" className="course-hero-image" />
           <div className="course-hero-overlay" style={{ background: 'linear-gradient(to top, rgba(0, 39, 76, 0.4) 0%, transparent 100%)' }} />
         </div>
 
@@ -258,7 +258,7 @@ export default function CPLPage() {
           whatsappText="Hi, I'm interested in the CPL Ground School at Airborne Aviation Academy, Dwarka. Please share next batch details and fee."
           nextCourses={[
             { label: 'ATPL Ground School', href: '/courses/atpl', note: 'Prepare for ATPL exams and upgrade to Captain - CPL holders only' },
-            { label: "Securing Your Child's Future in Aviation", href: '/courses/securing-your-childs-future-in-aviation', note: 'Comprehensive CPL flight training guidance and Indian CPL conversion support' },
+            { label: "Securing Your Child's Future in Aviation", href: '/courses/flying-training-india-abroad', note: 'Comprehensive CPL flight training guidance and Indian CPL conversion support' },
             { label: 'GD & PI Course', href: '/courses/gd-pi', note: 'Group discussion and interview coaching' },
           ]}
           relatedCourses={[
