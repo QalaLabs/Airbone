@@ -9,7 +9,6 @@ const STATIC_COURSE_SLUGS = [
   'airline-preparation',
   'gd-pi',
   'flying-training-india-abroad',
-  'securing-your-childs-future-in-aviation',
   'cabin-crew-training',
   'ground-school',
   'instrument-rating',

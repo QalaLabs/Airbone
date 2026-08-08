@@ -17,7 +17,7 @@ export const metadata = {
 
 const coursePageGraph = buildCoursePageGraph({
   ...COURSE_SCHEMA['cadet-preparation'],
-  imagePath: '/campus/campus_training.jpg',
+  imagePath: '/campus/cadet-pilot-training.jpg',
   price: '50000',
   faqs: [
     {
@@ -57,7 +57,7 @@ export default function CadetPreparationPage() {
         </div>
 
         <div className="course-hero-image-wrap" style={{ borderRadius: '8px' }}>
-          <img src="/campus/campus_training.jpg" alt="Cadet Pilot Program Preparation at Airborne Aviation Academy" className="course-hero-image" />
+          <img src="/campus/cadet-pilot-training.jpg" alt="Cadet Pilot Program Preparation at Airborne Aviation Academy" className="course-hero-image" />
           <div className="course-hero-overlay" style={{ background: 'linear-gradient(to top, rgba(0, 39, 76, 0.4) 0%, transparent 100%)' }} />
         </div>
 

@@ -8,8 +8,8 @@ import CourseReviews from '@/components/CourseReviews'
 import { buildArticlePageGraph } from '@/lib/schema'
 
 export const metadata = {
-  title: 'Commercial Pilot License (CPL) Flying Training | India vs Abroad | Airborne',
-  description: 'Complete Commercial Pilot License (CPL) flying training guidance and Indian CPL conversion support. Compare CPL cost, duration, and DGCA licensing pathways in India vs abroad.',
+  title: "Securing Your Child's Future in Aviation | CPL India vs Abroad | Airborne",
+  description: 'Comprehensive CPL flight training guidance and Indian CPL conversion support for parents and aspirants. India vs abroad cost, timeline, and DGCA pathway.',
   alternates: { canonical: '/courses/flying-training-india-abroad' },
 }
 
@@ -30,17 +30,17 @@ const FLYING_FAQS = [
 
 const flyingGuideGraph = buildArticlePageGraph({
   path: '/courses/flying-training-india-abroad',
-  headline: 'Commercial Pilot License (CPL) - Flying Training Guidance & Indian CPL Conversion Support',
+  headline: "Securing Your Child's Future in Aviation - Comprehensive CPL Flight Training Guidance and Indian CPL Conversion Support",
   description:
-    'A structured comparison of Commercial Pilot License (CPL) flight training in India versus abroad, covering cost, timeline, DGCA license conversion, and airline hiring outcomes.',
+    'A structured comparison of CPL flight training in India versus abroad, covering cost, timeline, DGCA license conversion, and airline hiring outcomes - built for parents and aspirants.',
   datePublished: '2026-01-10',
-  dateModified: '2026-08-04',
-  imagePath: '/footage/cockpit_instruments_closeup.jpg',
+  dateModified: '2026-07-01',
+  imagePath: '/footage/cpl-flying-training-cockpit.jpg',
   faqs: FLYING_FAQS,
   breadcrumbs: [
     { name: 'Home', path: '/' },
     { name: 'Courses', path: '/courses' },
-    { name: 'Commercial Pilot License (CPL)', path: '/courses/flying-training-india-abroad' },
+    { name: "Securing Your Child's Future in Aviation", path: '/courses/flying-training-india-abroad' },
   ],
 })
 
@@ -74,11 +74,11 @@ export default function FlyingTrainingIndiaAbroadPage() {
           <span>/</span>
           <Link href="/courses" >Courses</Link>
           <span>/</span>
-          <span className="current">Commercial Pilot License (CPL)</span>
+          <span className="current">Securing Your Child&apos;s Future in Aviation</span>
         </div>
 
         <div className="course-hero-image-wrap" style={{ borderRadius: '8px' }}>
-          <img src="/footage/cockpit_instruments_closeup.jpg" alt="Commercial Pilot License CPL Flying Training - India vs Abroad" className="course-hero-image" />
+          <img src="/footage/cpl-flying-training-cockpit.jpg" alt="Securing Your Child's Future in Aviation - CPL India vs Abroad" className="course-hero-image" />
           <div className="course-hero-overlay" style={{ background: 'linear-gradient(to top, rgba(0, 39, 76, 0.4) 0%, transparent 100%)' }} />
         </div>
 
@@ -88,10 +88,10 @@ export default function FlyingTrainingIndiaAbroadPage() {
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
-                Commercial Pilot License (CPL) - Airborne Aviation Academy
+                Securing Your Child&apos;s Future in Aviation - Airborne Aviation Academy
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
-                Commercial Pilot License (CPL) Flying Training Guidance
+                Comprehensive CPL Flight Training Guidance and Indian CPL Conversion Support
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
                 Built for parents and aspirants. The India vs abroad debate is one of the most common questions Airborne&apos;s admissions team receives. The answer depends on your budget, timeline, and final career goal - not on where your batchmate trained. This guide lays out the actual comparison based on 2025–26 data, including DGCA conversion requirements if you train outside India.
@@ -135,10 +135,10 @@ export default function FlyingTrainingIndiaAbroadPage() {
               </p>
               <ul className="course-list">
                 {[
-                  'Full DGCA CPL written examinations',
+                  'Full DGCA CPL written examinations (6 papers)',
                   'DGCA Skill Test (flight check)',
                   'Valid DGCA Class 1 Medical',
-                  'Timeline: 6–18 months · conversion costs typically ₹5–10 lakh (excluding living / additional hours)',
+                  'Timeline: 6–18 months · conversion costs typically ₹5–15 lakh (excluding living / additional hours)',
                 ].map((item, i) => (
                   <li key={i} style={{ fontSize: '0.88rem', color: 'rgba(0, 39, 76, 0.65)', lineHeight: '1.6' }}>{item}</li>
                 ))}
@@ -167,7 +167,7 @@ export default function FlyingTrainingIndiaAbroadPage() {
                 How Airborne Aviation Helps
               </h2>
               <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: '0 0 1rem 0' }}>
-                If you train in India, Airborne provides CPL ground school, DGCA exam prep, and airline placement preparation from the same campus. If you train abroad and return for conversion, Airborne offers DGCA conversion ground school - all subjects covered in structured batches - Plus conversion flying through our partner FTOs.
+                If you train in India, Airborne provides CPL ground school, DGCA exam prep, and airline placement preparation from the same campus. If you train abroad and return for conversion, Airborne offers DGCA conversion ground school - all subjects covered in structured batches - plus the 200-hour Indian aircraft coordination through our partner ATOs.
               </p>
               <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: 0 }}>
                 Book a free 30-minute counselling session with Capt. Navrang Singh's team to get a cost and timeline breakdown specific to your profile.

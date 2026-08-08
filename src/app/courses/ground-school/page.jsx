@@ -210,6 +210,7 @@ export default function GroundSchoolPage() {
           ]}
           relatedCourses={[
             { label: 'CPL Ground School', href: '/courses/commercial-pilot-license-cpl' },
+            { label: 'Aviation English ICAO L4', href: '/courses/aviation-english-icao' },
             { label: 'All Courses', href: '/courses' },
           ]}
         />

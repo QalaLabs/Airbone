@@ -634,11 +634,9 @@ export function SuccessMosaic({ image: fallbackImage }) {
             </div>
           </div>
         ) : (
-          /* Desktop Layout: Asymmetric mosaic grid remains exactly as is */
+          /* Desktop Layout: Aligned and uniform mosaic grid */
           <div className="responsive-grid-mosaic" style={{ gap: '0.75rem' }}>
             {displayedPilots.map((p, i) => {
-              const tall = i === 0 || i === 5
-              const wide = i === 3
               return (
                 <motion.figure
                   key={p.name}
@@ -649,8 +647,8 @@ export function SuccessMosaic({ image: fallbackImage }) {
                   style={{
                     position: 'relative', overflow: 'hidden', borderRadius: '1rem',
                     background: 'var(--navy)',
-                    gridRow: tall ? 'span 2' : 'span 1',
-                    gridColumn: wide ? 'span 2' : 'span 1',
+                    gridRow: 'span 1',
+                    gridColumn: 'span 1',
                     margin: 0,
                   }}
                   className="mosaic-figure"
@@ -661,7 +659,7 @@ export function SuccessMosaic({ image: fallbackImage }) {
                     loading="lazy"
                     style={{
                       position: 'absolute', inset: 0, height: '100%', width: '100%', objectFit: 'cover',
-                      objectPosition: 'top center',
+                      objectPosition: p.objectPosition || 'center center',
                       transition: 'transform 1200ms ease-out',
                     }}
                     className="mosaic-img"

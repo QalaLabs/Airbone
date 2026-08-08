@@ -933,15 +933,16 @@ export default function GlobalRouteMap() {
         }
         @media (max-width:1024px) {
           .grm-map-wrap { margin-top:1.5rem !important; }
-          .grm-map-outer { flex-direction:column !important; padding:0 1.25rem 37rem !important; }
-          .grm-right-panel { position:absolute !important; top:auto !important; bottom:0 !important; left:50% !important; right:auto !important; transform:translate(-50%, 0) !important; width:calc(100% - 2.5rem) !important; max-width:360px !important; }
+          .grm-map-outer { flex-direction:column !important; padding:0 1.25rem !important; }
+          .grm-right-panel { position:relative !important; top:auto !important; bottom:auto !important; left:auto !important; right:auto !important; transform:none !important; width:calc(100% - 2.5rem) !important; max-width:360px !important; margin:0 auto !important; }
           .grm-stats-strip { grid-template-columns:repeat(2,1fr) !important; }
+          .grm-cta-bar { position:relative !important; bottom:auto !important; left:auto !important; right:auto !important; width:100% !important; }
         }
         @media (max-width:768px) {
           .grm-stats-strip { grid-template-columns:1fr !important; }
           .grm-stat-cell { border-right:none !important; border-bottom:1px solid rgba(255,255,255,0.05); }
           .grm-stat-cell:last-child { border-bottom:none !important; }
-          .grm-cta-bar { flex-direction:column !important; height:auto !important; align-items:stretch !important; position:relative !important; bottom:auto !important; margin-top:2rem !important; }
+          .grm-cta-bar { flex-direction:column !important; height:auto !important; align-items:stretch !important; }
           .grm-cta-bar > div { padding:1rem !important; justify-content:center !important; flex-wrap:wrap; }
           .grm-cta-slant { clip-path:none !important; padding:1.2rem !important; justify-content:center !important; }
           .grm-legend { display:none !important; }

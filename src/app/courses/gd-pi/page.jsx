@@ -24,7 +24,7 @@ const coursePageGraph = buildCoursePageGraph({
   },
   {
     q: 'How is this different from Airline Interview Preparation?',
-    a: 'GD & PI Course (₹30,000) is the foundational track for group discussion and interview skills. Airline Interview Preparation (₹1,25,000) is the premium 3-month package with deeper mock airline panels and extended coaching.'
+    a: 'GD & PI Course (₹30,000) is the foundational track for group discussion and interview skills. Airline Interview Preparation (₹1,50,000) is the premium 3-month package with deeper mock airline panels and extended coaching.'
   },
   {
     q: 'Is this only for pilots?',
@@ -59,7 +59,7 @@ export default function GdPiCoursePage() {
         </div>
 
         <div className="course-hero-image-wrap" style={{ borderRadius: '8px' }}>
-          <img src="/footage/classroom_instructor.jpg" alt="GD and PI Course at Airborne Aviation Academy, Dwarka Delhi" className="course-hero-image" />
+          <img src="/footage/gd-pi-course-hero.jpg" alt="GD and PI Course at Airborne Aviation Academy, Dwarka Delhi" className="course-hero-image" />
           <div className="course-hero-overlay" style={{ background: 'linear-gradient(to top, rgba(0, 39, 76, 0.4) 0%, transparent 100%)' }} />
         </div>
 
@@ -76,7 +76,7 @@ export default function GdPiCoursePage() {
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
                 Foundational 3-month GD &amp; PI Course for CPL holders and cadet applicants. Covers Group Discussion (GD), Personal Interview (PI), Personality Development (PD), and aviation communication - led by Rajeet Khalsa, retired AGM (Training) at Air India. Need the premium airline selection track? See{' '}
-                <Link href="/courses/airline-preparation" style={{ color: 'var(--red)', fontWeight: 600 }}>Airline Interview Preparation (₹1,25,000)</Link>.
+                <Link href="/courses/airline-preparation" style={{ color: 'var(--red)', fontWeight: 600 }}>Airline Interview Preparation (₹1,50,000)</Link>.
               </p>
             </div>
 
@@ -119,7 +119,7 @@ export default function GdPiCoursePage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
                 {[
                   { q: 'How long is the GD & PI course?', a: '3 months for intensive preparation, with ongoing mock sessions available.' },
-                  { q: 'How is this different from Airline Interview Preparation?', a: 'This ₹30,000 course is the foundational GD/PI track. Airline Interview Preparation (₹1,25,000) is the premium package with deeper mock airline panels.' },
+                  { q: 'How is this different from Airline Interview Preparation?', a: 'This ₹30,000 course is the foundational GD/PI track. Airline Interview Preparation (₹1,50,000) is the premium package with deeper mock airline panels.' },
                   { q: 'Is this only for pilots?', a: 'Open to both pilot and cabin crew candidates. GD/PI formats are adjusted for the specific role.' },
                 ].map((faq, i) => (
                   <div key={i} className="course-faq-item">
@@ -151,7 +151,7 @@ export default function GdPiCoursePage() {
         <CoursePageFooter
           whatsappText="Hi, I'm interested in the GD & PI Course (₹30,000) at Airborne Aviation Academy. Please share details."
           nextCourses={[
-            { label: 'Airline Interview Preparation', href: '/courses/airline-preparation', note: 'Premium 3-month airline selection track (₹1,25,000)' },
+            { label: 'Airline Interview Preparation', href: '/courses/airline-preparation', note: 'Premium 3-month airline selection track (₹1,50,000)' },
             { label: 'Cadet Pilot Preparation', href: '/courses/cadet-preparation', note: 'Full aptitude, SIM and interview prep for IndiGo, Air India & Akasa cadet programs' },
           ]}
           relatedCourses={[

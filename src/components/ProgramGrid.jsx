@@ -43,7 +43,7 @@ const PROGRAMS = [
     tag: 'Airline Prep',
     duration: '3 Months',
     desc: 'Structured airline interview preparation - GD, PI, and soft skills for IndiGo, Air India, Akasa and more. Duration: 3 months.',
-    price: '₹1,25,000',
+    price: '₹1,50,000',
     href: '/courses/airline-preparation',
     accent: 'var(--red)',
   },
@@ -94,7 +94,7 @@ const PROGRAMS = [
     duration: 'Flexible',
     desc: 'Comprehensive CPL flight training guidance and Indian CPL conversion support - built for parents and aspirants.',
     price: 'Free',
-    href: '/courses/securing-your-childs-future-in-aviation',
+    href: '/courses/flying-training-india-abroad',
     accent: 'var(--red)',
   },
   {

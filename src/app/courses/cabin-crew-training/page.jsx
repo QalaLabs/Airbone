@@ -58,7 +58,7 @@ const PATHWAYS = [
     classTime: '90 Minutes',
     regular: '₹54,000',
     scholarship: '100%* (score ≥70%)',
-    scholarshipPrice: '₹0 (for scholarship winners)',
+    scholarshipNote: '₹0 (for scholarship candidates)',
     best: 'Near-selection candidates needing final polish',
     focus: ['Final grooming polish', 'Professional presence', 'Service behaviour refinement', 'GD and PI readiness', 'Interview finishing support'],
   },
@@ -69,7 +69,7 @@ const PATHWAYS = [
     classTime: '90 Minutes',
     regular: '₹30,000',
     scholarship: '100%* (score ≥70%)',
-    scholarshipPrice: '₹30,000 (for scholarship winners)',
+    scholarshipNote: '₹30,000 (includes P1 for scholarship candidates)',
     best: 'Candidates with communication or confidence gaps',
     focus: ['Spoken communication improvement', 'GD practice', 'PI preparation', 'Personality development', 'Confidence building'],
   },
@@ -80,7 +80,7 @@ const PATHWAYS = [
     classTime: '90 Minutes',
     regular: '₹30,000',
     scholarship: '100%* (score ≥70%)',
-    scholarshipPrice: '₹54,000 (for scholarship winners)',
+    scholarshipNote: '₹54,000 (includes P2 + P1 for scholarship candidates)',
     best: 'Beginners needing complete foundation',
     focus: ['Communication foundation', 'Hospitality standards', 'Grooming basics', 'Professional readiness', 'Zero-to-selection journey'],
   },
@@ -123,7 +123,7 @@ export default function CabinCrewTrainingPage() {
 
         {/* Hero Image */}
         <div className="course-hero-image-wrap" style={{ borderRadius: '8px' }}>
-          <img src="/footage/classroom.jpg" alt="Cabin Crew Training at Airborne Aviation Academy, Dwarka Delhi" className="course-hero-image" />
+          <img src="/footage/cabin-crew-training-hero.jpg" alt="Cabin Crew Training at Airborne Aviation Academy, Dwarka Delhi" className="course-hero-image" />
           <div className="course-hero-overlay" style={{ background: 'linear-gradient(to top, rgba(0, 39, 76, 0.4) 0%, transparent 100%)' }} />
         </div>
 
@@ -208,9 +208,7 @@ export default function CabinCrewTrainingPage() {
                       <div>
                         <div style={{ fontSize: '0.65rem', color: 'rgba(219,36,30,0.9)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.2rem' }}>Batch 1 Scholarship</div>
                         <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#DB241E' }}>{p.scholarship}</div>
-                        {p.scholarshipPrice && (
-                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#DB241E', marginTop: '0.2rem' }}>{p.scholarshipPrice}</div>
-                        )}
+                        <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#DB241E', marginTop: '0.15rem' }}>{p.scholarshipNote}</div>
                       </div>
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
@@ -327,6 +325,9 @@ export default function CabinCrewTrainingPage() {
         <CourseReviews />
         <CoursePageFooter
           whatsappText="Hi, I'm interested in the Cabin Crew Training program at Airborne Aviation Academy, Dwarka. Please share batch details and fee structure."
+          nextCourses={[
+            { label: 'Aviation English ICAO L4', href: '/courses/aviation-english-icao', note: 'Advance your English communication skills for international airline selections' },
+          ]}
           relatedCourses={[
             { label: 'Flight Dispatcher', href: '/courses/flight-dispatcher' },
             { label: 'Airline Interview Prep', href: '/courses/airline-preparation' },
