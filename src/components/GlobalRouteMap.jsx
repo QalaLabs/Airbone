@@ -942,7 +942,7 @@ export default function GlobalRouteMap() {
           .grm-stats-strip { grid-template-columns:1fr !important; }
           .grm-stat-cell { border-right:none !important; border-bottom:1px solid rgba(255,255,255,0.05); }
           .grm-stat-cell:last-child { border-bottom:none !important; }
-          .grm-cta-bar { flex-direction:column !important; height:auto !important; align-items:stretch !important; }
+          .grm-cta-bar { flex-direction:column !important; height:auto !important; align-items:stretch !important; position:relative !important; bottom:auto !important; margin-top:2rem !important; }
           .grm-cta-bar > div { padding:1rem !important; justify-content:center !important; flex-wrap:wrap; }
           .grm-cta-slant { clip-path:none !important; padding:1.2rem !important; justify-content:center !important; }
           .grm-legend { display:none !important; }

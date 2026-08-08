@@ -325,9 +325,6 @@ export default function CabinCrewTrainingPage() {
         <CourseReviews />
         <CoursePageFooter
           whatsappText="Hi, I'm interested in the Cabin Crew Training program at Airborne Aviation Academy, Dwarka. Please share batch details and fee structure."
-          nextCourses={[
-            { label: 'Aviation English ICAO L4', href: '/courses/aviation-english-icao', note: 'Advance your English communication skills for international airline selections' },
-          ]}
           relatedCourses={[
             { label: 'Flight Dispatcher', href: '/courses/flight-dispatcher' },
             { label: 'Airline Interview Prep', href: '/courses/airline-preparation' },
