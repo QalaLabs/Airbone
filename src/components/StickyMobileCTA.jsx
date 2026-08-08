@@ -7,17 +7,8 @@ export default function StickyMobileCTA({ onBookDemo }) {
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrolled = window.scrollY > 400
-      const footer = document.querySelector('footer')
-      const cta = document.querySelector('#cta')
-      const elementsToAvoid = [footer, cta].filter(Boolean)
-      let nearBottom = false
-      const viewportHeight = window.innerHeight
-      for (const el of elementsToAvoid) {
-        const rect = el.getBoundingClientRect()
-        if (rect.top < viewportHeight - 60) { nearBottom = true; break }
-      }
-      setVisible(scrolled && !nearBottom)
+      const scrolled = window.scrollY > 250
+      setVisible(scrolled)
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
     handleScroll()
@@ -42,6 +33,7 @@ export default function StickyMobileCTA({ onBookDemo }) {
       transform: visible ? 'translateY(0)' : 'translateY(100%)',
       transition: 'transform 0.35s cubic-bezier(0.4,0,0.2,1)',
       boxShadow: '0 -8px 32px rgba(0,0,0,0.6)',
+      paddingBottom: 'env(safe-area-inset-bottom, 0px)',
     }}
     className="sticky-mobile-cta"
     >

@@ -28,7 +28,7 @@ const PROGRAMS = [
   { label: 'CASS Compass Adapt',    href: '/courses/cas-compass-adapt' },
   { label: 'ATPL Ground School',       href: '/courses/atpl' },
   { label: 'Airbus A320 Simulator FBS',       href: '/courses/a320-simulator' },
-  { label: "Securing Your Child's Future in Aviation", href: '/courses/flying-training-india-abroad' },
+  { label: "Securing Your Child's Future in Aviation", href: '/courses/securing-your-childs-future-in-aviation' },
   { label: 'Cabin Crew Training',      href: '/courses/cabin-crew-training' },
   { label: 'Private Pilot License (PPL)', href: '/courses/private-pilot-license' },
 ]
@@ -60,7 +60,7 @@ export default function PremiumFooter({ onBookDemo }) {
         <div className="pf-inner pf-cta-inner">
           <div className="pf-cta-eyebrow">
             <span className="pf-red-line" />
-            <span className="pf-eyebrow-text">ADMISSIONS OPEN · JULY 2026 BATCH</span>
+            <span className="pf-eyebrow-text">ADMISSIONS OPEN · UPCOMING BATCH</span>
             <span className="pf-red-line" />
           </div>
           <h2 className="pf-cta-heading">

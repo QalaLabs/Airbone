@@ -1190,9 +1190,161 @@ function AirborneAdvantage() {
       {/* Styles local block targeting desktop vs mobile views */}
       <style dangerouslySetInnerHTML={{ __html: `
         /* Default Styles: Desktop Grid is visible, mobile layout hidden */
+        /* Advantage Section Desktop 4-Column Layout */
         .advantage-desktop-grid {
           display: grid !important;
+          grid-template-columns: repeat(4, 1fr) !important;
+          gap: 1.5rem;
+          align-items: stretch;
         }
+
+        @media (max-width: 1024px) and (min-width: 768px) {
+          .advantage-desktop-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 1.25rem;
+          }
+        }
+
+        /* Shared Card Outer Wrapper Override */
+        .advantage-card-wrapper {
+          padding: 1.625rem 1.375rem !important; /* Top/Bottom: 26px, Left/Right: 22px */
+          gap: 0 !important;
+          background: #ffffff !important;
+          border: 1px solid rgba(0, 39, 76, 0.08) !important;
+          border-radius: 14px !important;
+          box-shadow: 0 4px 20px rgba(0, 39, 76, 0.04) !important;
+          box-sizing: border-box !important;
+          display: flex !important;
+          flex-direction: column !important;
+          height: 100% !important;
+          touch-action: pan-y !important;
+        }
+
+        .advantage-card-inner {
+          position: relative;
+          z-index: 10;
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          box-sizing: border-box;
+        }
+
+        /* Header Row */
+        .advantage-card-header {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          margin-bottom: 0.875rem;
+          height: 40px;
+          box-sizing: border-box;
+        }
+
+        .advantage-icon-frame {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 38px;
+          height: 38px;
+          flex-shrink: 0;
+          border-radius: 50%;
+          background: linear-gradient(135deg, rgba(216, 160, 39, 0.15) 0%, rgba(216, 160, 39, 0.02) 100%);
+          border: 1px solid rgba(216, 160, 39, 0.25);
+          color: var(--gold);
+          box-shadow: 0 4px 12px rgba(216, 160, 39, 0.08);
+          margin-bottom: 0;
+        }
+
+        .advantage-card-title {
+          font-family: var(--font-h);
+          font-size: 1.0625rem;
+          font-weight: 800;
+          color: var(--gold);
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          margin: 0;
+          line-height: 1.2;
+          white-space: nowrap;
+        }
+
+        /* Intro Text Block */
+        .advantage-card-subheadline {
+          font-family: var(--font-b);
+          font-size: 0.8125rem;
+          color: rgba(33, 33, 33, 0.7);
+          line-height: 1.5;
+          margin-top: 0;
+          margin-bottom: 1.25rem;
+          min-height: 2.625rem;
+          box-sizing: border-box;
+        }
+
+        @media (min-width: 1024px) {
+          .advantage-card-subheadline {
+            height: 2.625rem;
+          }
+        }
+
+        /* Divider Line */
+        .advantage-card-divider {
+          width: 100%;
+          height: 1px;
+          background-color: rgba(0, 39, 76, 0.08);
+          margin-bottom: 1.25rem;
+          flex-shrink: 0;
+        }
+
+        /* Benefit List & Item Structure */
+        .advantage-card-benefits {
+          display: flex;
+          flex-direction: column;
+          gap: 1.125rem;
+          flex: 1;
+        }
+
+        .advantage-benefit-item {
+          display: flex;
+          gap: 0.75rem;
+          align-items: flex-start;
+        }
+
+        .advantage-benefit-icon-col {
+          width: 20px;
+          flex-shrink: 0;
+          display: flex;
+          justify-content: center;
+          align-items: flex-start;
+        }
+
+        .advantage-benefit-icon {
+          font-size: 1.05rem;
+          color: var(--gold);
+          margin-top: 1px;
+          line-height: 1;
+        }
+
+        .advantage-benefit-content-col {
+          flex: 1;
+          min-width: 0;
+        }
+
+        .advantage-benefit-title {
+          font-family: var(--font-h);
+          font-size: 0.875rem;
+          font-weight: 700;
+          color: var(--navy);
+          text-transform: uppercase;
+          margin: 0 0 0.25rem 0;
+          line-height: 1.3;
+        }
+
+        .advantage-benefit-desc {
+          font-family: var(--font-b);
+          font-size: 0.8125rem;
+          color: rgba(33, 33, 33, 0.65);
+          line-height: 1.5;
+          margin: 0;
+        }
+
         .advantage-mobile-layout {
           display: none !important;
         }
@@ -1231,7 +1383,7 @@ function AirborneAdvantage() {
             overflow-y: hidden;
             scroll-snap-type: x mandatory;
             -webkit-overflow-scrolling: touch;
-            touch-action: pan-x;
+            touch-action: pan-x pan-y;
             overscroll-behavior-x: contain;
             scroll-behavior: smooth;
             gap: 0;
@@ -1347,41 +1499,45 @@ function AirborneAdvantage() {
         </div>
 
         {/* 1. Desktop Layout (4 Themed Category Cards Grid) */}
-        <div className="advantage-desktop-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))', gap: '1.5rem', alignItems: 'stretch' }}>
+        <div className="advantage-desktop-grid">
           {categorizedBenefits.map((cat, i) => (
             <GlowCard 
               key={i} 
               customSize={true}
               glowColor="gold"
-              className="h-full"
+              className="advantage-card-wrapper h-full"
               style={{
                 '--backdrop': '#ffffff',
                 '--backup-border': 'rgba(0,39,76,0.08)',
                 color: 'var(--navy)'
               }}
             >
-              <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', height: '100%' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                  <div className="advantage-icon-frame" style={{ marginBottom: 0, width: '38px', height: '38px', flexShrink: 0 }}>
+              <div className="advantage-card-inner">
+                <div className="advantage-card-header">
+                  <div className="advantage-icon-frame">
                     {cat.icon}
                   </div>
-                  <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.125rem', fontWeight: 800, color: 'var(--gold)', letterSpacing: '0.05em', textTransform: 'uppercase', margin: 0 }}>
+                  <h3 className="advantage-card-title">
                     {cat.category}
                   </h3>
                 </div>
-                <p style={{ fontSize: '0.8125rem', color: 'rgba(33,33,33,0.7)', lineHeight: 1.5, fontFamily: 'var(--font-b)', marginBottom: '1.25rem', minHeight: '2.5rem' }}>
+                <p className="advantage-card-subheadline">
                   {cat.subheadline}
                 </p>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderTop: '1px solid rgba(0,39,76,0.08)', paddingTop: '1.25rem', flex: 1 }}>
+                <div className="advantage-card-divider" />
+
+                <div className="advantage-card-benefits">
                   {cat.benefits.map((b, j) => (
-                    <div key={j} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                      <span style={{ fontSize: '1.1rem', color: 'var(--gold)', flexShrink: 0, marginTop: '2px' }}>✓</span>
-                      <div>
-                        <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.875rem', fontWeight: 700, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                    <div key={j} className="advantage-benefit-item">
+                      <div className="advantage-benefit-icon-col">
+                        <span className="advantage-benefit-icon">✓</span>
+                      </div>
+                      <div className="advantage-benefit-content-col">
+                        <h4 className="advantage-benefit-title">
                           {b.title}
                         </h4>
-                        <p style={{ fontSize: '0.8125rem', color: 'rgba(33,33,33,0.65)', lineHeight: 1.5, fontFamily: 'var(--font-b)' }}>
+                        <p className="advantage-benefit-desc">
                           {b.desc}
                         </p>
                       </div>

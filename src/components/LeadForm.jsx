@@ -13,7 +13,7 @@ const COURSES = [
   'DGCA CPL Ground Classes (₹2,70,000)',
   'Commercial Pilot License (CPL)',
   'Cadet Preparation (₹50,000)',
-  'Airline Preparation (₹1,50,000)',
+  'Airline Preparation (₹1,25,000)',
   'GD & PI Course (₹30,000)',
   'CASS Compass Adapt (₹30,000)',
   'ATPL Ground School (₹1,50,000)',

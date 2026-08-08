@@ -214,7 +214,6 @@ export default function FlightDispatcherPage() {
           ]}
           relatedCourses={[
             { label: 'Cabin Crew Training', href: '/courses/cabin-crew-training' },
-            { label: 'Aviation English ICAO L4', href: '/courses/aviation-english-icao' },
             { label: 'All Courses', href: '/courses' },
           ]}
         />
