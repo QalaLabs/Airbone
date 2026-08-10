@@ -204,7 +204,7 @@ export default function FlyingTrainingIndiaAbroadPage() {
         <CoursePageFooter
           whatsappText="Hi, I want a free counselling session to compare flying training in India vs abroad. Please share details from Airborne Aviation Academy."
           nextCourses={[
-            { label: 'CPL Ground School', href: '/courses/commercial-pilot-license-cpl', note: 'Begin DGCA CPL ground school in Dwarka - next batch July 2026' },
+            { label: 'CPL Ground School', href: '/courses/commercial-pilot-license-cpl', note: 'Begin DGCA CPL ground school in Dwarka - next batch Upcoming Batch' },
             { label: 'DGCA Ground School', href: '/courses/ground-school', note: 'All 5 DGCA subjects by Capt. Navrang Singh - ₹2,70,000' },
           ]}
           relatedCourses={[
