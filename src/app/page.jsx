@@ -1630,20 +1630,50 @@ function PilotCareerOutlook() {
   ]
 
   const opportunities = [
-    { icon: '✈', title: 'Scheduled Airlines',    desc: 'IndiGo, Air India, Akasa Air, SpiceJet' },
-    { icon: '📦', title: 'Cargo Operations',      desc: 'Blue Dart and international freight' },
-    { icon: '🏢', title: 'Corporate Aviation',    desc: 'Private jets and VIP transport wings' },
-    { icon: '👨‍✈️', title: 'Flight Instruction', desc: 'FTO trainer roles in India and abroad' },
-    { icon: '🌍', title: 'International Pathways',desc: 'Middle East, Southeast Asia, Europe' },
+    { img: '/photos/scheduled-airlines.webp', title: 'Scheduled Airlines', desc: 'Opportunities with leading airlines including IndiGo, Air India, Akasa Air, SpiceJet and more.', bg: '#eef7ff' },
+    { img: '/photos/cargo-operations.webp', title: 'Cargo Operations', desc: 'Build your career in cargo operations with Blue Dart and international freight companies.', bg: '#fff5eb' },
+    { img: '/photos/corporate-aviation.webp', title: 'Corporate Aviation', desc: 'Work with private jets and VIP transport wings providing premium aviation services.', bg: '#f0f4f8' },
+    { img: '/photos/flight-instruction.webp', title: 'Flight Instruction', desc: 'Become an FTO trainer and shape the future of aviation in India and abroad.', bg: '#f0f9eb' },
+    { img: '/photos/international-pathways.webp', title: 'International Pathways', desc: 'Explore global career opportunities across Middle East, Southeast Asia, and Europe.', bg: '#f5f0ff' },
   ]
 
   const perks = [
-    'Free or heavily discounted travel for self and family',
-    'Premium health insurance',
-    'International exposure and layover allowances',
-    'High social recognition',
-    'Structured career progression',
-    'Accommodation on outstation postings'
+    {
+      img: '/photos/pilot-travel-benefit.webp',
+      title: 'Free or heavily discounted travel for self and family',
+      desc: 'Enjoy free or discounted air travel benefits for you and your family.',
+      bg: '#eef7ff'
+    },
+    {
+      img: '/photos/pilot-health-insurance.webp',
+      title: 'Premium health insurance',
+      desc: 'Comprehensive health coverage designed to support pilots and their families.',
+      bg: '#f0f9eb'
+    },
+    {
+      img: '/photos/pilot-international-exposure.webp',
+      title: 'International exposure and layover allowances',
+      desc: 'Explore the world with international layovers and attractive allowances.',
+      bg: '#f5f0ff'
+    },
+    {
+      img: '/photos/pilot-social-recognition.webp',
+      title: 'High social recognition',
+      desc: 'Pilots enjoy respect, prestige, and high social standing in society.',
+      bg: '#fff5eb'
+    },
+    {
+      img: '/photos/pilot-career-growth.webp',
+      title: 'Structured career progression',
+      desc: 'Clear career path with growth opportunities and higher responsibilities.',
+      bg: '#eef7ff'
+    },
+    {
+      img: '/photos/pilot-accommodation.webp',
+      title: 'Accommodation on outstation postings',
+      desc: 'Comfortable stay and accommodation provided during outstation duties.',
+      bg: '#fff5eb'
+    }
   ]
 
   return (
@@ -1663,140 +1693,253 @@ function PilotCareerOutlook() {
           </p>
         </div>
 
-        {/* Details Grid */}
-        <div className="responsive-grid-chapters" style={{ gridTemplateColumns: '1fr', lgGridTemplateColumns: '1.3fr 1fr', gap: '4rem', alignItems: 'start' }}>
-          
-          {/* Left Column: Salaries Table */}
-          <div>
-            <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.35rem', fontWeight: 900, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '2rem', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-              <span style={{ height: '3px', width: '20px', background: 'var(--red)', flexShrink: 0, marginTop: '0.65rem' }} />
-              <span>Pilot Salary &amp; Lifestyle in India 2026</span>
-            </h3>
+        {/* Salaries Table */}
+        <div style={{ marginBottom: '5rem' }}>
+          <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.35rem', fontWeight: 900, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '2rem', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+            <span style={{ height: '3px', width: '20px', background: 'var(--red)', flexShrink: 0, marginTop: '0.65rem' }} />
+            <span>Pilot Salary &amp; Lifestyle in India 2026</span>
+          </h3>
 
-            <style dangerouslySetInnerHTML={{ __html: `
-              .salary-desktop-wrapper { display: block; border: 1px solid rgba(0,39,76,0.1); border-radius: 12px; overflow: hidden; }
-              .salary-mobile-cards { display: none; }
-              .opportunities-grid { display: flex; flex-direction: column; gap: 1rem; }
+          <style dangerouslySetInnerHTML={{ __html: `
+            .salary-desktop-wrapper { display: block; border: 1px solid rgba(0,39,76,0.1); border-radius: 12px; overflow: hidden; }
+            .salary-mobile-cards { display: none; }
+            
+            .job-opportunities-cards-grid {
+              display: grid;
+              grid-template-columns: repeat(5, 1fr);
+              gap: 1.25rem;
+              margin-top: 2rem;
+            }
+            .perks-cards-grid {
+              display: grid;
+              grid-template-columns: repeat(6, 1fr);
+              gap: 1.15rem;
+              margin-top: 2rem;
+            }
+            .job-opportunity-card, .perk-card {
+              background: #ffffff;
+              border: 1px solid rgba(0, 39, 76, 0.08);
+              border-radius: 16px;
+              padding: 2.25rem 1.25rem;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              text-align: center;
+              box-shadow: 0 4px 20px rgba(0, 0, 0, 0.015);
+              transition: transform 0.3s ease, box-shadow 0.3s ease;
+              height: 100%;
+              box-sizing: border-box;
+            }
+            .job-opportunity-card:hover, .perk-card:hover {
+              transform: translateY(-5px);
+              box-shadow: 0 12px 30px rgba(0, 39, 76, 0.08);
+            }
+            .job-card-image-wrapper {
+              width: 110px;
+              height: 110px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin-bottom: 1.5rem;
+            }
+            .perk-card-image-wrapper {
+              width: 110px;
+              height: 110px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin-bottom: 1.5rem;
+              background: transparent;
+            }
+            .job-card-image, .perk-card-image {
+              width: 80%;
+              height: 80%;
+              object-fit: contain;
+            }
+            .job-card-title, .perk-card-title {
+              font-family: var(--font-h);
+              font-size: 0.82rem;
+              font-weight: 800;
+              color: var(--navy);
+              text-transform: uppercase;
+              letter-spacing: 0.06em;
+              margin-bottom: 0.75rem;
+              margin-top: 0;
+              line-height: 1.35;
+              min-height: 3.3rem;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+            .job-card-divider, .perk-card-divider {
+              width: 24px;
+              height: 2px;
+              background: var(--red);
+              margin-bottom: 1.25rem;
+            }
+            .job-card-desc, .perk-card-desc {
+              font-size: 0.76rem;
+              color: rgba(33, 33, 33, 0.65);
+              margin: 0;
+              font-family: var(--font-b);
+              line-height: 1.55;
+            }
 
-              @media (max-width: 767px) {
-                .salary-desktop-wrapper { display: none !important; }
-
-                /* Horizontal scroll-snap carousel */
-                .salary-mobile-cards {
-                  display: flex !important;
-                  flex-direction: row;
-                  overflow-x: auto;
-                  overflow-y: hidden;
-                  scroll-snap-type: x mandatory;
-                  -webkit-overflow-scrolling: touch;
-                  touch-action: pan-x;
-                  overscroll-behavior-x: contain;
-                  gap: 0.75rem;
-                  padding: 0.25rem 0 1rem 0;
-                }
-                .salary-mobile-cards::-webkit-scrollbar { display: none; }
-
-                .salary-mobile-card-item {
-                  flex: 0 0 76vw;
-                  scroll-snap-align: start;
-                }
-
-                /* 2-column grid for opportunities */
-                .opportunities-grid {
-                  display: grid !important;
-                  grid-template-columns: repeat(2, calc(50vw - 1.8rem));
-                  gap: 0.65rem;
-                }
+            @media (max-width: 1300px) {
+              .perks-cards-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1.25rem;
               }
-            ` }} />
+            }
+
+            @media (max-width: 1024px) {
+              .job-opportunities-cards-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1rem;
+              }
+            }
+
+            @media (max-width: 767px) {
+              .salary-desktop-wrapper { display: none !important; }
+
+              /* Horizontal scroll-snap carousel */
+              .salary-mobile-cards {
+                display: flex !important;
+                flex-direction: row;
+                overflow-x: auto;
+                overflow-y: hidden;
+                scroll-snap-type: x mandatory;
+                -webkit-overflow-scrolling: touch;
+                touch-action: pan-x;
+                overscroll-behavior-x: contain;
+                gap: 0.75rem;
+                padding: 0.25rem 0 1rem 0;
+              }
+              .salary-mobile-cards::-webkit-scrollbar { display: none; }
+
+              .salary-mobile-card-item {
+                flex: 0 0 76vw;
+                scroll-snap-align: start;
+              }
+
+              .job-opportunities-cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.85rem;
+              }
+              .perks-cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.85rem;
+              }
+            }
             
-            {/* Desktop Table View */}
-            <div className="salary-desktop-wrapper">
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', background: '#fff', fontSize: '0.875rem', fontFamily: 'var(--font-b)' }}>
-                <thead>
-                  <tr style={{ background: 'var(--navy)', color: '#fff', fontFamily: 'var(--font-h)', textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.1em' }}>
-                    <th style={{ padding: '1.25rem 1.5rem' }}>Career Stage</th>
-                    <th style={{ padding: '1.25rem 1.5rem' }}>Role</th>
-                    <th style={{ padding: '1.25rem 1.5rem' }}>Monthly Salary</th>
-                    <th style={{ padding: '1.25rem 1.5rem' }}>Aircraft Type</th>
+            @media (max-width: 480px) {
+              .job-opportunities-cards-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+              }
+              .perks-cards-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+              }
+            }
+          ` }} />
+          
+          {/* Desktop Table View */}
+          <div className="salary-desktop-wrapper">
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', background: '#fff', fontSize: '0.875rem', fontFamily: 'var(--font-b)' }}>
+              <thead>
+                <tr style={{ background: 'var(--navy)', color: '#fff', fontFamily: 'var(--font-h)', textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.1em' }}>
+                  <th style={{ padding: '1.25rem 1.5rem' }}>Career Stage</th>
+                  <th style={{ padding: '1.25rem 1.5rem' }}>Role</th>
+                  <th style={{ padding: '1.25rem 1.5rem' }}>Monthly Salary</th>
+                  <th style={{ padding: '1.25rem 1.5rem' }}>Aircraft Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stages.map((s, idx) => (
+                  <tr 
+                    key={idx} 
+                    style={{ 
+                      borderBottom: '1px solid rgba(0,39,76,0.06)',
+                      background: idx % 2 === 0 ? 'rgba(0,39,76,0.02)' : '#fff',
+                      transition: 'background 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(216,160,39,0.08)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = idx % 2 === 0 ? 'rgba(0,39,76,0.02)' : '#fff'}
+                  >
+                    <td style={{ padding: '1.25rem 1.5rem', fontWeight: 700, color: 'var(--navy)' }}>{s.stage}</td>
+                    <td style={{ padding: '1.25rem 1.5rem', color: 'rgba(33,33,33,0.8)' }}>{s.role}</td>
+                    <td style={{ padding: '1.25rem 1.5rem', fontWeight: 700, color: 'var(--red)' }}>{s.salary}</td>
+                    <td style={{ padding: '1.25rem 1.5rem', color: 'rgba(33,33,33,0.5)', fontSize: '0.8rem' }}>{s.type}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {stages.map((s, idx) => (
-                    <tr 
-                      key={idx} 
-                      style={{ 
-                        borderBottom: '1px solid rgba(0,39,76,0.06)',
-                        background: idx % 2 === 0 ? 'rgba(0,39,76,0.02)' : '#fff',
-                        transition: 'background 0.2s'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(216,160,39,0.08)'}
-                      onMouseLeave={(e) => e.currentTarget.style.background = idx % 2 === 0 ? 'rgba(0,39,76,0.02)' : '#fff'}
-                    >
-                      <td style={{ padding: '1.25rem 1.5rem', fontWeight: 700, color: 'var(--navy)' }}>{s.stage}</td>
-                      <td style={{ padding: '1.25rem 1.5rem', color: 'rgba(33,33,33,0.8)' }}>{s.role}</td>
-                      <td style={{ padding: '1.25rem 1.5rem', fontWeight: 700, color: 'var(--red)' }}>{s.salary}</td>
-                      <td style={{ padding: '1.25rem 1.5rem', color: 'rgba(33,33,33,0.5)', fontSize: '0.8rem' }}>{s.type}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-            {/* Mobile Cards View — horizontal scroll-snap */}
-            <div className="salary-mobile-cards">
-              {stages.map((s, idx) => (
-                <div key={idx} className="salary-mobile-card-item" style={{ background: '#fff', border: '1px solid rgba(0,39,76,0.08)', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                    <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.75rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.1em', background: 'rgba(0,39,76,0.04)', padding: '0.3rem 0.6rem', borderRadius: '4px' }}>{s.stage}</span>
-                    <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 900, color: 'var(--red)' }}>{s.salary}</span>
-                  </div>
-                  <div style={{ fontFamily: 'var(--font-h)', color: 'var(--navy)', fontWeight: 800, fontSize: '1.05rem', marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '-0.01em' }}>{s.role}</div>
-                  <div style={{ fontFamily: 'var(--font-b)', color: 'rgba(33,33,33,0.6)', fontSize: '0.85rem' }}>Aircraft: <span style={{ fontWeight: 600 }}>{s.type}</span></div>
+          {/* Mobile Cards View — horizontal scroll-snap */}
+          <div className="salary-mobile-cards">
+            {stages.map((s, idx) => (
+              <div key={idx} className="salary-mobile-card-item" style={{ background: '#fff', border: '1px solid rgba(0,39,76,0.08)', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                  <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.75rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.1em', background: 'rgba(0,39,76,0.04)', padding: '0.3rem 0.6rem', borderRadius: '4px' }}>{s.stage}</span>
+                  <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 900, color: 'var(--red)' }}>{s.salary}</span>
                 </div>
-              ))}
-            </div>
-
-            <p style={{ marginTop: '1.25rem', fontSize: '0.75rem', color: 'rgba(33,33,33,0.4)', fontFamily: 'var(--font-b)', lineHeight: 1.6 }}>
-              *Standard Indian airline industry averages. Actual compensation varies by operator, route hours, and type rating allowances.
-            </p>
-          </div>
-
-          {/* Right Column: Opportunities & Perks */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
-            
-            {/* Opportunities */}
-            <div>
-              <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ height: '2px', width: '15px', background: 'var(--gold)' }} />
-                Job Opportunities
-              </h3>
-              <div className="opportunities-grid">
-                {opportunities.map((o, idx) => (
-                  <div key={idx} style={{ background: '#fff', border: '1px solid rgba(0,39,76,0.06)', padding: '1rem', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                    <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>{o.icon}</span>
-                    <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.78rem', fontWeight: 700, color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.04em', margin: 0 }}>{o.title}</h4>
-                    <p style={{ fontSize: '0.75rem', color: 'rgba(33,33,33,0.55)', margin: 0, fontFamily: 'var(--font-b)', lineHeight: 1.4 }}>{o.desc}</p>
-                  </div>
-                ))}
+                <div style={{ fontFamily: 'var(--font-h)', color: 'var(--navy)', fontWeight: 800, fontSize: '1.05rem', marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '-0.01em' }}>{s.role}</div>
+                <div style={{ fontFamily: 'var(--font-b)', color: 'rgba(33,33,33,0.6)', fontSize: '0.85rem' }}>Aircraft: <span style={{ fontWeight: 600 }}>{s.type}</span></div>
               </div>
-            </div>
-
-            {/* Perks */}
-            <div>
-              <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ height: '2px', width: '15px', background: 'var(--gold)' }} />
-                Key Pilot Perks
-              </h3>
-              <ul style={{ paddingLeft: '1.25rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                {perks.map((p, idx) => (
-                  <li key={idx} style={{ fontSize: '0.875rem', color: 'rgba(33,33,33,0.7)', lineHeight: 1.6, fontFamily: 'var(--font-b)' }}>{p}</li>
-                ))}
-              </ul>
-            </div>
-
+            ))}
           </div>
 
+          <p style={{ marginTop: '1.25rem', fontSize: '0.75rem', color: 'rgba(33,33,33,0.4)', fontFamily: 'var(--font-b)', lineHeight: 1.6 }}>
+            *Standard Indian airline industry averages. Actual compensation varies by operator, route hours, and type rating allowances.
+          </p>
+        </div>
+
+        {/* Redesigned Key Pilot Perks Section */}
+        <div style={{ marginTop: '5rem', borderTop: '1px solid rgba(0,39,76,0.08)', paddingTop: '4rem' }}>
+          <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.35rem', fontWeight: 900, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ height: '3px', width: '20px', background: 'var(--gold)', display: 'inline-block' }} />
+            Key Pilot Perks
+          </h3>
+
+          <div className="perks-cards-grid">
+            {perks.map((p, idx) => (
+              <div key={idx} className="perk-card">
+                <div className="perk-card-image-wrapper">
+                  <img src={p.img} alt={p.title} className="perk-card-image" />
+                </div>
+                <h4 className="perk-card-title">{p.title}</h4>
+                <div className="perk-card-divider" />
+                <p className="perk-card-desc">{p.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Redesigned Job Opportunities Section */}
+        <div style={{ marginTop: '5rem', borderTop: '1px solid rgba(0,39,76,0.08)', paddingTop: '4rem' }}>
+          <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1.35rem', fontWeight: 900, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ height: '3px', width: '20px', background: 'var(--gold)', display: 'inline-block' }} />
+            Job Opportunities
+          </h3>
+          <p style={{ color: 'rgba(33,33,33,0.65)', fontSize: '0.92rem', lineHeight: 1.6, fontFamily: 'var(--font-b)', marginBottom: '3rem', marginTop: 0, maxWidth: '800px' }}>
+            Explore diverse career paths in the aviation industry. From airlines to cargo, corporate aviation to training – your future takes flight here.
+          </p>
+
+          <div className="job-opportunities-cards-grid">
+            {opportunities.map((o, idx) => (
+              <div key={idx} className="job-opportunity-card">
+                <div className="job-card-image-wrapper" style={{ background: o.bg }}>
+                  <img src={o.img} alt={o.title} className="job-card-image" />
+                </div>
+                <h4 className="job-card-title">{o.title}</h4>
+                <div className="job-card-divider" />
+                <p className="job-card-desc">{o.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
       </div>

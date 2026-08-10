@@ -193,7 +193,7 @@ export default function GroundSchoolPage() {
                 <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(0, 39, 76, 0.08)' }} />
                 <span className="course-sidebar-label">Duration</span>
                 <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)' }}>⏱️ 3–6 Months</div>
-                <span className="course-sidebar-note">July 2026 batch · 25 seats</span>
+                <span className="course-sidebar-note">Upcoming Batch · 25 seats</span>
               </div>
               <LeadForm courseName="DGCA Ground School" source="Course Detail: ground-school" />
             </div>
