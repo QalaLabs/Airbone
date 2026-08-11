@@ -3,11 +3,11 @@
 import { useState, useCallback } from 'react'
 import { triggerToast } from '@/components/Toast'
 import useFormValidation from '@/hooks/useFormValidation'
-import { validateName, validatePhone, validateEmail, validatePincode, validateRequired } from '@/utils/validation'
+import { validateName, validatePhone, validateEmailRequired, validatePincode, validateRequired } from '@/utils/validation'
 import FormField from '@/components/FormField'
 import SubmitButton from '@/components/SubmitButton'
 
-const validators = { name: validateName, phone: validatePhone, email: validateEmail, pincode: validatePincode, course: validateRequired }
+const validators = { name: validateName, phone: validatePhone, email: validateEmailRequired, pincode: validatePincode, course: validateRequired }
 
 const COURSES = [
   'DGCA CPL Ground Classes (₹2,70,000)',
@@ -25,7 +25,7 @@ const COURSES = [
 
 export default function LeadForm({ courseName = '', source = 'Dynamic Page Form', successMessage = '' }) {
   const [status, setStatus] = useState('idle')
-  const { values, errors, touched, handleChange, handleBlur, validate, isValid } = useFormValidation(
+  const { values, errors, touched, handleChange, handleBlur, validate } = useFormValidation(
     { name: '', phone: '', email: '', pincode: '', course: courseName || COURSES[0] },
     validators
   )
@@ -117,7 +117,7 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
         id="lead-submit-btn"
         className="btn btn-primary"
         loading={status === 'loading'}
-        disabled={!isValid || status === 'loading'}
+        disabled={status === 'loading'}
         style={{ width: '100%', justifyContent: 'center' }}
       >
         Apply For Registration →

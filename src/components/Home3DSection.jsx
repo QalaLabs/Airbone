@@ -12,7 +12,7 @@ import { useScrollEngine, ACTS, TOTAL_VH } from '../hooks/useScrollEngine'
 import MasterScene from '../scenes/MasterScene'
 import { triggerToast } from '@/components/Toast'
 import useFormValidation from '@/hooks/useFormValidation'
-import { validateName, validatePhone, validateEmail, validateRequired } from '@/utils/validation'
+import { validateName, validatePhone, validateEmailRequired, validateRequired } from '@/utils/validation'
 import FormField from '@/components/FormField'
 import SubmitButton from '@/components/SubmitButton'
 
@@ -435,11 +435,11 @@ function Modal({ open, type, onClose }) {
   const validators = {
     name: validateName,
     phone: validatePhone,
-    email: validateEmail,
+    email: validateEmailRequired,
     ...(!isDemo ? { course: validateRequired } : {}),
   }
 
-  const { values, handleChange, handleBlur, validate, isValid, setValues } = useFormValidation(
+  const { values, errors, touched, handleChange, handleBlur, validate, setValues } = useFormValidation(
     { name: '', phone: '', email: '', course: '' },
     validators
   )
@@ -501,11 +501,11 @@ function Modal({ open, type, onClose }) {
             : 'Upcoming batch seats are limited to 25 students. Submit your details and we will contact you within 24 hours.'}
         </p>
         <form className="modal-form" onSubmit={handleSubmit} noValidate>
-          <FormField id="modal-name" type="text" placeholder="Your Full Name" dark value={values.name} onChange={(v) => handleChange('name', v)} onBlur={() => handleBlur('name')} required />
-          <FormField id="modal-phone" type="tel" placeholder="Phone Number" dark value={values.phone} onChange={(v) => handleChange('phone', v)} onBlur={() => handleBlur('phone')} required maxLength={10} />
-          <FormField id="modal-email" type="email" placeholder="Email Address" dark value={values.email} onChange={(v) => handleChange('email', v)} onBlur={() => handleBlur('email')} required />
+          <FormField id="modal-name" type="text" placeholder="Your Full Name" dark value={values.name} onChange={(v) => handleChange('name', v)} onBlur={() => handleBlur('name')} error={touched.name ? errors.name : null} required />
+          <FormField id="modal-phone" type="tel" placeholder="Phone Number" dark value={values.phone} onChange={(v) => handleChange('phone', v)} onBlur={() => handleBlur('phone')} error={touched.phone ? errors.phone : null} required maxLength={10} />
+          <FormField id="modal-email" type="email" placeholder="Email Address" dark value={values.email} onChange={(v) => handleChange('email', v)} onBlur={() => handleBlur('email')} error={touched.email ? errors.email : null} required />
           {!isDemo && (
-            <FormField id="modal-course" as="select" dark value={values.course} onChange={(v) => handleChange('course', v)} required>
+            <FormField id="modal-course" as="select" dark value={values.course} onChange={(v) => handleChange('course', v)} error={touched.course ? errors.course : null} required>
               <option value="" disabled>Select Course</option>
               <option>DGCA CPL Ground School</option>
               <option>RTR (A) Radio Telephony</option>
@@ -513,7 +513,7 @@ function Modal({ open, type, onClose }) {
               <option>Meteorology</option>
             </FormField>
           )}
-          <SubmitButton id="modal-submit-btn" className="modal-btn" loading={submitting} disabled={!isValid || submitting} style={{ borderRadius: '1px' }}>
+          <SubmitButton id="modal-submit-btn" className="modal-btn" loading={submitting} disabled={submitting} style={{ borderRadius: '1px' }}>
             {isDemo ? 'Reserve My Demo Seat →' : 'Submit Application →'}
           </SubmitButton>
         </form>

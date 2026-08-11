@@ -1296,9 +1296,11 @@ img, video { display: block; max-width: 100%; }
 /* ── Smooth scroll (already set but reinforced) ── */
 html { scroll-behavior: smooth; }
 
-/* ── CockpitHUD: hero-anchored flight instrument ── */
-/* Position (absolute) set inline; removed on mobile to avoid CTA overlap */
 .cockpit-hud {
+  position: absolute;
+  bottom: 5.5rem;
+  bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  right: 1.25rem;
   display: flex;
   align-items: center;
   gap: 1.25rem;
@@ -1738,7 +1740,7 @@ html { scroll-behavior: smooth; }
 .hero-headline-accent {
   font-style: italic;
   font-weight: 300;
-  color: var(--gold);
+  color: var(--red);
 }
 
 .hero-tagline {
@@ -1746,7 +1748,7 @@ html { scroll-behavior: smooth; }
   font-weight: 600;
   letter-spacing: 0.04em;
   font-size: clamp(0.95rem, 1.7vw, 1.2rem);
-  color: var(--gold);
+  color: var(--red);
   margin: 1rem 0 0;
   text-shadow: 0 2px 12px rgba(0,0,0,0.65);
 }
@@ -2768,8 +2770,7 @@ html { scroll-behavior: smooth; }
   }
 
   .whatsapp-float {
-    bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 16px) !important;
-    z-index: 850 !important;
+    display: none !important;
   }
 }
 
