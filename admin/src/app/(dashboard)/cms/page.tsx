@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,12 +9,28 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Textarea } from "@/components/ui/textarea";
 import { 
   Globe, FileText, ImageIcon, Megaphone,
-  Search, Plus, Eye, Edit2, Sparkles, Loader2, AlertCircle
+  Search, Plus, Eye, Edit2, Loader2, AlertCircle,
+  MoreHorizontal, Archive, CalendarClock, Clock
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "@/components/ui/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
+const PAGE_TRANSITIONS: Record<string, PageModel["status"][]> = {
+  DRAFT: ["PUBLISHED", "SCHEDULED", "ARCHIVED"],
+  SCHEDULED: ["DRAFT", "PUBLISHED", "ARCHIVED"],
+  PUBLISHED: ["DRAFT", "ARCHIVED"],
+  ARCHIVED: ["DRAFT"],
+};
+
+const TRANSITION_META: Record<PageModel["status"], { label: string; icon: typeof Globe }> = {
+  PUBLISHED: { label: "Publish", icon: Globe },
+  SCHEDULED: { label: "Schedule", icon: CalendarClock },
+  DRAFT: { label: "Unpublish (to Draft)", icon: Clock },
+  ARCHIVED: { label: "Archive", icon: Archive },
+};
 
 interface PageModel {
   id: string;
@@ -32,8 +49,8 @@ interface PageModel {
 
 export default function CMSPage() {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [activeTab, setActiveTab] = React.useState("pages");
-  const [previewMode, setPreviewMode] = React.useState(false);
   const [search, setSearch] = React.useState("");
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
   const [editItem, setEditItem] = React.useState<Partial<PageModel> | null>(null);
@@ -90,6 +107,20 @@ export default function CMSPage() {
     }
   });
 
+  // Mutate: Publish / status transition (explicit publish endpoint)
+  const publishMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: PageModel["status"] }) =>
+      apiFetch<PageModel>(`/pages/${id}/publish`, { method: "POST", body: JSON.stringify({ status }) }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cms-pages"] });
+      toast({ title: "Status Updated", description: "Page publishing status transitioned successfully." });
+      setEditItem(null);
+    },
+    onError: (err) => {
+      toast({ title: "Status Change Failed", description: err.message, variant: "destructive" });
+    }
+  });
+
   const handleSaveContent = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -98,15 +129,17 @@ export default function CMSPage() {
     const description = formData.get("description") as string;
     const seoTitle = formData.get("seoTitle") as string;
     const seoDesc = formData.get("seoDesc") as string;
-    const status = formData.get("status") as PageModel["status"];
 
+    // NOTE: `status` is intentionally NOT part of the create/update payload.
+    // createPageSchema / updatePageSchema have no `status` field, so zod strips it.
+    // Status changes must go through POST /api/v1/pages/{id}/publish (handled by
+    // the publishing controls in the dialog + row menu), which enforces transitions.
     const payload = {
       title,
       slug: slug || undefined,
       description: description || null,
       seoTitle: seoTitle || null,
       seoDesc: seoDesc || null,
-      status: status || "DRAFT",
     };
 
     if (editItem?.id) {
@@ -125,43 +158,13 @@ export default function CMSPage() {
         description="Global command over public landing pages, FAQs, fleet showcase, campus facilities, gallery, and news bulletins." 
         action={
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => {
-                setPreviewMode(!previewMode);
-                toast({ title: `Preview Mode ${!previewMode ? "Activated" : "Deactivated"}`, description: !previewMode ? "Simulating live production Next.js frontend rendering." : "Returning to CMS edit layout." });
-              }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
-                previewMode ? "bg-amber-500 text-slate-900 border-amber-600 shadow-lg shadow-amber-500/20 animate-pulse" : "bg-secondary/60 text-muted-foreground hover:text-white border-white/10"
-              }`}
-            >
-              <Eye className="h-4 w-4" />
-              <span>{previewMode ? "Exit Live Preview" : "Real-Time Preview Mode"}</span>
-            </button>
-            <Button onClick={() => setEditItem({ title: "", slug: "", description: "", seoTitle: "", seoDesc: "", status: "DRAFT" })} className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 transition-all hover:scale-105">
+            <Button onClick={() => setEditItem({ title: "", slug: "", description: "", seoTitle: "", seoDesc: "" })} className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 transition-all hover:scale-105">
               <Plus className="h-4 w-4 mr-2" />
               Create New Entry
             </Button>
           </div>
         }
       />
-
-      {/* Real-Time Preview Notice Banner */}
-      {previewMode && (
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-6 rounded-2xl bg-gradient-to-r from-amber-500/20 via-primary/10 to-blue-600/20 border border-amber-500/30 flex items-center justify-between shadow-2xl backdrop-blur-md">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500 text-slate-900 font-bold shadow-lg shadow-amber-500/30">
-              <Sparkles className="h-6 w-6" />
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-white tracking-tight">Interactive Public Web Preview Mode</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">You are currently inspecting live headless CMS draft contents. Edits will sync instantly to the preview iframe.</p>
-            </div>
-          </div>
-          <Button size="sm" onClick={() => setPreviewMode(false)} className="bg-slate-900 hover:bg-slate-800 text-white border border-white/10 text-xs font-bold">
-            Exit Preview
-          </Button>
-        </motion.div>
-      )}
 
       {/* Tabs Navigation */}
       <div className="flex border-b border-white/10 gap-2 overflow-x-auto pb-1">
@@ -253,9 +256,35 @@ export default function CMSPage() {
                       </div>
 
                       <div className="flex items-center gap-3 shrink-0">
-                        <Button size="sm" onClick={() => setEditItem(pg)} className="bg-primary/20 hover:bg-primary/30 text-white border border-primary/30 text-xs font-bold py-1 px-3 h-8">
-                          <Edit2 className="h-3 w-3 mr-1.5" /> Edit CMS Data
+                        <Button size="sm" onClick={() => router.push(`/cms/pages/${pg.id}`)} className="bg-primary/20 hover:bg-primary/30 text-white border border-primary/30 text-xs font-bold py-1 px-3 h-8">
+                          <Edit2 className="h-3 w-3 mr-1.5" /> Open Editor
                         </Button>
+                        <Button size="sm" variant="ghost" className="h-8 w-8 border border-white/10" aria-label="Preview page" onClick={() => router.push(`/cms/pages/${pg.id}/preview`)}>
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button size="sm" variant="ghost" className="h-8 w-8 border border-white/10" aria-label="Status actions">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {(PAGE_TRANSITIONS[pg.status] ?? []).map((next) => {
+                              const meta = TRANSITION_META[next];
+                              const Icon = meta.icon;
+                              return (
+                                <DropdownMenuItem
+                                  key={next}
+                                  onClick={() => publishMutation.mutate({ id: pg.id, status: next })}
+                                  disabled={publishMutation.isPending}
+                                  className="cursor-pointer"
+                                >
+                                  <Icon className="mr-2 h-4 w-4" /> {meta.label}
+                                </DropdownMenuItem>
+                              );
+                            })}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </div>
                   ))}
@@ -335,12 +364,37 @@ export default function CMSPage() {
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-muted-foreground">Publishing Status</label>
-                <select name="status" defaultValue={editItem.status || "DRAFT"} className="flex h-9 w-full rounded-lg border border-white/10 bg-secondary/60 px-3 py-1 text-xs font-bold text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary">
-                  <option value="PUBLISHED" className="bg-slate-900 text-emerald-400">PUBLISHED (LIVE)</option>
-                  <option value="DRAFT" className="bg-slate-900 text-amber-400">DRAFT (IN PROGRESS)</option>
-                  <option value="SCHEDULED" className="bg-slate-900 text-blue-400">SCHEDULED PUBLICATION</option>
-                  <option value="ARCHIVED" className="bg-slate-900 text-rose-400">ARCHIVED</option>
-                </select>
+                {editItem.id ? (
+                  <>
+                    <div className="flex items-center justify-between rounded-lg border border-white/10 bg-secondary/40 px-3 py-2">
+                      <span className="text-xs font-bold text-white">Current: <span className="text-primary">{editItem.status}</span></span>
+                    </div>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {(PAGE_TRANSITIONS[editItem.status as PageModel["status"]] ?? []).map((next) => {
+                        const meta = TRANSITION_META[next];
+                        const Icon = meta.icon;
+                        return (
+                          <button
+                            key={next}
+                            type="button"
+                            disabled={publishMutation.isPending}
+                            onClick={() => publishMutation.mutate({ id: editItem.id!, status: next })}
+                            className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-secondary/60 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-primary/20 hover:border-primary/40 disabled:opacity-50"
+                          >
+                            <Icon className="h-3.5 w-3.5" /> {meta.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      Publishing is applied immediately via the publish endpoint and enforces valid transitions (e.g. ARCHIVED pages can only return to DRAFT).
+                    </p>
+                  </>
+                ) : (
+                  <div className="rounded-lg border border-white/10 bg-secondary/40 px-3 py-2 text-xs text-muted-foreground">
+                    New pages are created as <span className="font-bold text-amber-400">DRAFT</span>. Use the status menu after creating to publish or archive.
+                  </div>
+                )}
               </div>
               <DialogFooter className="pt-4 border-t border-white/10">
                 <Button type="button" variant="outline" onClick={() => setEditItem(null)} className="border-white/10 hover:bg-white/5 text-xs font-bold">Cancel</Button>

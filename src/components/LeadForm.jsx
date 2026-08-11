@@ -13,7 +13,7 @@ const COURSES = [
   'DGCA CPL Ground Classes (₹2,70,000)',
   'Commercial Pilot License (CPL)',
   'Cadet Preparation (₹50,000)',
-  'Airline Preparation (₹1,50,000)',
+  'Airline Preparation (₹1,25,000)',
   'GD & PI Course (₹30,000)',
   'CASS Compass Adapt (₹30,000)',
   'ATPL Ground School (₹1,50,000)',
@@ -90,7 +90,7 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
         Reserve Seat / Ask Syllabus
       </h3>
       <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)', lineHeight: '1.5', marginBottom: '1.5rem' }}>
-        July 2026 batches are capped at 25 students. Provide details to receive syllabus PDF.
+        Upcoming batches are capped at 25 students. Provide details to receive syllabus PDF.
       </p>
 
       <FormField id="lead-name" type="text" placeholder="Full Name" dark value={values.name} onChange={(v) => handleChange('name', v)} onBlur={() => handleBlur('name')} error={touched.name ? errors.name : null} required />

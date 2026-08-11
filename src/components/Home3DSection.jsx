@@ -207,7 +207,7 @@ function Act1Overlay({ visible, onDemo, onApply }) {
             📅 Book Free Demo Class
           </button>
           <button id="act1-apply-btn" className="btn btn-ghost" onClick={onApply}>
-            Apply for July 2026 →
+            Apply for Upcoming Batch →
           </button>
         </div>
       </div>
@@ -406,7 +406,7 @@ function Act7Overlay({ visible, onDemo, onApply }) {
           <ul className="cta-panel-list">
             {[
               { icon: '📍', label: 'Location', value: 'Dwarka, New Delhi' },
-              { icon: '📅', label: 'Next Batch', value: 'July 2026' },
+              { icon: '📅', label: 'Next Batch', value: 'Upcoming Batch' },
               { icon: '👥', label: 'Batch Size', value: 'Max 25 Students' },
               { icon: '📞', label: 'Contact', value: '+91 9953 777 320' },
             ].map(i => (
@@ -494,11 +494,11 @@ function Modal({ open, type, onClose }) {
       <div className="modal-box modal-box-dark">
         <button className="modal-close" onClick={onClose} aria-label="Close" style={{ color: 'rgba(255,255,255,0.5)' }}>×</button>
         <p className="modal-eyebrow" style={{ color: '#D8A027' }}>{isDemo ? 'Free · No Commitment' : 'Limited Seats'}</p>
-        <h2 className="modal-h modal-h-dark">{isDemo ? 'Book Free Demo Class' : 'Apply for July 2026 Batch'}</h2>
+        <h2 className="modal-h modal-h-dark">{isDemo ? 'Book Free Demo Class' : 'Apply for Upcoming Batch'}</h2>
         <p className="modal-body modal-body-dark">
           {isDemo
             ? 'Experience the Airborne teaching method firsthand. A free 90-minute demo class with Capt. Navrang Singh.'
-            : 'July 2026 seats are limited to 25 students. Submit your details and we will contact you within 24 hours.'}
+            : 'Upcoming batch seats are limited to 25 students. Submit your details and we will contact you within 24 hours.'}
         </p>
         <form className="modal-form" onSubmit={handleSubmit} noValidate>
           <FormField id="modal-name" type="text" placeholder="Your Full Name" dark value={values.name} onChange={(v) => handleChange('name', v)} onBlur={() => handleBlur('name')} error={touched.name ? errors.name : null} required />
