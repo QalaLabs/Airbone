@@ -1,5 +1,7 @@
 import type { UserRole } from "@prisma/client";
 
+export * from "./cms";
+
 // ─── API Response Envelope ───────────────────────────────────────────────────
 
 export interface ApiSuccess<T> {
