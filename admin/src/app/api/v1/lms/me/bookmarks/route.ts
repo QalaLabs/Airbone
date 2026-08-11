@@ -20,7 +20,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const ctx = await getRequestContext();
-    guard(ctx.user, "read", "lms");
+    guard(ctx.user, "write", "lms_student");
     const student = await LmsService.resolveLinkedStudent(ctx);
     const body = (await req.json()) as unknown;
     const input = toggleBookmarkSchema.parse(body);

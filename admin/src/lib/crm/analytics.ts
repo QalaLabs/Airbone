@@ -1,9 +1,6 @@
-import { crmFetch } from "./client";
+import { apiFetch } from "@/lib/api";
+import type { AnalyticsData } from "./types";
 
-export async function getSalesAnalytics(): Promise<unknown> {
-  return crmFetch<unknown>("all_endpoints.get_sales_analytics");
-}
-
-export async function getConversionRate(): Promise<unknown> {
-  return crmFetch<unknown>("all_endpoints.get_conversion_rate");
+export async function getAnalytics(): Promise<AnalyticsData> {
+  return apiFetch<AnalyticsData>("/crm/analytics");
 }

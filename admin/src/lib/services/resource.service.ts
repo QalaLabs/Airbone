@@ -1,4 +1,5 @@
 import { ResourceRepository } from "@/lib/repositories/resource.repository";
+import { MediaRepository } from "@/lib/repositories/media.repository";
 import { AuditService } from "@/lib/services/audit.service";
 import { ActivityFeedService } from "@/lib/services/activity.service";
 import { emitEvent } from "@/lib/events/inngest";
@@ -45,6 +46,11 @@ export class ResourceService {
 
     const resource = await ResourceRepository.create(ctx.orgId, ctx.user.id, input, slug);
 
+    // Phase 5: track MediaUsage for the thumbnail asset so referenced media can't be deleted
+    if (input.thumbnailId) {
+      await MediaRepository.trackUsage(ctx.orgId, input.thumbnailId, "resource", resource.id, "thumbnailId");
+    }
+
     await AuditService.write({
       orgId: ctx.orgId,
       userId: ctx.user.id,
@@ -82,6 +88,16 @@ export class ResourceService {
     }
 
     const updated = await ResourceRepository.update(ctx.orgId, id, input);
+
+    // Phase 5: reconcile thumbnail MediaUsage on change
+    if (input.thumbnailId !== undefined && input.thumbnailId !== existing.thumbnailId) {
+      if (existing.thumbnailId) {
+        await MediaRepository.untrackUsage(existing.thumbnailId, "resource", id, "thumbnailId");
+      }
+      if (input.thumbnailId) {
+        await MediaRepository.trackUsage(ctx.orgId, input.thumbnailId, "resource", id, "thumbnailId");
+      }
+    }
 
     await AuditService.write({
       orgId: ctx.orgId,
@@ -161,6 +177,11 @@ export class ResourceService {
   static async delete(ctx: RequestContext, id: string) {
     const existing = await this.getById(ctx, id);
     await ResourceRepository.delete(ctx.orgId, id);
+
+    // Phase 5: release thumbnail MediaUsage so the asset can be deleted
+    if (existing.thumbnailId) {
+      await MediaRepository.untrackUsage(existing.thumbnailId, "resource", id, "thumbnailId");
+    }
 
     await AuditService.write({
       orgId: ctx.orgId,

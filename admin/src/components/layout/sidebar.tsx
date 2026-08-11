@@ -24,6 +24,8 @@ import {
   Plug,
   Layers,
   Clock,
+  Handshake,
+  Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -48,6 +50,9 @@ const NAV_GROUPS = [
     label: "CRM & Admissions",
     items: [
       { href: "/leads", icon: Users, label: "Lead Management" },
+      { href: "/crm/outreach", icon: Mail, label: "Outreach" },
+      { href: "/crm/meetings", icon: CalendarDays, label: "Meetings" },
+      { href: "/crm/deals", icon: Handshake, label: "Deals" },
       { href: "/admissions", icon: GraduationCap, label: "Admissions" },
       { href: "/students", icon: Users, label: "Student Management" },
       { href: "/placements", icon: Briefcase, label: "Placements" },

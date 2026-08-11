@@ -39,7 +39,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return token;
     },
 
-    session: authConfig.callbacks!.session!,
+    // Copy the custom JWT fields into the session user (Node.js only)
+    async session({ session, token }) {
+      session.user = {
+        id: token.id as string,
+        orgId: token.orgId as string,
+        campusId: (token.campusId as string | null) ?? null,
+        name: token.name ?? "",
+        email: token.email ?? "",
+        role: token.role as UserRole,
+        avatarUrl: (token.avatarUrl as string | null) ?? null,
+      } as SessionUser & typeof session.user;
+      return session;
+    },
   },
 
   providers: [

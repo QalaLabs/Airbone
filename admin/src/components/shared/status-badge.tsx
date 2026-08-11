@@ -30,11 +30,11 @@ const JOB_STATUS_COLORS: Record<string, string> = {
 
 // Job application statuses
 const JOB_APPLICATION_STATUS_COLORS: Record<string, string> = {
-  APPLIED: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  SUBMITTED: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  UNDER_REVIEW: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
   SHORTLISTED: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
   INTERVIEW_SCHEDULED: "bg-purple-500/20 text-purple-400 border-purple-500/30",
-  OFFERED: "bg-green-500/20 text-green-400 border-green-500/30",
-  HIRED: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+  SELECTED: "bg-green-500/20 text-green-400 border-green-500/30",
   REJECTED: "bg-red-500/20 text-red-400 border-red-500/30",
   WITHDRAWN: "bg-gray-500/20 text-gray-400 border-gray-500/30",
 };

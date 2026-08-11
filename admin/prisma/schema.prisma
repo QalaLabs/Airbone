@@ -1796,6 +1796,7 @@ model LmsCertificate {
   issuer  User?        @relation("LmsCertificateIssuer", fields: [issuedBy], references: [id], onDelete: SetNull)
 
   @@unique([orgId, certificateNo])
+  @@unique([orgId, verificationCode])
   @@index([studentId])
   @@index([courseId])
   @@map("lms_certificates")
@@ -1889,6 +1890,7 @@ model LmsQuizAttempt {
   user    User?     @relation("LmsQuizAttemptUser", fields: [userId], references: [id], onDelete: SetNull)
   module  LmsModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
 
+  @@unique([studentId, moduleId, attemptNumber])
   @@index([studentId, moduleId])
   @@index([moduleId])
   @@map("lms_quiz_attempts")

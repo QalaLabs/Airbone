@@ -13,6 +13,7 @@ import {
   LogOut,
   GraduationCap,
   Loader2,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -20,7 +21,7 @@ const NAV = [
   { href: "/faculty", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/lms/attendance", label: "Attendance", icon: ClipboardCheck, exact: false },
   { href: "/faculty/students", label: "Students", icon: Users, exact: false },
-  { href: "/lms/timetable", label: "Assignments", icon: CalendarDays, exact: false },
+  { href: "/lms/assignments", label: "Assignments", icon: FileText, exact: false },
 ];
 
 export default function FacultyLayout({ children }: { children: React.ReactNode }) {

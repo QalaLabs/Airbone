@@ -33,6 +33,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const body = await req.json() as unknown;
     const input = updateLeadSchema.parse(body);
 
+    const existing = await LeadService.getById(ctx, id);
+    const condition = getCounselorCondition(ctx.user);
+    guardRecord(ctx.user, "write", "leads", existing as unknown as Record<string, unknown>, condition);
+
     const lead = await LeadService.update(ctx, id, input);
     return ok(lead);
   } catch (err) {
@@ -45,6 +49,10 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     const ctx = await getRequestContext();
     const { id } = await params;
     guard(ctx.user, "delete", "leads");
+
+    const existing = await LeadService.getById(ctx, id);
+    const condition = getCounselorCondition(ctx.user);
+    guardRecord(ctx.user, "delete", "leads", existing as unknown as Record<string, unknown>, condition);
 
     await LeadService.delete(ctx, id);
     return noContent();

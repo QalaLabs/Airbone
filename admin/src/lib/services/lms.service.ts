@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/db/client";
-import { NotFoundError, ConflictError, ForbiddenError } from "@/lib/utils/errors";
+import { NotFoundError, ConflictError, ForbiddenError, ValidationError } from "@/lib/utils/errors";
+import { MediaRepository } from "@/lib/repositories/media.repository";
+import { AuditService } from "@/lib/services/audit.service";
 import type { RequestContext } from "@/types";
 import type {
   CreateLmsCourseInput,
@@ -74,6 +76,21 @@ export class LmsService {
   }
 
   static async listCourses(ctx: RequestContext) {
+    if (ctx.user.role === "STUDENT") {
+      const student = await this.resolveLinkedStudent(ctx);
+      return prisma.lmsCourse.findMany({
+        where: {
+          orgId: ctx.orgId,
+          isPublished: true,
+          enrollments: { some: { studentId: student.id, status: "ACTIVE" } },
+        },
+        orderBy: { createdAt: "desc" },
+        include: {
+          _count: { select: { enrollments: true, stages: true } },
+          teachers: { include: { teacher: { select: { id: true, name: true } } } },
+        },
+      });
+    }
     return prisma.lmsCourse.findMany({
       where: { orgId: ctx.orgId },
       orderBy: { createdAt: "desc" },
@@ -90,6 +107,15 @@ export class LmsService {
       include: courseTreeInclude,
     });
     if (!course) throw new NotFoundError("LmsCourse", courseId);
+    if (ctx.user.role === "STUDENT") {
+      if (!course.isPublished) throw new NotFoundError("LmsCourse", courseId);
+      const student = await this.resolveLinkedStudent(ctx);
+      const enrollment = await prisma.lmsEnrollment.findFirst({
+        where: { studentId: student.id, courseId, status: "ACTIVE" },
+        select: { id: true },
+      });
+      if (!enrollment) throw new ForbiddenError("read", "lms_courses");
+    }
     return course;
   }
 
@@ -123,6 +149,49 @@ export class LmsService {
         ...(input.description !== undefined ? { description: input.description } : {}),
         ...(input.isPublished !== undefined ? { isPublished: input.isPublished, status: input.isPublished ? "PUBLISHED" : "DRAFT" } : {}),
       },
+    });
+  }
+
+  static async deleteCourse(ctx: RequestContext, courseId: string) {
+    const course = await prisma.lmsCourse.findFirst({ where: { id: courseId, orgId: ctx.orgId } });
+    if (!course) throw new NotFoundError("LmsCourse", courseId);
+
+    return prisma.$transaction(async (tx) => {
+      const stages = await tx.lmsStage.findMany({ where: { courseId } });
+      const stageIds = stages.map((s) => s.id);
+
+      const modules = await tx.lmsModule.findMany({ where: { stageId: { in: stageIds } } });
+      const moduleIds = modules.map((m) => m.id);
+
+      const chapters = await tx.lmsChapter.findMany({ where: { moduleId: { in: moduleIds } } });
+      const chapterIds = chapters.map((c) => c.id);
+
+      const topics = await tx.lmsTopic.findMany({ where: { chapterId: { in: chapterIds } } });
+      const topicIds = topics.map((t) => t.id);
+
+      await tx.lmsContent.deleteMany({ where: { topicId: { in: topicIds } } });
+      await tx.lmsTopic.deleteMany({ where: { chapterId: { in: chapterIds } } });
+      await tx.lmsChapter.deleteMany({ where: { moduleId: { in: moduleIds } } });
+      await tx.lmsModule.deleteMany({ where: { stageId: { in: stageIds } } });
+      await tx.lmsStage.deleteMany({ where: { courseId } });
+
+      await tx.lmsStudentProgress.deleteMany({ where: { topicId: { in: topicIds } } });
+
+      const attSessions = await tx.lmsAttendanceSession.findMany({ where: { courseId } });
+      const attSessionIds = attSessions.map((s) => s.id);
+      await tx.lmsAttendanceRecord.deleteMany({ where: { sessionId: { in: attSessionIds } } });
+      await tx.lmsAttendanceSession.deleteMany({ where: { courseId } });
+
+      const assignments = await tx.lmsAssignment.findMany({ where: { courseId } });
+      const assignmentIds = assignments.map((a) => a.id);
+      await tx.lmsAssignmentSubmission.deleteMany({ where: { assignmentId: { in: assignmentIds } } });
+      await tx.lmsAssignment.deleteMany({ where: { courseId } });
+
+      await tx.lmsCertificate.deleteMany({ where: { courseId } });
+      await tx.lmsTimetableSlot.deleteMany({ where: { courseId } });
+      await tx.lmsEnrollment.deleteMany({ where: { courseId } });
+
+      await tx.lmsCourse.delete({ where: { id: courseId } });
     });
   }
 
@@ -404,7 +473,7 @@ export class LmsService {
     });
     if (!topic || topic.chapter.module.stage.course.orgId !== ctx.orgId) throw new NotFoundError("LmsTopic", topicId);
     const nextOrder = data.order ?? (await prisma.lmsContent.count({ where: { topicId } }));
-    return prisma.lmsContent.create({
+    const content = await prisma.lmsContent.create({
       data: {
         topicId,
         title: data.title,
@@ -415,6 +484,8 @@ export class LmsService {
         order: nextOrder,
       },
     });
+    await this.syncContentMedia(ctx, content.id, content.url);
+    return content;
   }
 
   static async updateContent(
@@ -427,7 +498,14 @@ export class LmsService {
       include: { topic: { include: { chapter: { include: { module: { include: { stage: { include: { course: { select: { orgId: true } } } } } } } } } } },
     });
     if (!content || content.topic.chapter.module.stage.course.orgId !== ctx.orgId) throw new NotFoundError("LmsContent", contentId);
-    return prisma.lmsContent.update({ where: { id: contentId }, data });
+
+    const oldAssetId = this.toAssetId(content.url);
+    const updated = await prisma.lmsContent.update({ where: { id: contentId }, data });
+
+    if (data.url !== undefined && data.url !== content.url) {
+      await this.syncContentMedia(ctx, contentId, updated.url, oldAssetId);
+    }
+    return updated;
   }
 
   static async deleteContent(ctx: RequestContext, contentId: string) {
@@ -436,12 +514,45 @@ export class LmsService {
       include: { topic: { include: { chapter: { include: { module: { include: { stage: { include: { course: { select: { orgId: true } } } } } } } } } } },
     });
     if (!content || content.topic.chapter.module.stage.course.orgId !== ctx.orgId) throw new NotFoundError("LmsContent", contentId);
+    const oldAssetId = this.toAssetId(content.url);
     await prisma.lmsContent.delete({ where: { id: contentId } });
+    if (oldAssetId) {
+      await MediaRepository.untrackUsage(oldAssetId, "lms_content", contentId, "url");
+    }
+  }
+
+  private static UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+  /** Returns the string only when it looks like a media asset UUID, else null. */
+  private static toAssetId(url: string | null | undefined): string | null {
+    if (!url) return null;
+    return this.UUID_RE.test(url) ? url : null;
+  }
+
+  /** Track/untrack MediaUsage for an LmsContent url that references an org asset. */
+  private static async syncContentMedia(ctx: RequestContext, contentId: string, url: string, oldAssetId?: string | null) {
+    if (oldAssetId) {
+      await MediaRepository.untrackUsage(oldAssetId, "lms_content", contentId, "url");
+    }
+    const candidate = this.toAssetId(url);
+    if (!candidate) return;
+    const asset = await prisma.mediaAsset.findFirst({
+      where: { id: candidate, orgId: ctx.orgId, isActive: true },
+      select: { id: true },
+    });
+    if (asset) {
+      await MediaRepository.trackUsage(ctx.orgId, asset.id, "lms_content", contentId, "url");
+    }
   }
 
   // ─── Question Bank ────────────────────────────────────────────────────────
 
   static async listQuestions(ctx: RequestContext, moduleId: string) {
+    // The question bank contains correctOptionId/negativePoints — never expose
+    // it to students; they must use getQuizForStudent (answers stripped).
+    if (ctx.user.role === "STUDENT") {
+      throw new ForbiddenError("read", "lms_courses");
+    }
     const mod = await prisma.lmsModule.findFirst({
       where: { id: moduleId },
       include: { stage: { include: { course: { select: { orgId: true } } } } },
@@ -537,7 +648,9 @@ export class LmsService {
         questions: { orderBy: { order: "asc" } },
       },
     });
-    if (!mod || mod.stage.course.orgId !== ctx.orgId) throw new NotFoundError("LmsModule", moduleId);
+    if (!mod || mod.stage.course.orgId !== ctx.orgId || !mod.stage.course.isPublished) {
+      throw new NotFoundError("LmsModule", moduleId);
+    }
 
     const enrollment = await prisma.lmsEnrollment.findFirst({
       where: { studentId, courseId: mod.stage.course.id, status: "ACTIVE" },
@@ -589,7 +702,9 @@ export class LmsService {
         questions: { orderBy: { order: "asc" } },
       },
     });
-    if (!mod || mod.stage.course.orgId !== ctx.orgId) throw new NotFoundError("LmsModule", input.moduleId);
+    if (!mod || mod.stage.course.orgId !== ctx.orgId || !mod.stage.course.isPublished) {
+      throw new NotFoundError("LmsModule", input.moduleId);
+    }
 
     const enrollment = await prisma.lmsEnrollment.findFirst({
       where: { studentId, courseId: mod.stage.course.id, status: "ACTIVE" },
@@ -632,59 +747,87 @@ export class LmsService {
     const scorePercent = maxScore > 0 ? Math.round((earned / maxScore) * 100) : 0;
     const passed = scorePercent >= mod.passPercent;
 
-    const attempt = await prisma.lmsQuizAttempt.create({
-      data: {
-        studentId,
-        userId: ctx.user.id,
-        moduleId: input.moduleId,
-        answers: gradedAnswers,
-        score: scorePercent,
-        maxScore,
-        passed,
-        attemptNumber: priorAttempts + 1,
-      },
-    });
-
-    const existingAssessment = await prisma.lmsAssessment.findUnique({
-      where: { studentId_moduleId: { studentId, moduleId: input.moduleId } },
-    });
-
     const newStatus = passed ? "PASS" : "FAIL";
 
-    if (existingAssessment) {
-      await prisma.lmsAssessment.update({
-        where: { id: existingAssessment.id },
-        data: {
-          score: scorePercent,
-          status: newStatus,
-          attempts: priorAttempts + 1,
-          userId: ctx.user.id,
-        },
-      });
-    } else {
-      await prisma.lmsAssessment.create({
-        data: {
-          studentId,
-          userId: ctx.user.id,
-          moduleId: input.moduleId,
-          score: scorePercent,
-          status: newStatus,
-          attempts: 1,
-        },
-      });
-    }
+    try {
+      const result = await prisma.$transaction(async (tx) => {
+        // Re-count inside the transaction so two concurrent submissions cannot
+        // both pass the maxAttempts check; the unique
+        // (studentId, moduleId, attemptNumber) constraint is the hard backstop.
+        const currentAttempts = await tx.lmsQuizAttempt.count({
+          where: { studentId, moduleId: input.moduleId },
+        });
+        if (currentAttempts >= mod.maxAttempts) {
+          throw new ForbiddenError("quiz", `Max ${mod.maxAttempts} attempts reached for this module`);
+        }
 
-    return {
-      attempt,
-      scorePercent,
-      earned,
-      maxScore,
-      passed,
-      passPercent: mod.passPercent,
-      attemptsUsed: priorAttempts + 1,
-      attemptsRemaining: mod.maxAttempts - (priorAttempts + 1),
-      gradedAnswers,
-    };
+        const attemptNumber = currentAttempts + 1;
+
+        const attempt = await tx.lmsQuizAttempt.create({
+          data: {
+            studentId,
+            userId: ctx.user.id,
+            moduleId: input.moduleId,
+            answers: gradedAnswers,
+            score: scorePercent,
+            maxScore,
+            passed,
+            attemptNumber,
+          },
+        });
+
+        const existingAssessment = await tx.lmsAssessment.findUnique({
+          where: { studentId_moduleId: { studentId, moduleId: input.moduleId } },
+        });
+
+        if (existingAssessment) {
+          await tx.lmsAssessment.update({
+            where: { id: existingAssessment.id },
+            data: {
+              score: scorePercent,
+              status: newStatus,
+              attempts: attemptNumber,
+              userId: ctx.user.id,
+            },
+          });
+        } else {
+          await tx.lmsAssessment.create({
+            data: {
+              studentId,
+              userId: ctx.user.id,
+              moduleId: input.moduleId,
+              score: scorePercent,
+              status: newStatus,
+              attempts: attemptNumber,
+            },
+          });
+        }
+
+        return { attempt, attemptNumber };
+      });
+
+      return {
+        attempt: result.attempt,
+        scorePercent,
+        earned,
+        maxScore,
+        passed,
+        passPercent: mod.passPercent,
+        attemptsUsed: result.attemptNumber,
+        attemptsRemaining: mod.maxAttempts - result.attemptNumber,
+        gradedAnswers,
+      };
+    } catch (err) {
+      const isUniqueCollision =
+        typeof err === "object" &&
+        err !== null &&
+        "code" in err &&
+        (err as { code?: string }).code === "P2002";
+      if (isUniqueCollision) {
+        throw new ConflictError("Quiz submission conflict: an attempt was recorded concurrently. Please retry.");
+      }
+      throw err;
+    }
   }
 
   static async getQuizAttempts(ctx: RequestContext, studentId: string, moduleId: string) {
@@ -772,7 +915,24 @@ export class LmsService {
     }
   }
 
+  /** Soft-unenroll: sets enrollment status to DROPPED, preserving history/progress. */
+  static async unenroll(ctx: RequestContext, enrollmentId: string) {
+    const enrollment = await prisma.lmsEnrollment.findFirst({
+      where: { id: enrollmentId, orgId: ctx.orgId },
+    });
+    if (!enrollment) throw new NotFoundError("LmsEnrollment", enrollmentId);
+    return prisma.lmsEnrollment.update({
+      where: { id: enrollmentId },
+      data: { status: "DROPPED" },
+    });
+  }
+
   static async listEnrollments(ctx: RequestContext, courseId?: string) {
+    // Enrollment roster includes student PII — staff-facing only. Students use
+    // the self-scoped /lms/me endpoints.
+    if (ctx.user.role === "STUDENT") {
+      throw new ForbiddenError("read", "lms");
+    }
     return prisma.lmsEnrollment.findMany({
       where: { orgId: ctx.orgId, ...(courseId ? { courseId } : {}) },
       include: {
@@ -800,7 +960,7 @@ export class LmsService {
         },
       },
     });
-    if (!topic || topic.chapter.module.stage.course.orgId !== ctx.orgId) {
+    if (!topic || topic.chapter.module.stage.course.orgId !== ctx.orgId || !topic.chapter.module.stage.course.isPublished) {
       throw new NotFoundError("LmsTopic", input.topicId);
     }
 
@@ -902,8 +1062,38 @@ export class LmsService {
   static async markAttendance(ctx: RequestContext, input: MarkAttendanceInput) {
     const course = await prisma.lmsCourse.findFirst({
       where: { id: input.courseId, orgId: ctx.orgId },
+      select: { id: true },
     });
     if (!course) throw new NotFoundError("LmsCourse", input.courseId);
+
+    if (input.batchId) {
+      const batch = await prisma.lmsBatch.findFirst({
+        where: { id: input.batchId, orgId: ctx.orgId, courseId: input.courseId },
+        select: { id: true },
+      });
+      if (!batch) throw new NotFoundError("LmsBatch", input.batchId);
+    }
+
+    // Dedupe student ids (LmsAttendanceRecord has @@unique([sessionId, studentId])
+    // — a duplicate in one payload would otherwise surface as a raw P2002).
+    const seen = new Set<string>();
+    const deduped: MarkAttendanceInput["records"] = [];
+    for (const r of input.records) {
+      if (seen.has(r.studentId)) continue;
+      seen.add(r.studentId);
+      deduped.push(r);
+    }
+
+    // Every record must reference a real, non-deleted student in this org —
+    // never trust client-supplied student ids.
+    const studentIds = [...seen];
+    const students = await prisma.student.findMany({
+      where: { id: { in: studentIds }, orgId: ctx.orgId, deletedAt: null },
+      select: { id: true },
+    });
+    if (students.length !== studentIds.length) {
+      throw new ValidationError([{ message: "One or more student ids do not belong to this organization" }]);
+    }
 
     return prisma.$transaction(async (tx) => {
       const session = await tx.lmsAttendanceSession.create({
@@ -919,7 +1109,7 @@ export class LmsService {
       });
 
       await tx.lmsAttendanceRecord.createMany({
-        data: input.records.map((r) => ({
+        data: deduped.map((r) => ({
           sessionId: session.id,
           studentId: r.studentId,
           status: r.status,
@@ -933,6 +1123,73 @@ export class LmsService {
         include: { records: true },
       });
     });
+  }
+
+  static async updateAttendanceSession(
+    ctx: RequestContext,
+    id: string,
+    input: {
+      title?: string;
+      subjectTag?: string | null;
+      heldAt?: string;
+      records?: { studentId: string; status: "PRESENT" | "ABSENT" | "LATE" | "EXCUSED"; notes?: string | null }[];
+    },
+  ) {
+    const session = await prisma.lmsAttendanceSession.findFirst({
+      where: { id, orgId: ctx.orgId },
+    });
+    if (!session) throw new NotFoundError("LmsAttendanceSession", id);
+
+    return prisma.$transaction(async (tx) => {
+      await tx.lmsAttendanceSession.update({
+        where: { id },
+        data: {
+          ...(input.title !== undefined ? { title: input.title } : {}),
+          ...(input.subjectTag !== undefined ? { subjectTag: input.subjectTag } : {}),
+          ...(input.heldAt !== undefined ? { heldAt: new Date(input.heldAt) } : {}),
+        },
+      });
+
+      if (input.records) {
+        for (const record of input.records) {
+          await tx.lmsAttendanceRecord.upsert({
+            where: {
+              sessionId_studentId: {
+                sessionId: id,
+                studentId: record.studentId,
+              },
+            },
+            update: {
+              status: record.status,
+              notes: record.notes ?? null,
+              markedBy: ctx.user.id,
+            },
+            create: {
+              sessionId: id,
+              studentId: record.studentId,
+              status: record.status,
+              notes: record.notes ?? null,
+              markedBy: ctx.user.id,
+            },
+          });
+        }
+      }
+
+      return tx.lmsAttendanceSession.findUnique({
+        where: { id },
+        include: { records: true },
+      });
+    });
+  }
+
+  static async deleteAttendanceSession(ctx: RequestContext, id: string) {
+    const session = await prisma.lmsAttendanceSession.findFirst({
+      where: { id, orgId: ctx.orgId },
+    });
+    if (!session) throw new NotFoundError("LmsAttendanceSession", id);
+
+    await prisma.lmsAttendanceRecord.deleteMany({ where: { sessionId: id } });
+    await prisma.lmsAttendanceSession.delete({ where: { id } });
   }
 
   static async getAttendanceForCourse(
@@ -986,6 +1243,12 @@ export class LmsService {
   // ─── Certificates ─────────────────────────────────────────────────────────
 
   static async listCertificates(ctx: RequestContext, studentId?: string) {
+    // A STUDENT may only list their own certificates; the ?studentId= filter is
+    // always overridden to the linked student (never trust a client-supplied id).
+    if (ctx.user.role === "STUDENT") {
+      const student = await this.resolveLinkedStudent(ctx);
+      studentId = student.id;
+    }
     return prisma.lmsCertificate.findMany({
       where: {
         orgId: ctx.orgId,
@@ -999,6 +1262,14 @@ export class LmsService {
     });
   }
 
+  // Certificate numbers are server-owned identity. Generated on the server and
+  // regenerated on unique-constraint collision so a P2002 never surfaces.
+  private static generateCertificateNo(): string {
+    const now = new Date();
+    const seq = String(Math.floor(Math.random() * 90000) + 10000);
+    return `ABC-${now.getFullYear()}-${seq}`;
+  }
+
   static async issueCertificate(ctx: RequestContext, input: IssueCertificateInput) {
     const [student, course] = await Promise.all([
       prisma.student.findFirst({ where: { id: input.studentId, orgId: ctx.orgId, deletedAt: null } }),
@@ -1007,30 +1278,79 @@ export class LmsService {
     if (!student) throw new NotFoundError("Student", input.studentId);
     if (!course) throw new NotFoundError("LmsCourse", input.courseId);
 
-    return prisma.lmsCertificate.create({
-      data: {
-        orgId: ctx.orgId,
-        studentId: input.studentId,
-        courseId: input.courseId,
-        certificateNo: input.certificateNo,
-        verificationCode: input.verificationCode ?? input.certificateNo,
-        title: input.title,
-        status: "ISSUED",
-        issuedAt: new Date(),
-        issuedBy: ctx.user.id,
-        fileUrl: input.fileUrl,
-      },
-      include: {
-        course: { select: { title: true } },
-        student: { select: { firstName: true, lastName: true, studentCode: true } },
-      },
-    });
+    const include = {
+      course: { select: { title: true } },
+      student: { select: { firstName: true, lastName: true, studentCode: true } },
+    };
+
+    const isP2002 = (err: unknown) =>
+      typeof err === "object" && err !== null && "code" in err && (err as { code?: string }).code === "P2002";
+
+    // A caller-supplied verification code is fixed — it cannot be silently
+    // regenerated, so a (orgId, verificationCode) collision is a hard conflict.
+    if (input.verificationCode) {
+      try {
+        return await prisma.lmsCertificate.create({
+          data: {
+            orgId: ctx.orgId,
+            studentId: input.studentId,
+            courseId: input.courseId,
+            certificateNo: this.generateCertificateNo(),
+            verificationCode: input.verificationCode,
+            title: input.title,
+            status: "ISSUED",
+            issuedAt: new Date(),
+            issuedBy: ctx.user.id,
+            fileUrl: input.fileUrl,
+          },
+          include,
+        });
+      } catch (err) {
+        if (isP2002(err)) {
+          throw new ConflictError(`Verification code "${input.verificationCode}" is already in use for this organization`);
+        }
+        throw err;
+      }
+    }
+
+    // Server-generated identity. certificateNo is a short display number; the
+    // verificationCode is an unpredictable UUID so codes cannot be enumerated
+    // or guessed. Both are regenerated on P2002 collision (rare).
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        return await prisma.lmsCertificate.create({
+          data: {
+            orgId: ctx.orgId,
+            studentId: input.studentId,
+            courseId: input.courseId,
+            certificateNo: this.generateCertificateNo(),
+            verificationCode: crypto.randomUUID(),
+            title: input.title,
+            status: "ISSUED",
+            issuedAt: new Date(),
+            issuedBy: ctx.user.id,
+            fileUrl: input.fileUrl,
+          },
+          include,
+        });
+      } catch (err) {
+        if (!isP2002(err)) throw err;
+        if (attempt === 4) {
+          throw new ConflictError("Could not allocate a unique certificate number. Please retry.");
+        }
+      }
+    }
+
+    throw new ConflictError("Could not allocate a unique certificate number. Please retry.");
   }
 
   static async verifyCertificate(certificateNo: string) {
     return prisma.lmsCertificate.findFirst({
       where: {
-        OR: [{ certificateNo }, { verificationCode: certificateNo }],
+        // Only the unpredictable verificationCode may authenticate a
+        // certificate. certificateNo is display-only and must never be usable
+        // to enumerate or probe certificates.
+        verificationCode: certificateNo,
         status: "ISSUED",
       },
       include: {
@@ -1173,6 +1493,16 @@ export class LmsService {
         where: { id: student.id },
         data: { userId: existingUser.id },
       });
+      await AuditService.write({
+        orgId: ctx.orgId,
+        userId: ctx.user.id,
+        requestId: ctx.requestId,
+        ipAddress: ctx.ipAddress,
+        action: "lms.portal_access_linked",
+        entityType: "student",
+        entityId: student.id,
+        newValue: { userId: existingUser.id, email: student.email, linkedExisting: true },
+      });
       return { userId: existingUser.id, studentId: student.id, email: student.email, linkedExisting: true };
     }
 
@@ -1193,6 +1523,16 @@ export class LmsService {
     await prisma.student.update({
       where: { id: student.id },
       data: { userId: user.id },
+    });
+    await AuditService.write({
+      orgId: ctx.orgId,
+      userId: ctx.user.id,
+      requestId: ctx.requestId,
+      ipAddress: ctx.ipAddress,
+      action: "lms.portal_access_provisioned",
+      entityType: "student",
+      entityId: student.id,
+      newValue: { userId: user.id, email: student.email, linkedExisting: false },
     });
     return { userId: user.id, studentId: student.id, email: student.email, linkedExisting: false };
   }

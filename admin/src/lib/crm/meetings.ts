@@ -1,25 +1,23 @@
-import { crmFetch, crmFetchJson } from "./client";
-import { Meeting } from "./types";
+import { apiFetch } from "@/lib/api";
+import type { Meeting, MeetingsData } from "./types";
 
-export async function getMeetings(filters?: Record<string, string>): Promise<Meeting[]> {
-  return crmFetch<Meeting[]>("all_endpoints.get_meetings", filters);
+export async function getMeetings(scope: "upcoming" | "past" | "all" = "upcoming"): Promise<MeetingsData> {
+  return apiFetch<MeetingsData>(`/crm/meetings?scope=${scope}`);
 }
 
-export async function getMeeting(id: string): Promise<Meeting> {
-  return crmFetch<Meeting>("all_endpoints.get_meeting", { name: id });
+export interface ScheduleMeetingInput {
+  leadId: string;
+  title?: string;
+  dueAt: string;
+  durationMins?: number;
+  notes?: string;
+  outcome?: string;
+  metadata?: Record<string, unknown>;
 }
 
-export async function scheduleMeeting(data: Partial<Meeting>): Promise<Meeting> {
-  return crmFetchJson<Meeting>("all_endpoints.schedule_meeting", data as Record<string, unknown>);
-}
-
-export async function updateMeeting(id: string, data: Partial<Meeting>): Promise<Meeting> {
-  return crmFetchJson<Meeting>("all_endpoints.update_meeting", {
-    name: id,
-    ...data,
-  } as Record<string, unknown>);
-}
-
-export async function cancelMeeting(id: string): Promise<void> {
-  return crmFetchJson<void>("all_endpoints.cancel_meeting", { name: id });
+export async function scheduleMeeting(input: ScheduleMeetingInput): Promise<Meeting> {
+  return apiFetch<Meeting>("/crm/meetings", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
 }

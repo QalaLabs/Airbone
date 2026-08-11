@@ -1,6 +1,7 @@
 import { inngest } from "@/lib/events/inngest";
 import { AuditService } from "@/lib/services/audit.service";
 import { ActivityFeedService } from "@/lib/services/activity.service";
+import { NotificationService } from "@/lib/services/notification.service";
 import { prisma } from "@/lib/db/client";
 
 // Shared event data shape (all BaseEvent fields are flattened into event.data by emitEvent())
@@ -45,11 +46,6 @@ export const onAdmissionCreated = inngest.createFunction(
     });
 
     await step.run("notify-admission-team", async () => {
-      const template = await prisma.notificationTemplate.findFirst({
-        where: { orgId: d.orgId, event: "ADMISSION_STAGE_CHANGED", channel: "EMAIL", isActive: true },
-      });
-      if (!template) return;
-
       // Notify counselor assigned to the lead
       const lead = await prisma.lead.findUnique({
         where: { id: d.leadId },
@@ -59,21 +55,22 @@ export const onAdmissionCreated = inngest.createFunction(
 
       const counselor = await prisma.user.findUnique({
         where: { id: lead.assignedTo },
-        select: { email: true },
+        select: { email: true, name: true },
       });
-      if (!counselor) return;
+      if (!counselor?.email) return;
 
-      await prisma.notificationLog.create({
-        data: {
-          orgId: d.orgId,
-          templateId: template.id,
-          event: "ADMISSION_STAGE_CHANGED",
-          channel: "EMAIL",
-          recipient: counselor.email,
-          status: "PENDING",
-          entityType: "admission",
-          entityId: d.admissionId,
+      await NotificationService.dispatch({
+        orgId: d.orgId,
+        event: "ADMISSION_STAGE_CHANGED",
+        channel: "EMAIL",
+        recipient: counselor.email,
+        variables: {
+          counselorName: counselor.name,
+          leadName: lead.name,
+          applicationNo: d.applicationNo,
         },
+        entityType: "admission",
+        entityId: d.admissionId,
       });
     });
 
@@ -182,11 +179,6 @@ export const onPaymentReceived = inngest.createFunction(
     });
 
     await step.run("send-payment-receipt", async () => {
-      const template = await prisma.notificationTemplate.findFirst({
-        where: { orgId: d.orgId, event: "PAYMENT_RECEIVED", channel: "EMAIL", isActive: true },
-      });
-      if (!template) return;
-
       // Find student or lead contact
       let recipientEmail: string | null = null;
       if (d.studentId) {
@@ -205,17 +197,18 @@ export const onPaymentReceived = inngest.createFunction(
       }
       if (!recipientEmail) return;
 
-      await prisma.notificationLog.create({
-        data: {
-          orgId: d.orgId,
-          templateId: template.id,
-          event: "PAYMENT_RECEIVED",
-          channel: "EMAIL",
-          recipient: recipientEmail,
-          status: "PENDING",
-          entityType: "payment",
-          entityId: d.paymentId,
+      await NotificationService.dispatch({
+        orgId: d.orgId,
+        event: "PAYMENT_RECEIVED",
+        channel: "EMAIL",
+        recipient: recipientEmail,
+        variables: {
+          amount: d.amount,
+          method: d.method,
+          receiptNo: d.receiptNo ?? "",
         },
+        entityType: "payment",
+        entityId: d.paymentId,
       });
     });
 

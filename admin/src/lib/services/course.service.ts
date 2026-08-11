@@ -136,6 +136,14 @@ export class CourseService {
     // Archive instead of hard delete
     const updated = await CourseRepository.updateStatus(ctx.orgId, id, "ARCHIVED", ctx.user.id);
 
+    // B-04: release media usage so assets referenced by archived courses can be deleted
+    if (existing.bannerImageId) {
+      await MediaRepository.untrackUsage(existing.bannerImageId, "course", id, "bannerImageId");
+    }
+    for (const imgId of existing.galleryIds ?? []) {
+      await MediaRepository.untrackUsage(imgId, "course", id, `gallery:${imgId}`);
+    }
+
     await AuditService.write({
       orgId: ctx.orgId,
       userId: ctx.user.id,

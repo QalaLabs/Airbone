@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ColumnDef, type PaginationState, type SortingState } from "@tanstack/react-table";
-import { Search, CheckCircle, XCircle, Star, AlertCircle } from "lucide-react";
+import { Search, CheckCircle, XCircle, Star, AlertCircle, Plus, Trash2, Pencil, MoreHorizontal } from "lucide-react";
 import { DataTable } from "@/components/shared/data-table";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PageHeader } from "@/components/shared/page-header";
@@ -14,6 +14,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { MediaPicker } from "@/components/shared/media-picker";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { apiFetch } from "@/lib/api";
 import { formatDate } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
@@ -21,14 +24,17 @@ import { toast } from "@/components/ui/use-toast";
 interface Testimonial {
   id: string;
   authorName: string;
+  authorTitle?: string;
   authorEmail?: string;
-  authorRole?: string;
   content: string;
   rating?: number;
   status: string;
+  avatarId?: string;
   course?: { title: string };
   reviewNotes?: string;
-  submittedAt: string;
+  batchYear?: number;
+  source?: string;
+  isFeatured?: boolean;
   createdAt: string;
 }
 
@@ -48,6 +54,8 @@ export default function TestimonialsPage() {
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
   const [reviewDialog, setReviewDialog] = React.useState<{ open: boolean; id: string; action: "APPROVED" | "REJECTED" } | null>(null);
   const [reviewNotes, setReviewNotes] = React.useState("");
+  const [editor, setEditor] = React.useState<{ open: boolean; item: Testimonial | null }>({ open: false, item: null });
+  const [deleteTarget, setDeleteTarget] = React.useState<Testimonial | null>(null);
 
   React.useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 400);
@@ -72,17 +80,47 @@ export default function TestimonialsPage() {
     },
   });
 
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["testimonials"] });
+
   const reviewMutation = useMutation({
     mutationFn: ({ id, status, notes }: { id: string; status: string; notes?: string }) =>
       apiFetch(`/testimonials/${id}/review`, { method: "POST", body: JSON.stringify({ status, reviewNotes: notes }) }),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["testimonials"] });
+      invalidate();
       toast({
         title: variables.status === "APPROVED" ? "Testimonial approved" : "Testimonial rejected",
         variant: variables.status === "APPROVED" ? ("success" as "default") : "destructive",
       });
       setReviewDialog(null);
       setReviewNotes("");
+    },
+    onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: ({ id, body }: { id?: string; body: Partial<Testimonial> }) =>
+      id
+        ? apiFetch<Testimonial>(`/testimonials/${id}`, { method: "PATCH", body: JSON.stringify(body) })
+        : apiFetch<Testimonial>("/testimonials", { method: "POST", body: JSON.stringify(body) }),
+    onSuccess: (_, variables) => {
+      invalidate();
+      toast({
+        title: variables.id ? "Testimonial updated" : "Testimonial created",
+        description: variables.id
+          ? "Your changes have been saved."
+          : "New testimonials start as PENDING until approved.",
+      });
+      setEditor({ open: false, item: null });
+    },
+    onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => apiFetch(`/testimonials/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      invalidate();
+      toast({ title: "Testimonial deleted", description: "The testimonial has been removed." });
+      setDeleteTarget(null);
     },
     onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
@@ -97,6 +135,30 @@ export default function TestimonialsPage() {
     reviewMutation.mutate({ id: reviewDialog.id, status: reviewDialog.action, notes: reviewNotes || undefined });
   };
 
+  const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editor.open) return;
+    const formData = new FormData(e.currentTarget);
+    const item = editor.item;
+    const ratingRaw = formData.get("rating") as string;
+    const batchYearRaw = formData.get("batchYear") as string;
+    const body: Partial<Testimonial> = {
+      authorName: formData.get("authorName") as string,
+      authorTitle: (formData.get("authorTitle") as string) || undefined,
+      authorEmail: (formData.get("authorEmail") as string) || undefined,
+      content: formData.get("content") as string,
+      rating: ratingRaw ? Number(ratingRaw) : undefined,
+      batchYear: batchYearRaw ? Number(batchYearRaw) : undefined,
+      source: (formData.get("source") as string) || undefined,
+    };
+    if (item?.id) {
+      body.isFeatured = formData.get("isFeatured") === "true";
+    }
+    saveMutation.mutate({ id: item?.id, body });
+  };
+
+  const editorFormId = "testimonial-editor-form";
+
   const columns: ColumnDef<Testimonial>[] = [
     {
       accessorKey: "authorName",
@@ -104,8 +166,8 @@ export default function TestimonialsPage() {
       cell: ({ row }) => (
         <div>
           <p className="text-sm font-medium text-foreground">{row.original.authorName}</p>
-          {row.original.authorRole && (
-            <p className="text-xs text-muted-foreground">{row.original.authorRole}</p>
+          {row.original.authorTitle && (
+            <p className="text-xs text-muted-foreground">{row.original.authorTitle}</p>
           )}
           {row.original.authorEmail && (
             <p className="text-xs text-muted-foreground">{row.original.authorEmail}</p>
@@ -156,36 +218,33 @@ export default function TestimonialsPage() {
       id: "actions",
       size: 160,
       cell: ({ row }) => {
-        if (row.original.status !== "PENDING") {
-          return (
-            <span className="text-xs text-muted-foreground">
-              {row.original.status === "APPROVED" ? "Approved" : "Rejected"}
-            </span>
-          );
-        }
+        const t = row.original;
         return (
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 border-success/30 text-success hover:bg-success/10 hover:text-success"
-              onClick={() => handleReview(row.original.id, "APPROVED")}
-              disabled={reviewMutation.isPending}
-            >
-              <CheckCircle className="h-3.5 w-3.5 mr-1" />
-              Approve
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => handleReview(row.original.id, "REJECTED")}
-              disabled={reviewMutation.isPending}
-            >
-              <XCircle className="h-3.5 w-3.5 mr-1" />
-              Reject
-            </Button>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {t.status === "PENDING" && (
+                <>
+                  <DropdownMenuItem onClick={() => handleReview(t.id, "APPROVED")} className="cursor-pointer">
+                    <CheckCircle className="mr-2 h-4 w-4 text-success" /> Approve
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleReview(t.id, "REJECTED")} className="cursor-pointer">
+                    <XCircle className="mr-2 h-4 w-4 text-destructive" /> Reject
+                  </DropdownMenuItem>
+                </>
+              )}
+              <DropdownMenuItem onClick={() => setEditor({ open: true, item: t })} className="cursor-pointer">
+                <Pencil className="mr-2 h-4 w-4" /> Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setDeleteTarget(t)} className="cursor-pointer text-destructive focus:text-destructive">
+                <Trash2 className="mr-2 h-4 w-4" /> Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         );
       },
     },
@@ -199,11 +258,17 @@ export default function TestimonialsPage() {
         title="Testimonials"
         description={`${data?.total ?? 0} total testimonials`}
         action={
-          pendingCount > 0 ? (
-            <Badge variant="warning" className="text-sm px-3 py-1">
-              {pendingCount} pending review
-            </Badge>
-          ) : undefined
+          <div className="flex items-center gap-3">
+            {pendingCount > 0 && (
+              <Badge variant="warning" className="text-sm px-3 py-1">
+                {pendingCount} pending review
+              </Badge>
+            )}
+            <Button onClick={() => setEditor({ open: true, item: null })} className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Testimonial
+            </Button>
+          </div>
         }
       />
 
@@ -301,6 +366,102 @@ export default function TestimonialsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Create / Edit Dialog */}
+      <Dialog open={editor.open} onOpenChange={(o) => !o && setEditor({ open: false, item: null })}>
+        <DialogContent className="max-w-2xl glass-panel border-white/10 bg-slate-900/95">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-white">
+              {editor.item ? "Edit Testimonial" : "Add Testimonial"}
+            </DialogTitle>
+          </DialogHeader>
+          {editor.open && (
+            <form id={editorFormId} onSubmit={handleSave} className="space-y-4 pt-2 max-h-[65vh] overflow-y-auto pr-1">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label>Author Name *</Label>
+                  <Input name="authorName" required defaultValue={editor.item?.authorName ?? ""} placeholder="e.g. Rahul Sharma" className="bg-secondary/40 border-white/10 text-xs text-white" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Author Title</Label>
+                  <Input name="authorTitle" defaultValue={editor.item?.authorTitle ?? ""} placeholder="e.g. CPL Holder, 2025 Batch" className="bg-secondary/40 border-white/10 text-xs text-white" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label>Author Email</Label>
+                  <Input name="authorEmail" type="email" defaultValue={editor.item?.authorEmail ?? ""} placeholder="e.g. rahul@example.com" className="bg-secondary/40 border-white/10 text-xs text-white" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Rating</Label>
+                  <select name="rating" defaultValue={editor.item?.rating?.toString() ?? ""} className="flex h-9 w-full rounded-lg border border-white/10 bg-secondary/60 px-3 py-1 text-xs font-bold text-white focus-visible:outline-none">
+                    <option value="" className="bg-slate-900">No rating</option>
+                    {[5, 4, 3, 2, 1].map((r) => (
+                      <option key={r} value={r} className="bg-slate-900">{r} star{r > 1 ? "s" : ""}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label>Batch Year</Label>
+                  <Input name="batchYear" type="number" min="2000" max="2100" defaultValue={editor.item?.batchYear?.toString() ?? ""} placeholder="e.g. 2025" className="bg-secondary/40 border-white/10 text-xs text-white" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Source</Label>
+                  <Input name="source" defaultValue={editor.item?.source ?? ""} placeholder="e.g. website form, google" className="bg-secondary/40 border-white/10 text-xs text-white" />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Testimonial Content *</Label>
+                <Textarea name="content" required defaultValue={editor.item?.content ?? ""} rows={4} minLength={10} placeholder="Write the testimonial (min 10 characters)..." className="bg-secondary/40 border-white/10 text-xs text-white leading-relaxed" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label>Avatar (media library)</Label>
+                  <MediaPicker
+                    value={editor.item?.avatarId ?? null}
+                    onChange={(id) =>
+                      setEditor((prev) => ({
+                        ...prev,
+                        item: prev.item
+                          ? { ...prev.item, avatarId: id ?? undefined }
+                          : { id: "", authorName: "", content: "", status: "PENDING", createdAt: "", avatarId: id ?? undefined },
+                      }))
+                    }
+                    label="avatar"
+                  />
+                </div>
+                {editor.item?.id && (
+                  <div className="space-y-1.5">
+                    <Label>Featured</Label>
+                    <select name="isFeatured" defaultValue={editor.item?.isFeatured ? "true" : "false"} className="flex h-9 w-full rounded-lg border border-white/10 bg-secondary/60 px-3 py-1 text-xs font-bold text-white focus-visible:outline-none">
+                      <option value="false" className="bg-slate-900">Not featured</option>
+                      <option value="true" className="bg-slate-900">Featured (highlight)</option>
+                    </select>
+                  </div>
+                )}
+              </div>
+            </form>
+          )}
+          <DialogFooter className="pt-4 border-t border-white/10">
+            <Button type="button" variant="outline" onClick={() => setEditor({ open: false, item: null })} className="border-white/10 text-xs font-bold">Cancel</Button>
+            <Button type="submit" form={editorFormId} disabled={saveMutation.isPending} className="bg-primary hover:bg-primary/90 text-white text-xs font-bold">
+              {saveMutation.isPending ? "Saving..." : editor.item ? "Save Changes" : "Add Testimonial"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => !o && setDeleteTarget(null)}
+        title="Delete Testimonial"
+        description={`"${deleteTarget?.authorName ?? ""}" testimonial will be permanently deleted. This cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
+        loading={deleteMutation.isPending}
+      />
     </div>
   );
 }

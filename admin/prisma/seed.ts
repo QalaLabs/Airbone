@@ -1,7 +1,18 @@
 import { PrismaClient } from "@prisma/client";
 import { hash } from "argon2";
+import { randomUUID } from "node:crypto";
 
 const prisma = new PrismaClient();
+
+// Credentials must never be hardcoded. Provisioned via env; random fallback when unset.
+const superAdminEmail = process.env.SEED_SUPERADMIN_EMAIL ?? "superadmin@localhost";
+const defaultPassword = process.env.SEED_DEFAULT_PASSWORD ?? randomUUID();
+if (!process.env.SEED_SUPERADMIN_EMAIL) {
+  console.warn("⚠️ SEED_SUPERADMIN_EMAIL not set — using non-routable placeholder.");
+}
+if (!process.env.SEED_DEFAULT_PASSWORD) {
+  console.warn("⚠️ SEED_DEFAULT_PASSWORD not set — generated a random dev password.");
+}
 
 async function main() {
   console.log("🌱 Seeding Airborne Aviation Academy...\n");
@@ -94,11 +105,11 @@ async function main() {
   console.log(`✅ Campuses: ${campusDelhi.name}, ${campusMumbai.name}, ${campusBangalore.name}`);
 
   // ─── Users — one per role ──────────────────────────────────────────────────
-  const defaultPassword = await hash("Airborne@123");
+  const defaultPasswordHash = await hash(defaultPassword);
 
   const usersData = [
     {
-      email: "superadmin@airborne.academy",
+      email: superAdminEmail,
       name: "Super Admin",
       role: "SUPER_ADMIN" as const,
       campusId: null,
@@ -151,7 +162,7 @@ async function main() {
         orgId: org.id,
         email: userData.email,
         name: userData.name,
-        passwordHash: defaultPassword,
+        passwordHash: defaultPasswordHash,
         role: userData.role,
         campusId: userData.campusId,
         isActive: true,
@@ -367,7 +378,7 @@ async function main() {
 
   console.log("\n🎉 Seed completed successfully!\n");
   console.log("─".repeat(50));
-  console.log("🔑 Default password for role users: Airborne@123");
+  console.log("🔑 Default password for role users: set via SEED_DEFAULT_PASSWORD (random if unset)");
   console.log("🌐 Org slug: airborne-aviation");
   console.log("─".repeat(50));
   console.log("RC demo logins:");

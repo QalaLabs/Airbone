@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/client";
 import type { Prisma } from "@prisma/client";
 import type { UserFilters } from "@/lib/validations/user.schema";
+import { sha256 } from "@/lib/utils/crypto";
 
 const USER_SELECT = {
   id: true,
@@ -19,9 +20,12 @@ const USER_SELECT = {
 
 export class UserRepository {
   static async findMany(orgId: string, filters: UserFilters) {
+    // Include soft-deleted rows only when explicitly filtering for inactive users,
+    // so deactivated accounts remain visible and can be reactivated.
+    const includeDeleted = filters.isActive === false;
     const where: Prisma.UserWhereInput = {
       orgId,
-      deletedAt: null,
+      ...(includeDeleted ? {} : { deletedAt: null }),
       ...(filters.role && { role: filters.role }),
       ...(filters.campusId && { campusId: filters.campusId }),
       ...(typeof filters.isActive === "boolean" && { isActive: filters.isActive }),
@@ -51,15 +55,50 @@ export class UserRepository {
     });
   }
 
+  static async findByIdIncludingDeleted(orgId: string, id: string) {
+    return prisma.user.findFirst({
+      where: { id, orgId },
+      select: USER_SELECT,
+    });
+  }
+
   static async findByEmail(orgId: string, email: string) {
     return prisma.user.findFirst({
       where: { email: email.toLowerCase(), orgId, deletedAt: null },
     });
   }
 
-  static async findByInviteToken(token: string) {
+  static async findByInviteToken(rawToken: string) {
     return prisma.user.findFirst({
-      where: { inviteToken: token, inviteExpiry: { gt: new Date() } },
+      where: { inviteToken: sha256(rawToken), inviteExpiry: { gt: new Date() } },
+    });
+  }
+
+  static async findByIdWithPassword(orgId: string, id: string) {
+    return prisma.user.findFirst({
+      where: { id, orgId, deletedAt: null },
+      select: { ...USER_SELECT, passwordHash: true },
+    });
+  }
+
+  static async findByEmailWithPassword(orgId: string, email: string) {
+    return prisma.user.findFirst({
+      where: { email: email.toLowerCase(), orgId, deletedAt: null },
+      select: { ...USER_SELECT, passwordHash: true },
+    });
+  }
+
+  static async countActiveSuperAdmins(orgId: string) {
+    return prisma.user.count({
+      where: { orgId, role: "SUPER_ADMIN", isActive: true, deletedAt: null },
+    });
+  }
+
+  static async setPassword(orgId: string, id: string, passwordHash: string) {
+    return prisma.user.update({
+      where: { id, orgId },
+      data: { passwordHash },
+      select: USER_SELECT,
     });
   }
 

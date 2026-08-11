@@ -2,13 +2,120 @@ import { LeadRepository } from "@/lib/repositories/lead.repository";
 import { emitEvent } from "@/lib/events/inngest";
 import { prisma } from "@/lib/db/client";
 import type { Prisma } from "@prisma/client";
-import { NotFoundError } from "@/lib/utils/errors";
+import { ConflictError, NotFoundError } from "@/lib/utils/errors";
 import type { CreateLeadInput, UpdateLeadInput, LeadFilters, CreateActivityInput } from "@/lib/validations/lead.schema";
 import type { RequestContext } from "@/types";
-import type { LeadStatus } from "@prisma/client";
+import type { LeadStatus, LeadSource } from "@prisma/client";
 
 export class LeadService {
+  static resolveSource(raw: string = ""): LeadSource {
+    const key = raw.toLowerCase();
+    let slug = "homepage_cta";
+    if (key.startsWith("resource gate")) {
+      slug = "brochure_download";
+    } else if (key.startsWith("course")) {
+      slug = "course_page";
+    } else {
+      const mapping: Record<string, string> = {
+        "homepage modal": "homepage_cta",
+        "homepage final cta": "homepage_cta",
+        "contact form": "contact_form",
+        "contact page": "contact_form",
+        "flagship featured banner": "course_page",
+      };
+      slug = mapping[key] ?? "homepage_cta";
+    }
+    const SOURCE_MAP: Record<string, LeadSource> = {
+      homepage_cta: "HOMEPAGE_CTA",
+      contact_form: "CONTACT_FORM",
+      brochure_download: "BROCHURE_DOWNLOAD",
+      course_page: "COURSE_PAGE",
+    };
+    return SOURCE_MAP[slug] ?? "HOMEPAGE_CTA";
+  }
+
+  static async syncFallbackLeads(ctx: RequestContext) {
+    const targetSlug = process.env.PUBLIC_ORG_SLUG ?? "airborne-aviation";
+    const org = await prisma.organization.findUnique({
+      where: { id: ctx.orgId },
+      select: { slug: true },
+    });
+    if (!org || org.slug !== targetSlug) return;
+
+    const pending = await prisma.fallbackLead.findMany({
+      where: { status: "pending" },
+      orderBy: { createdAt: "asc" },
+    });
+
+    if (pending.length === 0) return;
+
+    for (const fLead of pending) {
+      try {
+        const phone = fLead.phone.trim();
+        const existing = await prisma.lead.findFirst({
+          where: { orgId: ctx.orgId, phone },
+        });
+
+        if (existing) {
+          await prisma.fallbackLead.update({
+            where: { id: fLead.id },
+            data: { status: "recovered" },
+          });
+
+          await prisma.leadActivity.create({
+            data: {
+              leadId: existing.id,
+              orgId: ctx.orgId,
+              activityType: "NOTE",
+              title: "Duplicate fallback enquiry",
+              notes: `Enquiry from fallback store recovered. Originally submitted at ${fLead.createdAt.toISOString()}`,
+              completedAt: new Date(),
+            },
+          });
+        } else {
+          const sourceEnum = this.resolveSource(fLead.source || "");
+          const lead = await prisma.lead.create({
+            data: {
+              orgId: ctx.orgId,
+              createdBy: null,
+              name: fLead.name,
+              email: fLead.email || null,
+              phone,
+              courseInterest: fLead.course || null,
+              source: sourceEnum,
+              createdAt: fLead.createdAt,
+              customFields: { fallbackLeadId: fLead.id },
+            },
+          });
+
+          await prisma.leadActivity.create({
+            data: {
+              leadId: lead.id,
+              orgId: ctx.orgId,
+              activityType: "NOTE",
+              title: "Web form submission (Recovered)",
+              notes: `Enquiry recovered from Supabase fallback leads. Originally submitted at ${fLead.createdAt.toLocaleString("en-IN")}`,
+              completedAt: new Date(),
+            },
+          });
+
+          await prisma.fallbackLead.update({
+            where: { id: fLead.id },
+            data: { status: "recovered" },
+          });
+        }
+      } catch (err) {
+        console.error(`[Lead Sync] Failed to sync fallback lead ID ${fLead.id}:`, err);
+      }
+    }
+  }
+
   static async list(ctx: RequestContext, filters: LeadFilters) {
+    try {
+      await this.syncFallbackLeads(ctx);
+    } catch (err) {
+      console.error("[Lead Sync Error] Failed to sync fallback leads:", err);
+    }
     return LeadRepository.findMany(ctx.orgId, filters);
   }
 
@@ -19,16 +126,41 @@ export class LeadService {
   }
 
   static async create(ctx: RequestContext, input: CreateLeadInput) {
-    // Check for duplicate phone within org
-    const existing = await LeadRepository.findByPhone(ctx.orgId, input.phone);
+    const { notes, ...data } = input;
 
-    const lead = await LeadRepository.create(ctx.orgId, ctx.user.id, input);
+    // Race-safe dedup: unique(orgId, phone) means a lead with this phone already
+    // exists in the org — surface a clean 409 instead of a 500.
+    let lead: Awaited<ReturnType<typeof LeadRepository.create>>;
+    try {
+      lead = await LeadRepository.create(ctx.orgId, ctx.user.id, data);
+    } catch (err) {
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "code" in err &&
+        (err as { code?: string }).code === "P2002"
+      ) {
+        throw new ConflictError("A lead with this phone already exists in this organization");
+      }
+      throw err;
+    }
 
-    // Mark as potential duplicate
-    if (existing) {
+    // Persist intake notes as a timeline activity so they are never silently dropped
+    if (notes) {
+      await prisma.leadActivity.create({
+        data: {
+          leadId: lead.id,
+          orgId: ctx.orgId,
+          performedBy: ctx.user.id,
+          activityType: "NOTE",
+          title: "Intake note",
+          notes,
+          completedAt: new Date(),
+        },
+      });
       await prisma.lead.update({
         where: { id: lead.id },
-        data: { isDuplicate: true, duplicateOf: existing.id },
+        data: { lastActivityAt: new Date() },
       });
     }
 
@@ -273,6 +405,71 @@ export class LeadService {
       data: { nextFollowUp: nextFollowUp ? new Date(nextFollowUp) : null },
       select: { id: true, nextFollowUp: true },
     });
+  }
+
+  /** Schedule a future MEETING activity (dueAt set, not yet completed). */
+  static async scheduleMeeting(
+    ctx: RequestContext,
+    leadId: string,
+    input: {
+      title?: string;
+      dueAt: string;
+      durationMins?: number;
+      notes?: string;
+      outcome?: string;
+      metadata?: Record<string, unknown>;
+    },
+  ) {
+    await this.getById(ctx, leadId);
+
+    const dueAt = new Date(input.dueAt);
+    if (Number.isNaN(dueAt.getTime())) {
+      const { ValidationError } = await import("@/lib/utils/errors");
+      throw new ValidationError([{ message: "dueAt must be a valid datetime" }]);
+    }
+
+    const activity = await prisma.leadActivity.create({
+      data: {
+        leadId,
+        orgId: ctx.orgId,
+        performedBy: ctx.user.id,
+        activityType: "MEETING",
+        title: input.title ?? "Meeting scheduled",
+        notes: input.notes,
+        outcome: input.outcome,
+        dueAt,
+        completedAt: null,
+        durationMins: input.durationMins,
+        metadata: (input.metadata ?? {}) as Prisma.InputJsonValue,
+      },
+      include: {
+        performer: { select: { id: true, name: true, avatarUrl: true } },
+      },
+    });
+
+    await prisma.lead.update({
+      where: { id: leadId },
+      data: { lastActivityAt: new Date(), nextFollowUp: dueAt },
+    });
+
+    await this.recalculateScore(ctx, leadId, "activity:MEETING");
+
+    await emitEvent({
+      name: "lead/activity.created",
+      orgId: ctx.orgId,
+      actorId: ctx.user.id,
+      actorName: ctx.user.name,
+      requestId: ctx.requestId,
+      timestamp: new Date().toISOString(),
+      data: {
+        leadId,
+        leadName: (await LeadRepository.findById(ctx.orgId, leadId))?.name ?? "",
+        activityId: activity.id,
+        activityType: "MEETING",
+      },
+    });
+
+    return activity;
   }
 
   /** Simple deterministic score: base + status + activity counts. Caps at 100. */

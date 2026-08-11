@@ -33,6 +33,16 @@ export const changePasswordSchema = z.object({
   newPassword: z.string().min(8).max(128),
 });
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().email(),
+  orgSlug: z.string().min(1),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1),
+  password: z.string().min(8).max(128),
+});
+
 export const userFiltersSchema = z.object({
   role: z.nativeEnum(UserRole).optional(),
   campusId: z.string().uuid().optional(),
@@ -48,3 +58,5 @@ export type InviteUserInput = z.infer<typeof inviteUserSchema>;
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 export type UserFilters = z.infer<typeof userFiltersSchema>;
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

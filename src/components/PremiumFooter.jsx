@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -50,6 +51,28 @@ const CONTACT_INFO = [
 export default function PremiumFooter({ onBookDemo }) {
   const pathname = usePathname()
   const handleBook = onBookDemo ?? (() => { window.location.href = '/contact' })
+  const [quickLinks, setQuickLinks] = useState(QUICK_LINKS)
+
+  useEffect(() => {
+    fetch('/api/public-proxy/settings')
+      .then(res => res.json())
+      .then(payload => {
+        if (payload?.data?.navMenus) {
+          const footerMenu = payload.data.navMenus.find(m => m.location === 'footer');
+          if (footerMenu && footerMenu.items && footerMenu.items.length > 0) {
+            const mapped = footerMenu.items.map(item => ({
+              label: item.label,
+              href: item.url,
+              isVisible: item.isVisible !== false
+            })).filter(item => item.isVisible);
+            if (mapped.length > 0) {
+              setQuickLinks(mapped);
+            }
+          }
+        }
+      })
+      .catch(err => console.error('Failed to load footer navigation settings:', err));
+  }, []);
 
   return (
     <footer className="pf-root" aria-label="Site footer">
@@ -153,7 +176,7 @@ export default function PremiumFooter({ onBookDemo }) {
           <div>
             <h3 className="pf-col-title">Quick Links</h3>
             <ul className="pf-link-list">
-              {QUICK_LINKS.map((l) => (
+              {quickLinks.map((l) => (
                 <li key={l.href}>
                   <Link
                     href={l.href}

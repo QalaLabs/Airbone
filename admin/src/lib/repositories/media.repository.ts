@@ -242,9 +242,12 @@ export class MediaRepository {
 // ─── Folder Repository ────────────────────────────────────────────────────────
 
 export class MediaFolderRepository {
-  static async findAll(orgId: string) {
+  static async findAll(orgId: string, parentId?: string) {
     return prisma.mediaFolder.findMany({
-      where: { orgId },
+      where: {
+        orgId,
+        ...(parentId === undefined ? {} : { parentId }),
+      },
       select: FOLDER_SELECT,
       orderBy: { path: "asc" },
     });

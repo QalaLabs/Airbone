@@ -8,7 +8,7 @@ import { createTimetableSlotSchema } from "@/lib/validations/lms.schema";
 export async function GET(req: NextRequest) {
   try {
     const ctx = await getRequestContext();
-    guard(ctx.user, "read", "lms");
+    guard(ctx.user, "read", "lms_attendance");
     const url = new URL(req.url);
     const slots = await LmsOpsService.listTimetable(ctx, {
       batchId: url.searchParams.get("batchId") ?? undefined,

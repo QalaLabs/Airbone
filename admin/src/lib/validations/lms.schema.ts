@@ -148,7 +148,10 @@ export const issueCertificateSchema = z.object({
   studentId: z.string().uuid(),
   courseId: z.string().uuid(),
   title: z.string().min(1).max(255),
-  certificateNo: z.string().min(1).max(100),
+  // certificateNo is server-generated — never trusted from the client. Kept
+  // optional so legacy callers that still send it do not 400; the value is
+  // ignored by issueCertificate.
+  certificateNo: z.string().min(1).max(100).optional(),
   verificationCode: z.string().max(100).optional(),
   fileUrl: z.string().optional(),
 });

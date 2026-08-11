@@ -2,17 +2,42 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/db/client";
 import { verifyResourceToken } from "@/lib/utils/resource-token";
+import { checkRateLimit } from "@/lib/utils/rate-limit";
+import { checkMaintenance } from "@/lib/middleware/maintenance";
+import { handleError } from "@/lib/utils/response";
 
-// GET /api/public/resource-download?token=<gateToken>&id=<resourceId>
-// Validates HMAC gate token (issued after lead form submission), returns fileUrl.
-// This is the only way to obtain fileUrl for isGated resources.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function GET(req: NextRequest) {
+  try {
+    await checkMaintenance();
+    const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    req.headers.get("x-real-ip") ??
+    "unknown";
+
+  // Prevent token brute-forcing: 20 attempts per IP per minute
+  const { allowed, resetAt } = checkRateLimit(`resource-download:${ip}`, 20, 60_000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(Math.ceil((resetAt - Date.now()) / 1000)) },
+      },
+    );
+  }
+
   const url = new URL(req.url);
   const token = url.searchParams.get("token");
   const resourceId = url.searchParams.get("id");
 
   if (!token || !resourceId) {
     return NextResponse.json({ error: "token and id are required" }, { status: 400 });
+  }
+
+  if (!UUID_RE.test(resourceId)) {
+    return NextResponse.json({ error: "Invalid resource id" }, { status: 400 });
   }
 
   const { valid } = verifyResourceToken(token);
@@ -44,4 +69,7 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.json({ url: downloadUrl });
+  } catch (err) {
+    return handleError(err);
+  }
 }

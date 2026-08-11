@@ -1,6 +1,6 @@
 import { type NextRequest } from "next/server";
 import { LeadService } from "@/lib/services/lead.service";
-import { guard } from "@/lib/middleware/permissions";
+import { guard, getCounselorCondition, guardRecord } from "@/lib/middleware/permissions";
 import { getRequestContext } from "@/lib/middleware/context";
 import { ok, handleError } from "@/lib/utils/response";
 import { convertLeadSchema } from "@/lib/validations/lead.schema";
@@ -16,6 +16,10 @@ export async function POST(req: NextRequest, { params }: Params) {
 
     const body = (await req.json().catch(() => ({}))) as unknown;
     const input = convertLeadSchema.parse(body ?? {});
+
+    const existing = await LeadService.getById(ctx, id);
+    const condition = getCounselorCondition(ctx.user);
+    guardRecord(ctx.user, "write", "leads", existing as unknown as Record<string, unknown>, condition);
 
     const result = await LeadService.convertToAdmission(ctx, id, input);
     return ok(result);

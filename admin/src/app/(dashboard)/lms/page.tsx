@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { BookOpen, Plus, ChevronRight } from "lucide-react";
+import { BookOpen, Plus, ChevronRight, Trash2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { apiFetch } from "@/lib/api";
 
@@ -58,6 +58,23 @@ export default function LmsCoursesPage() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => apiFetch(`/lms/courses/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      toast({ title: "LMS course deleted" });
+      void queryClient.invalidateQueries({ queryKey: ["lms-courses"] });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Delete failed", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const handleDeleteCourse = (id: string) => {
+    if (confirm("Are you sure you want to permanently delete this LMS course? All stages, modules, timetable slots, assignments, and certificates will be cascade-deleted. THIS CANNOT BE UNDONE.")) {
+      deleteMutation.mutate(id);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -103,6 +120,20 @@ export default function LmsCoursesPage() {
               <span className={`text-[10px] font-bold uppercase tracking-wide ${course.isPublished ? "text-emerald-400" : "text-muted-foreground"}`}>
                 {course.isPublished ? "Published" : course.status}
               </span>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleDeleteCourse(course.id);
+                }}
+                disabled={deleteMutation.isPending}
+                className="h-8 w-8 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/10 border border-transparent"
+                title="Delete course"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
               <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-muted-foreground" />
             </div>
           </Link>

@@ -29,7 +29,7 @@ export async function POST(
 ) {
   try {
     const ctx = await getRequestContext();
-    guard(ctx.user, "read", "lms");
+    guard(ctx.user, "write", "lms_student");
     const { moduleId } = await params;
     const student = await LmsService.resolveLinkedStudent(ctx);
     const body = (await req.json()) as unknown;

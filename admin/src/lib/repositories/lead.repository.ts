@@ -117,13 +117,6 @@ export class LeadRepository {
     });
   }
 
-  static async findByPhone(orgId: string, phone: string, excludeId?: string) {
-    return prisma.lead.findFirst({
-      where: { orgId, phone, deletedAt: null, ...(excludeId ? { NOT: { id: excludeId } } : {}) },
-      select: { id: true, name: true, phone: true },
-    });
-  }
-
   static async create(orgId: string, createdBy: string, data: CreateLeadInput) {
     return prisma.lead.create({
       data: {

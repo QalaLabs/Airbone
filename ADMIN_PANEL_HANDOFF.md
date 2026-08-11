@@ -50,7 +50,7 @@ Main website (airbone)  ◀──GET /api/public/*──  Admin backend (airbone
 
 ### 4. Database changes (direct SQL against the Supabase project)
 - Created table `public.fallback_leads` - durability backstop for lead submissions when the admin backend is unreachable. RLS enabled, insert-only policy for the `anon` role, no public select policy.
-- **Rotated the superadmin password.** The original (`Airborne@123`) was committed in plaintext to git history (`admin/test_login.js`) - treated as compromised regardless of whether it was ever exploited. New password set via a fresh `argon2id` hash written directly to `public.users.passwordHash`.
+- **Rotated the superadmin password.** The original (redacted: `<REDACTED>`) was committed in plaintext to git history (`admin/test_login.js`) - treated as compromised regardless of whether it was ever exploited. New password set via a fresh `argon2id` hash written directly to `public.users.passwordHash`.
 - **Created a second user account** - `deepak@airborneaviation.in`, role `ADMIN` (not `SUPER_ADMIN` - has leads/courses/students access but not user-management/settings). This is the client's own login, separate from the superadmin account.
 
 ### 5. Verified live (not just deployed - actually tested)

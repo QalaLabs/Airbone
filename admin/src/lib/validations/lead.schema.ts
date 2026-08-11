@@ -21,6 +21,7 @@ export const createLeadSchema = z.object({
   tags: z.array(z.string().max(50)).max(20).optional(),
   customFields: z.record(z.unknown()).optional(),
   nextFollowUp: z.string().datetime().optional(),
+  notes: z.string().max(5000).optional(),
 });
 
 export const updateLeadSchema = createLeadSchema.partial().extend({
@@ -73,6 +74,16 @@ export const updateFollowUpSchema = z.object({
   nextFollowUp: z.string().datetime().nullable(),
 });
 
+export const scheduleMeetingSchema = z.object({
+  leadId: z.string().uuid(),
+  title: z.string().max(500).optional(),
+  dueAt: z.string().datetime(),
+  durationMins: z.number().int().min(0).max(1440).optional(),
+  notes: z.string().max(5000).optional(),
+  outcome: z.string().max(255).optional(),
+  metadata: z.record(z.unknown()).optional(),
+});
+
 export const completeActivitySchema = z.object({
   completedAt: z.string().datetime().optional(),
   outcome: z.string().max(255).optional(),
@@ -92,3 +103,4 @@ export type LeadFilters = z.infer<typeof leadFiltersSchema>;
 export type CreateActivityInput = z.infer<typeof createActivitySchema>;
 export type CompleteActivityInput = z.infer<typeof completeActivitySchema>;
 export type ConvertLeadInput = z.infer<typeof convertLeadSchema>;
+export type ScheduleMeetingInput = z.infer<typeof scheduleMeetingSchema>;

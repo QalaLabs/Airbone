@@ -40,6 +40,7 @@ export const PERMISSION_MATRIX: PermissionMatrix = {
     lms_courses: ["read", "write", "delete", "publish"],
     lms_attendance: ["read", "write", "delete"],
     lms_assessments: ["read", "write", "delete"],
+    lms_assignments: ["read", "write", "delete"],
     lms_chat: ["read", "write", "delete"],
     lms_progress: ["read", "write"],
     lms_certificates: ["read", "write", "delete"],
@@ -103,6 +104,7 @@ export const PERMISSION_MATRIX: PermissionMatrix = {
     lms_courses: ["read", "write"],
     lms_attendance: ["read", "write"],
     lms_assessments: ["read", "write"],
+    lms_assignments: ["read", "write"],
     lms_chat: ["read", "write"],
     lms_progress: ["read"],
     students: ["read"],
@@ -110,9 +112,18 @@ export const PERMISSION_MATRIX: PermissionMatrix = {
   },
   STUDENT: {
     lms: ["read"],
+    // Student self-service actions on their own records (bookmarks, quiz
+    // attempts, assignment submissions). Read guard for self-service GETs uses
+    // `read, lms`; the three POST mutations use `write, lms_student`.
+    lms_student: ["read", "write"],
     lms_courses: ["read"],
     lms_progress: ["read", "write"],
-    lms_assessments: ["read", "write"],
+    // No `write` on lms_assessments — students must not set their own score or
+    // self-promote to PASS. Quiz-derived assessment sync is server-graded via
+    // the quiz submit flow (guarded by `read, lms`); admin/faculty grading uses
+    // `write, lms_assessments` and is granted to TEACHER/ADMIN only.
+    lms_assessments: ["read"],
+    lms_assignments: ["read"],
     lms_chat: ["read", "write"],
     lms_certificates: ["read"],
     lms_notifications: ["read", "write"],

@@ -25,11 +25,6 @@ interface CertRow {
 interface Student { id: string; firstName: string; lastName: string; studentCode: string; email: string }
 interface LmsCourse { id: string; title: string; slug: string }
 
-function generateCertNo() {
-  const now = new Date();
-  return `ABC-${now.getFullYear()}-${String(Math.floor(Math.random() * 90000) + 10000)}`;
-}
-
 export default function LmsCertificatesPage() {
   const queryClient = useQueryClient();
   const [open, setOpen] = React.useState(false);
@@ -37,7 +32,6 @@ export default function LmsCertificatesPage() {
   const [selectedStudentId, setSelectedStudentId] = React.useState("");
   const [selectedCourseId, setSelectedCourseId] = React.useState("");
   const [certTitle, setCertTitle] = React.useState("");
-  const [certNo, setCertNo] = React.useState(generateCertNo());
   const [verificationCode, setVerificationCode] = React.useState("");
 
   const { data: certs, isLoading } = useQuery({
@@ -63,8 +57,7 @@ export default function LmsCertificatesPage() {
           studentId: selectedStudentId,
           courseId: selectedCourseId,
           title: certTitle,
-          certificateNo: certNo,
-          verificationCode: verificationCode || certNo,
+          verificationCode: verificationCode || undefined,
         }),
       }),
     onSuccess: () => {
@@ -76,7 +69,6 @@ export default function LmsCertificatesPage() {
   });
 
   function openDialog() {
-    setCertNo(generateCertNo());
     setVerificationCode("");
     setSelectedStudentId("");
     setSelectedCourseId("");
@@ -236,8 +228,11 @@ export default function LmsCertificatesPage() {
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-xs text-muted-foreground">Certificate number *</label>
-                <Input className="mt-1 font-mono text-sm" value={certNo} onChange={(e) => setCertNo(e.target.value)} />
+                <label className="text-xs text-muted-foreground">Certificate number</label>
+                <div className="mt-1 h-9 rounded-lg border border-dashed border-border bg-secondary/30 px-3 text-sm font-mono text-muted-foreground flex items-center">
+                  Auto-generated on server
+                </div>
+                <p className="text-[11px] text-muted-foreground pt-1">Issued server-side to guarantee uniqueness. Collisions are retried automatically.</p>
               </div>
               <div>
                 <label className="text-xs text-muted-foreground">Verification code</label>
@@ -248,7 +243,7 @@ export default function LmsCertificatesPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
             <Button
-              disabled={!selectedStudentId || !selectedCourseId || !certTitle || !certNo || issueMutation.isPending}
+              disabled={!selectedStudentId || !selectedCourseId || !certTitle || issueMutation.isPending}
               onClick={() => issueMutation.mutate()}
             >
               {issueMutation.isPending ? "Issuing…" : "Issue certificate"}

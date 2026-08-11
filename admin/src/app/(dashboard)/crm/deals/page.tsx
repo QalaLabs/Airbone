@@ -1,40 +1,51 @@
 "use client";
 
 import * as React from "react";
-import { DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight } from "lucide-react";
-import { getDeals } from "@/lib/crm/deals";
-import { Deal } from "@/lib/crm/types";
-import { Card, CardContent } from "@/components/ui/card";
+import { DollarSign, TrendingUp, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { getDealsData } from "@/lib/crm/deals";
+import type { DealData } from "@/lib/crm/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CRMDataTable, CRMColumn } from "@/components/shared/crm-data-table";
 
-const stageColor: Record<string, string> = {
-  Prospecting: "bg-blue-500",
-  Qualification: "bg-purple-500",
-  Proposal: "bg-amber-500",
-  Negotiation: "bg-orange-500",
-  "Closed Won": "bg-emerald-500",
-  "Closed Lost": "bg-red-500",
-};
-
-function formatValue(val: number | string | undefined): string {
-  if (val === undefined || val === null) return "₹0";
-  if (typeof val === "string") return val.startsWith("₹") ? val : `₹${val}`;
-  if (val >= 100000) return `₹${(val / 100000).toFixed(1)}L`;
+function formatINR(val: number): string {
+  if (val >= 10000000) return `₹${(val / 10000000).toFixed(2)} Cr`;
+  if (val >= 100000) return `₹${(val / 100000).toFixed(2)} L`;
   if (val >= 1000) return `₹${(val / 1000).toFixed(1)}K`;
   return `₹${val}`;
 }
 
+const stageOrder = [
+  "ENQUIRY",
+  "DOCUMENT_COLLECTION",
+  "VERIFICATION",
+  "OFFER_LETTER",
+  "FEE_PAYMENT",
+  "ENROLLED",
+  "DROPPED",
+  "CANCELLED",
+];
+
+const stageColor: Record<string, string> = {
+  ENQUIRY: "bg-blue-500",
+  DOCUMENT_COLLECTION: "bg-purple-500",
+  VERIFICATION: "bg-indigo-500",
+  OFFER_LETTER: "bg-amber-500",
+  FEE_PAYMENT: "bg-orange-500",
+  ENROLLED: "bg-emerald-500",
+  DROPPED: "bg-red-500",
+  CANCELLED: "bg-red-500",
+};
+
 export default function CRMDealsPage() {
-  const [deals, setDeals] = React.useState<Deal[]>([]);
+  const [data, setData] = React.useState<DealData | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    getDeals()
+    getDealsData()
       .then((d) => {
-        setDeals(d);
+        setData(d);
         setLoading(false);
       })
       .catch((e: unknown) => {
@@ -57,99 +68,74 @@ export default function CRMDealsPage() {
     );
   }
 
-  if (error) {
-    return <div className="p-6 text-red-500 font-bold">Error loading deals: {error}</div>;
+  if (error || !data) {
+    return <div className="p-6 text-red-500 font-bold">Error loading deals: {error || "No data"}</div>;
   }
 
-  const totalValue = deals.reduce((sum, d) => sum + (d.deal_value || 0), 0);
-  const wonDeals = deals.filter((d) => d.deal_stage === "Closed Won");
-  const wonValue = wonDeals.reduce((sum, d) => sum + (d.deal_value || 0), 0);
-  const winRate = deals.length > 0 ? ((wonDeals.length / deals.length) * 100).toFixed(1) : "0";
-  const avgCycle = deals.length > 0
-    ? Math.round(deals.reduce((sum, d) => sum + (d.days_left || 0), 0) / deals.length)
-    : null;
+  const { capability, derived } = data;
 
-  const columns: CRMColumn<Deal>[] = [
+  const stageRows = stageOrder
+    .filter((s) => (derived.byStage[s] ?? 0) > 0 || s === "ENROLLED")
+    .map((s) => ({ stage: s, count: derived.byStage[s] ?? 0 }));
+
+  const stageColumns: CRMColumn<{ stage: string; count: number }>[] = [
     {
-      key: "name",
-      header: "Deal",
-      render: (deal: Deal) => (
-        <div>
-          <p className="font-semibold text-white">{deal.brand || deal.name}</p>
-          <p className="text-[10px] text-muted-foreground mt-0.5">{deal.source || "Website"}</p>
-        </div>
+      key: "stage",
+      header: "Stage",
+      render: (r) => (
+        <Badge className={`${stageColor[r.stage] || "bg-gray-500"} text-white border-none text-[9px] px-2.5 py-0.5 rounded-full`}>
+          {r.stage}
+        </Badge>
       ),
     },
+    { key: "count", header: "Admissions", align: "right" },
+  ];
+
+  const admissionColumns: CRMColumn<DealData["recentAdmissions"][number]>[] = [
     {
-      key: "value",
-      header: "Value",
-      align: "right",
-      render: (deal: Deal) => (
-        <span className="font-extrabold text-white">{formatValue(deal.deal_value)}</span>
-      ),
+      key: "applicationNo",
+      header: "Application",
+      render: (a) => <span className="font-semibold text-white">{a.applicationNo}</span>,
+    },
+    {
+      key: "lead",
+      header: "Lead",
+      render: (a) => a.lead?.name ?? "—",
     },
     {
       key: "stage",
       header: "Stage",
-      render: (deal: Deal) => {
-        const stage = deal.deal_stage || "Prospecting";
-        return (
-          <Badge
-            variant="outline"
-            className={`${
-              stageColor[stage] || "bg-gray-500"
-            } text-white border-none text-[9px] px-2.5 py-0.5 rounded-full`}
-          >
-            {stage}
-          </Badge>
-        );
-      },
-    },
-    {
-      key: "owner",
-      header: "Owner",
-      render: (deal: Deal) => deal.lead_owner || "N/A",
-    },
-    {
-      key: "probability",
-      header: "Probability",
-      render: (deal: Deal) => {
-        const prob = deal.ai_score || 0;
-        return (
-          <div className="flex items-center gap-2">
-            <div className="h-1.5 w-12 rounded-full bg-secondary overflow-hidden">
-              <div
-                className={`h-full rounded-full ${
-                  prob >= 80 ? "bg-emerald-500" : prob >= 60 ? "bg-amber-500" : "bg-red-500"
-                }`}
-                style={{ width: `${prob}%` }}
-              />
-            </div>
-            <span className="text-[10px] font-semibold text-muted-foreground">{prob}%</span>
-          </div>
-        );
-      },
-    },
-    {
-      key: "closeDate",
-      header: "Close Date",
-      render: (deal: Deal) =>
-        deal.creation
-          ? new Date(deal.creation).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })
-          : "N/A",
-    },
-    {
-      key: "product",
-      header: "Product",
-      render: (deal: Deal) => (
-        <Badge variant="secondary" className="border-none text-[9px] font-bold">
-          {deal.product || "Standard"}
+      render: (a) => (
+        <Badge className={`${stageColor[a.stage] || "bg-gray-500"} text-white border-none text-[9px] px-2 py-0.5 rounded-full`}>
+          {a.stage}
         </Badge>
       ),
+    },
+    {
+      key: "feeFinal",
+      header: "Value",
+      align: "right",
+      render: (a) => (a.feeFinal != null ? formatINR(Number(a.feeFinal)) : "—"),
+    },
+    {
+      key: "createdAt",
+      header: "Created",
+      render: (a) =>
+        new Date(a.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }),
+    },
+  ];
+
+  const convertedColumns: CRMColumn<DealData["recentConvertedLeads"][number]>[] = [
+    {
+      key: "name",
+      header: "Lead",
+      render: (l) => <span className="font-semibold text-white">{l.name}</span>,
+    },
+    {
+      key: "updatedAt",
+      header: "Converted",
+      render: (l) =>
+        new Date(l.updatedAt).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }),
     },
   ];
 
@@ -158,98 +144,110 @@ export default function CRMDealsPage() {
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold tracking-tight text-white">Deals</h1>
-          <p className="text-sm text-muted-foreground">Manage your brand deals and partnerships</p>
+          <p className="text-sm text-muted-foreground">Derived pipeline from real admission + lead records</p>
         </div>
       </div>
+
+      {!capability.deals && (
+        <Card className="border-amber-500/40 bg-amber-500/10 shadow-lg">
+          <CardContent className="p-4 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+            <div className="text-xs text-amber-100 space-y-1">
+              <p className="font-bold text-amber-400">Deal module not implemented</p>
+              <p>{capability.reason}</p>
+              <p className="text-amber-200/80">
+                The numbers below are real records from the admission funnel and lead pipeline — no
+                fabricated deal data.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-4 md:grid-cols-4">
         <Card className="bg-card border-white/10 shadow-lg">
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-foreground font-semibold">Total Deal Value</p>
-              <p className="text-2xl font-bold text-white mt-1">{formatValue(totalValue)}</p>
-            </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10">
-              <DollarSign className="h-5 w-5 text-emerald-500" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-card border-white/10 shadow-lg">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted-foreground font-semibold">Won This Month</p>
-              <p className="text-2xl font-bold text-white mt-1">{formatValue(wonValue)}</p>
+              <p className="text-xs text-muted-foreground font-semibold">Funnel Value</p>
+              <p className="text-2xl font-bold text-white mt-1">{formatINR(derived.pipelineValue)}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{derived.pipeline} active records</p>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/10">
-              <TrendingUp className="h-5 w-5 text-blue-500" />
+              <DollarSign className="h-5 w-5 text-blue-500" />
             </div>
           </CardContent>
         </Card>
         <Card className="bg-card border-white/10 shadow-lg">
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-foreground font-semibold">Win Rate</p>
-              <p className="text-2xl font-bold text-white mt-1">{winRate}%</p>
+              <p className="text-xs text-muted-foreground font-semibold">Enrolled Value</p>
+              <p className="text-2xl font-bold text-white mt-1">{formatINR(derived.wonValue)}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{derived.won} enrolled admissions</p>
+            </div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10">
+              <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-card border-white/10 shadow-lg">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground font-semibold">Converted Leads</p>
+              <p className="text-2xl font-bold text-white mt-1">{derived.convertedLeads}</p>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-500/10">
-              <ArrowUpRight className="h-5 w-5 text-purple-500" />
+              <TrendingUp className="h-5 w-5 text-purple-500" />
             </div>
           </CardContent>
         </Card>
         <Card className="bg-card border-white/10 shadow-lg">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted-foreground font-semibold">Avg Sales Cycle</p>
-              <p className="text-2xl font-bold text-white mt-1">
-                {avgCycle !== null ? `${avgCycle} days` : "-"}
+          <CardContent className="p-4">
+            <p className="text-xs text-muted-foreground font-semibold">Source</p>
+            <p className="text-lg font-bold text-white mt-1 leading-tight">{derived.funnelName}</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card className="bg-card border-white/10 shadow-lg">
+          <CardHeader className="border-b border-white/5 pb-3">
+            <CardTitle className="text-sm font-semibold text-white">Admission Funnel</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            {stageRows.length === 0 ? (
+              <p className="text-xs text-muted-foreground">
+                No admission records exist yet — the funnel is empty until the first application is created.
               </p>
-            </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/10">
-              <ArrowDownRight className="h-5 w-5 text-amber-500" />
-            </div>
+            ) : (
+              <CRMDataTable columns={stageColumns} data={stageRows} searchable={false} pageSize={10} />
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-white/10 shadow-lg">
+          <CardHeader className="border-b border-white/5 pb-3">
+            <CardTitle className="text-sm font-semibold text-white">Recent Converted Leads</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            {data.recentConvertedLeads.length === 0 ? (
+              <p className="text-xs text-muted-foreground">No leads marked CONVERTED yet.</p>
+            ) : (
+              <CRMDataTable columns={convertedColumns} data={data.recentConvertedLeads} searchable={false} pageSize={10} />
+            )}
           </CardContent>
         </Card>
       </div>
 
       <Card className="bg-card border-white/10 shadow-lg">
-        <CardContent className="p-4">
-          <Tabs defaultValue="all" className="w-full">
-            <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-4">
-              <TabsList className="bg-transparent gap-4">
-                <TabsTrigger value="all" className="text-xs font-semibold text-muted-foreground data-[state=active]:text-white">All Deals</TabsTrigger>
-                <TabsTrigger value="active" className="text-xs font-semibold text-muted-foreground data-[state=active]:text-white">Active</TabsTrigger>
-                <TabsTrigger value="won" className="text-xs font-semibold text-muted-foreground data-[state=active]:text-white">Won</TabsTrigger>
-                <TabsTrigger value="lost" className="text-xs font-semibold text-muted-foreground data-[state=active]:text-white">Lost</TabsTrigger>
-              </TabsList>
-            </div>
-            <TabsContent value="all" className="mt-0">
-              <CRMDataTable columns={columns} data={deals} searchable={false} pageSize={10} />
-            </TabsContent>
-            <TabsContent value="active" className="mt-0">
-              <CRMDataTable
-                columns={columns}
-                data={deals.filter((d) => d.deal_stage !== "Closed Won" && d.deal_stage !== "Closed Lost")}
-                searchable={false}
-                pageSize={10}
-              />
-            </TabsContent>
-            <TabsContent value="won" className="mt-0">
-              <CRMDataTable
-                columns={columns}
-                data={deals.filter((d) => d.deal_stage === "Closed Won")}
-                searchable={false}
-                pageSize={10}
-              />
-            </TabsContent>
-            <TabsContent value="lost" className="mt-0">
-              <CRMDataTable
-                columns={columns}
-                data={deals.filter((d) => d.deal_stage === "Closed Lost")}
-                searchable={false}
-                pageSize={10}
-              />
-            </TabsContent>
-          </Tabs>
+        <CardHeader className="border-b border-white/5 pb-3">
+          <CardTitle className="text-sm font-semibold text-white">Recent Admissions</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-4">
+          {data.recentAdmissions.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No admission records created yet.</p>
+          ) : (
+            <CRMDataTable columns={admissionColumns} data={data.recentAdmissions} searchable={false} pageSize={10} />
+          )}
         </CardContent>
       </Card>
     </div>

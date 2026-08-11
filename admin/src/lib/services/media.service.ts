@@ -3,7 +3,22 @@ import { MediaRepository, MediaFolderRepository } from "@/lib/repositories/media
 import { AuditService } from "@/lib/services/audit.service";
 import { ActivityFeedService } from "@/lib/services/activity.service";
 import { emitEvent } from "@/lib/events/inngest";
-import { NotFoundError, ConflictError, StorageUnavailableError } from "@/lib/utils/errors";
+import {
+  NotFoundError,
+  ConflictError,
+  ValidationError,
+} from "@/lib/utils/errors";
+import {
+  isStorageConfigured,
+  uploadObject,
+  deleteObject,
+  createSignedUploadUrl,
+  getPublicUrl,
+} from "@/lib/storage/supabase";
+import {
+  MAX_MEDIA_FILE_SIZE,
+  isAllowedMediaType,
+} from "@/lib/validations/media.schema";
 import type {
   RegisterAssetInput,
   UpdateAssetInput,
@@ -15,13 +30,24 @@ import type {
 } from "@/lib/validations/media.schema";
 import type { RequestContext } from "@/types";
 
-const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
-const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
-const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY;
-const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME ?? "airborne-media";
-const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL ?? "";
-
 // ─── MediaService ─────────────────────────────────────────────────────────────
+
+export interface UploadFileInput {
+  originalName: string;
+  name?: string;
+  mimeType: string;
+  sizeBytes: number;
+  buffer: Uint8Array;
+  folderId?: string;
+  altText?: string;
+  tags?: string[];
+}
+
+function buildFileKey(orgId: string, originalName: string): string {
+  const ext = originalName.split(".").pop() ?? "bin";
+  const safeExt = ext.replace(/[^a-zA-Z0-9]/g, "").slice(0, 16) || "bin";
+  return `media/${orgId}/${Date.now()}-${uuid()}.${safeExt}`;
+}
 
 export class MediaService {
   static async list(ctx: RequestContext, filters: AssetFilters) {
@@ -34,40 +60,81 @@ export class MediaService {
     return asset;
   }
 
+  // Signed upload URL (Supabase) — client PUTs bytes directly to storage, then
+  // calls register() or replace() to persist the record.
   static async getPresignedUrl(
-    _ctx: RequestContext,
+    ctx: RequestContext,
     input: PresignMediaInput,
   ): Promise<{ uploadUrl: string; fileKey: string; fileUrl: string }> {
-    const ext = input.fileName.split(".").pop() ?? "bin";
-    const fileKey = `media/${Date.now()}-${uuid()}.${ext}`;
+    const fileKey = buildFileKey(ctx.orgId, input.fileName);
+    const uploadUrl = await createSignedUploadUrl(fileKey, input.contentType);
 
-    if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY) {
-      throw new StorageUnavailableError(
-        "Media storage is not configured. Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, and R2_SECRET_ACCESS_KEY.",
-      );
-    }
-
-    const { S3Client, PutObjectCommand } = await import("@aws-sdk/client-s3");
-    const { getSignedUrl } = await import("@aws-sdk/s3-request-presigner");
-
-    const client = new S3Client({
-      region: "auto",
-      endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-      credentials: { accessKeyId: R2_ACCESS_KEY_ID, secretAccessKey: R2_SECRET_ACCESS_KEY },
-    });
-
-    const cmd = new PutObjectCommand({
-      Bucket: R2_BUCKET_NAME,
-      Key: fileKey,
-      ContentType: input.contentType,
-    });
-
-    const uploadUrl = await getSignedUrl(client, cmd, { expiresIn: 900 });
-    const fileUrl = `${R2_PUBLIC_URL}/${fileKey}`;
-
-    return { uploadUrl, fileKey, fileUrl };
+    return { uploadUrl, fileKey, fileUrl: getPublicUrl(fileKey) };
   }
 
+  // Full upload: authorize → validate → Supabase Storage upload → persist.
+  // Storage failures surface before any MediaAsset row is created.
+  static async upload(ctx: RequestContext, input: UploadFileInput) {
+    if (!isAllowedMediaType(input.mimeType)) {
+      throw new ValidationError([{ message: `File type "${input.mimeType}" is not supported` }]);
+    }
+    if (input.sizeBytes <= 0) {
+      throw new ValidationError([{ message: "Uploaded file is empty" }]);
+    }
+    if (input.sizeBytes > MAX_MEDIA_FILE_SIZE) {
+      throw new ValidationError([
+        { message: `File exceeds the ${MAX_MEDIA_FILE_SIZE / 1024 / 1024}MB upload limit` },
+      ]);
+    }
+
+    let folderId: string | undefined;
+    if (input.folderId) {
+      const folder = await MediaFolderRepository.findById(ctx.orgId, input.folderId);
+      if (!folder) throw new NotFoundError("MediaFolder", input.folderId);
+      folderId = input.folderId;
+    }
+
+    const fileKey = buildFileKey(ctx.orgId, input.originalName);
+    const fileUrl = await uploadObject(fileKey, input.buffer, input.mimeType);
+
+    try {
+      const asset = await MediaRepository.create(ctx.orgId, ctx.user.id, {
+        name: input.name ?? input.originalName,
+        originalName: input.originalName,
+        fileKey,
+        fileUrl,
+        mimeType: input.mimeType,
+        sizeBytes: input.sizeBytes,
+        altText: input.altText,
+        tags: input.tags ?? [],
+        folderId,
+        metadata: {},
+      });
+
+      await emitEvent({
+        name: "media/uploaded",
+        orgId: ctx.orgId,
+        actorId: ctx.user.id,
+        actorName: ctx.user.name,
+        requestId: ctx.requestId,
+        timestamp: new Date().toISOString(),
+        data: {
+          assetId: asset.id,
+          name: asset.name,
+          mimeType: asset.mimeType,
+          folderId: asset.folderId ?? undefined,
+        },
+      });
+
+      return asset;
+    } catch (err) {
+      // Persistence failed — remove the orphaned object so storage stays clean.
+      await deleteObject(fileKey).catch(() => undefined);
+      throw err;
+    }
+  }
+
+  // Register an asset that is already in storage (legacy presign→PUT flow).
   static async register(ctx: RequestContext, input: RegisterAssetInput) {
     const asset = await MediaRepository.create(ctx.orgId, ctx.user.id, input);
 
@@ -152,6 +219,13 @@ export class MediaService {
       );
     }
 
+    // Remove the underlying object BEFORE soft-deleting so storage failures
+    // surface as errors and the DB record stays intact. Missing objects (404)
+    // are tolerated (legacy assets never stored in Supabase).
+    if (isStorageConfigured() && existing.fileKey) {
+      await deleteObject(existing.fileKey);
+    }
+
     await MediaRepository.softDelete(ctx.orgId, id);
 
     await AuditService.write({
@@ -209,8 +283,8 @@ export class MediaService {
 // ─── MediaFolderService ────────────────────────────────────────────────────────
 
 export class MediaFolderService {
-  static async list(ctx: RequestContext) {
-    return MediaFolderRepository.findAll(ctx.orgId);
+  static async list(ctx: RequestContext, parentId?: string) {
+    return MediaFolderRepository.findAll(ctx.orgId, parentId);
   }
 
   static async getById(ctx: RequestContext, id: string) {

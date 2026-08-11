@@ -4,6 +4,10 @@ import { prisma } from "@/lib/db/client";
 import type { LeadSource } from "@prisma/client";
 import { checkRateLimit } from "@/lib/utils/rate-limit";
 import { generateResourceToken } from "@/lib/utils/resource-token";
+import { publicLeadSchema } from "@/lib/validations/public-lead.schema";
+import { emitEvent } from "@/lib/events/inngest";
+import { checkMaintenance } from "@/lib/middleware/maintenance";
+import { handleError } from "@/lib/utils/response";
 
 const SOURCE_MAP: Record<string, LeadSource> = {
   homepage_cta: "HOMEPAGE_CTA",
@@ -13,10 +17,12 @@ const SOURCE_MAP: Record<string, LeadSource> = {
 };
 
 export async function POST(req: NextRequest) {
-  const apiKey = req.headers.get("x-intake-key");
-  if (!process.env.PUBLIC_INTAKE_KEY || apiKey !== process.env.PUBLIC_INTAKE_KEY) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  try {
+    await checkMaintenance();
+    const apiKey = req.headers.get("x-intake-key");
+    if (!process.env.PUBLIC_INTAKE_KEY || apiKey !== process.env.PUBLIC_INTAKE_KEY) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
   // Rate limit: 5 requests per minute per IP
   const ip =
@@ -40,8 +46,18 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  try {
-    const body = (await req.json()) as Record<string, unknown>;
+  const body = (await req.json()) as unknown;
+    const parsed = publicLeadSchema.safeParse(body);
+    if (!parsed.success) {
+      const first = parsed.error.issues[0];
+      const field = first?.path[0] ?? "body";
+      const reason = first?.message ?? "Invalid request body";
+      return NextResponse.json(
+        { error: `${field}: ${reason}` },
+        { status: 400 },
+      );
+    }
+    const input = parsed.data;
     const {
       name,
       email,
@@ -55,28 +71,11 @@ export async function POST(req: NextRequest) {
       utmContent,
       referrerUrl,
       landingPage,
-    } = body as {
-      name?: string;
-      email?: string;
-      phone?: string;
-      courseInterest?: string;
-      source?: string;
-      utmSource?: string;
-      utmMedium?: string;
-      utmCampaign?: string;
-      utmTerm?: string;
-      utmContent?: string;
-      referrerUrl?: string;
-      landingPage?: string;
-    };
-
-    if (!name || !phone) {
-      return NextResponse.json({ error: "name and phone are required" }, { status: 400 });
-    }
+    } = input;
 
     const org = await prisma.organization.findFirst({
       where: { slug: process.env.PUBLIC_ORG_SLUG ?? "airborne-aviation" },
-      select: { id: true },
+      select: { id: true, settings: true },
     });
 
     if (!org) {
@@ -84,35 +83,85 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Academy configuration missing" }, { status: 500 });
     }
 
+    const settings = org.settings as Record<string, unknown> | null;
+    if (settings && settings.applicationIntake === false) {
+      return NextResponse.json({ error: "Application intake is closed" }, { status: 403 });
+    }
+
     const normalizedPhone = String(phone).trim();
     const leadSource: LeadSource = SOURCE_MAP[source?.toLowerCase() ?? ""] ?? "HOMEPAGE_CTA";
 
-    // Dedup check: same phone in this org
-    const existing = await prisma.lead.findFirst({
-      where: { phone: normalizedPhone, orgId: org.id, deletedAt: null },
-      select: { id: true },
-    });
-
     const lead = await prisma.lead.create({
       data: {
-        name: String(name).trim(),
-        email: email ? String(email).trim() : null,
+        name,
+        email: email ?? null,
         phone: normalizedPhone,
-        courseInterest: courseInterest ? String(courseInterest).trim() : null,
+        courseInterest: courseInterest ?? null,
         source: leadSource,
         orgId: org.id,
-        utmSource: utmSource ? String(utmSource).trim() : null,
-        utmMedium: utmMedium ? String(utmMedium).trim() : null,
-        utmCampaign: utmCampaign ? String(utmCampaign).trim() : null,
-        utmTerm: utmTerm ? String(utmTerm).trim() : null,
-        utmContent: utmContent ? String(utmContent).trim() : null,
-        referrerUrl: referrerUrl ? String(referrerUrl).trim() : null,
-        landingPage: landingPage ? String(landingPage).trim() : null,
-        isDuplicate: !!existing,
-        ...(existing ? { duplicateOf: existing.id } : {}),
+        utmSource: utmSource ?? null,
+        utmMedium: utmMedium ?? null,
+        utmCampaign: utmCampaign ?? null,
+        utmTerm: utmTerm ?? null,
+        utmContent: utmContent ?? null,
+        referrerUrl: referrerUrl ?? null,
+        landingPage: landingPage ?? null,
         customFields: { webSource: source ?? "website" },
       },
       select: { id: true, name: true, createdAt: true },
+    }).catch((err: unknown) => {
+      // The org-scoped unique(orgId, phone) constraint makes a duplicate lead
+      // insert impossible — surface it as a clean 409 instead of a 500.
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "code" in err &&
+        (err as { code?: string }).code === "P2002"
+      ) {
+        return null;
+      }
+      throw err;
+    });
+
+    if (!lead) {
+      return NextResponse.json(
+        { error: "A lead with this phone already exists" },
+        { status: 409 },
+      );
+    }
+
+    // Log the submission on the lead timeline so intake is auditable
+    await prisma.leadActivity.create({
+      data: {
+        leadId: lead.id,
+        orgId: org.id,
+        activityType: "NOTE",
+        title: "Web form submission",
+        notes: `Enquiry received via ${leadSource.replace("_", " ")}`,
+        completedAt: new Date(),
+        metadata: { source: leadSource, webSource: source ?? "website" },
+      },
+    });
+    await prisma.lead.update({
+      where: { id: lead.id },
+      data: { lastActivityAt: new Date() },
+    });
+
+    // Emit NEW_LEAD event for notification worker / audit pipeline
+    await emitEvent({
+      name: "lead/created",
+      orgId: org.id,
+      actorId: "system",
+      actorName: "Public form",
+      requestId: ip,
+      ipAddress: ip,
+      timestamp: new Date().toISOString(),
+      data: {
+        leadId: lead.id,
+        leadName: lead.name,
+        source: leadSource,
+        courseInterest: courseInterest ?? undefined,
+      },
     });
 
     // Issue a short-lived token granting access to gated resources
@@ -128,7 +177,6 @@ export async function POST(req: NextRequest) {
       { status: 201 },
     );
   } catch (err) {
-    console.error("[Public Lead API Error]:", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return handleError(err);
   }
 }

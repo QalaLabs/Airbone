@@ -17,7 +17,16 @@ export async function GET() {
 
     if (!org) return NextResponse.json({ data: null });
 
-    return NextResponse.json({ data: org });
+    const navMenus = await prisma.navMenu.findMany({
+      where: { orgId: org.id },
+    });
+
+    return NextResponse.json({
+      data: {
+        ...org,
+        navMenus,
+      },
+    });
   } catch (err) {
     console.error("[Public Settings API Error]:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

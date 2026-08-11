@@ -45,14 +45,13 @@ const createLeadSchema = z.object({
   email: z.string().email("Invalid email"),
   phone: z.string().min(10, "Phone must be at least 10 characters"),
   source: z.string().min(1, "Source is required"),
-  priority: z.string().min(1, "Priority is required"),
   courseInterest: z.string().optional(),
   notes: z.string().optional(),
 });
 
 type CreateLeadForm = z.infer<typeof createLeadSchema>;
 
-const LEAD_SOURCES = ["WEBSITE", "GOOGLE_ADS", "FACEBOOK_ADS", "ORGANIC", "REFERRAL", "WHATSAPP", "VOICE_AI", "OTHER"];
+const LEAD_SOURCES = ["HOMEPAGE_CTA", "COURSE_PAGE", "CONTACT_FORM", "CALLBACK_REQUEST", "BROCHURE_DOWNLOAD", "GOOGLE_ADS", "FACEBOOK_ADS", "ORGANIC", "REFERRAL", "WHATSAPP", "DIRECT"];
 const LEAD_STATUSES = ["all", "NEW", "CONTACTED", "INTERESTED", "NOT_INTERESTED", "FOLLOW_UP", "COUNSELED", "CONVERTED", "LOST"];
 
 export default function LeadsPage() {
@@ -115,7 +114,7 @@ export default function LeadsPage() {
 
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<CreateLeadForm>({
     resolver: zodResolver(createLeadSchema),
-    defaultValues: { source: "GOOGLE_ADS", priority: "HIGH" },
+    defaultValues: { source: "GOOGLE_ADS" },
   });
 
   const createMutation = useMutation({
@@ -428,7 +427,6 @@ export default function LeadsPage() {
             data={
               (data?.items ?? []).filter((item) => {
                 if (priorityFilter && priorityFilter !== "all" && item.priority !== priorityFilter) return false;
-                if (counsellorFilter && counsellorFilter !== "all" && item.assignedTo?.name !== counsellorFilter) return false;
                 return true;
               })
             }
@@ -481,18 +479,6 @@ export default function LeadsPage() {
                 </select>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="priority" className="text-xs font-bold text-muted-foreground">Lead Priority</Label>
-                <select
-                  id="priority"
-                  className="flex h-9 w-full rounded-lg border border-white/10 bg-secondary/40 px-3 py-1 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
-                  {...register("priority")}
-                >
-                  <option value="HIGH" className="bg-slate-900 text-rose-400">HIGH PRIORITY</option>
-                  <option value="MEDIUM" className="bg-slate-900 text-amber-400">MEDIUM PRIORITY</option>
-                  <option value="LOW" className="bg-slate-900 text-blue-400">LOW PRIORITY</option>
-                </select>
-              </div>
-              <div className="col-span-2 space-y-1.5">
                 <Label htmlFor="courseInterest" className="text-xs font-bold text-muted-foreground">Course Interest</Label>
                 <Input id="courseInterest" placeholder="e.g. DGCA CPL Ground School" className="bg-secondary/40 border-white/10 text-sm font-semibold" {...register("courseInterest")} />
               </div>

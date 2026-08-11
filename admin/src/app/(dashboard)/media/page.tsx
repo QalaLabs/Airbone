@@ -20,9 +20,8 @@ interface MediaAsset {
   id: string;
   name: string;
   mimeType: string;
-  size: number;
-  url: string;
-  thumbnailUrl?: string;
+  sizeBytes: number;
+  fileUrl: string;
   folderId?: string;
   folder?: { name: string };
   width?: number;
@@ -112,46 +111,16 @@ export default function MediaPage() {
     if (!file) return;
 
     try {
-      toast({ title: "Initializing Upload", description: "Requesting presigned storage upload token..." });
-      
-      const { uploadUrl, fileKey, fileUrl } = await apiFetch<{ uploadUrl: string; fileKey: string; fileUrl: string }>("/media/presign", {
-        method: "POST",
-        body: JSON.stringify({
-          fileName: file.name,
-          contentType: file.type,
-          size: file.size,
-        }),
-      });
+      toast({ title: "Uploading File", description: `Sending "${file.name}" (${(file.size / 1024 / 1024).toFixed(1)}MB)...` });
 
-      toast({ title: "Uploading File", description: `Sending binary stream (${(file.size / 1024 / 1024).toFixed(1)}MB)...` });
+      const form = new FormData();
+      form.append("file", file);
+      form.append("name", file.name);
+      if (selectedFolder) form.append("folderId", selectedFolder);
 
-      const uploadRes = await fetch(uploadUrl, {
-        method: "PUT",
-        headers: {
-          "Content-Type": file.type,
-        },
-        body: file,
-      });
+      const asset = await apiFetch<MediaAsset>("/media", { method: "POST", body: form });
 
-      if (!uploadRes.ok) {
-        throw new Error(`Upload storage failed: ${uploadRes.statusText}`);
-      }
-
-      toast({ title: "Registering Asset", description: "Saving database media record..." });
-
-      await apiFetch("/media", {
-        method: "POST",
-        body: JSON.stringify({
-          name: file.name,
-          mimeType: file.type,
-          size: file.size,
-          url: fileUrl,
-          fileKey,
-          folderId: selectedFolder || undefined,
-        }),
-      });
-
-      toast({ title: "Upload Successful", description: `File "${file.name}" has been successfully added.` });
+      toast({ title: "Upload Successful", description: `File "${asset.name}" has been successfully added.` });
       refetch();
     } catch (err: unknown) {
       const description = isStorageUnavailable(err)
@@ -160,6 +129,8 @@ export default function MediaPage() {
           ? err.message
           : String(err);
       toast({ title: "Upload Failed", description, variant: "destructive" });
+    } finally {
+      e.target.value = "";
     }
   };
 
@@ -182,7 +153,7 @@ export default function MediaPage() {
   const handleCopyUrl = (url: string, e: React.MouseEvent) => {
     e.stopPropagation();
     navigator.clipboard.writeText(url);
-    toast({ title: "CDN URL Copied", description: "High-speed S3 asset link copied to clipboard." });
+    toast({ title: "URL Copied", description: "Public media URL copied to clipboard." });
   };
 
   const currentFolders = folders ?? [];
@@ -332,10 +303,10 @@ export default function MediaPage() {
                   className="group relative rounded-2xl border border-white/10 bg-slate-900 overflow-hidden cursor-pointer hover:border-white/20 transition-all shadow-2xl flex flex-col"
                 >
                   <div className="aspect-video w-full flex items-center justify-center bg-slate-950 relative overflow-hidden">
-                    {asset.thumbnailUrl ? (
+                    {asset.mimeType.startsWith("image/") ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={asset.thumbnailUrl || asset.url}
+                        src={asset.fileUrl}
                         alt={asset.name}
                         className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
@@ -353,7 +324,7 @@ export default function MediaPage() {
                       {asset.mimeType.split("/")[1]?.toUpperCase()}
                     </span>
                     <button
-                      onClick={(e) => handleCopyUrl(asset.url, e)}
+                      onClick={(e) => handleCopyUrl(asset.fileUrl, e)}
                       className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-slate-900/80 backdrop-blur-md text-white border border-white/10 hover:bg-primary hover:text-white transition-colors shadow-lg opacity-0 group-hover:opacity-100"
                       title="Copy CDN URL"
                     >
@@ -363,7 +334,7 @@ export default function MediaPage() {
                   <div className="p-4 border-t border-white/10 bg-slate-900/90 flex flex-col justify-between flex-1">
                     <p className="text-xs font-bold text-white truncate group-hover:text-primary transition-colors">{asset.name}</p>
                     <div className="flex items-center justify-between text-[11px] text-muted-foreground mt-2 pt-2 border-t border-white/5 font-medium">
-                      <span>{formatFileSize(asset.size)}</span>
+                      <span>{formatFileSize(asset.sizeBytes)}</span>
                       <span>{formatDate(asset.createdAt)}</span>
                     </div>
                   </div>
@@ -397,10 +368,10 @@ export default function MediaPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-xs text-muted-foreground font-mono">{asset.mimeType}</td>
-                      <td className="px-6 py-4 text-xs text-muted-foreground font-semibold">{formatFileSize(asset.size)}</td>
+                      <td className="px-6 py-4 text-xs text-muted-foreground font-semibold">{formatFileSize(asset.sizeBytes)}</td>
                       <td className="px-6 py-4 text-xs text-muted-foreground">{formatDate(asset.createdAt)}</td>
                       <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
-                        <Button variant="ghost" size="sm" onClick={(e) => handleCopyUrl(asset.url, e)} className="text-xs font-bold text-primary hover:bg-white/10">
+                        <Button variant="ghost" size="sm" onClick={(e) => handleCopyUrl(asset.fileUrl, e)} className="text-xs font-bold text-primary hover:bg-white/10">
                           <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy URL
                         </Button>
                       </td>
@@ -421,10 +392,10 @@ export default function MediaPage() {
               <div>
                 <DialogTitle className="text-xl font-bold text-white truncate">{selectedAsset?.name}</DialogTitle>
                 <p className="text-xs text-muted-foreground mt-1">
-                  MIME: <span className="font-mono text-primary font-bold">{selectedAsset?.mimeType}</span> • File Size: <span className="text-white font-semibold">{selectedAsset ? formatFileSize(selectedAsset.size) : "0 B"}</span>
+                  MIME: <span className="font-mono text-primary font-bold">{selectedAsset?.mimeType}</span> • File Size: <span className="text-white font-semibold">{selectedAsset ? formatFileSize(selectedAsset.sizeBytes) : "0 B"}</span>
                 </p>
               </div>
-              <Button size="sm" onClick={(e) => selectedAsset && handleCopyUrl(selectedAsset.url, e)} className="bg-primary hover:bg-primary/90 text-white text-xs font-bold">
+              <Button size="sm" onClick={(e) => selectedAsset && handleCopyUrl(selectedAsset.fileUrl, e)} className="bg-primary hover:bg-primary/90 text-white text-xs font-bold">
                 <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy CDN URL
               </Button>
             </div>
@@ -434,9 +405,9 @@ export default function MediaPage() {
             <div className="p-6 flex flex-col items-center justify-center bg-slate-950 min-h-[360px]">
               {selectedAsset.mimeType.startsWith("image/") ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={selectedAsset.url} alt={selectedAsset.name} className="w-full rounded-xl object-contain max-h-[500px] border border-white/10 shadow-2xl" />
+                <img src={selectedAsset.fileUrl} alt={selectedAsset.name} className="w-full rounded-xl object-contain max-h-[500px] border border-white/10 shadow-2xl" />
               ) : selectedAsset.mimeType.startsWith("video/") ? (
-                <video src={selectedAsset.url} controls className="w-full rounded-xl max-h-[500px] border border-white/10 shadow-2xl" />
+                <video src={selectedAsset.fileUrl} controls className="w-full rounded-xl max-h-[500px] border border-white/10 shadow-2xl" />
               ) : (
                 <div className="text-center py-16">
                   <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
@@ -463,7 +434,7 @@ export default function MediaPage() {
               Close Preview
             </Button>
             <Button asChild className="bg-secondary text-white hover:bg-secondary/80 text-xs font-bold">
-              <a href={selectedAsset?.url} target="_blank" rel="noreferrer">
+              <a href={selectedAsset?.fileUrl} target="_blank" rel="noreferrer">
                 Open Original Asset <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
               </a>
             </Button>

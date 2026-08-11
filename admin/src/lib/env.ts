@@ -22,7 +22,10 @@ const REQUIRED_VARS = [
 const OPTIONAL_VARS: Record<string, string> = {
   DIRECT_URL: "Prisma direct (non-pooled) URL - required for migrate deploy in CI",
   GEMINI_API_KEY: "Gemini AI study assistant - stub response returned when absent",
-  R2_ACCOUNT_ID: "Cloudflare R2 - missing → STORAGE_UNAVAILABLE 503",
+  SUPABASE_URL: "Supabase Storage - missing → media STORAGE_UNAVAILABLE 503",
+  SUPABASE_SERVICE_ROLE_KEY: "Supabase service-role key (server-only)",
+  SUPABASE_STORAGE_BUCKET: "Supabase Storage bucket (default: media)",
+  R2_ACCOUNT_ID: "Cloudflare R2 (LEGACY - documents only)",
   R2_ACCESS_KEY_ID: "Cloudflare R2",
   R2_SECRET_ACCESS_KEY: "Cloudflare R2",
   R2_BUCKET_NAME: "Cloudflare R2 (default: airborne-media)",
@@ -79,7 +82,10 @@ export const env = {
   AUTH_URL: process.env.AUTH_URL!,
   PUBLIC_INTAKE_KEY: process.env.PUBLIC_INTAKE_KEY!,
 
-  // Optional — storage
+  // Optional — storage (Supabase canonical for media; R2 legacy for documents)
+  SUPABASE_URL: process.env.SUPABASE_URL,
+  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  SUPABASE_STORAGE_BUCKET: process.env.SUPABASE_STORAGE_BUCKET ?? "media",
   R2_ACCOUNT_ID: process.env.R2_ACCOUNT_ID,
   R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID,
   R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY,

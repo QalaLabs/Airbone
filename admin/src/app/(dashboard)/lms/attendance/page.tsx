@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import { apiFetch } from "@/lib/api";
-import { ClipboardCheck, Plus, X, Check, History } from "lucide-react";
+import { ClipboardCheck, Plus, X, Check, History, Trash2, Edit } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface LmsCourse { id: string; title: string; slug: string }
@@ -26,7 +26,7 @@ interface AttSession {
     id: string;
     status: string;
     notes?: string | null;
-    student: { firstName: string; lastName: string; studentCode: string };
+    student: { id: string; firstName: string; lastName: string; studentCode: string };
   }>;
 }
 
@@ -54,6 +54,7 @@ export default function LmsAttendancePage() {
   const [records, setRecords] = React.useState<Record<string, StudentRecord>>({});
   const [submitted, setSubmitted] = React.useState(false);
   const [showHistory, setShowHistory] = React.useState(false);
+  const [editingSessionId, setEditingSessionId] = React.useState<string | null>(null);
 
   const { data: courses } = useQuery({
     queryKey: ["lms-courses"],
@@ -98,9 +99,11 @@ export default function LmsAttendancePage() {
   }, [selectedCourseId]);
 
   const markMutation = useMutation({
-    mutationFn: () =>
-      apiFetch("/lms/attendance", {
-        method: "POST",
+    mutationFn: () => {
+      const url = editingSessionId ? `/lms/attendance/${editingSessionId}` : "/lms/attendance";
+      const method = editingSessionId ? "PATCH" : "POST";
+      return apiFetch(url, {
+        method,
         body: JSON.stringify({
           courseId: selectedCourseId,
           batchId: batchId || null,
@@ -113,16 +116,59 @@ export default function LmsAttendancePage() {
             notes: rec.notes || undefined,
           })),
         }),
-      }),
+      });
+    },
     onSuccess: () => {
-      toast({ title: "Attendance saved" });
+      toast({ title: editingSessionId ? "Attendance updated" : "Attendance saved" });
       setSessionTitle("");
+      setSubjectTag("");
+      setEditingSessionId(null);
       setSubmitted(true);
       void queryClient.invalidateQueries({ queryKey: ["lms-enrollments", selectedCourseId] });
       void queryClient.invalidateQueries({ queryKey: ["lms-attendance-history", selectedCourseId] });
     },
     onError: (err: Error) => toast({ title: "Save failed", description: err.message, variant: "destructive" }),
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => apiFetch(`/lms/attendance/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      toast({ title: "Attendance session deleted" });
+      void queryClient.invalidateQueries({ queryKey: ["lms-attendance-history", selectedCourseId] });
+    },
+    onError: (err: Error) => toast({ title: "Deletion failed", description: err.message, variant: "destructive" }),
+  });
+
+  function startEditSession(s: AttSession) {
+    setEditingSessionId(s.id);
+    setSessionTitle(s.title);
+    setSubjectTag(s.subjectTag || "");
+    setHeldAt(new Date(s.heldAt).toISOString().slice(0, 16));
+    setBatchId(s.batch?.id || "");
+
+    const loaded: Record<string, StudentRecord> = {};
+    s.records.forEach((r) => {
+      loaded[r.student.id] = {
+        status: r.status as AttStatus,
+        notes: r.notes || "",
+      };
+    });
+    setRecords(loaded);
+    setSubmitted(false);
+  }
+
+  function cancelEdit() {
+    setEditingSessionId(null);
+    setSessionTitle("");
+    setSubjectTag("");
+    setSubmitted(false);
+    // Reset to defaults
+    const initial: Record<string, StudentRecord> = {};
+    activeStudents.forEach((e) => {
+      initial[e.studentId] = { status: "PRESENT", notes: "" };
+    });
+    setRecords(initial);
+  }
 
   const activeStudents = (enrollments ?? []).filter((e) => e.status === "ACTIVE");
   const presentCount = Object.values(records).filter((s) => s.status === "PRESENT" || s.status === "LATE").length;
@@ -214,17 +260,41 @@ export default function LmsAttendancePage() {
           ) : (
             <div className="space-y-3 max-h-80 overflow-y-auto">
               {(history ?? []).map((s) => (
-                <div key={s.id} className="rounded-lg border border-border bg-card/60 p-3 text-sm">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="font-medium">{s.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(s.heldAt).toLocaleString("en-IN")}
-                        {s.batch ? ` · ${s.batch.name}` : ""}
-                        {s.subjectTag ? ` · ${s.subjectTag}` : ""}
-                      </p>
-                    </div>
-                    <span className="text-xs text-muted-foreground">{s.records.length} records</span>
+                <div key={s.id} className="rounded-lg border border-border bg-card/60 p-3 text-sm flex items-center justify-between gap-4 hover:border-white/25 transition-all">
+                  <div className="space-y-1">
+                    <p className="font-medium text-white">{s.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(s.heldAt).toLocaleString("en-IN")}
+                      {s.batch ? ` · ${s.batch.name}` : ""}
+                      {s.subjectTag ? ` · ${s.subjectTag}` : ""}
+                    </p>
+                    <span className="text-[10px] text-muted-foreground bg-white/5 border border-white/10 px-2 py-0.5 rounded inline-block mt-1">
+                      {s.records.length} students marked
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => startEditSession(s)}
+                      className="h-7 w-7 p-0 border-white/10"
+                      title="Edit attendance session"
+                    >
+                      <Edit className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        if (confirm("Are you sure you want to delete this attendance session? This cannot be undone.")) {
+                          deleteMutation.mutate(s.id);
+                        }
+                      }}
+                      className="h-7 w-7 p-0 border-white/10 hover:bg-red-500/10 text-red-400"
+                      title="Delete session"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -311,13 +381,24 @@ export default function LmsAttendancePage() {
                 </table>
               </div>
 
-              <div className="flex justify-end">
+              <div className="flex justify-end gap-2">
+                {editingSessionId && (
+                  <Button variant="outline" onClick={cancelEdit}>
+                    Cancel Edit
+                  </Button>
+                )}
                 <Button
-                  disabled={!sessionTitle || Object.keys(records).length === 0 || markMutation.isPending || submitted}
+                  disabled={!sessionTitle || Object.keys(records).length === 0 || markMutation.isPending || (submitted && !editingSessionId)}
                   onClick={() => markMutation.mutate()}
                 >
                   <Plus className="mr-1.5 h-4 w-4" />
-                  {markMutation.isPending ? "Saving…" : submitted ? "Saved ✓" : "Save attendance"}
+                  {markMutation.isPending
+                    ? "Saving…"
+                    : editingSessionId
+                    ? "Update attendance"
+                    : submitted
+                    ? "Saved ✓"
+                    : "Save attendance"}
                 </Button>
               </div>
             </>

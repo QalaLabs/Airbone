@@ -71,7 +71,8 @@ export default function CoursesPage() {
   });
 
   const publishMutation = useMutation({
-    mutationFn: (id: string) => apiFetch(`/courses/${id}/publish`, { method: "PATCH" }),
+    mutationFn: (id: string) =>
+      apiFetch(`/courses/${id}/publish`, { method: "POST", body: JSON.stringify({ status: "PUBLISHED" }) }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["courses"] });
       toast({ title: "Course published successfully", description: "Course status is now live on the website CMS." });

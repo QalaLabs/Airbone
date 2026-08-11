@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -153,6 +154,11 @@ export default function LoginPage() {
                   "Sign in"
                 )}
               </Button>
+              <div className="text-center">
+                <Link href="/forgot-password" className="text-xs text-primary hover:underline">
+                  Forgot your password?
+                </Link>
+              </div>
             </form>
           </CardContent>
         </Card>

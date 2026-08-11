@@ -1,26 +1,30 @@
-import { crmFetch, crmFetchJson } from "./client";
-import { OutreachSequence } from "./types";
+import { apiFetch } from "@/lib/api";
+import type { OutreachData, OutreachTemplate } from "./types";
 
-export async function getOutreachSequences(filters?: Record<string, string>): Promise<OutreachSequence[]> {
-  return crmFetch<OutreachSequence[]>("all_endpoints.get_outreach_sequences", filters);
+export async function getOutreachData(): Promise<OutreachData> {
+  return apiFetch<OutreachData>("/crm/outreach");
 }
 
-export async function getOutreachSequence(id: string): Promise<OutreachSequence> {
-  return crmFetch<OutreachSequence>("all_endpoints.get_outreach_sequence", { name: id });
+export interface TemplateInput {
+  event: OutreachTemplate["event"];
+  channel: OutreachTemplate["channel"];
+  name: string;
+  subject?: string | null;
+  body: string;
+  variables?: string[];
+  isActive?: boolean;
 }
 
-export async function createOutreachSequence(data: Partial<OutreachSequence>): Promise<OutreachSequence> {
-  return crmFetchJson<OutreachSequence>("all_endpoints.create_outreach_sequence", data as Record<string, unknown>);
+export async function toggleTemplate(id: string, isActive: boolean): Promise<OutreachTemplate> {
+  return apiFetch<OutreachTemplate>("/crm/outreach", {
+    method: "POST",
+    body: JSON.stringify({ action: "toggle", id, isActive }),
+  });
 }
 
-export async function pauseOutreachSequence(id: string): Promise<OutreachSequence> {
-  return crmFetchJson<OutreachSequence>("all_endpoints.pause_outreach_sequence", { name: id });
-}
-
-export async function resumeOutreachSequence(id: string): Promise<OutreachSequence> {
-  return crmFetchJson<OutreachSequence>("all_endpoints.resume_outreach_sequence", { name: id });
-}
-
-export async function deleteOutreachSequence(id: string): Promise<void> {
-  return crmFetchJson<void>("all_endpoints.delete_outreach_sequence", { name: id });
+export async function createTemplate(input: TemplateInput): Promise<OutreachTemplate> {
+  return apiFetch<OutreachTemplate>("/crm/outreach", {
+    method: "POST",
+    body: JSON.stringify({ action: "create", ...input }),
+  });
 }

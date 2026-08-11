@@ -40,6 +40,7 @@ const NAV = [
   { href: "/portal", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/portal/courses", label: "Courses", icon: BookOpen, exact: false },
   { href: "/portal/progress", label: "Progress", icon: BarChart3, exact: false },
+  { href: "/portal/assignments", label: "Assignments", icon: FileText, exact: false },
   { href: "/portal/assessments", label: "Assessments", icon: FileText, exact: false },
   { href: "/portal/attendance", label: "Attendance", icon: ClipboardCheck, exact: false },
   { href: "/portal/certificates", label: "Certificates", icon: Award, exact: false },

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/client";
 import type { RequestContext } from "@/types";
-import { NotFoundError, ForbiddenError, ConflictError } from "@/lib/utils/errors";
+import { NotFoundError, ForbiddenError, ConflictError, ValidationError } from "@/lib/utils/errors";
+import { LmsService } from "@/lib/services/lms.service";
 import type {
   CreateBatchInput,
   UpdateBatchInput,
@@ -16,6 +17,10 @@ export class LmsOpsService {
   // ─── Batches ──────────────────────────────────────────────────────────────
 
   static async listBatches(ctx: RequestContext, courseId?: string) {
+    // Batch roster includes staff emails and member counts — staff-facing only.
+    if (ctx.user.role === "STUDENT") {
+      throw new ForbiddenError("read", "lms");
+    }
     return prisma.lmsBatch.findMany({
       where: { orgId: ctx.orgId, ...(courseId ? { courseId } : {}) },
       orderBy: { createdAt: "desc" },
@@ -30,6 +35,9 @@ export class LmsOpsService {
   }
 
   static async getBatch(ctx: RequestContext, batchId: string) {
+    if (ctx.user.role === "STUDENT") {
+      throw new ForbiddenError("read", "lms");
+    }
     const batch = await prisma.lmsBatch.findFirst({
       where: { id: batchId, orgId: ctx.orgId },
       include: {
@@ -99,8 +107,35 @@ export class LmsOpsService {
     const batch = await prisma.lmsBatch.findFirst({ where: { id: batchId, orgId: ctx.orgId } });
     if (!batch) throw new NotFoundError("LmsBatch", batchId);
 
+    // Every referenced student must belong to this org (never trust client ids).
+    if (data.studentIds?.length) {
+      const students = await prisma.student.findMany({
+        where: { id: { in: data.studentIds }, orgId: ctx.orgId, deletedAt: null },
+        select: { id: true },
+      });
+      if (students.length !== data.studentIds.length) {
+        throw new ValidationError([{ message: "One or more student ids do not belong to this organization" }]);
+      }
+    }
+    // Every referenced teacher must be a TEACHER in this org.
+    if (data.teacherIds?.length) {
+      const teachers = await prisma.user.findMany({
+        where: { id: { in: data.teacherIds }, orgId: ctx.orgId, role: "TEACHER" },
+        select: { id: true },
+      });
+      if (teachers.length !== data.teacherIds.length) {
+        throw new ValidationError([{ message: "One or more teacher ids do not belong to this organization" }]);
+      }
+    }
+
     await prisma.$transaction(async (tx) => {
       if (data.studentIds) {
+        // Track who is being removed so course enrollment stays in sync.
+        const removed = await tx.lmsBatchStudent.findMany({
+          where: { batchId, studentId: { notIn: data.studentIds } },
+          select: { studentId: true },
+        });
+
         await tx.lmsBatchStudent.deleteMany({ where: { batchId } });
         if (data.studentIds.length) {
           await tx.lmsBatchStudent.createMany({
@@ -121,6 +156,19 @@ export class LmsOpsService {
               update: { batchId, status: "ACTIVE" },
             });
           }
+        }
+
+        // Removed members: detach the batch linkage from their course
+        // enrollment so they no longer count as batch members.
+        if (removed.length) {
+          await tx.lmsEnrollment.updateMany({
+            where: {
+              courseId: batch.courseId,
+              batchId,
+              studentId: { in: removed.map((r) => r.studentId) },
+            },
+            data: { batchId: null },
+          });
         }
       }
       if (data.teacherIds) {
@@ -201,6 +249,13 @@ export class LmsOpsService {
   static async updateTimetableSlot(ctx: RequestContext, slotId: string, input: UpdateTimetableSlotInput) {
     const slot = await prisma.lmsTimetableSlot.findFirst({ where: { id: slotId, orgId: ctx.orgId } });
     if (!slot) throw new NotFoundError("LmsTimetableSlot", slotId);
+
+    // Revalidate the time window against the merged start/end, not just the
+    // values present in this request.
+    const startsAt = input.startsAt !== undefined ? new Date(input.startsAt) : slot.startsAt;
+    const endsAt = input.endsAt !== undefined ? new Date(input.endsAt) : slot.endsAt;
+    if (endsAt <= startsAt) throw new ConflictError("endsAt must be after startsAt");
+
     return prisma.lmsTimetableSlot.update({
       where: { id: slotId },
       data: {
@@ -225,6 +280,37 @@ export class LmsOpsService {
   // ─── Assignments ──────────────────────────────────────────────────────────
 
   static async listAssignments(ctx: RequestContext, opts: { courseId?: string; batchId?: string } = {}) {
+    // Students must never see DRAFT assignments, and may only see assignments
+    // for courses they are actively enrolled in.
+    if (ctx.user.role === "STUDENT") {
+      const student = await LmsService.resolveLinkedStudent(ctx);
+      return prisma.lmsAssignment.findMany({
+        where: {
+          orgId: ctx.orgId,
+          status: { not: "DRAFT" },
+          ...(opts.courseId ? { courseId: opts.courseId } : {}),
+          ...(opts.batchId ? { batchId: opts.batchId } : {}),
+          course: { enrollments: { some: { studentId: student.id, status: "ACTIVE" } } },
+        },
+        orderBy: { createdAt: "desc" },
+        include: {
+          course: { select: { id: true, title: true } },
+          batch: { select: { id: true, name: true } },
+          submissions: {
+            where: { studentId: student.id },
+            select: {
+              id: true,
+              body: true,
+              fileUrl: true,
+              score: true,
+              feedback: true,
+              status: true,
+              submittedAt: true,
+            },
+          },
+        },
+      });
+    }
     return prisma.lmsAssignment.findMany({
       where: {
         orgId: ctx.orgId,
@@ -276,6 +362,37 @@ export class LmsOpsService {
     });
   }
 
+  static async deleteAssignment(ctx: RequestContext, id: string) {
+    const a = await prisma.lmsAssignment.findFirst({ where: { id, orgId: ctx.orgId } });
+    if (!a) throw new NotFoundError("LmsAssignment", id);
+    await prisma.lmsAssignmentSubmission.deleteMany({ where: { assignmentId: id } });
+    return prisma.lmsAssignment.delete({ where: { id } });
+  }
+
+  static async getAssignment(ctx: RequestContext, id: string) {
+    const a = await prisma.lmsAssignment.findFirst({
+      where: { id, orgId: ctx.orgId },
+      include: {
+        course: { select: { id: true, title: true } },
+        batch: { select: { id: true, name: true } },
+        submissions: {
+          include: {
+            student: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!a) throw new NotFoundError("LmsAssignment", id);
+    return a;
+  }
+
   static async submitAssignment(
     ctx: RequestContext,
     studentId: string,
@@ -285,6 +402,14 @@ export class LmsOpsService {
       where: { id: data.assignmentId, orgId: ctx.orgId, status: "PUBLISHED" },
     });
     if (!assignment) throw new NotFoundError("LmsAssignment", data.assignmentId);
+
+    // A student may only submit to an assignment of a course they are actively
+    // enrolled in.
+    const enrollment = await prisma.lmsEnrollment.findFirst({
+      where: { studentId, courseId: assignment.courseId, status: "ACTIVE" },
+      select: { id: true },
+    });
+    if (!enrollment) throw new ForbiddenError("submit", "assignment");
 
     return prisma.lmsAssignmentSubmission.upsert({
       where: { assignmentId_studentId: { assignmentId: data.assignmentId, studentId } },

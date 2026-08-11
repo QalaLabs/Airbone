@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DataTable } from "@/components/shared/data-table";
 import { apiFetch } from "@/lib/api";
 import { formatDate } from "@/lib/utils";
+import { jobApplicationStatusValues } from "@/lib/validations/job.schema";
 import { toast } from "@/components/ui/use-toast";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -101,7 +102,7 @@ export default function JobDetailPage() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {["SHORTLISTED", "INTERVIEW_SCHEDULED", "OFFERED", "HIRED", "REJECTED"].map((status) => (
+            {jobApplicationStatusValues.map((status) => (
               <DropdownMenuItem
                 key={status}
                 onClick={() =>

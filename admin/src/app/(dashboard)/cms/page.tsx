@@ -10,13 +10,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { 
   Globe, FileText, ImageIcon, Megaphone,
   Search, Plus, Eye, Edit2, Loader2, AlertCircle,
-  MoreHorizontal, Archive, CalendarClock, Clock
+  MoreHorizontal, Archive, CalendarClock, Clock, Menu
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "@/components/ui/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { NavMenuEditor } from "@/components/cms/nav-menu-editor";
 
 const PAGE_TRANSITIONS: Record<string, PageModel["status"][]> = {
   DRAFT: ["PUBLISHED", "SCHEDULED", "ARCHIVED"],
@@ -170,6 +171,7 @@ export default function CMSPage() {
       <div className="flex border-b border-white/10 gap-2 overflow-x-auto pb-1">
         {[
           { id: "pages", label: "Core Web Pages", icon: Globe },
+          { id: "nav", label: "Navigation Menus", icon: Menu },
           { id: "gallery", label: "Public Media Gallery", icon: ImageIcon },
           { id: "news", label: "News & Announcements", icon: Megaphone },
         ].map((tab) => {
@@ -291,6 +293,13 @@ export default function CMSPage() {
                 </div>
               )}
             </div>
+          </motion.div>
+        )}
+
+        {/* Navigation Menus editor */}
+        {activeTab === "nav" && (
+          <motion.div key="nav" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
+            <NavMenuEditor />
           </motion.div>
         )}
 

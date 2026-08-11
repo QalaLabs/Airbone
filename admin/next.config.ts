@@ -6,10 +6,14 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   serverExternalPackages: ["argon2", "@prisma/client", "prisma"],
+  experimental: {
+    middlewareClientMaxBodySize: "60mb",
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "*.r2.cloudflarestorage.com" },
       { protocol: "https", hostname: "*.cloudflare.com" },
+      { protocol: "https", hostname: "*.supabase.co" },
     ],
   },
 };

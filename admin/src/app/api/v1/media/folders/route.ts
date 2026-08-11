@@ -5,12 +5,17 @@ import { getRequestContext } from "@/lib/middleware/context";
 import { ok, created, handleError } from "@/lib/utils/response";
 import { createFolderSchema } from "@/lib/validations/media.schema";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const ctx = await getRequestContext();
     guard(ctx.user, "read", "media");
 
-    const folders = await MediaFolderService.list(ctx);
+    const url = new URL(req.url);
+    const parentRaw = url.searchParams.get("parentId");
+    const parentId =
+      parentRaw && parentRaw !== "" && parentRaw !== "null" ? parentRaw : undefined;
+
+    const folders = await MediaFolderService.list(ctx, parentId);
     return ok(folders);
   } catch (err) {
     return handleError(err);

@@ -3,7 +3,8 @@ import { z } from "zod";
 import { guard } from "@/lib/middleware/permissions";
 import { getRequestContext } from "@/lib/middleware/context";
 import { ok, handleError } from "@/lib/utils/response";
-import { ForbiddenError } from "@/lib/utils/errors";
+import { ForbiddenError, RateLimitError } from "@/lib/utils/errors";
+import { checkRateLimit } from "@/lib/utils/rate-limit";
 
 const askSchema = z.object({
   question: z.string().min(1).max(4000),
@@ -26,6 +27,10 @@ export async function POST(req: NextRequest) {
     if (ctx.user.role !== "STUDENT" && ctx.user.role !== "TEACHER" && ctx.user.role !== "ADMIN" && ctx.user.role !== "SUPER_ADMIN") {
       throw new ForbiddenError("read", "lms");
     }
+
+    // External LLM spend protection: 10 asks per user per minute.
+    const { allowed } = checkRateLimit(`lms-assistant:${ctx.user.id}`, 10, 60_000);
+    if (!allowed) throw new RateLimitError();
 
     const body = (await req.json()) as unknown;
     const input = askSchema.parse(body);

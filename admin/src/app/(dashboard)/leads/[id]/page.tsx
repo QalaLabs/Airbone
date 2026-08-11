@@ -155,7 +155,7 @@ export default function LeadDetailPage() {
     queryKey: ["users", "counselors"],
     queryFn: async () => {
       try {
-        return await apiFetch<CounselorOption[]>(`/users?limit=50`);
+        return await apiFetch<CounselorOption[]>(`/users?role=ADMISSIONS_COUNSELOR&limit=100`);
       } catch {
         return [] as CounselorOption[];
       }
@@ -300,9 +300,7 @@ export default function LeadDetailPage() {
   const pipeline = ["NEW", "CONTACTED", "COUNSELED", "APPLICATION_SUBMITTED", "CONVERTED"];
   const statusIndex = pipeline.indexOf(lead?.status ?? "NEW");
   const primaryAdmission = lead?.admissions?.[0];
-  const counselorOptions = (Array.isArray(counselors) ? counselors : []).filter((u) =>
-    ["ADMIN", "SUPER_ADMIN", "COUNSELOR", "TEACHER"].includes(u.role),
-  );
+  const counselorOptions = Array.isArray(counselors) ? counselors : [];
 
   if (isLoading) {
     return (

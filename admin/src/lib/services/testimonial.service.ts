@@ -1,4 +1,5 @@
 import { TestimonialRepository } from "@/lib/repositories/testimonial.repository";
+import { MediaRepository } from "@/lib/repositories/media.repository";
 import { AuditService } from "@/lib/services/audit.service";
 import { ActivityFeedService } from "@/lib/services/activity.service";
 import { emitEvent } from "@/lib/events/inngest";
@@ -24,6 +25,11 @@ export class TestimonialService {
 
   static async create(ctx: RequestContext, input: CreateTestimonialInput) {
     const testimonial = await TestimonialRepository.create(ctx.orgId, input);
+
+    // Phase 5: track avatar MediaUsage so referenced media can't be deleted
+    if (input.avatarId) {
+      await MediaRepository.trackUsage(ctx.orgId, input.avatarId, "testimonial", testimonial.id, "avatarId");
+    }
 
     await AuditService.write({
       orgId: ctx.orgId,
@@ -61,6 +67,16 @@ export class TestimonialService {
   static async update(ctx: RequestContext, id: string, input: UpdateTestimonialInput) {
     const existing = await this.getById(ctx, id);
     const updated = await TestimonialRepository.update(ctx.orgId, id, input);
+
+    // Phase 5: reconcile avatar MediaUsage on change
+    if (input.avatarId !== undefined && input.avatarId !== existing.avatarId) {
+      if (existing.avatarId) {
+        await MediaRepository.untrackUsage(existing.avatarId, "testimonial", id, "avatarId");
+      }
+      if (input.avatarId) {
+        await MediaRepository.trackUsage(ctx.orgId, input.avatarId, "testimonial", id, "avatarId");
+      }
+    }
 
     await AuditService.write({
       orgId: ctx.orgId,
@@ -131,6 +147,11 @@ export class TestimonialService {
   static async delete(ctx: RequestContext, id: string) {
     const existing = await this.getById(ctx, id);
     await TestimonialRepository.delete(ctx.orgId, id);
+
+    // Phase 5: release avatar MediaUsage so the asset can be deleted
+    if (existing.avatarId) {
+      await MediaRepository.untrackUsage(existing.avatarId, "testimonial", id, "avatarId");
+    }
 
     await AuditService.write({
       orgId: ctx.orgId,

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -9,19 +9,40 @@ export default function Header() {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [prevPathname, setPrevPathname] = useState(pathname)
+  const [links, setLinks] = useState([
+    { name: 'About', path: '/about' },
+    { name: 'Courses', path: '/courses' },
+    { name: 'Jobs Portal', path: '/jobs' },
+    { name: 'Resources', path: '/resources' },
+    { name: 'Contact', path: '/contact' }
+  ])
 
   if (pathname !== prevPathname) {
     setPrevPathname(pathname)
     setMobileOpen(false)
   }
 
-  const links = [
-    { name: 'About', path: '/about' },
-    { name: 'Courses', path: '/courses' },
-    { name: 'Jobs Portal', path: '/jobs' },
-    { name: 'Resources', path: '/resources' },
-    { name: 'Contact', path: '/contact' }
-  ]
+  useEffect(() => {
+    fetch('/api/public-proxy/settings')
+      .then(res => res.json())
+      .then(payload => {
+        if (payload?.data?.navMenus) {
+          const headerMenu = payload.data.navMenus.find(m => m.location === 'header');
+          if (headerMenu && headerMenu.items && headerMenu.items.length > 0) {
+            const mapped = headerMenu.items.map(item => ({
+              name: item.label,
+              path: item.url,
+              target: item.target,
+              isVisible: item.isVisible !== false
+            })).filter(item => item.isVisible);
+            if (mapped.length > 0) {
+              setLinks(mapped);
+            }
+          }
+        }
+      })
+      .catch(err => console.error('Failed to load header navigation settings:', err));
+  }, []);
 
   return (
     <>

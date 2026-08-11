@@ -415,6 +415,17 @@ function EnrollmentsTab({ course }: { course: Course }) {
     onError: (err: Error) => toast({ title: "Enroll failed", description: err.message, variant: "destructive" }),
   });
 
+  const unenrollMutation = useMutation({
+    mutationFn: (id: string) => apiFetch(`/lms/enrollments/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      toast({ title: "Student unenrolled" });
+      void queryClient.invalidateQueries({ queryKey: ["lms-enrollments", course.id] });
+    },
+    onError: (err: any) => {
+      toast({ title: "Failed to unenroll student", description: err.message, variant: "destructive" });
+    },
+  });
+
   const filtered = (students ?? []).filter((s) => {
     const q = studentSearch.toLowerCase();
     return !q || s.firstName.toLowerCase().includes(q) || s.lastName.toLowerCase().includes(q) ||
@@ -469,6 +480,7 @@ function EnrollmentsTab({ course }: { course: Course }) {
               <th className="px-3 py-2">Code</th>
               <th className="px-3 py-2">Status</th>
               <th className="px-3 py-2">Enrolled</th>
+              <th className="px-3 py-2 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -487,10 +499,27 @@ function EnrollmentsTab({ course }: { course: Course }) {
                 <td className="px-3 py-2 text-xs text-muted-foreground">
                   {new Date(e.enrolledAt).toLocaleDateString("en-IN")}
                 </td>
+                <td className="px-3 py-2 text-right">
+                  {e.status === "ACTIVE" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={unenrollMutation.isPending}
+                      onClick={() => {
+                        if (confirm("Are you sure you want to soft-unenroll this student? Their progress history will be preserved but they will lose course portal access.")) {
+                          unenrollMutation.mutate(e.id);
+                        }
+                      }}
+                      className="h-7 text-xs border-white/10 hover:bg-red-500/10 text-red-400"
+                    >
+                      Unenroll
+                    </Button>
+                  )}
+                </td>
               </tr>
             ))}
             {(enrollments?.length ?? 0) === 0 && (
-              <tr><td colSpan={4} className="px-3 py-8 text-center text-sm text-muted-foreground">No enrollments yet.</td></tr>
+              <tr><td colSpan={5} className="px-3 py-8 text-center text-sm text-muted-foreground">No enrollments yet.</td></tr>
             )}
           </tbody>
         </table>

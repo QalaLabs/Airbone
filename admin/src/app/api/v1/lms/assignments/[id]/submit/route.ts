@@ -14,7 +14,7 @@ const bodySchema = z.object({
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const ctx = await getRequestContext();
-    guard(ctx.user, "read", "lms");
+    guard(ctx.user, "write", "lms_student");
     const { id } = await params;
     const student = await LmsService.resolveLinkedStudent(ctx);
     const input = bodySchema.parse(await req.json());

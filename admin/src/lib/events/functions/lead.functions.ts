@@ -1,6 +1,7 @@
 import { inngest } from "@/lib/events/inngest";
 import { AuditService } from "@/lib/services/audit.service";
 import { ActivityFeedService } from "@/lib/services/activity.service";
+import { NotificationService } from "@/lib/services/notification.service";
 import { prisma } from "@/lib/db/client";
 
 // ─── lead/created ─────────────────────────────────────────────────────────
@@ -65,27 +66,18 @@ export const onLeadCreated = inngest.createFunction(
 
     // Send welcome notification to lead (WhatsApp)
     await step.run("notify-lead-whatsapp", async () => {
-      const [template, lead] = await Promise.all([
-        prisma.notificationTemplate.findUnique({
-          where: { orgId_event_channel: { orgId, event: "NEW_LEAD", channel: "WHATSAPP" } },
-        }),
-        prisma.lead.findUnique({ where: { id: leadId }, select: { phone: true } }),
-      ]);
-      if (!template?.isActive || !lead?.phone) return;
+      const lead = await prisma.lead.findUnique({ where: { id: leadId }, select: { phone: true } });
+      if (!lead?.phone) return;
 
-      await prisma.notificationLog.create({
-        data: {
-          orgId,
-          templateId: template.id,
-          event: "NEW_LEAD",
-          channel: "WHATSAPP",
-          recipient: lead.phone,
-          status: "PENDING",
-          entityType: "lead",
-          entityId: leadId,
-        },
+      await NotificationService.dispatch({
+        orgId,
+        event: "NEW_LEAD",
+        channel: "WHATSAPP",
+        recipient: lead.phone,
+        variables: { leadName },
+        entityType: "lead",
+        entityId: leadId,
       });
-      // Actual dispatch via WATI happens in notification worker (Sprint 5)
     });
 
     return { ok: true, leadId };
@@ -180,28 +172,31 @@ export const onLeadAssigned = inngest.createFunction(
     });
 
     await step.run("notify-counselor", async () => {
-      const template = await prisma.notificationTemplate.findUnique({
-        where: { orgId_event_channel: { orgId: d.orgId, event: "LEAD_ASSIGNED", channel: "EMAIL" } },
-      });
-      if (!template?.isActive) return;
+      const [counselor, lead] = await Promise.all([
+        prisma.user.findUnique({
+          where: { id: d.counselorId },
+          select: { email: true, name: true },
+        }),
+        prisma.lead.findUnique({
+          where: { id: d.leadId },
+          select: { phone: true, courseInterest: true },
+        }),
+      ]);
+      if (!counselor?.email) return;
 
-      const counselor = await prisma.user.findUnique({
-        where: { id: d.counselorId },
-        select: { email: true },
-      });
-      if (!counselor) return;
-
-      await prisma.notificationLog.create({
-        data: {
-          orgId: d.orgId,
-          templateId: template.id,
-          event: "LEAD_ASSIGNED",
-          channel: "EMAIL",
-          recipient: counselor.email,
-          status: "PENDING",
-          entityType: "lead",
-          entityId: d.leadId,
+      await NotificationService.dispatch({
+        orgId: d.orgId,
+        event: "LEAD_ASSIGNED",
+        channel: "EMAIL",
+        recipient: counselor.email,
+        variables: {
+          counselorName: counselor.name,
+          leadName: d.leadName,
+          leadPhone: lead?.phone ?? "",
+          courseInterest: lead?.courseInterest ?? "",
         },
+        entityType: "lead",
+        entityId: d.leadId,
       });
     });
 

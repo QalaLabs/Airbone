@@ -1,6 +1,7 @@
 import { inngest } from "@/lib/events/inngest";
 import { AuditService } from "@/lib/services/audit.service";
 import { ActivityFeedService } from "@/lib/services/activity.service";
+import { NotificationService } from "@/lib/services/notification.service";
 
 // The emitEvent() wrapper flattens all BaseEvent fields + data fields into event.data
 type UserInvitedData = {
@@ -44,7 +45,18 @@ export const onUserInvited = inngest.createFunction(
       });
     });
 
-    // TODO: Send invitation email via Resend in Sprint 5
+    // Send invitation email (fires only when an active USER_INVITED/EMAIL template exists)
+    await step.run("send-invite-email", async () => {
+      await NotificationService.dispatch({
+        orgId: d.orgId,
+        event: "USER_INVITED",
+        channel: "EMAIL",
+        recipient: d.email,
+        variables: { email: d.email, role: d.role, inviteToken: d.inviteToken },
+        entityType: "user",
+        entityId: d.userId,
+      });
+    });
 
     return { ok: true };
   },

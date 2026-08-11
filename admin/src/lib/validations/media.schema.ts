@@ -1,5 +1,47 @@
 import { z } from "zod";
 
+// ─── Upload rules ────────────────────────────────────────────────────────────
+
+export const MAX_MEDIA_FILE_SIZE = 50 * 1024 * 1024; // 50 MB (bucket file_size_limit)
+
+export const ALLOWED_MEDIA_MIME_TYPES = [
+  // images
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "image/svg+xml",
+  "image/avif",
+  "image/bmp",
+  // videos
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+  "video/mpeg",
+  "video/ogg",
+  // audio
+  "audio/mpeg",
+  "audio/wav",
+  "audio/ogg",
+  "audio/mp4",
+  "audio/aac",
+  // documents
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-powerpoint",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "text/plain",
+] as const;
+
+export type AllowedMediaMimeType = (typeof ALLOWED_MEDIA_MIME_TYPES)[number];
+
+export function isAllowedMediaType(mimeType: string): boolean {
+  return (ALLOWED_MEDIA_MIME_TYPES as readonly string[]).includes(mimeType.toLowerCase());
+}
+
 // ─── Media Asset ─────────────────────────────────────────────────────────────
 
 export const registerAssetSchema = z.object({

@@ -8,7 +8,7 @@ import { gradeSubmissionSchema } from "@/lib/validations/lms.schema";
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const ctx = await getRequestContext();
-    guard(ctx.user, "write", "lms_assessments");
+    guard(ctx.user, "write", "lms_assignments");
     const { id } = await params;
     const input = gradeSubmissionSchema.parse(await req.json());
     return ok(await LmsOpsService.gradeSubmission(ctx, id, input));

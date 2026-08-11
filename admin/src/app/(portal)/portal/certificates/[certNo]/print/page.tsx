@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/db/client";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { PrintButton } from "@/components/lms/print-button";
+import { getOptionalSession } from "@/lib/auth/session";
 
 interface PageProps {
   params: Promise<{ certNo: string }>;
@@ -15,20 +16,39 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function CertificatePrintPage({ params }: PageProps) {
   const { certNo } = await params;
 
+  const user = await getOptionalSession();
+  if (!user) {
+    redirect("/login");
+  }
+
+  // Portal print is student-owned only. Require ownership + org isolation so a
+  // student cannot render another student's certificate by knowing the certNo
+  // or verificationCode.
+  if (user.role !== "STUDENT") {
+    notFound();
+  }
+
   const cert = await prisma.lmsCertificate.findFirst({
     where: {
       OR: [{ certificateNo: certNo }, { verificationCode: certNo }],
       status: "ISSUED",
     },
     include: {
-      student: { select: { firstName: true, lastName: true, studentCode: true } },
+      student: { select: { id: true, userId: true, firstName: true, lastName: true, studentCode: true } },
       course: { select: { title: true } },
-      org: { select: { name: true } },
+      org: { select: { id: true, name: true } },
       issuer: { select: { name: true } },
     },
   });
 
-  if (!cert) notFound();
+  if (
+    !cert ||
+    cert.orgId !== user.orgId ||
+    cert.student.userId == null ||
+    cert.student.userId !== user.id
+  ) {
+    notFound();
+  }
 
   const issuedDate = cert.issuedAt
     ? new Date(cert.issuedAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })

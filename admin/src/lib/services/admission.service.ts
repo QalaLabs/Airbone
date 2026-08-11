@@ -103,6 +103,16 @@ export class AdmissionService {
 
   static async update(ctx: RequestContext, id: string, input: UpdateAdmissionInput) {
     const existing = await this.getById(ctx, id);
+
+    // D-01: never trust a caller-supplied studentId — verify it belongs to this org
+    if (input.studentId) {
+      const student = await prisma.student.findFirst({
+        where: { id: input.studentId, orgId: ctx.orgId, deletedAt: null },
+        select: { id: true },
+      });
+      if (!student) throw new NotFoundError("Student", input.studentId);
+    }
+
     const updateInput = { ...input };
 
     if (input.feePlanId) {
@@ -155,6 +165,15 @@ export class AdmissionService {
 
     let studentId = input.studentId ?? admission.studentId ?? undefined;
 
+    // D-01: never trust a caller-supplied studentId — verify it belongs to this org
+    if (studentId) {
+      const student = await prisma.student.findFirst({
+        where: { id: studentId, orgId: ctx.orgId, deletedAt: null },
+        select: { id: true },
+      });
+      if (!student) throw new NotFoundError("Student", studentId);
+    }
+
     if (toStage === "ENROLLED" && !studentId && admission.lead) {
       const existingStudent = await prisma.student.findFirst({
         where: { leadId: admission.leadId, orgId: ctx.orgId, deletedAt: null },
@@ -204,10 +223,13 @@ export class AdmissionService {
       });
 
       if (studentId) {
-        await prisma.student.update({
-          where: { id: studentId },
+        const updatedCount = await prisma.student.updateMany({
+          where: { id: studentId, orgId: ctx.orgId, deletedAt: null },
           data: { status: "ACTIVE", enrolledAt: new Date() },
         });
+        if (updatedCount.count === 0) {
+          throw new NotFoundError("Student", studentId);
+        }
       }
     }
 

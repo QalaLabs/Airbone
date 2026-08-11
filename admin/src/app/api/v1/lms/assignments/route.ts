@@ -8,7 +8,7 @@ import { createAssignmentSchema } from "@/lib/validations/lms.schema";
 export async function GET(req: NextRequest) {
   try {
     const ctx = await getRequestContext();
-    guard(ctx.user, "read", "lms");
+    guard(ctx.user, "read", "lms_assignments");
     const url = new URL(req.url);
     return ok(
       await LmsOpsService.listAssignments(ctx, {
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const ctx = await getRequestContext();
-    guard(ctx.user, "write", "lms_assessments");
+    guard(ctx.user, "write", "lms_assignments");
     const input = createAssignmentSchema.parse(await req.json());
     return created(await LmsOpsService.createAssignment(ctx, input));
   } catch (err) {
