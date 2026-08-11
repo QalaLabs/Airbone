@@ -3,11 +3,11 @@
 import { useState, useCallback, useMemo } from 'react'
 import { triggerToast } from '@/components/Toast'
 import useFormValidation from '@/hooks/useFormValidation'
-import { validateName, validatePhone, validateEmail, validatePincode, validateRequired } from '@/utils/validation'
+import { validateName, validatePhone, validateEmailRequired, validatePincode, validateRequired } from '@/utils/validation'
 import FormField from '@/components/FormField'
 import SubmitButton from '@/components/SubmitButton'
 
-const validators = { name: validateName, phone: validatePhone, email: validateEmail, pincode: validatePincode, course: validateRequired }
+const validators = { name: validateName, phone: validatePhone, email: validateEmailRequired, pincode: validatePincode, course: validateRequired }
 
 function genUuid() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
@@ -129,7 +129,7 @@ export default function MultiStepLeadForm({ courseName = '', source = 'Multi-Ste
   const [screening, setScreening] = useState({})
   const leadUuid = useMemo(() => genUuid(), [])
 
-  const { values, errors, touched, handleChange, handleBlur, validate, isValid } = useFormValidation(
+  const { values, errors, touched, handleChange, handleBlur, validate } = useFormValidation(
     { name: '', phone: '', email: '', pincode: '', course: courseName },
     validators
   )
@@ -388,7 +388,7 @@ export default function MultiStepLeadForm({ courseName = '', source = 'Multi-Ste
           )}
           <div style={{ display: 'flex', gap: '0.75rem' }}>
             <button type="button" onClick={goBack} className="btn btn-outline" style={{ flex: 1 }} disabled={status === 'loading'}>← Back</button>
-            <SubmitButton id="msf-submit" type="button" className="btn btn-primary" loading={status === 'loading'} disabled={!isValid || status === 'loading'} style={{ flex: 1, justifyContent: 'center' }} onClick={handleSubmit}>
+            <SubmitButton id="msf-submit" type="button" className="btn btn-primary" loading={status === 'loading'} disabled={status === 'loading'} style={{ flex: 1, justifyContent: 'center' }} onClick={handleSubmit}>
               Submit Enquiry
             </SubmitButton>
           </div>

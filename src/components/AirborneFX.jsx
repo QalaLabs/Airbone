@@ -122,7 +122,7 @@ export function CockpitHUD() {
       transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], opacity: { duration: 0.35 } }}
       aria-hidden
       className="cockpit-hud"
-      style={{ position: 'absolute', bottom: '1.25rem', left: '1.25rem', pointerEvents: 'none' }}
+      style={{ pointerEvents: 'none' }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.625rem', letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gold)' }}>
         <span style={{ position: 'relative', display: 'inline-flex', height: '6px', width: '6px' }}>

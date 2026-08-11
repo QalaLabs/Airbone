@@ -13,7 +13,7 @@ import PremiumFooter from '@/components/PremiumFooter'
 import GlobalRouteMap from '@/components/GlobalRouteMap'
 import ProgramGrid from '@/components/ProgramGrid'
 import useFormValidation from '@/hooks/useFormValidation'
-import { validateName, validatePhone, validateEmail, validatePincode } from '@/utils/validation'
+import { validateName, validatePhone, validateEmailRequired, validatePincode } from '@/utils/validation'
 import FormField from '@/components/FormField'
 import SubmitButton from '@/components/SubmitButton'
 
@@ -720,9 +720,9 @@ function FinalCTA() {
   const [loading, setLoading] = useState(false)
   const [submitError, setSubmitError] = useState('')
 
-  const { values, handleChange, handleBlur, validate, isValid } = useFormValidation(
+  const { values, errors, touched, handleChange, handleBlur, validate } = useFormValidation(
     { name: '', phone: '', email: '', pincode: '' },
-    { name: validateName, phone: validatePhone, email: validateEmail, pincode: validatePincode }
+    { name: validateName, phone: validatePhone, email: validateEmailRequired, pincode: validatePincode }
   )
 
   const handleSubmit = async (e) => {
@@ -807,6 +807,7 @@ function FinalCTA() {
                 value={values.name}
                 onChange={(v) => handleChange('name', v)}
                 onBlur={() => handleBlur('name')}
+                error={touched.name ? errors.name : null}
                 required
               />
               <FormField
@@ -816,6 +817,7 @@ function FinalCTA() {
                 value={values.phone}
                 onChange={(v) => handleChange('phone', v)}
                 onBlur={() => handleBlur('phone')}
+                error={touched.phone ? errors.phone : null}
                 required
                 maxLength={10}
               />
@@ -826,6 +828,7 @@ function FinalCTA() {
                 value={values.email}
                 onChange={(v) => handleChange('email', v)}
                 onBlur={() => handleBlur('email')}
+                error={touched.email ? errors.email : null}
                 required
               />
               <FormField
@@ -835,13 +838,14 @@ function FinalCTA() {
                 value={values.pincode}
                 onChange={(v) => handleChange('pincode', v)}
                 onBlur={() => handleBlur('pincode')}
+                error={touched.pincode ? errors.pincode : null}
                 required
                 maxLength={6}
               />
               <SubmitButton
                 type="submit"
                 loading={loading}
-                disabled={!isValid}
+                disabled={loading}
                 style={{
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
                   borderRadius: '0.6rem', background: 'var(--red)', color: '#fff',
@@ -883,9 +887,9 @@ function FinalCTA() {
 function BookingModal({ open, onClose }) {
   const [status, setStatus] = useState('idle')
 
-  const { values, handleChange, handleBlur, validate, isValid, setValues } = useFormValidation(
+  const { values, errors, touched, handleChange, handleBlur, validate, setValues } = useFormValidation(
     { name: '', phone: '', email: '', pincode: '' },
-    { name: validateName, phone: validatePhone, email: validateEmail, pincode: validatePincode }
+    { name: validateName, phone: validatePhone, email: validateEmailRequired, pincode: validatePincode }
   )
 
   const handleClose = useCallback(() => {
@@ -986,6 +990,7 @@ function BookingModal({ open, onClose }) {
                     value={values.name}
                     onChange={(v) => handleChange('name', v)}
                     onBlur={() => handleBlur('name')}
+                    error={touched.name ? errors.name : null}
                     required
                   />
                   <FormField
@@ -995,6 +1000,7 @@ function BookingModal({ open, onClose }) {
                     value={values.phone}
                     onChange={(v) => handleChange('phone', v)}
                     onBlur={() => handleBlur('phone')}
+                    error={touched.phone ? errors.phone : null}
                     required
                     maxLength={10}
                   />
@@ -1005,6 +1011,7 @@ function BookingModal({ open, onClose }) {
                     value={values.email}
                     onChange={(v) => handleChange('email', v)}
                     onBlur={() => handleBlur('email')}
+                    error={touched.email ? errors.email : null}
                     required
                   />
                   <FormField
@@ -1014,13 +1021,14 @@ function BookingModal({ open, onClose }) {
                     value={values.pincode}
                     onChange={(v) => handleChange('pincode', v)}
                     onBlur={() => handleBlur('pincode')}
+                    error={touched.pincode ? errors.pincode : null}
                     required
                     maxLength={6}
                   />
                   <SubmitButton
                     type="submit"
                     loading={status === 'loading'}
-                    disabled={!isValid}
+                    disabled={status === 'loading'}
                     style={{
                       fontFamily: 'var(--font-h)', fontSize: '0.65rem', fontWeight: 800,
                       letterSpacing: '0.14em', textTransform: 'uppercase',

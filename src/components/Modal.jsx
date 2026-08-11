@@ -33,7 +33,7 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
     course: validateRequired,
   }
 
-  const { values, handleChange, handleBlur, validate, isValid, setValues } = useFormValidation(
+  const { values, errors, touched, handleChange, handleBlur, validate, setValues } = useFormValidation(
     { name: '', phone: '', email: '', pincode: '', course: '' },
     validators
   )
@@ -174,6 +174,7 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
                     value={values.name}
                     onChange={(v) => handleChange('name', v)}
                     onBlur={() => handleBlur('name')}
+                    error={touched.name ? errors.name : null}
                     required
                   />
                 </div>
@@ -186,6 +187,7 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
                     value={values.phone}
                     onChange={(v) => handleChange('phone', v)}
                     onBlur={() => handleBlur('phone')}
+                    error={touched.phone ? errors.phone : null}
                     required
                     maxLength={10}
                   />
@@ -201,6 +203,7 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
                   value={values.email}
                   onChange={(v) => handleChange('email', v)}
                   onBlur={() => handleBlur('email')}
+                  error={touched.email ? errors.email : null}
                 />
               </div>
 
@@ -213,6 +216,7 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
                   value={values.pincode}
                   onChange={(v) => handleChange('pincode', v)}
                   onBlur={() => handleBlur('pincode')}
+                  error={touched.pincode ? errors.pincode : null}
                   required
                   maxLength={6}
                 />
@@ -225,6 +229,7 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
                   as="select"
                   value={values.course}
                   onChange={(v) => handleChange('course', v)}
+                  error={touched.course ? errors.course : null}
                   required
                 >
                   <option value="">Select a program</option>
@@ -237,7 +242,6 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
               <SubmitButton
                 className="btn btn-primary"
                 id={isDemo ? 'submit-demo-form' : 'submit-apply-form'}
-                disabled={!isValid}
                 style={{ width: '100%', justifyContent: 'center', padding: '0.9rem' }}
               >
                 {isDemo ? 'Book My Free Demo →' : 'Submit Application →'}
