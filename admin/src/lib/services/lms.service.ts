@@ -71,8 +71,23 @@ export class LmsService {
 
   static async me(ctx: RequestContext) {
     const student = await this.resolveLinkedStudent(ctx);
+    const user = await prisma.user.findUnique({
+      where: { id: ctx.user.id },
+      select: { avatarUrl: true },
+    });
     const dashboard = await this.studentDashboard(ctx, student.id);
-    return { student, user: { id: ctx.user.id, name: ctx.user.name, email: ctx.user.email, role: ctx.user.role }, ...dashboard };
+    return {
+      student,
+      user: {
+        id: ctx.user.id,
+        name: ctx.user.name,
+        email: ctx.user.email,
+        role: ctx.user.role,
+        avatarUrl: user?.avatarUrl ?? null,
+        phone: student.phone,
+      },
+      ...dashboard,
+    };
   }
 
   static async listCourses(ctx: RequestContext) {

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ColumnDef, type PaginationState } from "@tanstack/react-table";
-import { Search, Globe, MoreHorizontal, Eye, Plus, BookOpen, SearchCode, Save, AlertCircle, Trash2 } from "lucide-react";
+import { Search, Globe, MoreHorizontal, Eye, Plus, BookOpen, SearchCode, Save, AlertCircle, Trash2, History, ChevronUp, ChevronDown, X, Loader2, RotateCcw } from "lucide-react";
 import { DataTable } from "@/components/shared/data-table";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PageHeader } from "@/components/shared/page-header";
@@ -12,6 +12,16 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { apiFetch } from "@/lib/api";
@@ -46,6 +56,14 @@ export default function CoursesPage() {
   const [selectedCourse, setSelectedCourse] = React.useState<Course | null>(null);
   const [createOpen, setCreateOpen] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState("syllabus");
+  const [curriculumDraft, setCurriculumDraft] = React.useState<{ module: string; topics: string[] }[]>([]);
+  const [versionsOpen, setVersionsOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (selectedCourse) {
+      setCurriculumDraft(selectedCourse.curriculum ?? []);
+    }
+  }, [selectedCourse]);
 
   React.useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 400);
@@ -144,13 +162,34 @@ export default function CoursesPage() {
     const formData = new FormData(e.currentTarget);
     const seoTitle = formData.get("seoTitle") as string;
     const seoDesc = formData.get("seoDesc") as string;
+    const title = formData.get("title") as string;
+    const subtitle = formData.get("subtitle") as string;
+    const slug = formData.get("slug") as string;
+    const description = formData.get("description") as string;
+    const category = formData.get("category") as string;
+    const duration = formData.get("duration") as string;
+    const eligibility = formData.get("eligibility") as string;
+    const feeStr = formData.get("fee") as string;
+    const fee = feeStr ? parseFloat(feeStr) : undefined;
+    const curriculum = curriculumDraft
+      .map((m) => ({ module: m.module.trim(), topics: m.topics.map((t) => t.trim()).filter(Boolean) }))
+      .filter((m) => m.module.length > 0);
 
     updateMutation.mutate({
       id: selectedCourse.id,
       body: {
+        title: title || undefined,
+        slug: slug || undefined,
+        subtitle: subtitle || undefined,
+        description: description || undefined,
+        category: category || undefined,
+        duration: duration || undefined,
+        eligibility: eligibility || undefined,
+        fee,
+        curriculum,
         seoTitle: seoTitle || undefined,
         seoDesc: seoDesc || undefined,
-      }
+      },
     });
   };
 
@@ -350,6 +389,7 @@ export default function CoursesPage() {
             {/* Sub Tabs */}
             <div className="flex gap-2 pt-4 border-t border-white/10 mt-4 overflow-x-auto">
               {[
+                { id: "details", label: "Course Details", icon: BookOpen },
                 { id: "syllabus", label: "Syllabus & Curriculum", icon: BookOpen },
                 { id: "seo", label: "Public SEO Settings", icon: SearchCode },
               ].map((tab) => {
@@ -374,28 +414,144 @@ export default function CoursesPage() {
 
           <form onSubmit={handleSaveConfig} id="course-config-form" className="p-6 overflow-y-auto max-h-[60vh]">
             <AnimatePresence mode="wait">
+              {activeTab === "details" && (
+                <motion.div key="details" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-4">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Course Details</h3>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-bold text-muted-foreground">Course Title *</Label>
+                      <Input name="title" defaultValue={selectedCourse?.title} className="bg-secondary/40 border-white/10 text-xs font-semibold text-white" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-bold text-muted-foreground">URL Slug</Label>
+                      <Input name="slug" defaultValue={selectedCourse?.slug} className="bg-secondary/40 border-white/10 text-xs font-semibold text-white font-mono" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-bold text-muted-foreground">Subtitle</Label>
+                      <Input name="subtitle" defaultValue={selectedCourse?.subtitle ?? ""} className="bg-secondary/40 border-white/10 text-xs font-semibold text-white" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-bold text-muted-foreground">Description</Label>
+                      <Textarea name="description" defaultValue={selectedCourse?.description ?? ""} rows={3} className="bg-secondary/40 border-white/10 text-xs font-medium text-white leading-relaxed" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-bold text-muted-foreground">Category</Label>
+                        <Input name="category" defaultValue={selectedCourse?.category ?? ""} className="bg-secondary/40 border-white/10 text-xs font-semibold text-white" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-bold text-muted-foreground">Duration</Label>
+                        <Input name="duration" defaultValue={selectedCourse?.duration ?? ""} className="bg-secondary/40 border-white/10 text-xs font-semibold text-white" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-bold text-muted-foreground">Tuition Fee (INR)</Label>
+                        <Input name="fee" type="number" defaultValue={selectedCourse?.fee ?? ""} className="bg-secondary/40 border-white/10 text-xs font-semibold text-white" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-bold text-muted-foreground">Eligibility</Label>
+                        <Input name="eligibility" defaultValue={selectedCourse?.eligibility ?? ""} className="bg-secondary/40 border-white/10 text-xs font-semibold text-white" />
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
               {activeTab === "syllabus" && (
                 <motion.div key="syllabus" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-4">
                   <div className="flex items-center justify-between border-b border-white/10 pb-3">
                     <h3 className="text-sm font-bold text-white uppercase tracking-wider">Curriculum Modules</h3>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="h-7 border-white/10 text-[11px] font-bold"
+                      onClick={() => setCurriculumDraft((prev) => [...prev, { module: "", topics: [] }])}
+                    >
+                      <Plus className="mr-1 h-3 w-3" /> Add Module
+                    </Button>
                   </div>
                   <div className="space-y-3">
-                    {selectedCourse?.curriculum && selectedCourse.curriculum.length > 0 ? (
-                      selectedCourse.curriculum.map((mod, i) => (
+                    {curriculumDraft.length > 0 ? (
+                      curriculumDraft.map((mod, i) => (
                         <div key={i} className="p-4 rounded-xl bg-secondary/30 border border-white/5 space-y-2 group hover:border-white/10 transition-colors">
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2">
                             <span className="text-xs font-extrabold bg-secondary px-2.5 py-1 rounded border border-white/5 text-muted-foreground">
-                              0{i + 1}
+                              {String(i + 1).padStart(2, "0")}
                             </span>
-                            <span className="text-xs font-semibold text-white">{mod.module}</span>
+                            <Input
+                              value={mod.module}
+                              onChange={(e) => {
+                                setCurriculumDraft((prev) => prev.map((m, mi) => (mi === i ? { ...m, module: e.target.value } : m)));
+                              }}
+                              placeholder="Module title (e.g. Ground School – Phase 1)"
+                              className="h-8 bg-transparent border-white/10 text-xs font-semibold text-white"
+                            />
+                            <div className="flex items-center gap-1">
+                              <Button type="button" size="icon" variant="ghost" className="h-7 w-7" disabled={i === 0} onClick={() => {
+                                setCurriculumDraft((prev) => {
+                                  const next = [...prev];
+                                  const tmp = next[i - 1]!;
+                                  next[i - 1] = next[i]!;
+                                  next[i] = tmp;
+                                  return next;
+                                });
+                              }}>
+                                <ChevronUp className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button type="button" size="icon" variant="ghost" className="h-7 w-7" disabled={i === curriculumDraft.length - 1} onClick={() => {
+                                setCurriculumDraft((prev) => {
+                                  const next = [...prev];
+                                  const tmp = next[i + 1]!;
+                                  next[i + 1] = next[i]!;
+                                  next[i] = tmp;
+                                  return next;
+                                });
+                              }}>
+                                <ChevronDown className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button type="button" size="icon" variant="ghost" className="h-7 w-7 text-red-400 hover:text-red-300 hover:bg-red-500/10" onClick={() => setCurriculumDraft((prev) => prev.filter((_, idx) => idx !== i))}>
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
                           </div>
-                          {mod.topics.length > 0 && (
-                            <p className="text-[11px] text-muted-foreground pl-9">{mod.topics.join(", ")}</p>
-                          )}
+                          <div className="space-y-1.5 pl-6">
+                            {mod.topics.map((topic, ti) => (
+                              <div key={ti} className="flex items-center gap-2">
+                                <Input
+                                  value={topic}
+                                  onChange={(e) => {
+                                    setCurriculumDraft((prev) => prev.map((m, mi) => (mi === i ? { ...m, topics: m.topics.map((t, idx) => (idx === ti ? e.target.value : t)) } : m)));
+                                  }}
+                                  placeholder="Topic title"
+                                  className="h-7 bg-transparent border-white/10 text-[11px] font-medium text-white/90"
+                                />
+                                <Button type="button" size="icon" variant="ghost" className="h-6 w-6 text-red-400/70 hover:text-red-300 hover:bg-red-500/10" onClick={() => {
+                                  setCurriculumDraft((prev) => prev.map((m, mi) => (mi === i ? { ...m, topics: m.topics.filter((_, idx) => idx !== ti) } : m)));
+                                }}>
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ))}
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 text-[11px] text-muted-foreground hover:text-white"
+                              onClick={() => {
+                                setCurriculumDraft((prev) => prev.map((m, mi) => (mi === i ? { ...m, topics: [...m.topics, ""] } : m)));
+                              }}
+                            >
+                              <Plus className="mr-1 h-3 w-3" /> Add Topic
+                            </Button>
+                          </div>
                         </div>
                       ))
                     ) : (
-                      <p className="text-xs text-muted-foreground py-4 text-center">No curriculum modules added yet.</p>
+                      <p className="text-xs text-muted-foreground py-4 text-center">No curriculum modules added yet. Click &quot;Add Module&quot; to build the syllabus.</p>
                     )}
                   </div>
                 </motion.div>
@@ -426,9 +582,14 @@ export default function CoursesPage() {
 
           <DialogFooter className="p-6 border-t border-white/10 bg-slate-900/80 flex items-center justify-between w-full">
             {selectedCourse && (
-              <Button type="button" variant="destructive" onClick={() => { if (confirm("Are you sure you want to delete this course?")) { deleteMutation.mutate(selectedCourse.id); } }} disabled={deleteMutation.isPending} className="text-xs font-bold mr-auto">
-                <Trash2 className="h-4 w-4 mr-1.5" /> Delete Course
-              </Button>
+              <div className="flex items-center gap-2 mr-auto">
+                <Button type="button" variant="destructive" onClick={() => { if (confirm("Are you sure you want to delete this course?")) { deleteMutation.mutate(selectedCourse.id); } }} disabled={deleteMutation.isPending} className="text-xs font-bold">
+                  <Trash2 className="h-4 w-4 mr-1.5" /> Delete Course
+                </Button>
+                <Button type="button" variant="outline" onClick={() => setVersionsOpen(true)} className="border-white/10 hover:bg-white/5 text-xs font-bold">
+                  <History className="h-4 w-4 mr-1.5" /> Version History
+                </Button>
+              </div>
             )}
             <div className="flex items-center gap-2">
               <Button type="button" variant="outline" onClick={() => setSelectedCourse(null)} className="border-white/10 hover:bg-white/5 text-xs font-bold">
@@ -441,6 +602,162 @@ export default function CoursesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <CourseVersionHistory
+        courseId={selectedCourse?.id ?? ""}
+        open={versionsOpen}
+        onOpenChange={setVersionsOpen}
+        onRolledBack={() => {
+          queryClient.invalidateQueries({ queryKey: ["courses"] });
+          setSelectedCourse(null);
+        }}
+      />
     </div>
+  );
+}
+
+interface CourseVersionModel {
+  id: string;
+  version: number;
+  status: string;
+  notes: string | null;
+  createdBy: string | null;
+  createdAt: string;
+  creator?: { id: string; name: string } | null;
+}
+
+function CourseVersionHistory({
+  courseId,
+  open,
+  onOpenChange,
+  onRolledBack,
+}: {
+  courseId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onRolledBack: () => void;
+}) {
+  const queryClient = useQueryClient();
+  const [pendingVersion, setPendingVersion] = React.useState<CourseVersionModel | null>(null);
+
+  const { data: versions, isLoading, isError, refetch } = useQuery({
+    queryKey: ["course-versions", courseId],
+    queryFn: () => apiFetch<CourseVersionModel[]>(`/courses/${courseId}/versions`),
+    enabled: open && !!courseId,
+  });
+
+  const rollbackMutation = useMutation({
+    mutationFn: (versionId: string) =>
+      apiFetch(`/courses/${courseId}/versions/${versionId}/rollback`, { method: "POST" }),
+    onSuccess: () => {
+      toast({ title: "Rollback Complete", description: "Course restored and set back to DRAFT (new version created)." });
+      setPendingVersion(null);
+      queryClient.invalidateQueries({ queryKey: ["course-versions", courseId] });
+      onRolledBack();
+    },
+    onError: (err) => {
+      toast({ title: "Rollback Failed", description: err.message, variant: "destructive" });
+      setPendingVersion(null);
+    },
+  });
+
+  const STATUS_CHIP: Record<string, string> = {
+    PUBLISHED: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+    SCHEDULED: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+    DRAFT: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+    ARCHIVED: "bg-slate-500/20 text-slate-400 border-slate-500/30",
+  };
+
+  return (
+    <>
+      <AlertDialog open={open} onOpenChange={onOpenChange}>
+        <AlertDialogContent className="max-w-2xl border-white/10 bg-slate-900/95">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-white">
+              <History className="h-5 w-5 text-primary" /> Course Version History
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">
+                    A snapshot is created on every publish, create-as-published, and rollback.
+                  </p>
+                  <Button size="sm" variant="outline" className="h-7 border-white/10 text-xs font-bold" onClick={() => refetch()}>
+                    Refresh
+                  </Button>
+                </div>
+
+                {isLoading ? (
+                  <div className="flex items-center justify-center gap-2 py-12 text-xs text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" /> Loading versions...
+                  </div>
+                ) : isError ? (
+                  <div className="flex items-center justify-center gap-2 py-12 text-xs text-rose-400">
+                    <AlertCircle className="h-4 w-4" /> Failed to load versions.
+                  </div>
+                ) : (versions ?? []).length === 0 ? (
+                  <p className="py-12 text-center text-xs text-muted-foreground">
+                    No versions recorded yet. Publish this course to create the first snapshot.
+                  </p>
+                ) : (
+                  <div className="mt-2 max-h-[40vh] overflow-y-auto space-y-2 pr-1">
+                    {(versions ?? []).map((v) => (
+                      <div key={v.id} className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-secondary/30 px-3 py-2">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-white">v{v.version}</span>
+                            <span className={`rounded-full border px-2 py-0.5 text-[10px] font-extrabold ${STATUS_CHIP[v.status] ?? "bg-secondary/30 text-muted-foreground border-white/10"}`}>
+                              {v.status}
+                            </span>
+                          </div>
+                          <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                            {new Date(v.createdAt).toLocaleString()} · {v.creator?.name ?? "System"}
+                            {v.notes ? ` · ${v.notes}` : ""}
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 shrink-0 border-white/10 text-xs font-bold"
+                          disabled={rollbackMutation.isPending}
+                          onClick={() => setPendingVersion(v)}
+                        >
+                          <RotateCcw className="h-3 w-3" /> Restore
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-white/10 text-xs font-bold">Close</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!pendingVersion} onOpenChange={(o) => !o && setPendingVersion(null)}>
+        <AlertDialogContent className="border-white/10 bg-slate-900/95">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Restore v{pendingVersion?.version}?</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-muted-foreground">
+              This replaces the current course configuration with the saved snapshot and sets the course
+              back to DRAFT. A new version will be created to record the rollback. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-white/10 text-xs font-bold">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-white text-xs font-bold"
+              disabled={rollbackMutation.isPending}
+              onClick={() => pendingVersion && rollbackMutation.mutate(pendingVersion.id)}
+            >
+              {rollbackMutation.isPending ? "Restoring..." : "Restore Version"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

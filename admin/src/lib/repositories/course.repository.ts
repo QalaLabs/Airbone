@@ -105,6 +105,9 @@ export class CourseRepository {
         order: data.order ?? 0,
         isFeatured: data.isFeatured ?? false,
         metadata: (data.metadata ?? {}) as Prisma.InputJsonValue,
+        status: data.status ?? "DRAFT",
+        publishedAt: data.status === "PUBLISHED" ? new Date() : null,
+        scheduledAt: data.status === "SCHEDULED" ? (data.scheduledAt ? new Date(data.scheduledAt) : null) : null,
       },
       select: COURSE_SELECT,
     });

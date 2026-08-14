@@ -50,6 +50,35 @@ export class CourseService {
 
     const course = await CourseRepository.create(ctx.orgId, ctx.user.id, input, slug);
 
+    // create a version snapshot when a course is created directly as PUBLISHED
+    if (course.status === "PUBLISHED") {
+      const versionRecord = await CourseRepository.createVersion(
+        ctx.orgId,
+        course.id,
+        course.version,
+        course,
+        "PUBLISHED",
+        ctx.user.id,
+        "Created as published",
+      );
+
+      await emitEvent({
+        name: "course/published",
+        orgId: ctx.orgId,
+        actorId: ctx.user.id,
+        actorName: ctx.user.name,
+        requestId: ctx.requestId,
+        timestamp: new Date().toISOString(),
+        data: {
+          courseId: course.id,
+          slug: course.slug,
+          title: course.title,
+          version: course.version,
+          versionId: versionRecord.id,
+        },
+      });
+    }
+
     // B-04: track media usage for banner and gallery images
     if (input.bannerImageId) {
       await MediaRepository.trackUsage(ctx.orgId, input.bannerImageId, "course", course.id, "bannerImageId");

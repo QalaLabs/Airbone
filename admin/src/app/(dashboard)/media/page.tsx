@@ -1,11 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Search, FolderOpen, Image as ImageIcon, FileText, Film, File, Music,
   ChevronRight, Home, Grid3X3, List, Copy, ExternalLink,
-  Upload
+  Upload, FolderPlus, Pencil, RefreshCw
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,7 @@ interface MediaFolder {
   id: string;
   name: string;
   slug: string;
+  path: string;
   parentId?: string;
   assetCount?: number;
 }
@@ -61,6 +62,13 @@ export default function MediaPage() {
   const [folderPath, setFolderPath] = React.useState<{ id: string; name: string }[]>([]);
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
   const [selectedAsset, setSelectedAsset] = React.useState<MediaAsset | null>(null);
+  const [folderDialogOpen, setFolderDialogOpen] = React.useState(false);
+  const [newFolderName, setNewFolderName] = React.useState("");
+  const [editDialogOpen, setEditDialogOpen] = React.useState(false);
+  const [editName, setEditName] = React.useState("");
+  const [editFolderId, setEditFolderId] = React.useState<string>("");
+  const replaceInputRef = React.useRef<HTMLInputElement>(null);
+  const queryClient = useQueryClient();
 
   React.useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 400);
@@ -70,6 +78,11 @@ export default function MediaPage() {
   const { data: folders } = useQuery({
     queryKey: ["media-folders", selectedFolder],
     queryFn: () => apiFetch<MediaFolder[]>(`/media/folders${selectedFolder ? `?parentId=${selectedFolder}` : ""}`),
+  });
+
+  const { data: allFolders } = useQuery({
+    queryKey: ["media-folders-all"],
+    queryFn: () => apiFetch<MediaFolder[]>("/media/folders"),
   });
 
   const { data: assets, isLoading: assetsLoading, refetch } = useQuery({
@@ -100,6 +113,57 @@ export default function MediaPage() {
     onError: (err: unknown) => {
       toast({ title: "Delete Failed", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
     }
+  });
+
+  const createFolderMutation = useMutation({
+    mutationFn: (name: string) =>
+      apiFetch<MediaFolder>("/media/folders", {
+        method: "POST",
+        body: JSON.stringify({ name, ...(selectedFolder ? { parentId: selectedFolder } : {}) }),
+      }),
+    onSuccess: () => {
+      toast({ title: "Folder Created", description: "New media folder created successfully." });
+      setFolderDialogOpen(false);
+      setNewFolderName("");
+      void queryClient.invalidateQueries({ queryKey: ["media-folders"] });
+      void queryClient.invalidateQueries({ queryKey: ["media-folders-all"] });
+    },
+    onError: (err: unknown) => {
+      toast({ title: "Create Folder Failed", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
+    },
+  });
+
+  const updateAssetMutation = useMutation({
+    mutationFn: ({ id, name, folderId }: { id: string; name: string; folderId?: string | null }) =>
+      apiFetch<MediaAsset>(`/media/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ name, ...(folderId !== undefined ? { folderId } : {}) }),
+      }),
+    onSuccess: (updated) => {
+      toast({ title: "Asset Updated", description: `"${updated.name}" updated successfully.` });
+      setEditDialogOpen(false);
+      setSelectedAsset(updated);
+      refetch();
+    },
+    onError: (err: unknown) => {
+      toast({ title: "Update Failed", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
+    },
+  });
+
+  const replaceMutation = useMutation({
+    mutationFn: ({ id, input }: { id: string; input: { fileKey: string; fileUrl: string; mimeType: string; sizeBytes: number } }) =>
+      apiFetch<MediaAsset>(`/media/${id}/replace`, {
+        method: "POST",
+        body: JSON.stringify(input),
+      }),
+    onSuccess: (updated) => {
+      toast({ title: "File Replaced", description: `"${updated.name}" replaced with the new version.` });
+      setSelectedAsset(updated);
+      refetch();
+    },
+    onError: (err: unknown) => {
+      toast({ title: "Replace Failed", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
+    },
   });
 
   const handleUploadClick = () => {
@@ -154,6 +218,44 @@ export default function MediaPage() {
     e.stopPropagation();
     navigator.clipboard.writeText(url);
     toast({ title: "URL Copied", description: "Public media URL copied to clipboard." });
+  };
+
+  const openEditDialog = (asset: MediaAsset) => {
+    setEditName(asset.name);
+    setEditFolderId(asset.folderId ?? "");
+    setSelectedAsset(asset);
+    setEditDialogOpen(true);
+  };
+
+  const onReplaceFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedAsset) return;
+
+    try {
+      toast({ title: "Uploading Replacement", description: `Sending "${file.name}" to storage...` });
+
+      const { uploadUrl, fileKey, fileUrl } = await apiFetch<{ uploadUrl: string; fileKey: string; fileUrl: string }>("/media/presign", {
+        method: "POST",
+        body: JSON.stringify({ fileName: file.name, contentType: file.type }),
+      });
+
+      const uploadRes = await fetch(uploadUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
+      if (!uploadRes.ok) throw new Error("Storage upload failed");
+
+      replaceMutation.mutate({
+        id: selectedAsset.id,
+        input: { fileKey, fileUrl, mimeType: file.type, sizeBytes: file.size },
+      });
+    } catch (err: unknown) {
+      const description = isStorageUnavailable(err)
+        ? "Media storage is not configured"
+        : err instanceof Error
+          ? err.message
+          : String(err);
+      toast({ title: "Replace Failed", description, variant: "destructive" });
+    } finally {
+      e.target.value = "";
+    }
   };
 
   const currentFolders = folders ?? [];
@@ -214,6 +316,15 @@ export default function MediaPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => { setNewFolderName(""); setFolderDialogOpen(true); }}
+            className="border-white/10 text-xs font-bold text-white hover:bg-white/5"
+          >
+            <FolderPlus className="h-3.5 w-3.5 mr-1.5" />
+            New Folder
+          </Button>
           <div className="relative w-64">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -430,6 +541,31 @@ export default function MediaPage() {
             >
               Delete Asset
             </Button>
+            <input
+              type="file"
+              ref={replaceInputRef}
+              onChange={onReplaceFile}
+              style={{ display: "none" }}
+            />
+            <Button
+              variant="outline"
+              disabled={replaceMutation.isPending}
+              onClick={() => replaceInputRef.current?.click()}
+              className="border-white/10 hover:bg-white/5 text-xs font-bold"
+              title="Replace the underlying file with a new version"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${replaceMutation.isPending ? "animate-spin" : ""}`} />
+              {replaceMutation.isPending ? "Replacing…" : "Replace File"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => selectedAsset && openEditDialog(selectedAsset)}
+              className="border-white/10 hover:bg-white/5 text-xs font-bold"
+              title="Rename or move this asset"
+            >
+              <Pencil className="h-3.5 w-3.5 mr-1.5" />
+              Edit Details
+            </Button>
             <Button variant="outline" onClick={() => setSelectedAsset(null)} className="border-white/10 hover:bg-white/5 text-xs font-bold">
               Close Preview
             </Button>
@@ -437,6 +573,96 @@ export default function MediaPage() {
               <a href={selectedAsset?.fileUrl} target="_blank" rel="noreferrer">
                 Open Original Asset <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
               </a>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Folder Dialog */}
+      <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
+        <DialogContent className="max-w-md glass-panel border-white/10 bg-slate-900/95">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-white">Create New Folder</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <p className="text-xs font-bold text-muted-foreground mb-2">Folder Name</p>
+              <Input
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                placeholder="e.g. Academy Photos 2025"
+                className="bg-secondary/40 border-white/10 focus:border-primary text-xs font-semibold text-white"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && newFolderName.trim() && !createFolderMutation.isPending) {
+                    createFolderMutation.mutate(newFolderName.trim());
+                  }
+                }}
+              />
+              {selectedFolder && (
+                <p className="text-[11px] text-muted-foreground mt-2">
+                  Will be created inside: <span className="text-primary font-semibold">{folderPath[folderPath.length - 1]?.name ?? "Current Folder"}</span>
+                </p>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setFolderDialogOpen(false)} className="border-white/10 hover:bg-white/5 text-xs font-bold">
+              Cancel
+            </Button>
+            <Button
+              disabled={!newFolderName.trim() || createFolderMutation.isPending}
+              onClick={() => createFolderMutation.mutate(newFolderName.trim())}
+              className="bg-primary hover:bg-primary/90 text-white text-xs font-bold"
+            >
+              {createFolderMutation.isPending ? "Creating…" : "Create Folder"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Asset Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-md glass-panel border-white/10 bg-slate-900/95">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-white">Edit Media Asset</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <p className="text-xs font-bold text-muted-foreground mb-2">Asset Name</p>
+              <Input
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder="Asset name"
+                className="bg-secondary/40 border-white/10 focus:border-primary text-xs font-semibold text-white"
+              />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-muted-foreground mb-2">Move To Folder</p>
+              <select
+                value={editFolderId}
+                onChange={(e) => setEditFolderId(e.target.value)}
+                className="h-9 w-full rounded-md border border-border bg-secondary/40 px-3 text-xs font-semibold text-white focus:outline-none"
+              >
+                <option value="">Media Root</option>
+                {(allFolders ?? [])
+                  .filter((f) => f.id !== selectedAsset?.id)
+                  .map((folder) => (
+                    <option key={folder.id} value={folder.id}>/{folder.path}</option>
+                  ))}
+              </select>
+              <p className="text-[11px] text-muted-foreground mt-2">Choose a new location or leave at Media Root.</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)} className="border-white/10 hover:bg-white/5 text-xs font-bold">
+              Cancel
+            </Button>
+            <Button
+              disabled={!editName.trim() || updateAssetMutation.isPending}
+              onClick={() => updateAssetMutation.mutate({ id: selectedAsset!.id, name: editName.trim(), folderId: editFolderId || null })}
+              className="bg-primary hover:bg-primary/90 text-white text-xs font-bold"
+            >
+              {updateAssetMutation.isPending ? "Saving…" : "Save Changes"}
             </Button>
           </DialogFooter>
         </DialogContent>

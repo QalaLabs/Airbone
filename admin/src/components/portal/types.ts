@@ -80,8 +80,18 @@ export interface MeStudent {
   email?: string;
 }
 
+export interface MeUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  avatarUrl?: string | null;
+  phone?: string | null;
+}
+
 export interface MePayload {
   student: MeStudent;
+  user: MeUser;
   enrollments: MeEnrollment[];
   progress: MeProgress[];
   assessments: MeAssessment[];

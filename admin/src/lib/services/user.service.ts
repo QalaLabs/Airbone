@@ -204,6 +204,63 @@ export class UserService {
     return updated;
   }
 
+  static async updateSelfProfile(
+    ctx: RequestContext,
+    input: {
+      name?: string;
+      firstName?: string;
+      lastName?: string;
+      phone?: string | null;
+      avatarUrl?: string | null;
+    },
+  ) {
+    const derivedName =
+      input.firstName !== undefined || input.lastName !== undefined
+        ? `${input.firstName ?? ""} ${input.lastName ?? ""}`.trim()
+        : input.name;
+
+    return prisma.$transaction(async (tx) => {
+      const user = await tx.user.update({
+        where: { id: ctx.user.id },
+        data: {
+          ...(derivedName !== undefined ? { name: derivedName } : {}),
+          ...(input.phone !== undefined ? { phone: input.phone } : {}),
+          ...(input.avatarUrl !== undefined ? { avatarUrl: input.avatarUrl } : {}),
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          phone: true,
+          avatarUrl: true,
+          isActive: true,
+          campusId: true,
+        },
+      });
+
+      // Portal cadets edit the linked Student record — keep both in sync.
+      if (ctx.user.role === "STUDENT") {
+        const student = await tx.student.findFirst({
+          where: { orgId: ctx.orgId, userId: ctx.user.id, deletedAt: null, status: "ACTIVE" },
+          select: { id: true },
+        });
+        if (student) {
+          await tx.student.update({
+            where: { id: student.id },
+            data: {
+              ...(input.firstName !== undefined ? { firstName: input.firstName } : {}),
+              ...(input.lastName !== undefined ? { lastName: input.lastName } : {}),
+              ...(input.phone !== undefined ? { phone: input.phone ?? "" } : {}),
+            },
+          });
+        }
+      }
+
+      return user;
+    });
+  }
+
   static async deactivate(ctx: RequestContext, id: string) {
     const user = await this.getById(ctx, id);
 

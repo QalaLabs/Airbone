@@ -31,10 +31,12 @@ export const createCourseSchema = z.object({
   order: z.number().int().min(0).optional().default(0),
   isFeatured: z.boolean().optional().default(false),
   metadata: z.record(z.unknown()).optional().default({}),
+  status: z.enum(["DRAFT", "PUBLISHED", "SCHEDULED", "ARCHIVED"]).optional(),
+  scheduledAt: z.string().datetime().optional(),
 });
 export type CreateCourseInput = z.infer<typeof createCourseSchema>;
 
-export const updateCourseSchema = createCourseSchema.partial();
+export const updateCourseSchema = createCourseSchema.omit({ status: true, scheduledAt: true }).partial();
 export type UpdateCourseInput = z.infer<typeof updateCourseSchema>;
 
 export const publishCourseSchema = z.object({
