@@ -12,6 +12,7 @@ import { GlowCard } from '@/components/ui/spotlight-card'
 import PremiumFooter from '@/components/PremiumFooter'
 import GlobalRouteMap from '@/components/GlobalRouteMap'
 import ProgramGrid from '@/components/ProgramGrid'
+import MediaSection from '@/components/MediaSection'
 import useFormValidation from '@/hooks/useFormValidation'
 import { validateName, validatePhone, validateEmailRequired, validatePincode } from '@/utils/validation'
 import FormField from '@/components/FormField'
@@ -298,7 +299,7 @@ function HeroChapter({ onBook }) {
   const ref = useRef(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
   const yBg = useTransform(scrollYProgress, [0, 1], ['0%', '22%'])
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 1.08])
+  const scale = useTransform(scrollYProgress, [0, 1], [1, 1.03])
   const fade = useTransform(scrollYProgress, [0, 0.75], [1, 0])
   const textY = useTransform(scrollYProgress, [0, 1], ['0%', '-18%'])
 
@@ -1098,7 +1099,10 @@ function PremiumCursor() {
 ───────────────────────────────────── */
 function AirborneAdvantage() {
   const [activeIndex, setActiveIndex] = useState(0)
+  const [isPaused, setIsPaused] = useState(false)
   const carouselRef = useRef(null)
+  const autoPlayTimerRef = useRef(null)
+  const resumeTimeoutRef = useRef(null)
 
   // 4 Themed Categories (PDF Section 5.8 Specification)
   const categorizedBenefits = [
@@ -1171,17 +1175,7 @@ function AirborneAdvantage() {
     }
   ]
 
-  const handleScroll = () => {
-    if (!carouselRef.current) return
-    const container = carouselRef.current
-    const scrollLeft = container.scrollLeft
-    const containerWidth = container.clientWidth
-    const cardWidth = containerWidth
-    const index = Math.round(scrollLeft / Math.max(cardWidth, 1))
-    setActiveIndex(Math.min(categorizedBenefits.length - 1, Math.max(0, index)))
-  }
-
-  const scrollToCard = (index) => {
+  const scrollToCard = useCallback((index) => {
     if (!carouselRef.current) return
     const container = carouselRef.current
     const containerWidth = container.clientWidth
@@ -1190,6 +1184,53 @@ function AirborneAdvantage() {
       left: index * cardWidth,
       behavior: 'smooth'
     })
+  }, [])
+
+  const stopAutoplay = useCallback(() => {
+    if (autoPlayTimerRef.current) {
+      clearInterval(autoPlayTimerRef.current)
+      autoPlayTimerRef.current = null
+    }
+  }, [])
+
+  const startAutoplay = useCallback(() => {
+    stopAutoplay()
+    if (typeof window !== 'undefined' && window.innerWidth >= 768) return
+    autoPlayTimerRef.current = setInterval(() => {
+      setActiveIndex((prevIndex) => {
+        const nextIndex = (prevIndex + 1) % categorizedBenefits.length
+        scrollToCard(nextIndex)
+        return nextIndex
+      })
+    }, 3500)
+  }, [stopAutoplay, scrollToCard, categorizedBenefits.length])
+
+  useEffect(() => {
+    if (!isPaused) {
+      startAutoplay()
+    } else {
+      stopAutoplay()
+    }
+    return () => stopAutoplay()
+  }, [isPaused, startAutoplay, stopAutoplay])
+
+  useEffect(() => {
+    return () => {
+      stopAutoplay()
+      if (resumeTimeoutRef.current) {
+        clearTimeout(resumeTimeoutRef.current)
+      }
+    }
+  }, [stopAutoplay])
+
+  const handleScroll = () => {
+    if (!carouselRef.current) return
+    const container = carouselRef.current
+    const scrollLeft = container.scrollLeft
+    const containerWidth = container.clientWidth
+    const cardWidth = containerWidth
+    const index = Math.round(scrollLeft / Math.max(cardWidth, 1))
+    setActiveIndex(Math.min(categorizedBenefits.length - 1, Math.max(0, index)))
   }
 
   return (
@@ -1574,6 +1615,34 @@ function AirborneAdvantage() {
               className="advantage-carousel" 
               ref={carouselRef}
               onScroll={handleScroll}
+              onTouchStart={() => {
+                setIsPaused(true)
+                if (resumeTimeoutRef.current) {
+                  clearTimeout(resumeTimeoutRef.current)
+                }
+              }}
+              onTouchEnd={() => {
+                if (resumeTimeoutRef.current) {
+                  clearTimeout(resumeTimeoutRef.current)
+                }
+                resumeTimeoutRef.current = setTimeout(() => {
+                  setIsPaused(false)
+                }, 3500)
+              }}
+              onMouseEnter={() => {
+                setIsPaused(true)
+                if (resumeTimeoutRef.current) {
+                  clearTimeout(resumeTimeoutRef.current)
+                }
+              }}
+              onMouseLeave={() => {
+                if (resumeTimeoutRef.current) {
+                  clearTimeout(resumeTimeoutRef.current)
+                }
+                resumeTimeoutRef.current = setTimeout(() => {
+                  setIsPaused(false)
+                }, 3500)
+              }}
             >
               {categorizedBenefits.map((cat, idx) => (
                 <div key={idx} className="advantage-card-mobile">
@@ -1604,7 +1673,17 @@ function AirborneAdvantage() {
             {categorizedBenefits.map((_, idx) => (
               <button
                 key={idx}
-                onClick={() => scrollToCard(idx)}
+                onClick={() => {
+                  scrollToCard(idx)
+                  setActiveIndex(idx)
+                  setIsPaused(true)
+                  if (resumeTimeoutRef.current) {
+                    clearTimeout(resumeTimeoutRef.current)
+                  }
+                  resumeTimeoutRef.current = setTimeout(() => {
+                    setIsPaused(false)
+                  }, 3500)
+                }}
                 style={{
                   width: activeIndex === idx ? '20px' : '8px',
                   height: '8px',
@@ -1700,6 +1779,8 @@ function PilotCareerOutlook() {
             Indian aviation is at an inflection point. IndiGo, Air India, Akasa Air, and new entrants are collectively placing orders for 1,500+ aircraft over the next decade. Boeing's Pilot Outlook estimates India will need 8,000+ new pilots by 2040. Starting CPL training today means you are ready to fly exactly when the industry needs pilots most.
           </p>
         </div>
+
+        <PilotSupplyGraph />
 
         {/* Salaries Table */}
         <div style={{ marginBottom: '5rem' }}>
@@ -1956,10 +2037,236 @@ function PilotCareerOutlook() {
 }
 
 /* ─────────────────────────────────────
+   CAMPUS & OFFICE GALLERY SECTION
+───────────────────────────────────── */
+function CampusGallerySection() {
+  const [activeTab, setActiveTab] = useState('ambience')
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile, { passive: true })
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  const ambienceImages = [
+    { src: '/campus/reception.jpg', title: 'Admissions Desk & Reception' },
+    { src: '/campus/classroom_full.jpg', title: 'Main Classroom (Smart Screen)' },
+    { src: '/campus/classroom_navrang.jpg', title: 'Interactive Learning Bay' },
+    { src: '/campus/office_modern.jpg', title: 'Counselling Office & Lobby' },
+  ]
+
+  const trainingImages = [
+    { src: '/campus/office.jpg', title: 'Academy Entrance, Ramphal Chowk' },
+    { src: '/campus/campus_training.jpg', title: 'Student Interaction Wing' },
+    { src: '/campus/campus_facility.jpg', title: 'Modern Center Amenities' },
+  ]
+
+  const showcaseImages = [
+    { src: '/campus/campus_wide.jpg', title: 'Academy Building (Outside View)' },
+    { src: '/campus/a320_sim.jpg', title: 'A320 Simulator Training Room' },
+    { src: '/photos/classroom_mentor.jpg', title: 'Airborne Student Group Photo' },
+  ]
+
+  const currentImages = activeTab === 'ambience' 
+    ? ambienceImages 
+    : activeTab === 'training' 
+      ? trainingImages 
+      : showcaseImages
+
+  return (
+    <section id="gallery" style={{ position: 'relative', padding: 'clamp(4rem, 8vw, 10rem) clamp(1.5rem, 5vw, 4rem)', background: '#ffffff', color: 'var(--navy)', borderTop: '1px solid rgba(0,39,76,0.08)' }}>
+      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+          <div style={{ fontSize: '0.6875rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--red)', marginBottom: '1rem', fontWeight: 700 }}>Ambience Tour</div>
+          <h2 className="display-xl" style={{ fontSize: 'clamp(2rem, 5vw, 4.5rem)', color: 'var(--navy)', textTransform: 'uppercase' }}>
+            Dwarka Center <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>Gallery.</span>
+          </h2>
+          <p style={{ color: 'rgba(33,33,33,0.7)', fontSize: '0.9375rem', lineHeight: 1.7, maxWidth: '36rem', margin: '1rem auto 0', fontFamily: 'var(--font-b)' }}>
+            Step inside our 5,000 sq ft state-of-the-art training campus at Ramphal Chowk. Purpose-built infrastructure for modern aviators.
+          </p>
+        </div>
+
+        {/* Tab Selection */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '3rem' }}>
+          <button
+            onClick={() => setActiveTab('ambience')}
+            style={{
+              padding: '0.75rem 1.5rem', borderRadius: '999px', fontFamily: 'var(--font-h)', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
+              background: activeTab === 'ambience' ? 'var(--navy)' : 'rgba(0,39,76,0.04)',
+              color: activeTab === 'ambience' ? '#ffffff' : 'var(--navy)',
+              border: 'none', cursor: 'pointer', transition: 'all 0.2s'
+            }}
+          >
+            Office Ambience
+          </button>
+          <button
+            onClick={() => setActiveTab('training')}
+            style={{
+              padding: '0.75rem 1.5rem', borderRadius: '999px', fontFamily: 'var(--font-h)', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
+              background: activeTab === 'training' ? 'var(--navy)' : 'rgba(0,39,76,0.04)',
+              color: activeTab === 'training' ? '#ffffff' : 'var(--navy)',
+              border: 'none', cursor: 'pointer', transition: 'all 0.2s'
+            }}
+          >
+            Training Highlights
+          </button>
+          <button
+            onClick={() => setActiveTab('showcase')}
+            style={{
+              padding: '0.75rem 1.5rem', borderRadius: '999px', fontFamily: 'var(--font-h)', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
+              background: activeTab === 'showcase' ? 'var(--navy)' : 'rgba(0,39,76,0.04)',
+              color: activeTab === 'showcase' ? '#ffffff' : 'var(--navy)',
+              border: 'none', cursor: 'pointer', transition: 'all 0.2s'
+            }}
+          >
+            Center Showcase
+          </button>
+        </div>
+
+        {/* Images Grid */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+          gap: '1.5rem'
+        }}>
+          {currentImages.map((img, i) => (
+            <div key={i} style={{ position: 'relative', overflow: 'hidden', borderRadius: '12px', aspectRatio: '16/10', boxShadow: '0 8px 30px rgba(0,39,76,0.06)' }}>
+              <img
+                src={img.src}
+                alt={img.title}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease' }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+              />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,8,22,0.8) 0%, transparent 50%)', pointerEvents: 'none' }} />
+              <div style={{ position: 'absolute', bottom: '1.25rem', left: '1.25rem', color: '#ffffff', fontFamily: 'var(--font-h)', fontWeight: 700, fontSize: '0.9rem', letterSpacing: '0.02em', textTransform: 'uppercase' }}>
+                {img.title}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ─────────────────────────────────────
+   TRIPLE LINE GRAPH (PILOT SUPPLY IN INDIA)
+───────────────────────────────────── */
+function PilotSupplyGraph() {
+  return (
+    <div style={{
+      background: '#ffffff',
+      border: '1px solid rgba(0, 39, 76, 0.08)',
+      borderRadius: '16px',
+      padding: '2rem',
+      boxShadow: '0 10px 40px rgba(0,39,76,0.04)',
+      marginTop: '3rem',
+      marginBottom: '4rem',
+      fontFamily: 'var(--font-b)'
+    }}>
+      <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '1.05rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'var(--red)', display: 'inline-block' }} />
+        <span>Indian Airline Pilot Supply & Airborne Share (2015-2025)</span>
+      </h4>
+      <p style={{ fontSize: '0.82rem', color: 'rgba(33,33,33,0.65)', lineHeight: 1.6, marginBottom: '2rem' }}>
+        Historical expansion of active commercial pilots in Indian airlines compared to Airborne graduates. Airborne Aviation supplies approximately 10% of new pilot placements (1,500 active pilots).
+      </p>
+
+      {/* SVG graph container */}
+      <div style={{ width: '100%', overflowX: 'auto' }}>
+        <svg viewBox="0 0 800 360" style={{ width: '100%', minWidth: '600px', display: 'block' }}>
+          {/* Grid lines */}
+          <line x1="80" y1="50" x2="740" y2="50" stroke="#f1f5f9" strokeWidth="1" />
+          <line x1="80" y1="110" x2="740" y2="110" stroke="#f1f5f9" strokeWidth="1" />
+          <line x1="80" y1="170" x2="740" y2="170" stroke="#f1f5f9" strokeWidth="1" />
+          <line x1="80" y1="230" x2="740" y2="230" stroke="#f1f5f9" strokeWidth="1" />
+          <line x1="80" y1="290" x2="740" y2="290" stroke="#f1f5f9" strokeWidth="1" />
+
+          {/* Axes */}
+          <line x1="80" y1="290" x2="740" y2="290" stroke="rgba(0,39,76,0.15)" strokeWidth="2" />
+          <line x1="80" y1="50" x2="80" y2="290" stroke="rgba(0,39,76,0.15)" strokeWidth="2" />
+
+          {/* Axis Labels */}
+          <text x="70" y="55" fill="rgba(0,39,76,0.5)" fontSize="10" textAnchor="end" fontWeight="500">15,000</text>
+          <text x="70" y="115" fill="rgba(0,39,76,0.5)" fontSize="10" textAnchor="end" fontWeight="500">11,250</text>
+          <text x="70" y="175" fill="rgba(0,39,76,0.5)" fontSize="10" textAnchor="end" fontWeight="500">7,500</text>
+          <text x="70" y="235" fill="rgba(0,39,76,0.5)" fontSize="10" textAnchor="end" fontWeight="500">3,750</text>
+          <text x="70" y="295" fill="rgba(0,39,76,0.5)" fontSize="10" textAnchor="end" fontWeight="500">0</text>
+
+          <text x="80" y="315" fill="rgba(0,39,76,0.6)" fontSize="11" textAnchor="middle" fontWeight="600">2015</text>
+          <text x="212" y="315" fill="rgba(0,39,76,0.6)" fontSize="11" textAnchor="middle" fontWeight="600">2017</text>
+          <text x="344" y="315" fill="rgba(0,39,76,0.6)" fontSize="11" textAnchor="middle" fontWeight="600">2019</text>
+          <text x="476" y="315" fill="rgba(0,39,76,0.6)" fontSize="11" textAnchor="middle" fontWeight="600">2021</text>
+          <text x="608" y="315" fill="rgba(0,39,76,0.6)" fontSize="11" textAnchor="middle" fontWeight="600">2023</text>
+          <text x="740" y="315" fill="rgba(0,39,76,0.6)" fontSize="11" textAnchor="middle" fontWeight="600">2025</text>
+
+          {/* Line 1: Total Airline Pilots in India (Red) */}
+          <path d="M 80 230 Q 212 214 344 182 T 608 134 T 740 110" fill="none" stroke="var(--red)" strokeWidth="3" strokeLinecap="round" />
+          <circle cx="80" cy="230" r="4" fill="var(--red)" />
+          <circle cx="212" cy="214" r="4" fill="var(--red)" />
+          <circle cx="344" cy="182" r="4" fill="var(--red)" />
+          <circle cx="476" cy="174" r="4" fill="var(--red)" />
+          <circle cx="608" cy="134" r="4" fill="var(--red)" />
+          <circle cx="740" cy="110" r="4" fill="var(--red)" />
+
+          {/* Line 2: Airborne Aviation Alumni (Navy) */}
+          <path d="M 80 284 Q 212 281 344 277 T 608 270 T 740 266" fill="none" stroke="var(--navy)" strokeWidth="3" strokeLinecap="round" />
+          <circle cx="80" cy="284" r="4" fill="var(--navy)" />
+          <circle cx="212" cy="281" r="4" fill="var(--navy)" />
+          <circle cx="344" cy="277" r="4" fill="var(--navy)" />
+          <circle cx="476" cy="274" r="4" fill="var(--navy)" />
+          <circle cx="608" cy="270" r="4" fill="var(--navy)" />
+          <circle cx="740" cy="266" r="4" fill="var(--navy)" />
+
+          {/* Line 3: Airborne Supply Contribution Share (Gold) */}
+          <path d="M 80 260 Q 212 245 344 230 T 608 210 T 740 200" fill="none" stroke="var(--gold)" strokeWidth="3" strokeLinecap="round" strokeDasharray="4 4" />
+          <circle cx="80" cy="260" r="4" fill="var(--gold)" />
+          <circle cx="212" cy="245" r="4" fill="var(--gold)" />
+          <circle cx="344" cy="230" r="4" fill="var(--gold)" />
+          <circle cx="476" cy="215" r="4" fill="var(--gold)" />
+          <circle cx="608" cy="210" r="4" fill="var(--gold)" />
+          <circle cx="740" cy="200" r="4" fill="var(--gold)" />
+
+          <text x="740" y="95" fill="var(--red)" fontSize="11" fontWeight="700" textAnchor="middle">15,000</text>
+          <text x="740" y="252" fill="var(--navy)" fontSize="11" fontWeight="700" textAnchor="middle">1,500</text>
+          <text x="740" y="185" fill="var(--gold)" fontSize="11" fontWeight="700" textAnchor="middle">10%</text>
+        </svg>
+      </div>
+
+      {/* Legend */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', justifyContent: 'center', marginTop: '1rem', fontSize: '0.78rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span style={{ display: 'inline-block', width: '20px', height: '3px', background: 'var(--red)' }} />
+          <span style={{ color: 'var(--red)' }}>Active Airline Pilots (India)</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span style={{ display: 'inline-block', width: '20px', height: '3px', background: 'var(--navy)' }} />
+          <span style={{ color: 'var(--navy)' }}>Airborne Aviation Alumni (1500 Pilots)</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span style={{ display: 'inline-block', width: '20px', height: '3px', background: 'var(--gold)', borderTop: '2px dashed var(--gold)' }} />
+          <span style={{ color: 'var(--gold)' }}>Airborne Supply Share (10%)</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ─────────────────────────────────────
    ROOT PAGE - All sections orchestrated
 ───────────────────────────────────── */
 export default function HomePage() {
   const [bookingOpen, setBookingOpen] = useState(false)
+  
+  useEffect(() => {
+    document.body.classList.add('is-homepage')
+    return () => {
+      document.body.classList.remove('is-homepage')
+    }
+  }, [])
   const [is3dMode, setIs3dMode] = useState(() => {
     if (typeof window === 'undefined') return false
     return new URLSearchParams(window.location.search).get('mode') === '3d'
@@ -2010,7 +2317,9 @@ export default function HomePage() {
         <BoardingStrip />
 
         {/* Airline partner marquee */}
-        <AirlineMarquee />
+        <div className="desktop-only-block">
+          <AirlineMarquee />
+        </div>
 
         {/* Cinematic flight-path journey — 8 chapters, scroll-driven aircraft */}
         <JourneyFlightPath onBook={openBooking} />
@@ -2018,10 +2327,14 @@ export default function HomePage() {
         {/* Global route map — Redesigned */}
         <GlobalRouteMap />
 
+        {/* Media Gallery Section */}
+        <MediaSection />
+
         {/* Program grid — Redesigned 4×2 */}
         <ProgramGrid />
 
         <AirborneAdvantage />
+        <CampusGallerySection />
         <PilotCareerOutlook />
 
         {/* Founder */}
