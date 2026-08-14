@@ -3911,4 +3911,25 @@ html { scroll-behavior: smooth; }
   margin: 0;
 }
 
+/* Media Section Grid Styling */
+.media-grid-3col {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+@media (max-width: 1024px) {
+  .media-grid-3col {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1.5rem !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .media-grid-3col {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+}
+
 
