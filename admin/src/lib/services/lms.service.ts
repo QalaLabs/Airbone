@@ -1361,6 +1361,68 @@ export class LmsService {
     });
   }
 
+  // Revoke an issued certificate. Transition-only: ISSUED -> REVOKED. The row
+  // is preserved (audit trail, verification history) and verification is
+  // disabled for revoked certificates (verifyCertificate filters status=ISSUED).
+  static async revokeCertificate(ctx: RequestContext, id: string) {
+    const cert = await prisma.lmsCertificate.findFirst({
+      where: { id, orgId: ctx.orgId },
+    });
+    if (!cert) throw new NotFoundError("LmsCertificate", id);
+
+    if (cert.status === "REVOKED") {
+      throw new ConflictError("Certificate is already revoked");
+    }
+    if (cert.status !== "ISSUED") {
+      throw new ValidationError([{ message: "Only issued certificates can be revoked" }]);
+    }
+
+    const updated = await prisma.lmsCertificate.update({
+      where: { id },
+      data: { status: "REVOKED" },
+      include: {
+        course: { select: { id: true, title: true, slug: true } },
+        student: { select: { id: true, firstName: true, lastName: true, studentCode: true } },
+      },
+    });
+
+    await AuditService.write({
+      orgId: ctx.orgId,
+      userId: ctx.user.id,
+      requestId: ctx.requestId,
+      ipAddress: ctx.ipAddress,
+      action: "lms.certificate_revoked",
+      entityType: "lms_certificate",
+      entityId: id,
+      oldValue: { status: cert.status, certificateNo: cert.certificateNo },
+      newValue: { status: "REVOKED" },
+    });
+
+    return updated;
+  }
+
+  // Hard-delete a certificate (org-scoped). Used for DRAFT rows or cleanup.
+  static async deleteCertificate(ctx: RequestContext, id: string) {
+    const cert = await prisma.lmsCertificate.findFirst({
+      where: { id, orgId: ctx.orgId },
+    });
+    if (!cert) throw new NotFoundError("LmsCertificate", id);
+
+    await prisma.lmsCertificate.delete({ where: { id } });
+
+    await AuditService.write({
+      orgId: ctx.orgId,
+      userId: ctx.user.id,
+      requestId: ctx.requestId,
+      ipAddress: ctx.ipAddress,
+      action: "lms.certificate_deleted",
+      entityType: "lms_certificate",
+      entityId: id,
+      oldValue: { status: cert.status, certificateNo: cert.certificateNo, title: cert.title },
+      newValue: null,
+    });
+  }
+
   // ─── Student Dashboard ────────────────────────────────────────────────────
 
   static async studentDashboard(ctx: RequestContext, studentId: string) {

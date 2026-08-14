@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Award, Plus, ExternalLink } from "lucide-react";
+import { Award, Plus, ExternalLink, Ban, Trash2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -67,6 +67,36 @@ export default function LmsCertificatesPage() {
     },
     onError: (err: Error) => toast({ title: "Issue failed", description: err.message, variant: "destructive" }),
   });
+
+  const revokeMutation = useMutation({
+    mutationFn: (id: string) => apiFetch(`/lms/certificates/${id}/revoke`, { method: "POST" }),
+    onSuccess: () => {
+      toast({ title: "Certificate revoked", description: "The certificate is no longer verifiable." });
+      void queryClient.invalidateQueries({ queryKey: ["lms-certs"] });
+    },
+    onError: (err: Error) => toast({ title: "Revoke failed", description: err.message, variant: "destructive" }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => apiFetch(`/lms/certificates/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      toast({ title: "Certificate deleted", description: "The certificate record was removed." });
+      void queryClient.invalidateQueries({ queryKey: ["lms-certs"] });
+    },
+    onError: (err: Error) => toast({ title: "Delete failed", description: err.message, variant: "destructive" }),
+  });
+
+  function handleRevoke(c: CertRow) {
+    if (window.confirm(`Revoke certificate ${c.certificateNo} for ${c.student.firstName} ${c.student.lastName}?\nIt will no longer be verifiable.`)) {
+      revokeMutation.mutate(c.id);
+    }
+  }
+
+  function handleDelete(c: CertRow) {
+    if (window.confirm(`Delete certificate ${c.certificateNo} for ${c.student.firstName} ${c.student.lastName}?\nThis permanently removes the record.`)) {
+      deleteMutation.mutate(c.id);
+    }
+  }
 
   function openDialog() {
     setVerificationCode("");
@@ -155,6 +185,26 @@ export default function LmsCertificatesPage() {
                     >
                       Verify
                     </a>
+                    {c.status === "ISSUED" && (
+                      <button
+                        type="button"
+                        onClick={() => handleRevoke(c)}
+                        disabled={revokeMutation.isPending}
+                        className="inline-flex items-center gap-1 rounded-md border border-red-500/30 px-2 py-1 text-[11px] text-red-400 hover:bg-red-500/10 disabled:opacity-50"
+                      >
+                        <Ban className="h-3 w-3" /> Revoke
+                      </button>
+                    )}
+                    {c.status !== "ISSUED" && (
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(c)}
+                        disabled={deleteMutation.isPending}
+                        className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] text-muted-foreground hover:bg-white/5 disabled:opacity-50"
+                      >
+                        <Trash2 className="h-3 w-3" /> Delete
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>
