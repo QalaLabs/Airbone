@@ -124,7 +124,7 @@ export default function CabinCrewTrainingPage() {
 
         {/* Hero Image */}
         <div className="course-hero-image-wrap" style={{ borderRadius: '8px' }}>
-          <img src="/footage/cabin-crew-training-hero.jpg" alt="Cabin Crew Training at Airborne Aviation Academy, Dwarka Delhi" className="course-hero-image" />
+          <img src="/footage/cabin-crew-training-hero.jpg" alt="Cabin Crew Training at Airborne Aviation Academy, Dwarka Delhi" className="course-hero-image" style={{ width: '100%', height: '100%', objectFit: 'fill', objectPosition: 'center' }} />
           <div className="course-hero-overlay" style={{ background: 'linear-gradient(to top, rgba(0, 39, 76, 0.4) 0%, transparent 100%)' }} />
         </div>
 
