@@ -213,7 +213,8 @@ export class ResourceService {
   static async publishScheduledResources() {
     const due = await ResourceRepository.findScheduledDue();
     for (const r of due) {
-      await ResourceRepository.updateStatus(r.orgId, r.id, "PUBLISHED", null);
+      const updated = await ResourceRepository.claimScheduledPublish(r.orgId, r.id);
+      if (!updated) continue; // already claimed by a concurrent/retried execution
       await emitEvent({
         name: "resource/published",
         orgId: r.orgId,
@@ -223,6 +224,28 @@ export class ResourceService {
         timestamp: new Date().toISOString(),
         data: { resourceId: r.id, slug: r.slug, title: r.title, type: r.type },
       });
+
+      // Sync audit + activity parity with manual publish — null actor (scheduled/system action)
+      await AuditService.write({
+        orgId: r.orgId,
+        action: "resource.published",
+        entityType: "resource",
+        entityId: r.id,
+        newValue: {
+          status: "PUBLISHED",
+          publishedAt: updated.publishedAt?.toISOString(),
+        },
+      });
+
+      await ActivityFeedService.write({
+        orgId: r.orgId,
+        verb: "published",
+        objectType: "resource",
+        objectId: r.id,
+        objectSnapshot: { title: updated.title, status: "PUBLISHED" },
+        context: { actorName: "System (Scheduled)" },
+      });
+
       await emitEvent({
         name: "resource/status.changed",
         orgId: r.orgId,

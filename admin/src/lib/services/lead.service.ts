@@ -1,6 +1,8 @@
 import { LeadRepository } from "@/lib/repositories/lead.repository";
 import { emitEvent } from "@/lib/events/inngest";
 import { prisma } from "@/lib/db/client";
+import { AuditService } from "@/lib/services/audit.service";
+import { ActivityFeedService } from "@/lib/services/activity.service";
 import type { Prisma } from "@prisma/client";
 import { ConflictError, NotFoundError } from "@/lib/utils/errors";
 import type { CreateLeadInput, UpdateLeadInput, LeadFilters, CreateActivityInput } from "@/lib/validations/lead.schema";
@@ -99,6 +101,25 @@ export class LeadService {
             },
           });
 
+          // Durable audit/activity for the successful conversion — exactly once,
+          // owned by the sync recovery path. Null actor (system recovery action).
+          await AuditService.write({
+            orgId: ctx.orgId,
+            action: "lead.created",
+            entityType: "lead",
+            entityId: lead.id,
+            newValue: { name: lead.name, phone, source: sourceEnum, recoveredFromFallback: true },
+          });
+
+          await ActivityFeedService.write({
+            orgId: ctx.orgId,
+            verb: "created",
+            objectType: "lead",
+            objectId: lead.id,
+            objectSnapshot: { name: lead.name, source: sourceEnum },
+            context: { actorName: "Public form (recovered)", recoveredFromFallback: true },
+          });
+
           await prisma.fallbackLead.update({
             where: { id: fLead.id },
             data: { status: "recovered" },
@@ -164,7 +185,29 @@ export class LeadService {
       });
     }
 
-    // Emit event — triggers audit + activity feed + score calc async
+    // Durable audit/activity owned by the sync path (Inngest-independent)
+    await AuditService.write({
+      orgId: ctx.orgId,
+      userId: ctx.user.id,
+      requestId: ctx.requestId,
+      ipAddress: ctx.ipAddress,
+      action: "lead.created",
+      entityType: "lead",
+      entityId: lead.id,
+      newValue: { name: lead.name, source: lead.source, phone: lead.phone },
+    });
+
+    await ActivityFeedService.write({
+      orgId: ctx.orgId,
+      actorId: ctx.user.id,
+      verb: "created",
+      objectType: "lead",
+      objectId: lead.id,
+      objectSnapshot: { name: lead.name, source: lead.source },
+      context: { actorName: ctx.user.name },
+    });
+
+    // Emit event — notification/automation only (durable audit is sync above)
     await emitEvent({
       name: "lead/created",
       orgId: ctx.orgId,
@@ -204,6 +247,29 @@ export class LeadService {
           completedAt: new Date(),
           metadata: { oldStatus: existing.status, newStatus: input.status },
         },
+      });
+
+      // Durable audit/activity owned by the sync status path (Inngest-independent)
+      await AuditService.write({
+        orgId: ctx.orgId,
+        userId: ctx.user.id,
+        requestId: ctx.requestId,
+        ipAddress: ctx.ipAddress,
+        action: "lead.status_changed",
+        entityType: "lead",
+        entityId: id,
+        oldValue: { status: existing.status },
+        newValue: { status: input.status as LeadStatus },
+      });
+
+      await ActivityFeedService.write({
+        orgId: ctx.orgId,
+        actorId: ctx.user.id,
+        verb: "status_changed",
+        objectType: "lead",
+        objectId: id,
+        objectSnapshot: { name: updated.name },
+        context: { from: existing.status, to: input.status as LeadStatus, actorName: ctx.user.name },
       });
 
       await emitEvent({
@@ -266,6 +332,27 @@ export class LeadService {
         completedAt: new Date(),
         metadata: { counselorId },
       },
+    });
+
+    // Durable audit/activity owned by the sync assignment path (Inngest-independent)
+    await AuditService.write({
+      orgId: ctx.orgId,
+      userId: ctx.user.id,
+      requestId: ctx.requestId,
+      action: "lead.assigned",
+      entityType: "lead",
+      entityId: id,
+      newValue: { counselorId, counselorName: counselor.name },
+    });
+
+    await ActivityFeedService.write({
+      orgId: ctx.orgId,
+      actorId: ctx.user.id,
+      verb: "assigned",
+      objectType: "lead",
+      objectId: id,
+      objectSnapshot: { name: lead.name },
+      context: { counselorId, counselorName: counselor.name, actorName: ctx.user.name },
     });
 
     await emitEvent({
@@ -349,6 +436,29 @@ export class LeadService {
 
     await this.recalculateScore(ctx, leadId, `activity:${input.activityType}`);
 
+    // Durable audit/activity owned by the sync activity path (Inngest-independent)
+    const leadName = (await LeadRepository.findById(ctx.orgId, leadId))?.name ?? "";
+
+    await AuditService.write({
+      orgId: ctx.orgId,
+      userId: ctx.user.id,
+      requestId: ctx.requestId,
+      action: "lead_activity.created",
+      entityType: "lead_activity",
+      entityId: activity.id,
+      newValue: { leadId, type: activity.activityType },
+    });
+
+    await ActivityFeedService.write({
+      orgId: ctx.orgId,
+      actorId: ctx.user.id,
+      verb: "logged_activity",
+      objectType: "lead",
+      objectId: leadId,
+      objectSnapshot: { name: leadName },
+      context: { activityType: activity.activityType, actorName: ctx.user.name },
+    });
+
     await emitEvent({
       name: "lead/activity.created",
       orgId: ctx.orgId,
@@ -358,7 +468,7 @@ export class LeadService {
       timestamp: new Date().toISOString(),
       data: {
         leadId,
-        leadName: (await LeadRepository.findById(ctx.orgId, leadId))?.name ?? "",
+        leadName,
         activityId: activity.id,
         activityType: activity.activityType,
       },
@@ -454,6 +564,29 @@ export class LeadService {
 
     await this.recalculateScore(ctx, leadId, "activity:MEETING");
 
+    // Durable audit/activity owned by the sync scheduling path (Inngest-independent)
+    const leadName = (await LeadRepository.findById(ctx.orgId, leadId))?.name ?? "";
+
+    await AuditService.write({
+      orgId: ctx.orgId,
+      userId: ctx.user.id,
+      requestId: ctx.requestId,
+      action: "lead_activity.created",
+      entityType: "lead_activity",
+      entityId: activity.id,
+      newValue: { leadId, type: "MEETING" },
+    });
+
+    await ActivityFeedService.write({
+      orgId: ctx.orgId,
+      actorId: ctx.user.id,
+      verb: "logged_activity",
+      objectType: "lead",
+      objectId: leadId,
+      objectSnapshot: { name: leadName },
+      context: { activityType: "MEETING", actorName: ctx.user.name },
+    });
+
     await emitEvent({
       name: "lead/activity.created",
       orgId: ctx.orgId,
@@ -463,7 +596,7 @@ export class LeadService {
       timestamp: new Date().toISOString(),
       data: {
         leadId,
-        leadName: (await LeadRepository.findById(ctx.orgId, leadId))?.name ?? "",
+        leadName,
         activityId: activity.id,
         activityType: "MEETING",
       },

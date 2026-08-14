@@ -77,6 +77,28 @@ export class CourseService {
           versionId: versionRecord.id,
         },
       });
+
+      // Sync audit + activity parity with publish() — create-as-PUBLISHED previously
+      // relied on the (disabled) Inngest handler for the publish record.
+      await AuditService.write({
+        orgId: ctx.orgId,
+        userId: ctx.user.id,
+        requestId: ctx.requestId,
+        action: "course.published",
+        entityType: "course",
+        entityId: course.id,
+        newValue: { title: course.title, slug: course.slug, status: "PUBLISHED" },
+      });
+
+      await ActivityFeedService.write({
+        orgId: ctx.orgId,
+        actorId: ctx.user.id,
+        verb: "published",
+        objectType: "course",
+        objectId: course.id,
+        objectSnapshot: { title: course.title, slug: course.slug, status: "PUBLISHED" },
+        context: { actorName: ctx.user.name },
+      });
     }
 
     // B-04: track media usage for banner and gallery images
@@ -333,7 +355,8 @@ export class CourseService {
   static async publishScheduledCourses() {
     const due = await CourseRepository.findScheduledDue();
     for (const c of due) {
-      const updated = await CourseRepository.updateStatus(c.orgId, c.id, "PUBLISHED", null, null);
+      const updated = await CourseRepository.claimScheduledPublish(c.orgId, c.id);
+      if (!updated) continue; // already claimed by a concurrent/retried execution
       const versionRecord = await CourseRepository.createVersion(
         c.orgId,
         c.id,
@@ -357,6 +380,28 @@ export class CourseService {
           version: updated.version,
           versionId: versionRecord.id,
         },
+      });
+
+      // Sync audit + activity parity with manual publish — null actor (scheduled/system action)
+      await AuditService.write({
+        orgId: c.orgId,
+        action: "course.published",
+        entityType: "course",
+        entityId: c.id,
+        newValue: {
+          status: "PUBLISHED",
+          version: updated.version,
+          publishedAt: updated.publishedAt?.toISOString(),
+        },
+      });
+
+      await ActivityFeedService.write({
+        orgId: c.orgId,
+        verb: "published",
+        objectType: "course",
+        objectId: c.id,
+        objectSnapshot: { title: updated.title, slug: updated.slug, status: "PUBLISHED" },
+        context: { actorName: "System (Scheduled)" },
       });
 
       await emitEvent({

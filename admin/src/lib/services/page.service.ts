@@ -413,7 +413,8 @@ export class PageService {
   static async publishScheduledPages() {
     const due = await PageRepository.findScheduledDue();
     for (const p of due) {
-      const updated = await PageRepository.updateStatus(p.orgId, p.id, "PUBLISHED", null, null);
+      const updated = await PageRepository.claimScheduledPublish(p.orgId, p.id);
+      if (!updated) continue; // already claimed by a concurrent/retried execution
       const snapshot = buildSnapshot(updated);
       const versionRecord = await PageRepository.createVersion(
         p.orgId,
@@ -434,6 +435,28 @@ export class PageService {
         requestId: `cron-page-${p.id}`,
         timestamp: new Date().toISOString(),
         data: { pageId: p.id, slug: p.slug, version: updated.version, versionId: versionRecord.id },
+      });
+
+      // Sync audit + activity parity with manual publish — null actor (scheduled/system action)
+      await AuditService.write({
+        orgId: p.orgId,
+        action: "page.published",
+        entityType: "page",
+        entityId: p.id,
+        newValue: {
+          status: "PUBLISHED",
+          version: updated.version,
+          publishedAt: updated.publishedAt?.toISOString(),
+        },
+      });
+
+      await ActivityFeedService.write({
+        orgId: p.orgId,
+        verb: "published",
+        objectType: "page",
+        objectId: p.id,
+        objectSnapshot: { title: updated.title, slug: updated.slug, status: "PUBLISHED" },
+        context: { actorName: "System (Scheduled)" },
       });
 
       await emitEvent({

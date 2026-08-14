@@ -1,6 +1,4 @@
 import { inngest } from "@/lib/events/inngest";
-import { AuditService } from "@/lib/services/audit.service";
-import { ActivityFeedService } from "@/lib/services/activity.service";
 import { NotificationService } from "@/lib/services/notification.service";
 import { prisma } from "@/lib/db/client";
 
@@ -10,37 +8,14 @@ export const onLeadCreated = inngest.createFunction(
   { id: "lead-created", name: "On lead created" },
   { event: "lead/created" },
   async ({ event, step }) => {
-    const { orgId, actorId, actorName, requestId, ipAddress, leadId, leadName, source, courseInterest } = event.data as {
+    const { orgId, leadId, leadName } = event.data as {
       orgId: string; actorId: string; actorName: string; requestId: string;
       ipAddress?: string; leadId: string; leadName: string; source: string; courseInterest?: string;
     };
 
-    // Write audit log
-    await step.run("write-audit", async () => {
-      await AuditService.write({
-        orgId,
-        userId: actorId,
-        requestId,
-        ipAddress,
-        action: "lead.created",
-        entityType: "lead",
-        entityId: leadId,
-        newValue: { leadName, source, courseInterest },
-      });
-    });
-
-    // Write activity feed
-    await step.run("write-activity-feed", async () => {
-      await ActivityFeedService.write({
-        orgId,
-        actorId,
-        verb: "created",
-        objectType: "lead",
-        objectId: leadId,
-        objectSnapshot: { name: leadName, source, courseInterest },
-        context: { actorName },
-      });
-    });
+    // Durable audit/activity is owned synchronously by the lead creation paths
+    // (public route / LeadService.create / fallback recovery). This handler only
+    // owns async automation: score calculation + notifications.
 
     // Recalculate lead score
     await step.run("recalculate-score", async () => {
@@ -89,48 +64,12 @@ export const onLeadCreated = inngest.createFunction(
 export const onLeadStatusChanged = inngest.createFunction(
   { id: "lead-status-changed", name: "On lead status changed" },
   { event: "lead/status.changed" },
-  async ({ event, step }) => {
-    const d = event.data as {
-      orgId: string; actorId: string; actorName: string; requestId: string;
-      ipAddress?: string; leadId: string; leadName: string;
-      oldStatus: string; newStatus: string;
-    };
-
-    await step.run("write-audit", async () => {
-      await AuditService.write({
-        orgId: d.orgId,
-        userId: d.actorId,
-        requestId: d.requestId,
-        ipAddress: d.ipAddress,
-        action: "lead.status_changed",
-        entityType: "lead",
-        entityId: d.leadId,
-        oldValue: { status: d.oldStatus },
-        newValue: { status: d.newStatus },
-      });
-    });
-
-    await step.run("write-activity-feed", async () => {
-      await ActivityFeedService.write({
-        orgId: d.orgId,
-        actorId: d.actorId,
-        verb: "status_changed",
-        objectType: "lead",
-        objectId: d.leadId,
-        objectSnapshot: { name: d.leadName },
-        context: { from: d.oldStatus, to: d.newStatus, actorName: d.actorName },
-      });
-    });
-
-    await step.run("recalculate-score", async () => {
-      if (d.newStatus === "CONVERTED") {
-        await prisma.lead.update({
-          where: { id: d.leadId },
-          data: { convertedAt: new Date(), score: 100 },
-        });
-      }
-    });
-
+  async () => {
+    // Durable audit/activity AND score/conversion behavior are owned
+    // synchronously by LeadService.update (audit "lead.status_changed" +
+    // activity "status_changed" + recalculateScore). The handler previously
+    // duplicated those writes and raced the sync score path. No async
+    // responsibilities remain.
     return { ok: true };
   },
 );
@@ -147,29 +86,9 @@ export const onLeadAssigned = inngest.createFunction(
       counselorId: string; counselorName: string;
     };
 
-    await step.run("write-audit", async () => {
-      await AuditService.write({
-        orgId: d.orgId,
-        userId: d.actorId,
-        requestId: d.requestId,
-        action: "lead.assigned",
-        entityType: "lead",
-        entityId: d.leadId,
-        newValue: { counselorId: d.counselorId, counselorName: d.counselorName },
-      });
-    });
-
-    await step.run("write-activity-feed", async () => {
-      await ActivityFeedService.write({
-        orgId: d.orgId,
-        actorId: d.actorId,
-        verb: "assigned",
-        objectType: "lead",
-        objectId: d.leadId,
-        objectSnapshot: { name: d.leadName },
-        context: { counselorId: d.counselorId, counselorName: d.counselorName },
-      });
-    });
+    // Durable audit/activity is owned synchronously by LeadService.assign
+    // (audit "lead.assigned" + activity "assigned"). This handler only owns the
+    // asynchronous counselor notification.
 
     await step.run("notify-counselor", async () => {
       const [counselor, lead] = await Promise.all([
@@ -209,43 +128,11 @@ export const onLeadAssigned = inngest.createFunction(
 export const onLeadActivityCreated = inngest.createFunction(
   { id: "lead-activity-created", name: "On lead activity created" },
   { event: "lead/activity.created" },
-  async ({ event, step }) => {
-    const d = event.data as {
-      orgId: string; actorId: string; actorName: string; requestId: string;
-      leadId: string; leadName: string; activityId: string; activityType: string;
-    };
-
-    await step.run("write-audit", async () => {
-      await AuditService.write({
-        orgId: d.orgId,
-        userId: d.actorId,
-        requestId: d.requestId,
-        action: "lead_activity.created",
-        entityType: "lead_activity",
-        entityId: d.activityId,
-        newValue: { leadId: d.leadId, type: d.activityType },
-      });
-    });
-
-    await step.run("update-lead-last-activity", async () => {
-      await prisma.lead.update({
-        where: { id: d.leadId },
-        data: { lastActivityAt: new Date() },
-      });
-    });
-
-    await step.run("write-activity-feed", async () => {
-      await ActivityFeedService.write({
-        orgId: d.orgId,
-        actorId: d.actorId,
-        verb: "logged_activity",
-        objectType: "lead",
-        objectId: d.leadId,
-        objectSnapshot: { name: d.leadName },
-        context: { activityType: d.activityType, actorName: d.actorName },
-      });
-    });
-
+  async () => {
+    // Durable audit/activity and the lastActivityAt touch are owned synchronously
+    // by LeadService.createActivity / LeadService.scheduleMeeting (audit
+    // "lead_activity.created" + activity "logged_activity"). The handler's
+    // lastActivityAt update duplicated the sync write. No async responsibilities.
     return { ok: true };
   },
 );

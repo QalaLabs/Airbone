@@ -213,4 +213,23 @@ export class CourseRepository {
       select: { id: true, orgId: true, slug: true, title: true, version: true, scheduledAt: true },
     });
   }
+
+  /**
+   * Atomically claims a scheduled course for publication. Returns the claimed
+   * record or null when another execution already published it (concurrent or
+   * retried cron run). The status gate in the WHERE makes the claim idempotent.
+   */
+  static async claimScheduledPublish(orgId: string, id: string) {
+    const claimed = await prisma.course.updateMany({
+      where: { id, orgId, status: "SCHEDULED", scheduledAt: { lte: new Date() } },
+      data: {
+        status: "PUBLISHED",
+        publishedAt: new Date(),
+        scheduledAt: null,
+        version: { increment: 1 },
+      },
+    });
+    if (claimed.count === 0) return null;
+    return prisma.course.findUnique({ where: { id, orgId }, select: COURSE_SELECT });
+  }
 }

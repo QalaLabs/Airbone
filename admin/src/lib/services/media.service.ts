@@ -111,6 +111,27 @@ export class MediaService {
         metadata: {},
       });
 
+      // Durable audit/activity owned by the sync upload path (Inngest-independent)
+      await AuditService.write({
+        orgId: ctx.orgId,
+        userId: ctx.user.id,
+        requestId: ctx.requestId,
+        action: "media.uploaded",
+        entityType: "media_asset",
+        entityId: asset.id,
+        newValue: { name: asset.name, mimeType: asset.mimeType, folderId: asset.folderId ?? undefined },
+      });
+
+      await ActivityFeedService.write({
+        orgId: ctx.orgId,
+        actorId: ctx.user.id,
+        verb: "uploaded",
+        objectType: "media_asset",
+        objectId: asset.id,
+        objectSnapshot: { name: asset.name, mimeType: asset.mimeType },
+        context: { actorName: ctx.user.name },
+      });
+
       await emitEvent({
         name: "media/uploaded",
         orgId: ctx.orgId,
@@ -137,6 +158,27 @@ export class MediaService {
   // Register an asset that is already in storage (legacy presign→PUT flow).
   static async register(ctx: RequestContext, input: RegisterAssetInput) {
     const asset = await MediaRepository.create(ctx.orgId, ctx.user.id, input);
+
+    // Durable audit/activity owned by the sync register path (Inngest-independent)
+    await AuditService.write({
+      orgId: ctx.orgId,
+      userId: ctx.user.id,
+      requestId: ctx.requestId,
+      action: "media.uploaded",
+      entityType: "media_asset",
+      entityId: asset.id,
+      newValue: { name: asset.name, mimeType: asset.mimeType, folderId: asset.folderId ?? undefined },
+    });
+
+    await ActivityFeedService.write({
+      orgId: ctx.orgId,
+      actorId: ctx.user.id,
+      verb: "uploaded",
+      objectType: "media_asset",
+      objectId: asset.id,
+      objectSnapshot: { name: asset.name, mimeType: asset.mimeType },
+      context: { actorName: ctx.user.name },
+    });
 
     await emitEvent({
       name: "media/uploaded",
@@ -193,6 +235,16 @@ export class MediaService {
       entityId: id,
       oldValue: { fileKey: existing.fileKey },
       newValue: { fileKey: input.fileKey, replacedById: newAssetId },
+    });
+
+    await ActivityFeedService.write({
+      orgId: ctx.orgId,
+      actorId: ctx.user.id,
+      verb: "replaced",
+      objectType: "media_asset",
+      objectId: id,
+      objectSnapshot: { name: existing.name, newFileKey: input.fileKey },
+      context: { actorName: ctx.user.name },
     });
 
     await emitEvent({

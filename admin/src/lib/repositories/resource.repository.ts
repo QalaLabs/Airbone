@@ -141,4 +141,22 @@ export class ResourceRepository {
       select: { id: true, orgId: true, slug: true, title: true, type: true },
     });
   }
+
+  /**
+   * Atomically claims a scheduled resource for publication. Returns the claimed
+   * record or null when another execution already published it (concurrent or
+   * retried cron run). The status gate in the WHERE makes the claim idempotent.
+   */
+  static async claimScheduledPublish(orgId: string, id: string) {
+    const claimed = await prisma.resource.updateMany({
+      where: { id, orgId, status: "SCHEDULED", scheduledAt: { lte: new Date() } },
+      data: {
+        status: "PUBLISHED",
+        publishedAt: new Date(),
+        scheduledAt: null,
+      },
+    });
+    if (claimed.count === 0) return null;
+    return prisma.resource.findUnique({ where: { id, orgId }, select: RESOURCE_SELECT });
+  }
 }
