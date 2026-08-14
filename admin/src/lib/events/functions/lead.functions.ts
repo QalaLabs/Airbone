@@ -33,10 +33,20 @@ export const onLeadCreated = inngest.createFunction(
       if (lead.utmCampaign) score += 15;
       score = Math.min(score, 100);
 
-      await prisma.lead.update({ where: { id: leadId }, data: { score } });
-      await prisma.leadScoreHistory.create({
-        data: { leadId, orgId, score, reason: "Initial score on creation" },
+      // Idempotent initial-score write — Inngest is at-least-once: a step retry
+      // or duplicate delivery must not create duplicate history rows.
+      const alreadyScored = await prisma.leadScoreHistory.findFirst({
+        where: { leadId, orgId, reason: "Initial score on creation" },
+        select: { id: true },
       });
+      if (alreadyScored) return;
+
+      await prisma.$transaction([
+        prisma.lead.update({ where: { id: leadId }, data: { score } }),
+        prisma.leadScoreHistory.create({
+          data: { leadId, orgId, score, reason: "Initial score on creation" },
+        }),
+      ]);
     });
 
     // Send welcome notification to lead (WhatsApp)
