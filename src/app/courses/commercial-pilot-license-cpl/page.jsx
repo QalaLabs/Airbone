@@ -8,6 +8,7 @@ import CourseReviews from '@/components/CourseReviews'
 import JsonLd from '@/components/JsonLd'
 import { buildCoursePageGraph } from '@/lib/schema'
 import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
+import StudentJourneyLimeTimeline from '@/components/StudentJourneyLimeTimeline'
 
 export const metadata = {
   title: 'Commercial Pilot License Ground Classes in Delhi - DGCA Complied | Airborne Aviation',
@@ -57,30 +58,72 @@ const coursePageGraph = buildCoursePageGraph({
 })
 
 const SUBJECTS = [
-  { name: 'Air Navigation', detail: 'General Navigation, Radio Aids, Instrument, Mass & Balance, Performance and Flight Planning' },
-  { name: 'Aviation Meteorology', detail: 'Atmosphere, weather systems, METAR/TAF, forecasting' },
-  { name: 'Air Regulations', detail: 'DGCA CAR, ICAO Annex 2, rules of the air, licensing regulations' },
-  { name: 'Technical General', detail: 'Aerodynamics, aircraft systems, piston/turbine engines' },
-  { name: 'Technical Specific', detail: 'Aircraft type systems for specific aircraft types' },
-  { name: 'RTR', detail: 'Part 1: MCQ as per module; Part 2: Real Life Communication in simulated environment with ATC' },
+  { code: '01', title: 'Air Navigation', desc: 'General navigation, instrumentation, flight planning, and radio navigation aids.' },
+  { code: '02', title: 'Aviation Meteorology', desc: 'Atmospheric pressure, winds, cloud formations, and decoding METAR/TAF forecasts.' },
+  { code: '03', title: 'Air Regulations', desc: 'ICAO conventions, Rules of the Air, air traffic services, and national flight regulations.' },
+  { code: '04', title: 'Technical General', desc: 'Aircraft engines, airframe systems, aerodynamics, flight controls, and emergency equipment.' },
+  { code: '05', title: 'Technical Specific', desc: 'System specifications for training fleets like Cessna 152/172 or multi-engine aircraft.' },
+  { code: '06', title: 'RTR (Aero)', desc: 'Radio Telephony transmission, reception protocols, and operational safety comms.' },
 ]
 
 const FEE_ROWS = [
-  { component: 'DGCA Ground School (all subjects)', amount: '₹2,70,000' },
-  { component: 'Flying Training - 200 hours', amount: '₹55 Lakh' },
-  { component: 'DGCA Exam Fees (Regular Session) (5 papers)', amount: '₹2,500/Exam' },
-  { component: 'DGCA Exam Fees (on-Demand) (5 papers)', amount: '₹5,000/Exam' },
-  { component: 'DGCA Class 2 Medical', amount: '₹10,000' },
-  { component: 'DGCA Class 1 Medical', amount: '₹10,000' },
+  { component: 'CPL Ground School', amount: '₹75,000' },
+  { component: 'Flying Training (200 Hours)', amount: '₹42,00,000' },
+  { component: 'Class 2 & Class 1 Medicals', amount: '₹15,000' },
+  { component: 'DGCA Exams & Licensing fees', amount: '₹20,000' },
   { component: 'Simulator Sessions (A320 FBS)', amount: '₹12,000' },
   { component: 'Total (approximate)', amount: '₹55–65 lakh' },
 ]
 
 const ISSUANCE = [
-  { req: 'Age', detail: 'Minimum 18 years' },
-  { req: 'Education', detail: 'Class 12 with Physics and Mathematics' },
-  { req: 'Flying Training', detail: '200 hours' },
-  { req: 'DGCA Exam', detail: 'Passed' },
+  {
+    req: 'Age',
+    detail: 'Minimum 18 years',
+    iconColor: '#2563eb',
+    iconBg: '#eff6ff',
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+    )
+  },
+  {
+    req: 'Education',
+    detail: 'Class 12 with Physics and Mathematics',
+    iconColor: '#16a34a',
+    iconBg: '#f0fdf4',
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.9a2 2 0 0 0 1.66 0z" />
+        <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5" />
+      </svg>
+    )
+  },
+  {
+    req: 'Flying Training',
+    detail: '200 hours',
+    iconColor: '#ea580c',
+    iconBg: '#fff7ed',
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3.5c-.5-.5-2.5 0-4 1.5L13.5 8.5l-8.2-1.8c-.8-.2-1.7.2-2 1-.3.8 0 1.7.7 2.1l7.8 4.2-4.2 4.2-3.1-1c-.5-.2-1.1-.1-1.5.3L2 19.5l3.5 1 1 3.5.5-1c.4-.4.5-1 .3-1.5l-1-3.1 4.2-4.2 4.2 7.8c.4.7 1.3 1 2.1.7.8-.3 1.2-1.2 1-2z" />
+      </svg>
+    )
+  },
+  {
+    req: 'DGCA Exam',
+    detail: 'Passed',
+    iconColor: '#7c3aed',
+    iconBg: '#f3e8ff',
+    bg: '#FFFBF0',
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+        <path d="m9 12 2 2 4-4" />
+      </svg>
+    )
+  }
 ]
 
 export default function CPLPage() {
@@ -102,7 +145,7 @@ export default function CPLPage() {
 
         {/* Hero Image */}
         <div className="course-hero-image-wrap" style={{ borderRadius: '8px' }}>
-          <img src="/campus/cpl-ground-school-pilot.jpg" alt="CPL Ground School at Airborne Aviation Academy, Dwarka Delhi" className="course-hero-image" />
+          <img src="/footage/hero-cockpit.jpg" alt="CPL Ground School at Airborne Aviation Academy, Dwarka Delhi" className="course-hero-image" />
           <div className="course-hero-overlay" style={{ background: 'linear-gradient(to top, rgba(0, 39, 76, 0.4) 0%, transparent 100%)' }} />
         </div>
 
@@ -130,12 +173,18 @@ export default function CPLPage() {
               </h2>
               <div className="course-subject-grid">
                 {SUBJECTS.map((s, i) => (
-                  <div key={i} className="course-subject-card">
-                    <div className="course-subject-card-title">{s.name}</div>
-                    <div className="course-subject-card-detail">{s.detail}</div>
+                  <div key={i} className="cpl-subject-card">
+                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginBottom: '0.5rem' }}>
+                      <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--red)', background: 'rgba(219,36,30,0.06)', padding: '0.15rem 0.4rem', borderRadius: '2px', border: '1px solid rgba(219,36,30,0.15)', fontFamily: 'var(--font-h)' }}>
+                        SUBJECT {s.code}
+                      </span>
+                    </div>
+                    <div className="course-subject-card-title">{s.title}</div>
+                    <div className="course-subject-card-detail">{s.desc}</div>
                   </div>
                 ))}
               </div>
+              <StudentJourneyLimeTimeline />
             </div>
 
             {/* Fee Breakdown */}
@@ -143,23 +192,30 @@ export default function CPLPage() {
               <h2 className="course-section-title">
                 CPL Course Fees - Full Breakdown
               </h2>
-              <div className="course-table-wrap" style={{ overflowX: 'auto' }}>
-                <table className="course-table" style={{ minWidth: "600px" }}>
-                  <thead>
-                    <tr>
-                      <th>Fee Component</th>
-                      <th>Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {FEE_ROWS.map((row, i) => (
-                      <tr key={i}>
-                        <td style={{ padding: '1rem 1.25rem', color: i === FEE_ROWS.length - 1 ? '#FFFFFF' : 'rgba(0, 39, 76, 0.75)', fontWeight: i === FEE_ROWS.length - 1 ? 700 : 400 }}>{row.component}</td>
-                        <td style={{ padding: '1rem 1.25rem', color: 'var(--navy)', fontWeight: i === FEE_ROWS.length - 1 ? 900 : 600, fontSize: i === FEE_ROWS.length - 1 ? '1rem' : '0.875rem' }}>{row.amount}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
+                {FEE_ROWS.map((row, i) => {
+                  const isTotal = i === FEE_ROWS.length - 1;
+                  return (
+                    <div key={i} style={{
+                      background: isTotal ? 'var(--navy)' : '#ffffff',
+                      border: '1px solid rgba(0, 39, 76, 0.08)',
+                      padding: '1.5rem',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 20px rgba(0,39,76,0.01)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      borderTop: isTotal ? '3px solid var(--red)' : '1px solid rgba(0, 39, 76, 0.08)'
+                    }}>
+                      <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.78rem', fontWeight: 700, color: isTotal ? 'rgba(255,255,255,0.7)' : 'rgba(0, 39, 76, 0.45)', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.04em' }}>
+                        {row.component}
+                      </div>
+                      <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: isTotal ? '#ffffff' : 'var(--navy)' }}>
+                        {row.amount}
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
               <p style={{ fontSize: '0.78rem', color: 'rgba(0, 39, 76, 0.45)', marginTop: '0.75rem', lineHeight: '1.5' }}>
                 Education loans available via SBI, Bank of Baroda, and PNB. Contact our admissions team for loan guidance.
@@ -171,23 +227,62 @@ export default function CPLPage() {
               <h2 className="course-section-title">
                 CPL Issuance Requirements
               </h2>
-              <div className="course-table-wrap" style={{ overflowX: 'auto' }}>
-                <table className="course-table" style={{ minWidth: "600px" }}>
-                  <thead>
-                    <tr>
-                      <th>Requirement</th>
-                      <th>Details</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ISSUANCE.map((row, i) => (
-                      <tr key={i}>
-                        <td style={{ fontWeight: 600 }}>{row.req}</td>
-                        <td>{row.detail}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="cpl-requirements-grid">
+                {ISSUANCE.map((row, i) => (
+                  <div
+                    key={i}
+                    className="cpl-requirement-card"
+                    style={{ background: row.bg || '#ffffff' }}
+                  >
+                    <div
+                      className="cpl-requirement-icon-wrap"
+                      style={{ backgroundColor: row.iconBg, color: row.iconColor }}
+                    >
+                      {row.icon}
+                    </div>
+                    <h3 className="cpl-requirement-title">
+                      {row.req}
+                    </h3>
+                    <div className="cpl-requirement-divider" />
+                    <p className="cpl-requirement-desc">
+                      {row.detail}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Why NOW is the best time to fly */}
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
+                Why NOW is the Best Time to Become a Pilot in India
+              </h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem' }}>
+                {[
+                  { title: '1,500+ Aircraft Ordered', desc: 'IndiGo, Air India, and Akasa Air have placed record-breaking aircraft orders, creating a decade-long demand for new flight deck crew.' },
+                  { title: 'Severe Pilot Shortage', desc: 'Boeing estimates that Indian carriers will need 8,000+ new commercial pilots over the next 10 years to staff the expanding domestic fleet.' },
+                  { title: 'Rapid Captain Upgrades', desc: 'Industry expansion has halved the traditional time needed to upgrade from First Officer to Command Captain.' },
+                ].map((item, idx) => (
+                  <div key={idx} className="cpl-why-now-card">
+                    <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.88rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.04em' }}>{item.title}</h4>
+                    <p style={{ fontSize: '0.8rem', color: 'rgba(0,39,76,0.65)', lineHeight: '1.5', margin: 0 }}>{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Flight Training & Simulator Showcase */}
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
+                Flight Training & Simulator Showcase
+              </h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+                <div style={{ borderRadius: '6px', overflow: 'hidden', aspectRatio: '16/10', boxShadow: '0 4px 20px rgba(0,39,76,0.01)' }}>
+                  <img src="/footage/cpl-flying-training-cockpit.jpg" alt="Flight Training cockpit" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+                <div style={{ borderRadius: '6px', overflow: 'hidden', aspectRatio: '16/10', boxShadow: '0 4px 20px rgba(0,39,76,0.01)' }}>
+                  <img src="/footage/simulator-training.jpg" alt="A320 Simulator Training sessions" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
               </div>
             </div>
 
@@ -270,6 +365,34 @@ export default function CPLPage() {
             { label: 'All Courses', href: '/courses' },
           ]}
         />
+        <style dangerouslySetInnerHTML={{__html: `
+          .cpl-subject-card {
+            background: #ffffff;
+            border: 1px solid rgba(0, 39, 76, 0.08);
+            padding: 1.5rem;
+            border-radius: 6px;
+            box-shadow: 0 4px 20px rgba(0,39,76,0.01);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+          .cpl-subject-card:hover {
+            transform: translateY(-4px);
+            border-color: #84cc16;
+            box-shadow: 0 12px 30px rgba(132, 204, 22, 0.08);
+          }
+          .cpl-why-now-card {
+            background: #ffffff;
+            border: 1px solid rgba(132, 204, 22, 0.15);
+            border-left: 4px solid #84cc16;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(132, 204, 22, 0.02);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+          .cpl-why-now-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(132, 204, 22, 0.08);
+          }
+        `}} />
       </main>
       <Footer />
     </>

@@ -8,6 +8,7 @@ import CourseReviews from '@/components/CourseReviews'
 import JsonLd from '@/components/JsonLd'
 import { buildCoursePageGraph } from '@/lib/schema'
 import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
+import CabinCrewEligibilityQuiz from '@/components/CabinCrewEligibilityQuiz'
 
 export const metadata = {
   title: 'Cabin Crew Training Delhi | Scholarship Available | Airborne',
@@ -57,8 +58,8 @@ const PATHWAYS = [
     duration: '3 Months',
     classTime: '90 Minutes',
     regular: '₹54,000',
-    scholarship: '100%* (score ≥70%)',
-    scholarshipNote: '₹0 (for scholarship candidates)',
+    scholarship: '₹0',
+    scholarshipNote: '100% Scholarship (score ≥70%, + ₹5,000 registration fee)',
     best: 'Near-selection candidates needing final polish',
     focus: ['Final grooming polish', 'Professional presence', 'Service behaviour refinement', 'GD and PI readiness', 'Interview finishing support'],
   },
@@ -68,8 +69,8 @@ const PATHWAYS = [
     duration: '3 Months',
     classTime: '90 Minutes',
     regular: '₹30,000',
-    scholarship: '100%* (score ≥70%)',
-    scholarshipNote: '₹30,000 (includes P1 for scholarship candidates)',
+    scholarship: '₹30,000',
+    scholarshipNote: 'For scholarship holders (includes Phase 1)',
     best: 'Candidates with communication or confidence gaps',
     focus: ['Spoken communication improvement', 'GD practice', 'PI preparation', 'Personality development', 'Confidence building'],
   },
@@ -79,8 +80,8 @@ const PATHWAYS = [
     duration: '6 Months',
     classTime: '90 Minutes',
     regular: '₹30,000',
-    scholarship: '100%* (score ≥70%)',
-    scholarshipNote: '₹54,000 (includes P2 + P1 for scholarship candidates)',
+    scholarship: '₹54,000',
+    scholarshipNote: 'For scholarship holders (includes Phase 2 + Phase 1)',
     best: 'Beginners needing complete foundation',
     focus: ['Communication foundation', 'Hospitality standards', 'Grooming basics', 'Professional readiness', 'Zero-to-selection journey'],
   },
@@ -140,6 +141,7 @@ export default function CabinCrewTrainingPage() {
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
                 Structured cabin crew training for serious aviation aspirants - from scholarship-based finishing to communication, GD/PI, personality development, and hospitality foundation pathways. Trained by airline veterans - ex-Alliance Air cabin and cockpit crew, and a retired Air India AGM (Training) - not generalist coaches.
               </p>
+              <CabinCrewEligibilityQuiz />
             </div>
 
             {/* Trainers */}
@@ -171,17 +173,26 @@ export default function CabinCrewTrainingPage() {
               </div>
             </div>
 
-            {/* Batch 1 Scholarship Banner */}
+            {/* Course Fee, Duration & Batch Size */}
             <div className="course-section-divider">
-              <div style={{ background: 'rgba(219,36,30,0.06)', border: '1px solid rgba(219,36,30,0.3)', borderRadius: '6px', padding: '1.5rem 2rem' }}>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.75rem', letterSpacing: '0.2em', color: '#DB241E', textTransform: 'uppercase', marginBottom: '0.5rem' }}>⚡ Limited Time - Batch 1 Only</div>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.2rem', fontWeight: 800, color: 'var(--navy)', marginBottom: '0.75rem' }}>100%* Scholarship</div>
-                <p style={{ fontSize: '0.85rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.6', margin: '0 0 0.5rem 0' }}>
-                  <strong>*Upon Scoring ≥70%</strong>
-                </p>
-                <p style={{ fontSize: '0.85rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.6', margin: 0 }}>
-                  Tuition listed at ₹59,000. Scholarship candidates scoring ≥70% on assessment may qualify for 100%* fee waiver. Counselling confirms pathway placement.
-                </p>
+              <div className="course-sidebar-card" style={{ textAlign: 'left' }}>
+                <div style={{ display: 'inline-block', background: 'rgba(219,36,30,0.1)', border: '1px solid rgba(219,36,30,0.3)', borderRadius: '2px', padding: '0.25rem 0.75rem', fontSize: '0.68rem', fontFamily: 'var(--font-h)', letterSpacing: '0.15em', color: '#DB241E', textTransform: 'uppercase', marginBottom: '1.5rem' }}>100%* Scholarship</div>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem' }}>
+                  <div>
+                    <span className="course-sidebar-label" style={{ display: 'block', marginBottom: '0.25rem' }}>Course Fee</span>
+                    <div className="course-sidebar-price" style={{ margin: 0 }}>₹59,000</div>
+                    <span className="course-sidebar-note" style={{ display: 'block', marginTop: '0.25rem' }}>*Upon Scoring ≥70%</span>
+                  </div>
+                  <div>
+                    <span className="course-sidebar-label" style={{ display: 'block', marginBottom: '0.25rem' }}>Duration</span>
+                    <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)', marginTop: '0.25rem' }}>⏱️ 3–6 Months</div>
+                  </div>
+                  <div>
+                    <span className="course-sidebar-label" style={{ display: 'block', marginBottom: '0.25rem' }}>Batch Size</span>
+                    <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)', marginTop: '0.25rem' }}>👥 Max 20 Students</div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -192,23 +203,34 @@ export default function CabinCrewTrainingPage() {
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 {PATHWAYS.map((p, i) => (
-                  <div key={i} style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', borderRadius: '4px', padding: '2rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '1.25rem' }}>
-                      <div style={{ flexShrink: 0, width: '2.5rem', height: '2.5rem', borderRadius: '50%', background: '#DB241E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-h)', fontSize: '1rem', fontWeight: 900, color: 'var(--navy)' }}>P{p.num}</div>
-                      <div>
-                        <div style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{p.title}</div>
-                        <div style={{ fontSize: '0.78rem', color: 'rgba(0, 39, 76, 0.45)', marginTop: '0.2rem' }}>{p.duration} · {p.classTime} daily · Best for: {p.best}</div>
+                  <div key={i} style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', borderLeft: '3px solid var(--navy)', padding: '2rem', borderRadius: '4px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '1.5rem' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '1.25rem' }}>
+                        <div style={{ flexShrink: 0, width: '2.5rem', height: '2.5rem', borderRadius: '50%', background: '#DB241E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 800, color: '#ffffff' }}>{p.num}</div>
+                        <div>
+                          <div style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{p.title}</div>
+                          <div style={{ fontSize: '0.78rem', color: 'rgba(0, 39, 76, 0.45)', marginTop: '0.2rem' }}>{p.duration} · {p.classTime} daily · Best for: {p.best}</div>
+                        </div>
                       </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
-                      <div>
-                        <div style={{ fontSize: '0.65rem', color: 'rgba(0, 39, 76, 0.45)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.2rem' }}>Regular Price</div>
-                        <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: 'var(--navy)' }}>{p.regular}</div>
-                      </div>
-                      <div>
-                        <div style={{ fontSize: '0.65rem', color: 'rgba(219,36,30,0.9)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.2rem' }}>Batch 1 Scholarship</div>
-                        <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: '#DB241E' }}>{p.scholarship}</div>
-                        <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#DB241E', marginTop: '0.15rem' }}>{p.scholarshipNote}</div>
+                      <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+                        <div>
+                          <div style={{ fontSize: '0.65rem', color: 'rgba(0, 39, 76, 0.45)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.2rem' }}>PATHWAY PRICE</div>
+                          <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: 'var(--navy)' }}>{p.regular}</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.65rem', color: 'rgba(219,36,30,0.9)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.2rem' }}>SCHOLARSHIP PRICE</div>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem' }}>
+                            <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.5rem', fontWeight: 900, color: '#DB241E', textShadow: p.scholarship === '₹0' ? '0 0 10px rgba(219,36,30,0.15)' : 'none' }}>
+                              {p.scholarship}
+                            </span>
+                            {p.scholarship === '₹0' && (
+                              <span style={{ fontSize: '0.625rem', fontWeight: 700, color: 'var(--gold)', background: 'rgba(216, 160, 39, 0.12)', border: '1px solid rgba(216, 160, 39, 0.25)', padding: '0.1rem 0.4rem', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.04em', alignSelf: 'center' }}>
+                                Free Training
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#DB241E', marginTop: '0.15rem' }}>{p.scholarshipNote}</div>
+                        </div>
                       </div>
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
@@ -219,6 +241,26 @@ export default function CabinCrewTrainingPage() {
                   </div>
                 ))}
               </div>
+              <div style={{ marginTop: '3rem', textAlign: 'center' }}>
+                <a 
+                  href="#enroll-form" 
+                  style={{ 
+                    display: 'inline-flex', alignItems: 'center', gap: '0.75rem',
+                    background: 'linear-gradient(135deg, #DB241E 0%, #B31915 100%)', 
+                    color: '#ffffff', textDecoration: 'none', fontWeight: 800, 
+                    fontFamily: 'var(--font-h)', fontSize: '0.85rem', textTransform: 'uppercase', 
+                    letterSpacing: '0.08em', padding: '1rem 2rem', borderRadius: '4px',
+                    boxShadow: '0 4px 15px rgba(219,36,30,0.3)', transition: 'all 0.25s',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <span>Give Eligibility Test</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                  </svg>
+                </a>
+              </div>
             </div>
 
             {/* Curriculum */}
@@ -226,23 +268,18 @@ export default function CabinCrewTrainingPage() {
               <h2 className="course-section-title">
                 What You Will Learn - Curriculum
               </h2>
-              <div style={{ border: '1px solid rgba(0, 39, 76, 0.08)', borderRadius: '8px', overflow: 'hidden', overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem', fontFamily: 'var(--font-b)', minWidth: '500px' }}>
-                  <thead>
-                    <tr>
-                      <th>Module</th>
-                      <th>Content Summary</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {CURRICULUM.map((row, i) => (
-                      <tr key={i}>
-                        <td style={{ padding: '1rem 1.25rem', color: 'var(--navy)', fontWeight: 600, whiteSpace: 'nowrap' }}>{row.module}</td>
-                        <td style={{ padding: '1rem 1.25rem', color: 'rgba(0, 39, 76, 0.65)' }}>{row.content}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.25rem' }}>
+                {CURRICULUM.map((row, i) => (
+                  <div key={i} className="cabin-curriculum-card">
+                    <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.88rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ color: 'var(--red)' }}>✦</span>
+                      <span>{row.module}</span>
+                    </div>
+                    <p style={{ fontSize: '0.8rem', color: 'rgba(0, 39, 76, 0.6)', lineHeight: '1.5', margin: 0 }}>
+                      {row.content}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -251,27 +288,78 @@ export default function CabinCrewTrainingPage() {
               <h2 className="course-section-title">
                 Career Opportunities After the Course
               </h2>
-              <div className="course-table-wrap" style={{ overflowX: 'auto' }}>
-                <table className="course-table" style={{ minWidth: "600px" }}>
-                  <thead>
-                    <tr>
-                      <th>Career Option</th>
-                      <th>Sector</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {CAREER_OPTIONS.map((row, i) => (
-                      <tr key={i}>
-                        <td style={{ padding: '1rem 1.25rem', color: 'var(--navy)', fontWeight: 600 }}>{row.role}</td>
-                        <td style={{ padding: '1rem 1.25rem', color: 'rgba(0, 39, 76, 0.65)' }}>{row.sector}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
+                {CAREER_OPTIONS.map((row, i) => (
+                  <div key={i} className="cabin-career-card">
+                    <div style={{ color: 'var(--gold)', flexShrink: 0, marginTop: '0.2rem' }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                        <polyline points="22 4 12 14.01 9 11.01" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.88rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', margin: '0 0 0.25rem 0', letterSpacing: '0.04em' }}>
+                        {row.role}
+                      </h4>
+                      <p style={{ fontSize: '0.78rem', color: 'rgba(0, 39, 76, 0.55)', margin: 0 }}>
+                        {row.sector}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
               <p style={{ fontSize: '0.78rem', color: 'rgba(0, 39, 76, 0.45)', marginTop: '0.75rem', lineHeight: '1.5' }}>
                 Airborne provides structured interview prep and career guidance. Final selection rests with the recruiting airline.
               </p>
+            </div>
+
+            {/* Parent Trust Section */}
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
+                Why Parents Trust Airborne Academy
+              </h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem' }}>
+                {[
+                  { title: 'Taught by Senior Airline Managers', desc: 'No generalist image coaches. Classes are taken by a retired AGM from Air India and ex-Alliance Air cockpit crew.' },
+                  { title: 'Safe & Secure Center Environment', desc: 'Modern high-street center at Ramphal Chowk with CCTV monitoring, biometric checks, and separate facilities.' },
+                  { title: 'Full Transparency on Fee Structures', desc: 'All fee elements and scholarship rules are documented upfront. No middleman or extra exam processing hidden charges.' },
+                  { title: 'Daily Attendance Notifications', desc: 'Parents receive check-in and checkout validation alerts, assuring student location security.' },
+                  { title: 'Mock Cabin Simulator Sessions', desc: 'Practice safety and service procedures inside our real mock aircraft setup.' },
+                  { title: 'Direct Industry Recruitment Ties', desc: 'We host exclusive interview drives with major domestic carriers at our Dwarka center.' },
+                ].map((item, idx) => (
+                  <div key={idx} style={{ background: 'rgba(219,36,30,0.02)', border: '1px solid rgba(219,36,30,0.08)', padding: '1.5rem', borderRadius: '4px' }}>
+                    <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.85rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.04em' }}>{item.title}</h4>
+                    <p style={{ fontSize: '0.8rem', color: 'rgba(0,39,76,0.65)', lineHeight: '1.5', margin: 0 }}>{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Center Showcase Image Showcase */}
+            <div className="course-section-divider">
+              <h2 className="course-section-title">
+                Dwarka Center & Training Showcase
+              </h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+                <div style={{ background: '#fff', border: '1px solid rgba(0, 39, 76, 0.08)', borderRadius: '6px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,39,76,0.01)' }}>
+                  <div style={{ aspectRatio: '16/10', overflow: 'hidden' }}>
+                    <img src="/campus/classroom_full.jpg" alt="Dwarka center classroom" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                  <div style={{ padding: '1.25rem' }}>
+                    <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.85rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', margin: '0 0 0.25rem 0' }}>Smart Classroom Infrastructure</h4>
+                    <p style={{ fontSize: '0.78rem', color: 'rgba(0,39,76,0.55)', margin: 0 }}>High definition projection and audio setups for conceptual and visual aviation sessions.</p>
+                  </div>
+                </div>
+                <div style={{ background: '#fff', border: '1px solid rgba(0, 39, 76, 0.08)', borderRadius: '6px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,39,76,0.01)' }}>
+                  <div style={{ aspectRatio: '16/10', overflow: 'hidden' }}>
+                    <img src="/campus/reception.jpg" alt="Dwarka center lobby" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                  <div style={{ padding: '1.25rem' }}>
+                    <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.85rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', margin: '0 0 0.25rem 0' }}>Dwarka Counseling Lobby</h4>
+                    <p style={{ fontSize: '0.78rem', color: 'rgba(0,39,76,0.55)', margin: 0 }}>Transparent parent counselor desks and student onboarding hubs.</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* FAQ */}
@@ -301,18 +389,6 @@ export default function CabinCrewTrainingPage() {
           {/* Sidebar */}
           <div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-              <div className="course-sidebar-card">
-                <div style={{ display: 'inline-block', background: 'rgba(219,36,30,0.1)', border: '1px solid rgba(219,36,30,0.3)', borderRadius: '2px', padding: '0.25rem 0.75rem', fontSize: '0.68rem', fontFamily: 'var(--font-h)', letterSpacing: '0.15em', color: '#DB241E', textTransform: 'uppercase', marginBottom: '1rem' }}>100%* Scholarship</div>
-                <span className="course-sidebar-label">Course Fee</span>
-                <div className="course-sidebar-price">₹59,000</div>
-                <span className="course-sidebar-note">*Upon Scoring ≥70%</span>
-                <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(0, 39, 76, 0.08)' }} />
-                <span className="course-sidebar-label">Duration</span>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)' }}>⏱️ 3–6 Months</div>
-                <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(0, 39, 76, 0.08)' }} />
-                <span className="course-sidebar-label">Batch Size</span>
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--navy)' }}>👥 Max 20 Students</div>
-              </div>
               <LeadForm
                 courseName="Cabin Crew Training (₹59,000)"
                 source="Course Detail: cabin-crew-training"
@@ -331,6 +407,37 @@ export default function CabinCrewTrainingPage() {
             { label: 'All Courses', href: '/courses' },
           ]}
         />
+        <style dangerouslySetInnerHTML={{__html: `
+          .cabin-curriculum-card {
+            background: #ffffff;
+            border: 1px solid rgba(0, 39, 76, 0.08);
+            padding: 1.5rem;
+            border-radius: 6px;
+            box-shadow: 0 4px 20px rgba(0,39,76,0.01);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+          .cabin-curriculum-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--red);
+            box-shadow: 0 12px 30px rgba(219,36,30,0.08);
+          }
+          .cabin-career-card {
+            background: #ffffff;
+            border: 1px solid rgba(0, 39, 76, 0.08);
+            padding: 1.5rem;
+            border-radius: 6px;
+            box-shadow: 0 4px 20px rgba(0,39,76,0.01);
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+          .cabin-career-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--gold);
+            box-shadow: 0 12px 30px rgba(216,160,39,0.08);
+          }
+        `}} />
       </main>
       <Footer />
     </>
