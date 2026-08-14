@@ -7,9 +7,20 @@ export function validateName(name) {
 }
 
 export function validatePhone(phone) {
-  const digits = (phone || '').replace(/\D/g, '')
+  let cleaned = (phone || '').trim()
+  cleaned = cleaned.replace(/[\s()-]/g, '')
+  // Handle leading +91, 91 (when longer than 10 digits), or leading 0
+  if (cleaned.startsWith('+91')) {
+    cleaned = cleaned.substring(3)
+  } else if (cleaned.startsWith('91') && cleaned.length > 10) {
+    cleaned = cleaned.substring(2)
+  } else if (cleaned.startsWith('0') && cleaned.length > 10) {
+    cleaned = cleaned.substring(1)
+  }
+  
+  const digits = cleaned.replace(/\D/g, '')
   if (!digits) return { valid: false, error: 'Please enter your contact number.' }
-  if (digits.length !== 10) return { valid: false, error: 'Please enter a valid contact number.' }
+  if (digits.length !== 10) return { valid: false, error: 'Please enter a valid 10-digit contact number.' }
   return { valid: true, error: null }
 }
 

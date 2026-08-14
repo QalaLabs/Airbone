@@ -1298,8 +1298,7 @@ html { scroll-behavior: smooth; }
 
 .cockpit-hud {
   position: absolute;
-  bottom: 5.5rem;
-  bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  top: 7.5rem;
   right: 1.25rem;
   display: flex;
   align-items: center;
@@ -1540,7 +1539,8 @@ html { scroll-behavior: smooth; }
   gap: 0.25rem;
 }
 
-.success-carousel-card-glass-badge.selected {
+.success-carousel-card-glass-badge.selected,
+.success-carousel-card-glass-badge.first-officer {
   border-color: rgba(216, 160, 39, 0.35); /* Gold tint */
   color: var(--gold);
 }
@@ -2765,6 +2765,21 @@ html { scroll-behavior: smooth; }
     margin-bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 24px) !important;
   }
 
+  /* Homepage mobile overrides: hide CTA and remove bottom paddings/margins */
+  body.is-homepage {
+    padding-bottom: 0 !important;
+  }
+  body.is-homepage .sticky-mobile-cta {
+    display: none !important;
+  }
+  body.is-homepage .pf-root,
+  body.is-homepage footer {
+    padding-bottom: 0 !important;
+  }
+  body.is-homepage .grm-cta-bar {
+    margin-bottom: 0 !important;
+  }
+
   .pf-cta-block {
     margin-bottom: 2rem !important;
   }
@@ -3821,6 +3836,79 @@ html { scroll-behavior: smooth; }
 /* ── SPINNER ANIMATION ── */
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* ================================================================
+   CPL ISSUANCE REQUIREMENTS GRID (TILE CARDS REDESIGN)
+   ================================================================ */
+.cpl-requirements-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .cpl-requirements-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cpl-requirements-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+.cpl-requirement-card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 39, 76, 0.08);
+  padding: 2.25rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 39, 76, 0.02);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.cpl-requirement-icon-wrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.cpl-requirement-title {
+  font-family: var(--font-h);
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0;
+  margin-bottom: 0.75rem;
+}
+
+.cpl-requirement-divider {
+  width: 40px;
+  height: 2px;
+  background-color: rgba(0, 39, 76, 0.08);
+  margin-bottom: 1.25rem;
+}
+
+.cpl-requirement-desc {
+  font-family: var(--font-b);
+  font-size: 0.85rem;
+  color: rgba(0, 39, 76, 0.65);
+  line-height: 1.5;
+  margin: 0;
 }
 
 
