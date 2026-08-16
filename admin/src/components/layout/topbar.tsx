@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { getInitials } from "@/lib/utils";
 import { CommandPalette } from "./command-palette";
+import { NotificationMenu } from "./notification-menu";
 
 interface TopbarProps {
   user: {
@@ -51,10 +52,7 @@ export function Topbar({ user }: TopbarProps) {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary hover:bg-primary/10 relative">
-            <Bell className="h-4 w-4" />
-            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary animate-pulse" />
-          </Button>
+          <NotificationMenu />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

@@ -13,13 +13,13 @@
 - ⚠ API health - `/api/lead` code-verified solid; `/api/public-proxy/courses` (and siblings) live-confirmed returning empty in production right now
 
 ## SEO
-- ☑ Sitemap - fixed this session (2 broken slugs, 6 missing routes)
+- ☑ Sitemap - fixed & expanded with `/refund-policy` route
 - ☑ Robots.txt - verified present and correctly wired
 - ☑ Metadata/canonical - 24-26 of ~28 routes verified
 - ⚠ Structured data - JSON-LD present and spot-checked, not run through Google's live Rich Results validator (needs live URL)
 
 ## Analytics
-- ☐ Not audited this pass - no analytics/tracking code (GA, GTM, Meta Pixel) was found or searched for in either audit session. **Flag: confirm whether analytics is expected to exist at all before launch** - if it's meant to be there and isn't, that's a gap this checklist hasn't covered.
+- ☑ Integrated & verified - Google Tag Manager (`GTM-KCM9CDK9`), GA4 (`G-KB3Y1MSLR6`), and Microsoft Clarity (`xv0yvv94yd`) implemented in layout.jsx.
 
 ## Forms
 - ☑ Validation, sanitization, rate limiting - verified server-side
@@ -60,6 +60,16 @@
 - ☐ Submit one real test lead end-to-end, confirm it appears in the CRM
 - ☐ Click every footer social icon
 - ☐ Resize browser through the breakpoints listed above
+
+## Architecture & Database Security (Newly Added Tasks - Aug 2026 Audit)
+- ☐ Supabase fallback docs & alerting (`.env.example` guidance update + write failure alerts)
+- ☐ Add covering indexes for 60 unindexed foreign keys in Prisma schema
+- ☐ Migrate in-memory rate limiter & OTP store to Upstash Redis
+- ☐ Add Primary Key to `verification_tokens` table
+- ☐ Revoke public execution privileges on `rls_auto_enable()` RPC
+- ☐ Align and document single migration source of truth (Prisma vs Supabase tracking)
+- ☐ Add Zod request body validation & size limits to public API routes
+- ☐ Housekeeping: remove `.backup` files, centralize proxy fetches, re-enable build ESLint
 
 ## Bottom line
 Everything marked ☑ is genuinely done and verified from source. Everything marked ☐ or 🔴 needs either live access (Vercel/admin backend/browser) or your input - none of it can be closed by further code review alone.

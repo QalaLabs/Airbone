@@ -39,13 +39,14 @@ Legend: `IMPLEMENTED_VALIDATED` | `ALREADY` | `CLIENT_DEP` | `N/A` | `PARTIAL`
 |----|-------|--------|
 | H1–H2, H5–H8 | Pricing / FAQ / alumni / footer | ALREADY |
 | H3 | Airline Prep WhatsApp layout | CLIENT_DEP / page exists as premium product |
-| H4 | Parent Centric page | IMPLEMENTED - H1/meta/breadcrumb |
+| H4 | Parent Centric page | IMPLEMENTED_VALIDATED - Retitled to "Securing Your Child's Future in Aviation" |
 
-## About / Contact / Policy
+## About / Contact / Policy / Analytics
 | ID | Issue | Status |
 |----|-------|--------|
 | A1 | Logo | CLIENT_DEP |
 | A2–A3, CT1, P1 | Bios / mentors / contact / privacy | ALREADY |
+| AN1 | Analytics & Tracking | IMPLEMENTED_VALIDATED - GTM (GTM-KCM9CDK9), GA4 (G-KB3Y1MSLR6), Microsoft Clarity (xv0yvv94yd) |
 
 ## Jobs / Resources / Blog
 | ID | Issue | Status |
@@ -72,5 +73,17 @@ Legend: `IMPLEMENTED_VALIDATED` | `ALREADY` | `CLIENT_DEP` | `N/A` | `PARTIAL`
 | CP7 images | CLIENT_DEP |
 | CC1 | ₹59k / 100%* | IMPLEMENTED - pathways/FAQ/schema synced |
 | CD1 | Institutes lists | CLIENT_DEP placeholders |
-| A320 row remove | CLIENT_DEP (image-only ask) |
+| A320 row remove | IMPLEMENTED_VALIDATED - Cadet selection sim prep row removed |
 | GD1 | Two-product model | ALREADY (ship blockers) |
+
+## Architecture & Database Security (Newly Added Tasks - Aug 2026 Audit)
+| ID | Remediation Task | Status |
+|----|------------------|--------|
+| AD1 | Supabase fallback docs & failure alert | PENDING |
+| AD2 | 60 Foreign key indexes in Prisma schema | PENDING |
+| AD3 | Migrate rate limit & OTP store to Upstash Redis | PENDING |
+| AD4 | Primary key for `verification_tokens` table | PENDING |
+| AD5 | Revoke public RPC privileges on `rls_auto_enable()` | PENDING |
+| AD6 | Single migration source of truth documentation | PENDING |
+| AD7 | Zod schema validation & payload limit on API routes | PENDING |
+| AD8 | Remove `.backup` files, centralize proxy fetch, ESLint | PENDING |

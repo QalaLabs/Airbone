@@ -23,7 +23,7 @@ export default async function sitemap() {
 
   const staticRoutes = [
     '', '/about', '/courses', '/jobs', '/resources', '/contact',
-    '/privacy', '/terms', '/dgca-compliance',
+    '/privacy', '/terms', '/refund-policy', '/dgca-compliance',
     '/blog',
     '/blog/how-to-become-pilot-india',
     '/blog/pilot-salary-india',
