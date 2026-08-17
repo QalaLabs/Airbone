@@ -18,28 +18,20 @@ export async function GET(req: NextRequest) {
     const limit = Math.min(parseInt(url.searchParams.get("limit") ?? "50"), 100);
 
     const placements = await prisma.placement.findMany({
-      where: { orgId: org.id, status: "CONFIRMED" },
+      where: { orgId: org.id, status: "CONFIRMED", isPublic: true },
       orderBy: { joiningDate: "desc" },
       take: limit,
       select: {
         id: true,
-        studentId: true,
         jobTitle: true,
         package: true,
         currency: true,
         joiningDate: true,
         batchYear: true,
-        notes: true,
         hiringPartner: {
           select: {
             name: true,
             logoId: true,
-          },
-        },
-        student: {
-          select: {
-            firstName: true,
-            lastName: true,
           },
         },
       },

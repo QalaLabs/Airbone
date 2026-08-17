@@ -51,6 +51,11 @@ scripts/rc-pull-*.mjs
 scripts/set-prod-urls.mjs
 scripts/smoke-admin-preview.mjs
 scripts/smoke-http.mjs
+scripts/run-cloudsql-replay.ps1
+scripts/run-replay.ps1
+
+# QA/ops scratch scripts (may reference prod credentials via admin/.env)
+admin/scratch/
 
 # OS
 .DS_Store

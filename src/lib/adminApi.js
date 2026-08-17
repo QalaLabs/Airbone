@@ -1,15 +1,10 @@
-const BASE = process.env.ADMIN_API_URL ?? 'http://localhost:4000'
+import { resolveAdminApiUrl } from '@/lib/upstream'
 
-function adminFetchHeaders() {
-  const bypass =
-    process.env.ADMIN_PROTECTION_BYPASS ||
-    process.env.VERCEL_AUTOMATION_BYPASS_SECRET ||
-    ''
-  return bypass ? { 'x-vercel-protection-bypass': bypass } : {}
-}
+const BASE = resolveAdminApiUrl()
 
 // Returns { data, status } — status 0 means network error, non-zero is HTTP status
 export async function fetchPublicWithStatus(path, params = {}) {
+  if (!BASE) return { data: null, status: 0 }
   const url = new URL(`${BASE}/api/public${path}`)
   Object.entries(params).forEach(([k, v]) => {
     if (v !== undefined && v !== null) url.searchParams.set(k, String(v))
@@ -17,7 +12,6 @@ export async function fetchPublicWithStatus(path, params = {}) {
   try {
     const res = await fetch(url.toString(), {
       next: { revalidate: 60 },
-      headers: adminFetchHeaders(),
     })
     if (res.ok) {
       const json = await res.json()
@@ -30,6 +24,7 @@ export async function fetchPublicWithStatus(path, params = {}) {
 }
 
 export async function fetchPublic(path, params = {}) {
+  if (!BASE) return null
   const url = new URL(`${BASE}/api/public${path}`)
   Object.entries(params).forEach(([k, v]) => {
     if (v !== undefined && v !== null) url.searchParams.set(k, String(v))
@@ -37,7 +32,6 @@ export async function fetchPublic(path, params = {}) {
   try {
     const res = await fetch(url.toString(), {
       next: { revalidate: 60 },
-      headers: adminFetchHeaders(),
     })
     if (!res.ok) return null
     const json = await res.json()

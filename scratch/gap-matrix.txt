@@ -1,0 +1,322 @@
+Airborne Admin OS — Master Gap Matrix
+Airborne Admin OS — Master Gap Matrix (Phase 6 Audit)
+Full remaining-functionality audit • C:\Users\pc\Desktop\Airbone\admin • Read-only (no code modified) • Next.js 15 App Router, Prisma/PostgreSQL, NextAuth, TanStack Query, Zod, Inngest
+Method: end-to-end tracing of all 69 Prisma models, ~190 API route files, 22 services, 17 repositories, 20 validation schemas, all dashboard/faculty/portal pages, Inngest functions, plus live verification from Phases 1–5.
+Legend
+ROW: STATUS | Meaning |  | PRIORITY | Meaning |
+ROW: WORKING | Full trace UI→API→validation→RBAC→service→repo→Prisma→DB works with real data |  | P0 | Production blocker (broken core feature / security) |
+ROW: PARTIAL | Real end-to-end but a meaningful piece is missing |  | P1 | Core functionality incomplete |
+ROW: BROKEN | Trace fails (missing route/UI, method mismatch, wrong enum, security gap) |  | P2 | Important but non-blocking |
+ROW: PLACEHOLDER | Fake/hardcoded surface or honest "not connected" stub |  | P3 | Polish / future |
+ROW: NOT_CONFIGURED | External provider / engine exists but no credentials or not activated |  |  |  |
+ROW: DEAD | No consumer (route/service/model/UI unused) |  |  |  |
+ROW: DEFERRED | Intentionally out of scope |  |  |  |
+Master Admin OS Gap Matrix
+1. Dashboard
+ROW: MODULE | ROUTE | CAPABILITY | UI | API | VALIDATION | RBAC | DB | REAL DATA | STATUS | PRIORITY | REQUIRED FIX |
+ROW: Dashboard | / | KPI cards + revenue | (dashboard)/page.tsx:39-67 | api/v1/dashboard/stats/route.ts:9-57 | – | guard("read","analytics") | real | yes | WORKING | – | – |
+ROW: Dashboard | / | Recent leads + quick actions | page.tsx:40-48,125-206 | /api/v1/leads | y | y | real | yes | WORKING | – | – |
+ROW: Dashboard | /crm/dashboard | Alias | redirect page | – | – | – | – | – | DEAD | P3 | Intentional redirect to /; keep documented |
+2. Leads / CRM
+ROW: MODULE | ROUTE | CAPABILITY | UI | API | VALIDATION | RBAC | DB | REAL DATA | STATUS | PRIORITY | REQUIRED FIX |
+ROW: Leads | /leads | List + create | leads/page.tsx | api/v1/leads/route.ts GET/POST | y | guard+org+counselor scope | real | yes | WORKING | – | – |
+ROW: Leads | /leads/[id] | Detail, PATCH, soft-delete | leads/[id]/page.tsx | api/v1/leads/[id]/route.ts | y | guardRecord ABAC | real | yes | WORKING | – | – |
+ROW: Leads | /leads/[id] | Timeline activities CRUD | detail page | leads/[id]/activities/** | y | y | real | yes | WORKING | – | – |
+ROW: Leads | /leads/[id] | Assign counselor | detail page | leads/[id]/assign | y | y | real | yes | WORKING | – | – |
+ROW: Leads | /leads/[id] | Convert → Admission | detail page | leads/[id]/convert | y | y | real | yes | WORKING | – | – |
+ROW: Leads | /leads/[id] | Follow-up scheduling | detail page | leads/[id]/follow-up | y | y | real | yes | WORKING | – | – |
+ROW: Leads | list | Scoring + dedup | badge | lead.service.ts:369-418,29-39 | y | y | real | yes | WORKING | – | – |
+ROW: CRM | /crm/deals | Pipeline (admission-funnel derived) | crm/deals/page.tsx | api/v1/crm/deals/route.ts:78-83 | y | y | real | yes | DEFERRED | P3 | Honest deals:false; real deals need new Opportunity model+FK. Relabel UI "Admission Funnel" |
+ROW: CRM | /crm/pipeline | Alias → /crm/deals | redirect | – | – | – | – | – | DEAD | P3 | Intentional alias |
+ROW: CRM | /crm/leads | Alias → /leads | redirect | – | – | – | – | – | DEAD | P3 | Intentional alias |
+ROW: CRM | /crm/analytics | Totals/monthly/bySource/byStatus/byCounselor | crm/analytics/page.tsx | api/v1/crm/analytics/route.ts:26-229 | y | guard+counselor ABAC:32-35 | real | yes | WORKING | – | – |
+ROW: CRM | /crm/meetings | Meeting CRUD (leadActivity) | crm/meetings/page.tsx | api/v1/crm/meetings/route.ts | y | guard+counselor scope | real | yes | WORKING | – | – |
+ROW: CRM | /crm/outreach | Template CRUD + delivery logs | crm/outreach/page.tsx:343-432 | api/v1/crm/outreach/route.ts | y | guard("notifications") | real | yes | WORKING | – | Logs empty until Inngest active (see §20) |
+3. Admissions
+ROW: MODULE | ROUTE | CAPABILITY | UI | API | VALIDATION | RBAC | DB | REAL DATA | STATUS | PRIORITY | REQUIRED FIX |
+ROW: Admissions | /admissions | Kanban + drag-drop | admissions/page.tsx (dnd-kit) | api/v1/admissions/route.ts GET/POST | y + STAGE_TRANSITIONS | guard+counselor filter | real | yes | WORKING | – | – |
+ROW: Admissions | /admissions | Detail/update | card dialog | api/v1/admissions/[id]/route.ts | y | guardRecord | real | yes | WORKING | – | – |
+ROW: Admissions | /admissions | Stage transitions (+auto Student on ENROLLED, lead CONVERTED) | stage-log dialog | admissions/[id]/stage | y | y | real | yes | WORKING | – | – |
+ROW: Admissions | /admissions | Fee-plan picker + balance recalc | admissions/page.tsx:504-570 | admission.service.ts:48-117 | y | y | real | yes | WORKING | – | – |
+ROW: Admissions | /admissions | applicationNo generator | – | admission.repository.ts:137-142 | – | y | real | yes | WORKING | P3 | count+1 non-atomic (unique constraint backs it) |
+4. Students
+ROW: MODULE | ROUTE | CAPABILITY | UI | API | VALIDATION | RBAC | DB | REAL DATA | STATUS | PRIORITY | REQUIRED FIX |
+ROW: Students | /students | List + create | students/page.tsx | api/v1/students/route.ts GET/POST | y | guard+org | real | yes | WORKING | – | – |
+ROW: Students | /students/[id] | Detail/update/soft-delete | students/[id]/page.tsx | api/v1/students/[id]/route.ts | y | guardRecord ABAC | real | yes | WORKING | – | – |
+ROW: Students | /students/[id] | Linked admissions | detail page | students/[id]/admissions | y | y | real | yes | WORKING | – | – |
+ROW: Students | create | Event emission | – | student.service.ts:69-83 | – | – | real | – | BROKEN | P2 | Emits admission/created with student id — should be student/created event |
+5. Fee Plans / Payments
+ROW: MODULE | ROUTE | CAPABILITY | UI | API | VALIDATION | RBAC | DB | REAL DATA | STATUS | PRIORITY | REQUIRED FIX |
+ROW: Fee plans | api/v1/fee-plans/** | CRUD | admissions dialogs | fee-plans/route.ts, [id]/route.ts | y (items min 1) | guard("write","admissions") | real | yes | WORKING | – | No standalone page — admission-centric by design |
+ROW: Payments | api/v1/admissions/[id]/payments | Record payment + receipt no + balance recalc | admissions/page.tsx:358-368 | payment.service.ts:21-84 | y | y | real | yes | WORKING | – | – |
+ROW: Payments | api/v1/payments/[id] | Update/status | – | payment.service.ts:91-125 | y | guard("write","payments") | real | yes | WORKING | – | – |
+ROW: Payments | Razorpay | Online collection | – | crm/integrations/route.ts:81-86 | – | – | – | no | NOT_CONFIGURED | P3 | No gateway creds; honest payments:false; webhook settings field unused |
+6. Documents
+ROW: MODULE | ROUTE | CAPABILITY | UI | API | VALIDATION | RBAC | DB | REAL DATA | STATUS | PRIORITY | REQUIRED FIX |
+ROW: Documents | api/v1/admissions/[id]/documents | Upload (R2 presign) | admissions dialog | document.service.ts:22-54 | y | y | real | yes | WORKING | – | R2 is legacy path (Supabase used for media); keep as-is |
+ROW: Documents | api/v1/documents/[id] | Review approve/reject | admissions dialog | document.service.ts:120-123 | y | y (admin re-check) | real | yes | WORKING | – | – |
+ROW: Documents | api/v1/documents/[id] | Rejection reason | – | document.service.ts:125-127 | y | y | real | – | BROKEN | P2 | Generic Error (→500) instead of ValidationError (→400) when rejection reason missing |
+7. LMS — Admin Course Builder
+ROW: MODULE | ROUTE | CAPABILITY | UI | API | VALIDATION | RBAC | DB | REAL DATA | STATUS | PRIORITY | REQUIRED FIX |
+ROW: LMS | /lms | Course list/create | lms/page.tsx:40,45 | api/v1/lms/courses/route.ts | y | guard | real | yes | WORKING | – | – |
+ROW: LMS | /lms/courses/[id] | Tree view + PATCH | lms/courses/[id]/page.tsx:1237-1242 | courses/[id]/route.ts | y | y | real | yes | WORKING | – | – |
+ROW: LMS | /lms/courses/[id] | Delete course | – | no DELETE route | – | – | – | – | BROKEN | P1 | Add DELETE /courses/[id] + confirm UI (cascade wipes tree) |
+ROW: LMS | /lms/courses/[id] | Stages CRUD+reorder | :700-714 | stages/** | y | y | real | yes | WORKING | – | – |
+ROW: LMS | /lms/courses/[id] | Modules CRUD+reorder+duplicate | :720-810 | modules/** | y | y | real | yes | WORKING | – | – |
+ROW: LMS | /lms/courses/[id] | Module quiz settings | :739 | modules/[moduleId] PATCH | y | y | real | yes | WORKING | – | – |
+ROW: LMS | /lms/courses/[id] | Chapters/Topics CRUD+reorder+move | :761-785 | chapters/**, topics/** | y | y | real | yes | WORKING | – | – |
+ROW: LMS | /lms/courses/[id] | Content create | :517 | topics/[topicId]/contents | y | y | real | yes | WORKING | P2 | url silently defaults to "#" — surface in UI |
+ROW: LMS | /lms/courses/[id] | Questions CRUD + bulk (≤200) | :170-205 | questions/** | y | y | real | yes | WORKING | – | – |
+ROW: LMS | /lms/courses/[id] | Bulk curriculum import | :749 | courses/[id]/import | y | y | real | yes | WORKING | – | – |
+ROW: LMS | /lms/courses/[id] | Announcements | :1171-1175 | announcements/route.ts | y | y | real | yes | WORKING | – | – |
+ROW: LMS | – | Assign teacher to course | – | – | assignCourseTeacherSchema | – | – | – | DEAD | P3 | Unused schema; teachers assigned only via batch members |
+8. LMS — Batches / Timetable / Attendance / Certificates
+ROW: MODULE | ROUTE | CAPABILITY | UI | API | VALIDATION | RBAC | DB | REAL DATA | STATUS | PRIORITY | REQUIRED FIX |
+ROW: Batches | /lms/batches | CRUD | lms/batches/page.tsx | batches/** | y | guard | real | yes | WORKING | – | – |
+ROW: Batches | /lms/batches | Members sync (students+teachers, enrollment sync) | batches/page.tsx:100 | batches/[id]/members PUT | y | y | real | yes | WORKING | – | – |
+ROW: Timetable | /lms/timetable | CRUD | lms/timetable/page.tsx | timetable/** | y | y | real | yes | WORKING | P3 | recurrenceRule column never written (dead field); update lacks endsAt>startsAt recheck |
+ROW: Attendance | /lms/attendance | Mark sessions+records, list | lms/attendance/page.tsx:80-102 | attendance/route.ts GET/POST | y | y | real | yes | WORKING | – | – |
+ROW: Attendance | – | Edit/delete session/record | – | no routes | – | y (delete,lms_attendance unused) | – | – | BROKEN | P1 | Add PATCH/DELETE for sessions+records |
+ROW: Certificates | /lms/certificates | Issue | lms/certificates/page.tsx:60 | certificates/route.ts POST | y | y | real | yes | BROKEN | P0 | certNo generated client-side (:28-31 random) → P2002 collision → unhandled 500. Move to server + retry/unique + try-catch |
+ROW: Certificates | /lms/certificates | List | :45 | certificates/route.ts GET | – | y | real | yes | WORKING | – | – |
+ROW: Certificates | – | Revoke (REVOKED enum exists) / delete | – | no routes | – | – | – | – | BROKEN | P1 | Add revoke/delete API+UI |
+ROW: Enrollments | /lms/courses/[id] | List/enroll | :400-409 | enrollments/route.ts | y | y | real | yes | WORKING | – | – |
+ROW: Enrollments | – | Unenroll / accept-reject | – | no route (status only ACTIVE) | – | – | – | – | BROKEN | P1 | Add unenroll/drop + lifecycle state |
+ROW: Portal access | /lms | Provision portal login (argon2, links Student↔User) | lms/page.tsx:155 | portal-access/route.ts | y | y | real | yes | WORKING | – | – |
+ROW: Admin dash | api/v1/lms/dashboard/[studentId] | Per-student dashboard | no UI | route exists | – | y | real | yes | DEAD | P3 | Build page or remove |
+9. LMS — Faculty + Student Portal
+ROW: MODULE | ROUTE | CAPABILITY | UI | API | VALIDATION | RBAC | DB | REAL DATA | STATUS | PRIORITY | REQUIRED FIX |
+ROW: Faculty | /faculty | Dashboard | (faculty)/faculty/page.tsx:40 | api/v1/lms/faculty/route.ts | – | role gate TEACHER/ADMIN | real | yes | WORKING | – | – |
+ROW: Faculty | /faculty/students | Students list | :27 | faculty/students/route.ts | – | y | real | yes | PARTIAL | P2 | Raw join rows — student duplicated per batch; no grouping |
+ROW: Faculty | /faculty nav | "Assignments" link | (faculty)/layout.tsx:23 | – | – | – | – | – | BROKEN | P1 | Mislabeled → links to /lms/timetable; must point to assignments UI |
+ROW: Portal | /portal/* | Dashboard (enrollments, progress, attendance, announcements, bookmarks, attempts) | portal/page.tsx:356 | api/v1/lms/me/route.ts | – | y (STUDENT-only layout) | real | yes | WORKING | – | – |
+ROW: Portal | /portal/courses* | Course list + player + progress + bookmarks | portal/courses/** | me/courses/[courseId], me/progress, me/bookmarks | y | y + enrollment check | real | yes | WORKING | – | – |
+ROW: Portal | quiz | Quiz fetch (no answer leak) + submit/grading engine | components/portal/quiz-modal.tsx | me/courses/[courseId]/quiz/[moduleId] | y | y | real | yes | WORKING | – | courseId path param ignored; moduleId governs — verify intentional |
+ROW: Portal | /portal/progress | Progress page | :47 | me/route.ts | – | y | real | yes | WORKING | – | – |
+ROW: Portal | /portal/attendance | Monthly/by-subject breakdown | :53-58 | me/attendance-breakdown | – | y | real | yes | WORKING | – | – |
+ROW: Portal | /portal/assessments | List + self-report | list only | me/assessments POST | y | STUDENT has write,lms_assessments | real | yes | BROKEN (security) | P0 | Student can POST score+status=PASS directly → self-grading unlock vector. Gate to quiz-derived sync only or admin/faculty role |
+ROW: Portal | /portal/certificates | List | :22 | me/route.ts | – | y | real | yes | WORKING | – | – |
+ROW: Portal | /portal/certificates/[certNo]/print | Print | :18-31 (server component, direct prisma) | – | – | no ownership/org check | real | yes | BROKEN (security) | P0 | Any student can print any ISSUED cert given certNo/verificationCode — add student/org authorization |
+ROW: Portal | /portal/profile | Read-only display | profile/page.tsx:28-46 | me/route.ts | – | y | real | yes | PARTIAL | P2 | No edit capability |
+ROW: Portal | /portal/assistant | AI tutor | assistant/page.tsx:49 | assistant/route.ts | y | y | real | yes | NOT_CONFIGURED | P3 | Stub answer without GEMINI_API_KEY (graceful); no usage quota |
+10. LMS — Quiz State Machine / Assignments / Dead Model Surface
+ROW: MODULE | ROUTE | CAPABILITY | UI | API | VALIDATION | RBAC | DB | REAL DATA | STATUS | PRIORITY | REQUIRED FIX |
+ROW: Quiz | – | Sequential module unlock (prev PASS) | – | lms.service.ts:876-898 | – | – | real | yes | PARTIAL | P2 | Cross-stage gating absent; unlockRules JSON stored but never evaluated |
+ROW: Assignments | api/v1/lms/assignments/** | Create/update/submit/grade | no UI at all | assignments/**, submissions/[id]/grade | y | y | real | yes | BROKEN | P1 | Faculty cannot view assignments, submissions, or grade — API-complete, UI-absent. No submission-list GET, no assignment DELETE |
+ROW: Assignments | – | Resubmit | – | assignments/[id]/submit | y | y | real | – | PARTIAL | P2 | Resubmit resets status but keeps stale score/feedback — clear on resubmit |
+ROW: Inngest | – | LMS events (cert issued, enrollment, attendance SMS) | – | events/functions/** | – | – | – | – | DEAD | P2 | Zero LMS handlers in Inngest functions; nothing enqueues LMS events |
+ROW: LmsNotification | – | In-app notifications | – | – | – | lms_notifications perm exists | real (table) | no | DEAD | P2 | No service/route/UI — unused table+permission |
+ROW: LmsChatRoom/LmsMessage | – | Chat | – | – | – | lms_chat perm exists | real (table) | no | DEAD | P3 | No service/route/UI — deferred feature |
+ROW: Feature gate | – | isLmsEnabled (sms.enabled) | – | src/lib/lms/feature-flag.ts | – | – | – | – | DEAD | P3 | Never imported — LMS always accessible |
+11. LMS — Public Certificate Verification
+ROW: MODULE | ROUTE | CAPABILITY | UI | API | VALIDATION | RBAC | DB | REAL DATA | STATUS | PRIORITY | REQUIRED FIX |
+ROW: Verify | /verify/[code] | Public cert lookup (certNo OR verificationCode, ISSUED only) | verify/[code]/page.tsx:40 | api/v1/public/lms/certificates/route.ts | – | public by design | real | yes | WORKING | – | – |
+12. CMS — Pages / Sections / Blocks / Versions
+ROW: MODULE | ROUTE | CAPABILITY | UI | API | VALIDATION | RBAC | DB | REAL DATA | STATUS | PRIORITY | REQUIRED FIX |
+ROW: Pages | /cms | List + create + edit metadata | cms/page.tsx:63-107 | pages/** | y | y | real | yes | WORKING | – | – |
+ROW: Pages | /cms | Publish/status transitions | :110-121,298-311,399-414 | pages/[id]/publish | y | y | real | yes | WORKING | – | – |
+ROW: Pages | /cms | Version snapshot on publish + list + rollback | no UI | versions/**, [vid]/rollback | y | y | real | yes | BROKEN (API-only) | P1 | Server-side complete — build editor UI (sections/blocks/reorder/versions/rollback). cms/page.tsx is list-only |
+ROW: Pages | /cms | Section editor | no UI | pages/[id]/sections/** | y | y | real | yes | BROKEN (API-only) | P1 | Same as above |
+ROW: Pages | /cms | Block editor | no UI | sections/[sid]/blocks/** | y | y | real | yes | BROKEN (API-only) | P1 | Same + ContentBlock types unseeded → blockType lookup 404s |
+ROW: Pages | /cms | Layout reorder | no UI | pages/[id]/layout | y | y | real | yes | BROKEN (API-only) | P1 | Same |
+ROW: Pages | /cms | Live preview | cms/page.tsx:160-171 fake toggle → toast only | – | – | – | – | – | PLACEHOLDER | P2 | Replace with real preview (public render/iframe) |
+ROW: Pages | – | Scheduled publish | – | page.service.ts:413-456 | y | – | real | yes | NOT_CONFIGURED | P2 | Logic exists but driven by cms/scheduled.check Inngest event — never fires (Inngest disabled). Wire cron/inngest |
+ROW: Pages | – | Public propagation | – | api/public/pages | – | public | real | yes | WORKING | – | – |
+13. CMS — Nav / Content Blocks / Courses / Media
+ROW: MODULE | ROUTE | CAPABILITY | UI | API | VALIDATION | RBAC | DB | REAL DATA | STATUS | PRIORITY | REQUIRED FIX |
+ROW: Nav | api/v1/nav/** | Menu CRUD + nested items | no UI anywhere | nav/**, nav.service.ts | y | y | real | yes | DEAD (route-only) | P1 | Build nav management UI (settings or CMS); add to a public endpoint (currently api/public/settings omits navMenus) |
+ROW: ContentBlock | api/v1/blocks/** | Type registry | no UI | blocks/**, block.service.ts | y | y | real | yes | DEAD (route-only) | P1 | Seed block types + registry UI, else block feature unusable end-to-end |
+ROW: Courses | /courses | List + create | courses/page.tsx:55-138 | api/v1/courses/** | y | y | real | yes | WORKING | – | – |
+ROW: Courses | /courses | "Go Live" publish | courses/page.tsx:73-80 sends PATCH | courses/[id]/publish POST only | y | y | real | yes | BROKEN | P0 | UI method mismatch → 405, button silently fails. Change to POST |
+ROW: Courses | /courses | Edit (SEO only) | :140-154 | courses/[id] PATCH | y | y | real | yes | PARTIAL | P1 | No UI to edit title/duration/fee/category/eligibility/curriculum/banner after creation |
+ROW: Courses | /courses | Create status select | :314-317 | createCourseSchema | stripped | y | real | – | BROKEN | P1 | Status not in schema → always DRAFT; remove misleading control or wire it |
+ROW: Courses | /courses | Curriculum editor | :376-401 read-only JSON | – | – | – | real | yes | BROKEN | P1 | No add/edit/reorder of modules; build editor |
+ROW: Courses | /courses | Versions + rollback | no UI | versions/**, [vid]/rollback | y | y | real | yes | BROKEN (API-only) | P1 | Add versions UI |
+ROW: Courses | /courses | Banner/gallery media picker | missing | course.service.ts:53-117 (MediaUsage) | y | y | real | – | PARTIAL | P2 | Schema supports bannerImageId/galleryIds; add MediaPicker |
+ROW: Courses | /courses | Archive delete | :106-115 | courses/[id] DELETE | y | y | real | yes | WORKING | P3 | Toast says "removed from database" but it archives — fix wording |
+ROW: Courses | – | Scheduled publish | – | course.service.ts:304-350 | y | – | real | yes | NOT_CONFIGURED | P2 | Same Inngest-driver gap as pages |
+ROW: Courses | – | Public propagation | – | api/public/courses | – | public | real | yes | WORKING | – | – |
+ROW: Media | /media | Upload→Supabase, folders, search, copy, delete (soft+usage guard) | media/page.tsx:70-443 | api/v1/media/** | y | y | real | yes | WORKING | – | – |
+ROW: Media | /media | Folder create | no UI | media/folders POST | y | y | real | yes | BROKEN (API-only) | P1 | Add "New Folder" |
+ROW: Media | /media | Rename/move asset | no UI | media/[id] PATCH | y | y | real | yes | BROKEN (API-only) | P1 | Asset dialog has only copy/delete/open |
+ROW: Media | /media | Replace file | no UI | media/[id]/replace | y | y | real | yes | BROKEN (API-only) | P1 | Add replace UI |
+ROW: Media | /media | Bulk delete / multi-select | missing | – | – | – | – | – | BROKEN | P2 | Add |
+ROW: Media | /media | Folder asset-count badge | :267-271 | media.repository.ts:41-51 | – | – | real | – | BROKEN | P3 | FOLDER_SELECT lacks assetCount → badge never renders |
+14. Resources / Blog / Jobs / Testimonials (Phase 5 — live-verified)
+ROW: MODULE | ROUTE | CAPABILITY | UI | API | VALIDATION | RBAC | DB | REAL DATA | STATUS | PRIORITY | REQUIRED FIX |
+ROW: Resources | /resources | Full CRUD + publish/unpublish/archive + gating + download count | components/cms/resource-manager.tsx | api/v1/resources/** | y | y | real | yes | WORKING | – | – |
+ROW: Resources | /resources | Public + HMAC gated download (20/min/IP) | – | api/public/resources, resource-download | y | token | real | yes | WORKING | – | – |
+ROW: Blog | /blog | Resources manager type=DOCUMENT | blog/page.tsx | api/public/blogs | y | y | real | yes | WORKING | – | Not in sidebar (by design) |
+ROW: Jobs | /jobs, /jobs/[id] | CRUD + publish transitions | jobs/page.tsx, jobs/[id]/page.tsx | api/v1/jobs/** | y | y | real | yes | WORKING | – | – |
+ROW: Job apps | /jobs/[id] | Submit/list/detail | jobs/[id]/page.tsx | api/v1/job-applications/** | y | y | real | yes | WORKING | – | – |
+ROW: Job apps | /jobs/[id] | Status change | :104 offers OFFERED, HIRED | job-applications/[id]/status | zod/DB enum lack OFFERED/HIRED (only SELECTED) | y | real | yes | BROKEN | P0 | UI offers statuses the enum rejects → 400. Remove OFFERED/HIRED from UI or add to enum+transition map + badge styles |
+ROW: Testimonials | /testimonials | CRUD + review + featured + avatar + pending badge | testimonials/page.tsx | api/v1/testimonials/** | y | y | real | yes | WORKING | – | P3: no order field UI; no unpublish→PENDING path |
+15. Users / Roles / Permissions / Auth
+ROW: MODULE | ROUTE | CAPABILITY | UI | API | VALIDATION | RBAC | DB | REAL DATA | STATUS | PRIORITY | REQUIRED FIX |
+ROW: Users | /users | List/search/create/update/deactivate | users/page.tsx | api/v1/users/** | y | guard + SUPER_ADMIN role-change guard | real | yes | WORKING | – | – |
+ROW: Users | /users | Invite | invite dialog | users/route.ts action=invite → user.service.ts:22-51 | y | y | real | yes | PARTIAL | P1 | Email never sent (Inngest off + no RESEND_API_KEY); user created isActive:false with unused token; UI toasts success — surface "email not sent" |
+ROW: Users | api/v1/users/invite/accept | Accept invite | no UI | route exists | y | y | real | yes | PARTIAL | P1 | No accept-invite page for staff |
+ROW: Roles | /users | Role enum + labels | users/page.tsx:20-42 hardcoded | Prisma UserRole | – | – | real | yes | WORKING | P3 | Hardcoded in 2 places; sync risk |
+ROW: Permissions | – | Per-org permission overrides | – | – | – | static matrix only | Permission table UNUSED | no | PARTIAL | P2 | Matrix comment claims DB overrides — aspirational; no API/UI to manage Permission rows |
+ROW: Auth | /login | Credentials+orgSlug login, argon2, session revocation | (auth)/login/page.tsx | lib/auth/config.ts:57-112 | y | y | real | yes | WORKING | – | – |
+16. Settings / Organization / Campuses / Profile / Password
+ROW: MODULE | ROUTE | CAPABILITY | UI | API | VALIDATION | RBAC | DB | REAL DATA | STATUS | PRIORITY | REQUIRED FIX |
+ROW: Settings | /settings | Read org settings | settings/page.tsx:30-33 | api/v1/organizations GET | y | y | real | yes | WORKING | – | – |
+ROW: Settings | /settings | Toggles + webhook URLs | :58-101 + "Saved" toast :39 | organizations PATCH → org.service.ts:28-56 | y | y | real | yes | BROKEN (fake-success) | P0 | Values persist into org.settings JSON but NOTHING consumes them: maintenanceMode, applicationIntake, forceDebugLogs, razorpayWebhook, vapiWebhook, whatsappWebhook; no /api/webhooks/* routes; public intake never checks applicationIntake. Ops believes controls are enforced when they aren't |
+ROW: Settings | /settings | Env/secrets display | :164-180 | – | – | – | – | – | WORKING | – | Display-only by design |
+ROW: Org | api/v1/organizations/** | Tenant scope + SUPER_ADMIN listAll | – | organizations/route.ts:14-20 | y | y | real | yes | WORKING | – | – |
+ROW: Campuses | api/v1/organizations/campuses/** | CRUD + code-unique + headCounselor org check + delete guard | – | org.service.ts CampusService | y | y | real | yes | WORKING | – | No dedicated UI beyond settings? |
+ROW: Profile | topbar | "Profile Settings" menu item | topbar.tsx:78-81 | users/[id] PATCH self-exempt exists | y | y | real | – | BROKEN (no-op) | P1 | No handler/navigation — wire to an edit dialog |
+ROW: Password | – | Change password | no UI | no route (changePasswordSchema at user.schema.ts:31 zero callers) | y (dead) | – | – | – | DEAD | P1 | Implement change-password route + UI (self-service) |
+17. Audit / Activity / Notifications
+ROW: MODULE | ROUTE | CAPABILITY | UI | API | VALIDATION | RBAC | DB | REAL DATA | STATUS | PRIORITY | REQUIRED FIX |
+ROW: Audit | /audit | Immutable hash-chain writes + list/filter/search + CSV export | audit/page.tsx:33-71 | api/v1/audit/route.ts; audit.service.ts | y | guard("read","audit") | real | yes | WORKING | – | – |
+ROW: Audit | – | Coverage | – | written across user/org/campus/lead/media/admission/job/payment/auth services | – | – | real | yes | WORKING | – | LMS mutations largely unlogged |
+ROW: Activity | – | Feed writes | – | activity.service.ts | – | – | real | yes | WORKING | – | – |
+ROW: Activity | – | Feed read/UI | no dedicated page/API | – | – | – | real | – | PARTIAL | P2 | No admin surface for activity feed (visible only via CRM detail contexts) |
+ROW: Notify | /crm/outreach | Template CRUD + dispatch engine + logs | crm/outreach/page.tsx | api/v1/crm/outreach/route.ts, notification.service.ts | y | y | real | yes | WORKING | – | Logs only written when Inngest processes (inactive now) |
+ROW: Notify | – | Email (Resend) | – | notification.service.ts:105-151 real fetch | – | – | real | – | NOT_CONFIGURED | P3 | No RESEND_API_KEY → all email dead |
+ROW: Notify | – | SMS (Twilio) / WhatsApp (WATI) | – | notification.service.ts:98-103 | – | – | – | – | NOT_CONFIGURED | P3 | Honest NOT_CONFIGURED; no impl. env.ts marks Twilio "reserved" |
+ROW: Notify | – | In-app inbox | topbar Bell icon no onClick (topbar.tsx:54-57, fake pulsing dot) | no inbox API/route | – | – | – | – | BROKEN (no-op) | P1 | Add inbox page + IN_APP delivery + wire Bell handler |
+ROW: Notify | /notifications | Orphan page | notifications/page.tsx:13-24 "Not Connected" | – | – | – | – | – | PLACEHOLDER | P2 | Not in sidebar; duplicates real Outreach module — repurpose or remove |
+18. Workflows / Feature Flags
+ROW: MODULE | ROUTE | CAPABILITY | UI | API | VALIDATION | RBAC | DB | REAL DATA | STATUS | PRIORITY | REQUIRED FIX |
+ROW: Workflows | – | Engine | – | – | – | – | Workflow/WorkflowRun tables exist (schema:642,662) — ZERO src references | no | DEAD | P2 | No routes/services/UI; admission stages are static enum, not WorkflowRun-driven. Implement or drop tables |
+ROW: Feature Flags | – | Manager | – | – | – | – | FeatureFlag table (schema:1268) unused; flags live as org featureFlags JSON | no | DEAD | P2 | No admin UI/API to manage flags; isLmsEnabled reads JSON but is never used |
+19. Public Forms / Lead Intake
+ROW: MODULE | ROUTE | CAPABILITY | UI | API | VALIDATION | RBAC | DB | REAL DATA | STATUS | PRIORITY | REQUIRED FIX |
+ROW: Intake | api/public/leads | x-intake-key + 5/min/IP rate-limit + zod + org routing + dedup 409 + leadActivity + UTM + gate token | (public site) | api/public/leads/route.ts:17-175 | y | key + rate | real | yes | WORKING | – | – |
+ROW: Intake | – | applicationIntake toggle enforcement | – | api/public/leads/route.ts | – | – | real | – | BROKEN | P0 | Toggle never checked — wire org.settings.applicationIntake into intake gate (see §16) |
+ROW: FallbackLead | – | Dead-letter queue | – | – | – | – | table exists (schema:2078) + migration — ZERO src usage | no | DEAD | P3 | No queue-fallback path ever writes to it |
+20. Integrations / External Providers
+ROW: MODULE | ROUTE | CAPABILITY | UI | API | VALIDATION | RBAC | DB | REAL DATA | STATUS | PRIORITY | REQUIRED FIX |
+ROW: Integrations | /crm/integrations | Status readout (env-derived, honest) | crm/integrations/page.tsx | api/v1/crm/integrations/route.ts:10-103 | – | y | env | – | WORKING | P3 | Media status computed from R2 env while media uses Supabase — can misreport health |
+ROW: Facebook | facebook/callback | OAuth | page.tsx = plain redirect to /crm/integrations | no token exchange | – | – | – | – | DEAD | P3 | No Meta OAuth, no leads pull; flag-only status |
+ROW: Google Ads | – | Ingestion | – | flag-only | – | – | – | – | NOT_CONFIGURED | P3 | Public env flag only |
+ROW: Supabase | – | Storage | media upload | storage/supabase.ts real | – | – | real | yes | CONFIGURED | – | Only live external provider (creds in .env) |
+ROW: Inngest | api/inngest | ~30 functions served; emitEvent no-op when INNGEST_EVENT_KEY=local | – | events/inngest.ts:4-19, events/functions/** | – | – | – | – | NOT_CONFIGURED | P1 | All events silently dropped in current env (invite email, lead events, payment receipts, scheduled publish). Set real key + signing key + dev server |
+ROW: Gemini | /portal/assistant | AI tutor | – | assistant/route.ts | y | y | – | – | NOT_CONFIGURED | P3 | Stub without key (graceful) |
+21. Other Pages
+ROW: MODULE | ROUTE | CAPABILITY | UI | API | VALIDATION | RBAC | DB | REAL DATA | STATUS | PRIORITY | REQUIRED FIX |
+ROW: Vapi | /vapi | Voice AI logs | vapi/page.tsx:13-24 "Not Connected" | – | – | – | – | – | PLACEHOLDER | P3 | Orphan (not in sidebar); settings vapiWebhook unused |
+ROW: Errors | /errors | Error monitoring | errors/page.tsx:13-24 "Not Connected" | – | – | – | – | – | PLACEHOLDER | P3 | Orphan; no Sentry/Datadog wiring |
+ROW: Blog | /blog | Resources DOCUMENT | blog/page.tsx | api/v1/resources + api/public/blogs | y | y | real | yes | WORKING | – | – |
+1. Core Modules Already 100% Functional (A)
+Authentication — credentials+orgSlug, argon2, session revocation, middleware RBAC
+Dashboard — real KPI stats + recent leads
+Lead management — full lifecycle (list/create/detail/timeline/assign/convert/follow-up/scoring/dedup)
+CRM analytics / reports — real Prisma aggregation, counselor ABAC
+CRM meetings
+CRM outreach templates + logs (once Inngest active)
+Admissions — kanban, stage machine, auto-Student/lead sync, fee-plan binding, payments
+Students — CRUD + soft-delete + uniqueness + linked admissions
+Fee plans + payment recording — receipts, balance recalc
+Documents — R2 presign upload + approve/reject review
+Placements, Hiring Partners, Jobs — CRUD, publish, public sync, job applications submit/list/detail
+Testimonials, Resources/Blog, Jobs, Course manager (list/create/archive), Media upload/folders/delete — Phase 5 live-verified
+Public APIs — pages, resources, blogs, courses, jobs, testimonials, placements, settings, leads (rate-limited+keyed), resource-download (HMAC+rate-limited), certificate verification
+LMS admin builder — course tree, stages/modules/chapters/topics/contents, questions+bulk, import, announcements, batches+members sync, timetable, attendance marking, enrollments, portal provisioning
+Student portal — dashboard, course player, progress, bookmarks, quizzes (no answer leak, real grading), attendance breakdown, timetable, announcements, certificates list
+Faculty dashboard
+Audit logs — hash-chained, append-only, filterable + CSV export
+RBAC + org isolation — guard() + guardRecord() ABAC + orgId-scoped repos everywhere
+Public lead intake — keyed, rate-limited, deduped, UTM-aware
+2. Core Modules Partially Functional
+ROW: Module | Missing |
+ROW: Courses (CMS) | Edit is SEO-only; no curriculum editor; no versions UI; create status stripped; banner/gallery picker missing |
+ROW: Page editor | All server-side (sections/blocks/reorder/versions/rollback) — zero UI |
+ROW: Media library | No folder-create/rename/move/replace/bulk UI; asset-count badge dead |
+ROW: Nav menus | API+validation+RBAC complete — zero UI, no public propagation |
+ROW: ContentBlock types | Registry API only, no types seeded, no UI |
+ROW: Users invite | User created but email never sent; no accept-invite UI |
+ROW: Profile/account | Read-only portal profile; admin "Profile Settings" no-op; no password change |
+ROW: Notifications | Real template/log engine but email/SMS/WhatsApp unconfigured; no in-app inbox (Bell fake) |
+ROW: Assignments (LMS) | Fully implemented API — zero UI; faculty link mislabeled |
+ROW: Scheduled publish (pages+courses) | Logic exists, never runs (Inngest disabled) |
+ROW: Module unlock (LMS) | In-module sequential gating works; cross-stage + unlockRules unevaluated |
+3. Broken Core Features (E)
+ROW: # | Broken item | Why | Severity |
+ROW: 1 | Courses "Go Live" | UI sends PATCH to a POST-only route → 405, silent failure | P0 |
+ROW: 2 | Job application status | UI offers OFFERED/HIRED; zod + DB enum only allow SELECTED → 400 | P0 |
+ROW: 3 | Settings toggles (intake/maintenance/webhooks) | Persisted but never consumed anywhere; no webhook routes | P0 |
+ROW: 4 | Student self-assessment | STUDENT can POST score+status=PASS via me/assessments → self-grade unlock vector | P0 |
+ROW: 5 | Certificate print page | Direct prisma, no ownership/org check | P0 |
+ROW: 6 | Certificate issue | certNo generated client-side → P2002 collision → unhandled 500 | P0 |
+ROW: 7 | Missing delete/revoke routes | Course, assignment, attendance session/record, certificate revoke, unenroll — all absent | P1 |
+ROW: 8 | Assignment UI | API-complete, faculty cannot view/grade | P1 |
+ROW: 9 | Dashboard-student API | No UI consumer | P3 |
+ROW: 10 | Minor issues | document rejection →500; student event wrong name; faculty students duplicate rows; media asset-count badge; timetable update recheck | P2 |
+4. Placeholder / Fake Features
+/cms "Preview" button → toast-only toggle, no preview output
+/notifications, /vapi, /errors — static "Not Connected" orphan pages (not in sidebar)
+Topbar Bell icon — animated pulsing dot, no onClick, no inbox (implies unread that doesn't exist)
+Topbar "Profile Settings" / "System Configurations" — menu items with no handler
+User invite — success toast while email silently drops
+Settings — "Settings Saved" toast for controls that do nothing
+AI tutor assistant — stub answer without GEMINI_API_KEY (declared, honest)
+Integrations "media: connected" — computed from R2 env while actual path uses Supabase
+5. External Integrations to Connect at End (B)
+Resend (email) → Twilio (SMS) → WATI (WhatsApp) → Facebook (OAuth + leads pull) → Google Ads → Razorpay (online payments + webhook) → Inngest (activate event key — highest leverage: unlocks invite email, lead events, receipts, scheduled publish, outreach dispatch) → Gemini (AI tutor).
+All have honest abstractions (notification.service.ts dispatch, crm/integrations status, events/inngest.ts gate, env.ts reserved keys). No fake success except the invite/settings toasts noted above.
+6. Intentionally Deferred Features (C)
+Deals module (needs new Opportunity model + migration) — current /crm/deals is admission-funnel derived, honest not_implemented
+Voice AI (Vapi) call logs
+Error monitoring (Sentry/Datadog)
+LMS chat rooms (LmsChatRoom/LmsMessage) — tables exist, permission defined
+Public online payment (Razorpay checkout)
+Per-org Permission-table overrides (static matrix is authoritative)
+7. Dead / Unused Code (D)
+Workflow / WorkflowRun models — zero src references
+FeatureFlag table — zero references (superseded by org.featureFlags JSON, itself only read by an unused gate)
+FallbackLead table — zero references
+LmsNotification + lms_notifications permission — zero service/UI
+LmsChatRoom/LmsMessage + lms_chat permission — no service/UI (deferred)
+isLmsEnabled (src/lib/lms/feature-flag.ts) — never imported
+assignCourseTeacherSchema — no route/UI
+LmsTimetableSlot.recurrenceRule — never written
+LmsCertificateStatus.REVOKED — no revoke path
+Nav API + ContentBlock API — fully built, zero UI
+api/v1/lms/dashboard/[studentId] — no UI consumer
+Alias redirect pages /crm/leads, /crm/pipeline, /crm/dashboard (intentional)
+Facebook OAuth callback page — plain redirect, no exchange
+/vapi, /errors, /notifications pages — orphan placeholders
+No service/repository is dead — all 22 services and 17 repositories are imported
+8. P0 Fix List (Production Blockers)
+Courses "Go Live" — courses/page.tsx:74 change PATCH → POST (verify with typecheck + live)
+Job application status — reconcile OFFERED/HIRED with job.schema.ts + DB enum (SELECTED) + status-badge.tsx styles + transition map
+Settings fake-success — wire applicationIntake/maintenanceMode into the public intake gate + middleware, or remove the controls; add /api/webhooks/* consumers or drop the fields
+Student self-grade vector — remove STUDENT write,lms_assessments from permissions.ts (or gate me/assessments POST to quiz-derived sync only)
+Certificate print authorization — add ownership/org check to /portal/certificates/[certNo]/print
+Certificate certNo generation — move server-side with collision retry/catch (unhandled P2002 → 500)
+9. P1 Fix List (Core Functionality Incomplete)
+Page editor UI (sections/blocks/reorder/versions/rollback) + ContentBlock type seeding + real preview — server-side already complete
+Nav management UI + nav public propagation
+Course manager completion — curriculum editor, full edit dialog, versions UI, fix create-status strip, media picker
+Media completion — folder create/rename/move/replace/bulk UI
+Notifications inbox — Bell wiring, IN_APP delivery, inbox page; activate Inngest + Resend (or honest "not sent" surface on invite)
+Profile + password change — wire "Profile Settings", build change-password route+UI, portal profile edit
+LMS assignments UI — faculty list/submit/grade/submissions + fix mislabeled nav link
+LMS lifecycle routes — attendance session/record edit+delete, certificate revoke/delete, course delete, unenroll
+Faculty students grouping; build-or-remove dashboard-student UI
+Invite accept UI; surface "email not sent" warnings
+Minor: document rejection error type; student event name; scheduled-publish scheduler activation
+10. Recommended Implementation Order
+Sprint A — P0 correctness (do not ship without)
+Courses "Go Live" method fix
+Job application status enum reconciliation
+Settings controls: wire intake/maintenance or remove; webhook honesty
+Student self-grade fix (permissions)
+Certificate print authorization + server-side certNo
+Sprint B — P1 high-value UI completion (server-side already exists)
+Page editor (sections/blocks/reorder/versions/rollback/preview) + ContentBlock seeding
+Nav management UI + public nav
+Course manager curriculum editor + full edit + versions
+Media folder/replace/rename/move/bulk
+LMS assignments UI + lifecycle routes (attendance edit/delete, cert revoke/delete, unenroll, course delete)
+Notification inbox + Bell + activate Inngest (unlocks invite email, outreach dispatch, scheduled publish, receipts)
+Sprint C — P2 hardening
+Document error type, student event name, faculty grouping, unlock-rules evaluation, content-url UX, integrations status accuracy, activity-feed admin surface, honesty fixes (toasts/wording)
+Sprint D — P3 + external
+Deferred/dead cleanup (Workflow/FeatureFlag/FallbackLead/LmsNotification/chat — keep or drop), alias/placeholder pages
+External providers (Resend → Twilio → WATI → Facebook → Google Ads → Razorpay → Gemini)
+Explicitly out of scope per rules: auth changes, Elementor/Page Builder, Supabase storage re-architecture, CRM/CMS architecture changes, schema changes without verified necessity, dependency upgrades.

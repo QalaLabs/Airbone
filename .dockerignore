@@ -1,0 +1,13 @@
+node_modules
+.next
+.next-dev
+.git
+.env*
+!.env.example
+npm-debug.log*
+playwright
+test-results
+admin
+scratch
+*.html
+*.pdf

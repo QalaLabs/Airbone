@@ -10,6 +10,7 @@ if (!process.env.PUBLIC_INTAKE_KEY) {
 
 const nextConfig = {
   distDir: process.env.NODE_ENV === 'development' ? '.next-dev' : '.next',
+  output: 'standalone',
   reactStrictMode: true,
   transpilePackages: ['three', '@react-three/fiber', '@react-three/drei'],
   eslint: {

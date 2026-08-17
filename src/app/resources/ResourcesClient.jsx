@@ -39,7 +39,8 @@ export default function ResourcesClient() {
   })
   const [showGateModal, setShowGateModal] = useState(false)
   const [targetResource, setTargetResource] = useState(null)
-  const [formStatus, setFormStatus] = useState('idle') // idle, loading, success
+  const [formStatus, setFormStatus] = useState('idle') // idle, loading, success, error
+  const [formError, setFormError] = useState('')
 
   const { values, handleChange, handleBlur, validate, isValid } = useFormValidation(
     { name: '', phone: '', email: '', course: '' },
@@ -94,6 +95,7 @@ export default function ResourcesClient() {
     e.preventDefault()
     if (!validate()) return
     setFormStatus('loading')
+    setFormError('')
 
     let token = null
     try {
@@ -107,14 +109,24 @@ export default function ResourcesClient() {
       })
       const json = await res.json().catch(() => ({}))
       token = json.gateToken ?? null
-      if (token) {
-        sessionStorage.setItem('resource_gate_token', token)
-        setGateToken(token)
+
+      // Only a durable lead acceptance (ok response carrying the gate token)
+      // may unlock the download. A failed request must never unlock the library.
+      if (!res.ok || !token) {
+        setFormError(res.status === 409
+          ? 'An enquiry with this number was already received. If you need help downloading a guide, please call us at +91 9953 777 320.'
+          : 'We could not submit your details right now. Please try again or call us at +91 9953 777 320.')
+        setFormStatus('error')
+        return
       }
     } catch {
-      // Gate token fetch is best-effort; form still unlocks locally.
+      setFormError('We could not submit your details right now. Please try again or call us at +91 9953 777 320.')
+      setFormStatus('error')
+      return
     }
 
+    sessionStorage.setItem('resource_gate_token', token)
+    setGateToken(token)
     setUnlocked(true)
     setFormStatus('success')
 
@@ -245,6 +257,12 @@ export default function ResourcesClient() {
                 </div>
               ) : (
                 <form className="modal-form" onSubmit={handleGateSubmit} noValidate>
+                  {formStatus === 'error' && (
+                    <div style={{ background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.25)', color: '#b91c1c', fontSize: '0.8rem', padding: '0.75rem 1rem', marginBottom: '1rem', lineHeight: '1.5' }}>
+                      {formError}
+                    </div>
+                  )}
+
                   <FormField
                     id="gate-name"
                     type="text"

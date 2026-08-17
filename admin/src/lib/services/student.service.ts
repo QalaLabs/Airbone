@@ -1,7 +1,6 @@
 import { StudentRepository } from "@/lib/repositories/student.repository";
 import { AuditService } from "@/lib/services/audit.service";
 import { ActivityFeedService } from "@/lib/services/activity.service";
-import { emitEvent } from "@/lib/events/inngest";
 import { NotFoundError, ConflictError } from "@/lib/utils/errors";
 import { prisma } from "@/lib/db/client";
 import type { CreateStudentInput, UpdateStudentInput, StudentFilters } from "@/lib/validations/student.schema";
@@ -64,22 +63,6 @@ export class StudentService {
       objectId: student.id,
       objectSnapshot: { studentCode, name: `${student.firstName} ${student.lastName}` },
       context: { actorName: ctx.user.name },
-    });
-
-    await emitEvent({
-      name: "admission/created",
-      orgId: ctx.orgId,
-      actorId: ctx.user.id,
-      actorName: ctx.user.name,
-      requestId: ctx.requestId,
-      timestamp: new Date().toISOString(),
-      data: {
-        admissionId: student.id,
-        applicationNo: studentCode,
-        leadId: input.leadId ?? "",
-        leadName: `${student.firstName} ${student.lastName}`,
-        campusId: input.campusId,
-      },
     });
 
     return student;

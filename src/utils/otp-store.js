@@ -13,7 +13,11 @@ const otpStore = new Map()      // phone -> { hash, expiresAt, attempts }
 const verifiedStore = new Map() // token -> { phone, expiresAt }
 
 function hash(code, phone) {
-  return crypto.createHash('sha256').update(`${phone}:${code}:${process.env.AUTH_SECRET || 'airborne-otp-salt'}`).digest('hex')
+  // Dedicated marketing-only OTP salt. AUTH_SECRET is accepted for back-compat
+  // but is an admin-app credential and should be removed from the marketing
+  // environment in favour of OTP_HASH_SECRET.
+  const secret = process.env.OTP_HASH_SECRET || process.env.AUTH_SECRET || 'airborne-otp-salt'
+  return crypto.createHash('sha256').update(`${phone}:${code}:${secret}`).digest('hex')
 }
 
 function cleanup(store) {

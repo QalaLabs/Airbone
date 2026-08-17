@@ -231,5 +231,15 @@ export class PlacementService {
       entityId: id,
       oldValue: { studentId: existing.studentId, jobTitle: existing.jobTitle },
     });
+
+    await ActivityFeedService.write({
+      orgId: ctx.orgId,
+      actorId: ctx.user.id,
+      verb: "deleted",
+      objectType: "placement",
+      objectId: id,
+      objectSnapshot: { jobTitle: existing.jobTitle, studentId: existing.studentId },
+      context: { actorName: ctx.user.name },
+    });
   }
 }

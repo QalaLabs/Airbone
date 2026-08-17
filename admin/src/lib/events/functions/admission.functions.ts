@@ -1,6 +1,4 @@
 import { inngest } from "@/lib/events/inngest";
-import { AuditService } from "@/lib/services/audit.service";
-import { ActivityFeedService } from "@/lib/services/activity.service";
 import { NotificationService } from "@/lib/services/notification.service";
 import { prisma } from "@/lib/db/client";
 
@@ -21,29 +19,7 @@ export const onAdmissionCreated = inngest.createFunction(
       campusId?: string;
     };
 
-    await step.run("write-audit", async () => {
-      await AuditService.write({
-        orgId: d.orgId,
-        userId: d.actorId,
-        requestId: d.requestId,
-        action: "admission.created",
-        entityType: "admission",
-        entityId: d.admissionId,
-        newValue: { applicationNo: d.applicationNo, leadId: d.leadId },
-      });
-    });
-
-    await step.run("write-activity-feed", async () => {
-      await ActivityFeedService.write({
-        orgId: d.orgId,
-        actorId: d.actorId,
-        verb: "created",
-        objectType: "admission",
-        objectId: d.admissionId,
-        objectSnapshot: { applicationNo: d.applicationNo, leadName: d.leadName },
-        context: { actorName: d.actorName },
-      });
-    });
+    // Durable audit/activity is owned synchronously by AdmissionService.create.
 
     await step.run("notify-admission-team", async () => {
       // Notify counselor assigned to the lead
@@ -83,56 +59,11 @@ export const onAdmissionCreated = inngest.createFunction(
 export const onAdmissionStageChanged = inngest.createFunction(
   { id: "admission-stage-changed", name: "On admission stage changed" },
   { event: "admission/stage.changed" },
-  async ({ event, step }) => {
-    const d = event.data as Base & {
-      admissionId: string;
-      applicationNo: string;
-      fromStage: string;
-      toStage: string;
-      studentId?: string;
-    };
-
-    await step.run("write-audit", async () => {
-      await AuditService.write({
-        orgId: d.orgId,
-        userId: d.actorId,
-        requestId: d.requestId,
-        action: "admission.stage_changed",
-        entityType: "admission",
-        entityId: d.admissionId,
-        oldValue: { stage: d.fromStage },
-        newValue: { stage: d.toStage },
-      });
-    });
-
-    await step.run("write-activity-feed", async () => {
-      await ActivityFeedService.write({
-        orgId: d.orgId,
-        actorId: d.actorId,
-        verb: "stage_changed",
-        objectType: "admission",
-        objectId: d.admissionId,
-        objectSnapshot: { applicationNo: d.applicationNo },
-        context: { from: d.fromStage, to: d.toStage, actorName: d.actorName },
-      });
-    });
-
-    // When enrolled: update lead status to CONVERTED
-    await step.run("handle-enrollment", async () => {
-      if (d.toStage !== "ENROLLED") return;
-
-      const admission = await prisma.admission.findUnique({
-        where: { id: d.admissionId },
-        select: { leadId: true },
-      });
-      if (!admission) return;
-
-      await prisma.lead.updateMany({
-        where: { id: admission.leadId, orgId: d.orgId },
-        data: { status: "CONVERTED", convertedAt: new Date(), score: 100 },
-      });
-    });
-
+  async () => {
+    // Durable audit/activity AND enrollment lead-conversion are owned synchronously
+    // by AdmissionService.changeStage (audit "admission.stage_changed", activity
+    // "stage_changed", and the lead -> CONVERTED + student ACTIVE updates).
+    // No remaining async responsibilities; handler retained to preserve the event contract.
     return { ok: true };
   },
 );
@@ -152,31 +83,8 @@ export const onPaymentReceived = inngest.createFunction(
       receiptNo?: string;
     };
 
-    await step.run("write-audit", async () => {
-      await AuditService.write({
-        orgId: d.orgId,
-        userId: d.actorId,
-        requestId: d.requestId,
-        action: "payment.received",
-        entityType: "payment",
-        entityId: d.paymentId,
-        newValue: { amount: d.amount, method: d.method, receiptNo: d.receiptNo },
-      });
-    });
-
-    await step.run("write-activity-feed", async () => {
-      await ActivityFeedService.write({
-        orgId: d.orgId,
-        actorId: d.actorId,
-        verb: "payment_received",
-        objectType: "payment",
-        objectId: d.paymentId,
-        objectSnapshot: { amount: d.amount, method: d.method, receiptNo: d.receiptNo },
-        targetType: "admission",
-        targetId: d.admissionId,
-        context: { actorName: d.actorName },
-      });
-    });
+    // Durable audit/activity is owned synchronously by PaymentService.create
+    // (audit "payment.recorded" + activity "recorded_payment").
 
     await step.run("send-payment-receipt", async () => {
       // Find student or lead contact
@@ -221,41 +129,9 @@ export const onPaymentReceived = inngest.createFunction(
 export const onDocumentUploaded = inngest.createFunction(
   { id: "document-uploaded", name: "On document uploaded" },
   { event: "document/uploaded" },
-  async ({ event, step }) => {
-    const d = event.data as Base & {
-      documentId: string;
-      admissionId?: string;
-      studentId?: string;
-      documentType: string;
-      name: string;
-    };
-
-    await step.run("write-audit", async () => {
-      await AuditService.write({
-        orgId: d.orgId,
-        userId: d.actorId,
-        requestId: d.requestId,
-        action: "document.uploaded",
-        entityType: "document",
-        entityId: d.documentId,
-        newValue: { name: d.name, documentType: d.documentType, admissionId: d.admissionId },
-      });
-    });
-
-    await step.run("write-activity-feed", async () => {
-      await ActivityFeedService.write({
-        orgId: d.orgId,
-        actorId: d.actorId,
-        verb: "uploaded",
-        objectType: "document",
-        objectId: d.documentId,
-        objectSnapshot: { name: d.name, documentType: d.documentType },
-        targetType: d.admissionId ? "admission" : d.studentId ? "student" : undefined,
-        targetId: d.admissionId ?? d.studentId,
-        context: { actorName: d.actorName },
-      });
-    });
-
+  async () => {
+    // Durable audit/activity is owned synchronously by DocumentService.upload
+    // (audit "document.uploaded" + activity "uploaded"). No async responsibilities.
     return { ok: true };
   },
 );
@@ -265,39 +141,10 @@ export const onDocumentUploaded = inngest.createFunction(
 export const onDocumentReviewed = inngest.createFunction(
   { id: "document-reviewed", name: "On document reviewed" },
   { event: "document/reviewed" },
-  async ({ event, step }) => {
-    const d = event.data as Base & {
-      documentId: string;
-      admissionId?: string;
-      studentId?: string;
-      status: string;
-      reviewedBy: string;
-    };
-
-    await step.run("write-audit", async () => {
-      await AuditService.write({
-        orgId: d.orgId,
-        userId: d.actorId,
-        requestId: d.requestId,
-        action: `document.${d.status.toLowerCase()}`,
-        entityType: "document",
-        entityId: d.documentId,
-        newValue: { status: d.status, reviewedBy: d.reviewedBy },
-      });
-    });
-
-    await step.run("write-activity-feed", async () => {
-      await ActivityFeedService.write({
-        orgId: d.orgId,
-        actorId: d.actorId,
-        verb: d.status === "APPROVED" ? "approved" : "rejected",
-        objectType: "document",
-        objectId: d.documentId,
-        objectSnapshot: { status: d.status },
-        context: { actorName: d.actorName },
-      });
-    });
-
+  async () => {
+    // Durable audit/activity is owned synchronously by DocumentService.review
+    // (audit "document.approved/rejected" + activity "approved/rejected").
+    // No async responsibilities.
     return { ok: true };
   },
 );

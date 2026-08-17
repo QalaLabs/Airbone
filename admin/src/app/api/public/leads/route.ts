@@ -6,6 +6,8 @@ import { checkRateLimit } from "@/lib/utils/rate-limit";
 import { generateResourceToken } from "@/lib/utils/resource-token";
 import { publicLeadSchema } from "@/lib/validations/public-lead.schema";
 import { emitEvent } from "@/lib/events/inngest";
+import { AuditService } from "@/lib/services/audit.service";
+import { ActivityFeedService } from "@/lib/services/activity.service";
 import { checkMaintenance } from "@/lib/middleware/maintenance";
 import { handleError } from "@/lib/utils/response";
 
@@ -71,6 +73,7 @@ export async function POST(req: NextRequest) {
       utmContent,
       referrerUrl,
       landingPage,
+      leadUuid,
     } = input;
 
     const org = await prisma.organization.findFirst({
@@ -90,26 +93,82 @@ export async function POST(req: NextRequest) {
 
     const normalizedPhone = String(phone).trim();
     const leadSource: LeadSource = SOURCE_MAP[source?.toLowerCase() ?? ""] ?? "HOMEPAGE_CTA";
+    const requestUuid = leadUuid?.trim() || null;
 
-    const lead = await prisma.lead.create({
-      data: {
-        name,
-        email: email ?? null,
-        phone: normalizedPhone,
-        courseInterest: courseInterest ?? null,
-        source: leadSource,
-        orgId: org.id,
-        utmSource: utmSource ?? null,
-        utmMedium: utmMedium ?? null,
-        utmCampaign: utmCampaign ?? null,
-        utmTerm: utmTerm ?? null,
-        utmContent: utmContent ?? null,
-        referrerUrl: referrerUrl ?? null,
-        landingPage: landingPage ?? null,
-        customFields: { webSource: source ?? "website" },
-      },
-      select: { id: true, name: true, createdAt: true },
-    }).catch((err: unknown) => {
+    // Idempotency: a retry of the same submission (same leadUuid) must not
+    // create a second lead or a misleading 409 — return the original lead.
+    if (requestUuid) {
+      const replayed = await prisma.lead.findFirst({
+        where: {
+          orgId: org.id,
+          customFields: { path: ["leadUuid"], equals: requestUuid },
+        },
+        select: { id: true, name: true, createdAt: true },
+      });
+      if (replayed) {
+        const gateToken = generateResourceToken(normalizedPhone);
+        console.log(JSON.stringify({
+          event: "lead_replayed",
+          leadId: replayed.id,
+          timestamp: new Date().toISOString(),
+        }));
+        return NextResponse.json(
+          { success: true, data: replayed, gateToken, meta: { replayed: true } },
+          { status: 200 },
+        );
+      }
+    }
+
+    // Lead row + initial activity + lastActivityAt commit atomically. The 201 is
+    // returned only after this transaction commits, so success can never mean
+    // "partially persisted". External side effects (audit/feed/Inngest) stay
+    // outside the transaction.
+    let lead: { id: string; name: string; createdAt: Date } | null = null;
+    try {
+      lead = await prisma.$transaction(async (tx) => {
+        const created = await tx.lead.create({
+          data: {
+            name,
+            email: email ?? null,
+            phone: normalizedPhone,
+            courseInterest: courseInterest ?? null,
+            source: leadSource,
+            orgId: org.id,
+            utmSource: utmSource ?? null,
+            utmMedium: utmMedium ?? null,
+            utmCampaign: utmCampaign ?? null,
+            utmTerm: utmTerm ?? null,
+            utmContent: utmContent ?? null,
+            referrerUrl: referrerUrl ?? null,
+            landingPage: landingPage ?? null,
+            customFields: {
+              webSource: source ?? "website",
+              ...(requestUuid ? { leadUuid: requestUuid } : {}),
+            },
+          },
+          select: { id: true, name: true, createdAt: true },
+        });
+
+        await tx.leadActivity.create({
+          data: {
+            leadId: created.id,
+            orgId: org.id,
+            activityType: "NOTE",
+            title: "Web form submission",
+            notes: `Enquiry received via ${leadSource.replace("_", " ")}`,
+            completedAt: new Date(),
+            metadata: { source: leadSource, webSource: source ?? "website" },
+          },
+        });
+
+        await tx.lead.update({
+          where: { id: created.id },
+          data: { lastActivityAt: new Date() },
+        });
+
+        return created;
+      });
+    } catch (err) {
       // The org-scoped unique(orgId, phone) constraint makes a duplicate lead
       // insert impossible — surface it as a clean 409 instead of a 500.
       if (
@@ -118,33 +177,68 @@ export async function POST(req: NextRequest) {
         "code" in err &&
         (err as { code?: string }).code === "P2002"
       ) {
-        return null;
+        // A concurrent request may have committed the same leadUuid first —
+        // treat that race as an idempotent replay, not a duplicate rejection.
+        if (requestUuid) {
+          const raced = await prisma.lead.findFirst({
+            where: {
+              orgId: org.id,
+              customFields: { path: ["leadUuid"], equals: requestUuid },
+            },
+            select: { id: true, name: true, createdAt: true },
+          });
+          if (raced) {
+            const gateToken = generateResourceToken(normalizedPhone);
+            console.log(JSON.stringify({
+              event: "lead_replayed",
+              leadId: raced.id,
+              reason: "concurrent_race",
+              timestamp: new Date().toISOString(),
+            }));
+            return NextResponse.json(
+              { success: true, data: raced, gateToken, meta: { replayed: true } },
+              { status: 200 },
+            );
+          }
+        }
+        console.log(JSON.stringify({
+          event: "lead_duplicate",
+          phone: normalizedPhone,
+          timestamp: new Date().toISOString(),
+        }));
+        return NextResponse.json(
+          { error: "A lead with this phone already exists" },
+          { status: 409 },
+        );
       }
       throw err;
-    });
-
-    if (!lead) {
-      return NextResponse.json(
-        { error: "A lead with this phone already exists" },
-        { status: 409 },
-      );
     }
 
-    // Log the submission on the lead timeline so intake is auditable
-    await prisma.leadActivity.create({
-      data: {
-        leadId: lead.id,
-        orgId: org.id,
-        activityType: "NOTE",
-        title: "Web form submission",
-        notes: `Enquiry received via ${leadSource.replace("_", " ")}`,
-        completedAt: new Date(),
-        metadata: { source: leadSource, webSource: source ?? "website" },
-      },
+    console.log(JSON.stringify({
+      event: "lead_saved",
+      leadId: lead.id,
+      timestamp: new Date().toISOString(),
+    }));
+
+    // Durable audit/activity owned by the sync path (Inngest-independent).
+    // Public submission — no authenticated user, so actor is null and the
+    // human-readable identity lives in the feed context.
+    await AuditService.write({
+      orgId: org.id,
+      ipAddress: ip,
+      action: "lead.created",
+      entityType: "lead",
+      entityId: lead.id,
+      newValue: { name: lead.name, source: leadSource, phone: normalizedPhone },
     });
-    await prisma.lead.update({
-      where: { id: lead.id },
-      data: { lastActivityAt: new Date() },
+
+    await ActivityFeedService.write({
+      orgId: org.id,
+      verb: "created",
+      objectType: "lead",
+      objectId: lead.id,
+      objectSnapshot: { name: lead.name, source: leadSource },
+      context: { actorName: "Public form" },
     });
 
     // Emit NEW_LEAD event for notification worker / audit pipeline

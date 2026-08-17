@@ -20,12 +20,25 @@ interface Student {
   phone: string;
   status: string;
   dateOfBirth?: string;
-  address?: string;
+  address?: unknown;
   course?: { id: string; title: string };
   campus?: { name: string };
   enrolledAt?: string;
   avatarUrl?: string;
   admission?: { applicationNo: string; stage: string };
+}
+
+function formatAddress(address: unknown): string | null {
+  if (!address) return null;
+  if (typeof address === "string") return address;
+  if (typeof address === "object") {
+    const a = address as Record<string, unknown>;
+    const parts = [a.line1, a.line2, a.city, a.state, a.pincode].filter(
+      (v): v is string => typeof v === "string" && v.trim().length > 0,
+    );
+    return parts.length ? parts.join(", ") : null;
+  }
+  return null;
 }
 
 export default function StudentDetailPage() {
@@ -63,6 +76,8 @@ export default function StudentDetailPage() {
   }
 
   if (!student) return null;
+
+  const addressText = formatAddress(student.address);
 
   return (
     <div className="space-y-5">
@@ -120,10 +135,10 @@ export default function StudentDetailPage() {
                   <p className="text-xs text-muted-foreground mb-1">Enrolled</p>
                   <p className="text-sm font-medium">{formatDate(student.enrolledAt)}</p>
                 </div>
-                {student.address && (
+                {addressText && (
                   <div className="col-span-2">
                     <p className="text-xs text-muted-foreground mb-1">Address</p>
-                    <p className="text-sm font-medium">{student.address}</p>
+                    <p className="text-sm font-medium">{addressText}</p>
                   </div>
                 )}
               </div>

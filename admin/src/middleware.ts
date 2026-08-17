@@ -13,6 +13,8 @@ const PUBLIC_PATHS = [
   "/reset-password",
   "/invite",
   "/verify",
+  "/health",
+  "/health/ready",
   "/api/auth",
   "/api/v1/auth",
   "/api/v1/users/invite/accept",

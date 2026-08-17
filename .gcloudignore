@@ -1,0 +1,15 @@
+.git/
+.claude/
+.next/
+.next-dev/
+.vercel/
+node_modules/
+admin/
+dist/
+build/
+scratch/
+test-reports/
+.tmp-env-pull/
+*.log
+.gcloudignore
+.gitignore

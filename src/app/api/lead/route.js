@@ -3,9 +3,8 @@ import { rateLimit } from '@/utils/rate-limit'
 import { storeFallbackLead } from '@/utils/fallback-storage'
 import { sendLeadToCRM } from '@/lib/crm'
 import { consumeVerifyToken } from '@/utils/otp-store'
+import { resolveAdminApiUrl, resolveIntakeKey, LeadConfigError } from '@/lib/upstream'
 
-const ADMIN_API_URL = process.env.ADMIN_API_URL ?? 'http://localhost:4000'
-const INTAKE_KEY = process.env.PUBLIC_INTAKE_KEY ?? ''
 const UPSTREAM_FETCH_TIMEOUT = parseInt(process.env.UPSTREAM_FETCH_TIMEOUT || '10000', 10)
 
 // Source label → LeadSource enum key expected by admin public API
@@ -34,6 +33,37 @@ export async function POST(req) {
   const correlationId = crypto.randomUUID()
   let leadData = null
   let rawSource = 'unknown'
+
+  // Fail loudly on invalid production configuration BEFORE any lead work.
+  // A missing/empty ADMIN_API_URL or PUBLIC_INTAKE_KEY is an operator error,
+  // not a transient failure — it must never route into fallback storage.
+  let ADMIN_API_URL
+  let INTAKE_KEY
+  try {
+    ADMIN_API_URL = resolveAdminApiUrl({ strict: true })
+    INTAKE_KEY = resolveIntakeKey({ strict: true })
+  } catch (err) {
+    if (err instanceof LeadConfigError) {
+      console.error(JSON.stringify({
+        correlationId,
+        event: 'lead_config_error',
+        reason: err.message,
+        timestamp: new Date().toISOString(),
+      }))
+      return NextResponse.json(
+        { error: 'Enquiry service is temporarily unavailable. Please try again later.' },
+        { status: 500 }
+      )
+    }
+    throw err
+  }
+
+  console.log(JSON.stringify({
+    correlationId,
+    event: 'lead_received',
+    timestamp: new Date().toISOString(),
+    leadSource: rawSource,
+  }))
 
   try {
     const rateLimitResult = rateLimit(req)
@@ -151,7 +181,12 @@ export async function POST(req) {
       message: typeof payload.message === 'string' ? payload.message.trim() : undefined,
       gclid: typeof payload.gclid === 'string' ? payload.gclid.trim() : undefined,
       fbclid: typeof payload.fbclid === 'string' ? payload.fbclid.trim() : undefined,
-      leadUuid: typeof payload.lead_uuid === 'string' && payload.lead_uuid ? payload.lead_uuid : undefined,
+      // Idempotency key for this submission attempt. Generated server-side when
+      // the client did not supply one so every retry of the same submission is
+      // identifiable by the admin backend.
+      leadUuid: typeof payload.lead_uuid === 'string' && payload.lead_uuid.trim()
+        ? payload.lead_uuid.trim()
+        : crypto.randomUUID(),
       // Conditional screening answers (cabin crew / pilot affordability routing).
       // Advisory only — never used to block a submission, per screening policy.
       screening: (payload.screening && typeof payload.screening === 'object') ? payload.screening : undefined,
@@ -191,21 +226,19 @@ export async function POST(req) {
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), UPSTREAM_FETCH_TIMEOUT)
 
-    // Optional Preview automation bypass (Vercel Deployment Protection).
-    // Production custom domains do not need this; leave unset there.
-    const protectionBypass =
-      process.env.ADMIN_PROTECTION_BYPASS ||
-      process.env.VERCEL_AUTOMATION_BYPASS_SECRET ||
-      ''
+    console.log(JSON.stringify({
+      correlationId,
+      event: 'lead_admin_request_started',
+      upstreamUrl: ADMIN_API_URL,
+      timestamp: new Date().toISOString(),
+      leadSource: rawSource,
+    }))
 
     const res = await fetch(`${ADMIN_API_URL}/api/public/leads`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-intake-key': INTAKE_KEY,
-        ...(protectionBypass
-          ? { 'x-vercel-protection-bypass': protectionBypass }
-          : {}),
       },
       body: JSON.stringify({
         name: leadData.name,
@@ -214,6 +247,7 @@ export async function POST(req) {
         pincode: leadData.pincode || undefined,
         courseInterest: leadData.course || undefined,
         source: resolveSource(leadData.source),
+        leadUuid: leadData.leadUuid,
         utmSource: leadData.utmSource,
         utmMedium: leadData.utmMedium,
         utmCampaign: leadData.utmCampaign,
@@ -227,13 +261,65 @@ export async function POST(req) {
     clearTimeout(timeoutId)
 
     if (!res.ok) {
-      const errText = await res.text().catch(() => '')
-      throw new Error(`Upstream returned ${res.status}: ${errText}`)
+      // Read the upstream error body only to classify the failure. The body is
+      // never forwarded verbatim to the visitor.
+      let upstreamMessage = ''
+      try {
+        const errJson = await res.json()
+        if (errJson && typeof errJson.error === 'string') {
+          upstreamMessage = errJson.error
+        } else if (errJson && errJson.error && typeof errJson.error.message === 'string') {
+          upstreamMessage = errJson.error.message
+        }
+      } catch {
+        // Non-JSON upstream error body — treat as a generic failure.
+      }
+
+      // Deterministic client / business / configuration rejections are returned
+      // truthfully to the visitor and are NEVER stored as fallback leads.
+      if (res.status === 400 || res.status === 401 || res.status === 403 || res.status === 409 || res.status === 429) {
+        const rejectionMessage = {
+          400: 'Some of the details provided could not be accepted. Please review and try again.',
+          401: 'Enquiry submission is temporarily unavailable. Please try again later.',
+          403: 'Enquiries are currently closed. Please call +91 99537 77320 for assistance.',
+          409: 'An enquiry with this phone number was already received. Our team will contact you shortly.',
+          429: 'Too many attempts. Please wait a moment and try again.',
+        }[res.status]
+        console.error(JSON.stringify({
+          correlationId,
+          event: res.status === 409 ? 'lead_duplicate' : 'lead_rejected',
+          upstreamStatus: res.status,
+          timestamp: new Date().toISOString(),
+          leadSource: rawSource,
+        }))
+        return NextResponse.json({ error: rejectionMessage }, { status: res.status })
+      }
+
+      // Maintenance mode is a deliberate pause — never converted into a
+      // fallback success. The visitor must receive a truthful 503.
+      if (res.status === 503 && /maintenance/i.test(upstreamMessage)) {
+        console.error(JSON.stringify({
+          correlationId,
+          event: 'lead_rejected',
+          upstreamStatus: res.status,
+          reason: 'maintenance_mode',
+          timestamp: new Date().toISOString(),
+          leadSource: rawSource,
+        }))
+        return NextResponse.json(
+          { error: 'We are carrying out maintenance right now. Please try again later.' },
+          { status: 503 }
+        )
+      }
+
+      // Other 5xx — upstream server failure: fallback persistence is allowed,
+      // but the response must never claim the lead was accepted by Admin.
+      throw new Error(`Upstream server error (${res.status})`)
     }
 
     console.log(JSON.stringify({
       correlationId,
-      event: 'lead_forward_success',
+      event: 'lead_saved',
       timestamp: new Date().toISOString(),
       leadSource: rawSource,
     }))
@@ -280,24 +366,26 @@ export async function POST(req) {
 
     console.error(JSON.stringify({
       correlationId,
-      event: 'lead_forward_failed',
+      event: 'lead_response_failure',
       reason,
       timestamp: new Date().toISOString(),
       leadSource: rawSource,
     }))
-    
+
+    // Network failure / timeout / upstream 5xx — keep the established fallback
+    // architecture, but truthfully signal that the lead was NOT accepted by Admin.
     if (leadData && leadData.name && leadData.phone) {
       const stored = await storeFallbackLead(leadData)
       if (stored) {
         console.log(JSON.stringify({
           correlationId,
-          event: 'lead_fallback_success',
+          event: 'lead_fallback_saved',
           timestamp: new Date().toISOString(),
           leadSource: rawSource,
         }))
         return NextResponse.json(
-          { success: true, message: 'Lead captured (fallback)' },
-          { status: 200 }
+          { success: false, message: 'We could not reach our team right now. Your details were saved and we will contact you shortly.' },
+          { status: 503 }
         )
       } else {
         console.error(JSON.stringify({
@@ -309,7 +397,7 @@ export async function POST(req) {
         }))
       }
     }
-    
+
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }

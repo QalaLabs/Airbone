@@ -5,6 +5,7 @@ import {
   onLeadStatusChanged,
   onLeadAssigned,
   onLeadActivityCreated,
+  onLeadFallbackSync,
 } from "@/lib/events/functions/lead.functions";
 import { onUserInvited } from "@/lib/events/functions/user.functions";
 import {
@@ -47,6 +48,7 @@ export const { GET, POST, PUT } = serve({
     onLeadStatusChanged,
     onLeadAssigned,
     onLeadActivityCreated,
+    onLeadFallbackSync,
     onUserInvited,
     // Sprint 2
     onAdmissionCreated,

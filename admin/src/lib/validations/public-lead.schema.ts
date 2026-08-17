@@ -18,6 +18,10 @@ export const publicLeadSchema = z.object({
   utmContent: z.string().trim().max(255).nullish(),
   referrerUrl: z.string().trim().max(2000).nullish(),
   landingPage: z.string().trim().max(2000).nullish(),
+  // Client/edge-generated idempotency key for a single submission attempt.
+  // Replays of the same submission (same leadUuid) resolve to the original lead
+  // instead of a false 409. Genuinely new submissions always generate a new key.
+  leadUuid: z.string().trim().min(1).max(64).nullish(),
 });
 
 export type PublicLeadInput = z.infer<typeof publicLeadSchema>;

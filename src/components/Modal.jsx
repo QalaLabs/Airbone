@@ -22,6 +22,7 @@ const COURSES = [
 
 export default function Modal({ type = 'demo', isOpen, onClose }) {
   const [submitted, setSubmitted] = useState(false)
+  const [submitError, setSubmitError] = useState('')
   const submitLock = useRef(false)
   const isDemo = type === 'demo'
 
@@ -45,6 +46,7 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
 
   const handleClose = useCallback(() => {
     setSubmitted(false)
+    setSubmitError('')
     submitLock.current = false
     setValues({ name: '', phone: '', email: '', pincode: '', course: '' })
     onClose()
@@ -54,6 +56,7 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
     e.preventDefault()
     if (!validate() || submitLock.current) return
     submitLock.current = true
+    setSubmitError('')
     const urlParams = new URLSearchParams(window.location.search)
     const utm_source = urlParams.get('utm_source') || undefined
     const utm_medium = urlParams.get('utm_medium') || undefined
@@ -64,7 +67,7 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
     const landing_page = window.location.href || undefined
 
     try {
-      await fetch('/api/lead', {
+      const res = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -77,8 +80,11 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
           utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page,
         }),
       })
+      if (!res.ok) throw new Error('Lead submit failed')
     } catch {
-      // Lead webhook failure is non-blocking for modal UX.
+      setSubmitError('We could not submit your details right now. Please try again or call +91 9953 777 320.')
+      submitLock.current = false
+      return
     }
     setSubmitted(true)
   }, [values, validate])
@@ -246,6 +252,12 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
               >
                 {isDemo ? 'Book My Free Demo →' : 'Submit Application →'}
               </SubmitButton>
+
+              {submitError && (
+                <p className="modal-sub" style={{ color: 'var(--red)', marginTop: '1rem', marginBottom: 0 }}>
+                  {submitError}
+                </p>
+              )}
 
               <p className="form-legal">
                 By submitting, you consent to being contacted by Airborne Aviation Academy

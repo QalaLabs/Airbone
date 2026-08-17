@@ -43,42 +43,72 @@ export class LeadService {
       select: { slug: true },
     });
     if (!org || org.slug !== targetSlug) return;
+    await this.syncPendingFallbackLeads(ctx.orgId);
+  }
 
+  /**
+   * Cron/Inngest-safe recovery entry point. Resolves the org by slug directly
+   * (no user session), so it can run as a scheduled Inngest function.
+   * Idempotent: concurrent runs converge on the same recovered rows and can
+   * never create duplicate leads (unique(orgId, phone) + P2002 handling).
+   */
+  static async syncFallbackLeadsCron(): Promise<{
+    synced: number;
+    duplicates: number;
+    failed: number;
+  }> {
+    const org = await prisma.organization.findFirst({
+      where: { slug: process.env.PUBLIC_ORG_SLUG ?? "airborne-aviation" },
+      select: { id: true },
+    });
+    if (!org) return { synced: 0, duplicates: 0, failed: 0 };
+    return this.syncPendingFallbackLeads(org.id);
+  }
+
+  private static async syncPendingFallbackLeads(orgId: string) {
     const pending = await prisma.fallbackLead.findMany({
       where: { status: "pending" },
       orderBy: { createdAt: "asc" },
     });
 
-    if (pending.length === 0) return;
+    const result = { synced: 0, duplicates: 0, failed: 0 };
+    if (pending.length === 0) return result;
+
+    console.log(
+      JSON.stringify({
+        event: "lead_fallback_sync_started",
+        pending: pending.length,
+        timestamp: new Date().toISOString(),
+      }),
+    );
 
     for (const fLead of pending) {
       try {
         const phone = fLead.phone.trim();
         const existing = await prisma.lead.findFirst({
-          where: { orgId: ctx.orgId, phone },
+          where: { orgId, phone },
         });
 
         if (existing) {
-          await prisma.fallbackLead.update({
-            where: { id: fLead.id },
-            data: { status: "recovered" },
-          });
+          await this.markFallbackRecovered(fLead.id);
 
           await prisma.leadActivity.create({
             data: {
               leadId: existing.id,
-              orgId: ctx.orgId,
+              orgId,
               activityType: "NOTE",
               title: "Duplicate fallback enquiry",
               notes: `Enquiry from fallback store recovered. Originally submitted at ${fLead.createdAt.toISOString()}`,
               completedAt: new Date(),
             },
           });
+
+          result.duplicates++;
         } else {
           const sourceEnum = this.resolveSource(fLead.source || "");
           const lead = await prisma.lead.create({
             data: {
-              orgId: ctx.orgId,
+              orgId,
               createdBy: null,
               name: fLead.name,
               email: fLead.email || null,
@@ -93,7 +123,7 @@ export class LeadService {
           await prisma.leadActivity.create({
             data: {
               leadId: lead.id,
-              orgId: ctx.orgId,
+              orgId,
               activityType: "NOTE",
               title: "Web form submission (Recovered)",
               notes: `Enquiry recovered from Supabase fallback leads. Originally submitted at ${fLead.createdAt.toLocaleString("en-IN")}`,
@@ -104,7 +134,7 @@ export class LeadService {
           // Durable audit/activity for the successful conversion — exactly once,
           // owned by the sync recovery path. Null actor (system recovery action).
           await AuditService.write({
-            orgId: ctx.orgId,
+            orgId,
             action: "lead.created",
             entityType: "lead",
             entityId: lead.id,
@@ -112,7 +142,7 @@ export class LeadService {
           });
 
           await ActivityFeedService.write({
-            orgId: ctx.orgId,
+            orgId,
             verb: "created",
             objectType: "lead",
             objectId: lead.id,
@@ -120,15 +150,78 @@ export class LeadService {
             context: { actorName: "Public form (recovered)", recoveredFromFallback: true },
           });
 
-          await prisma.fallbackLead.update({
-            where: { id: fLead.id },
-            data: { status: "recovered" },
-          });
+          await this.markFallbackRecovered(fLead.id);
+          result.synced++;
         }
       } catch (err) {
-        console.error(`[Lead Sync] Failed to sync fallback lead ID ${fLead.id}:`, err);
+        const isP2002 =
+          typeof err === "object" &&
+          err !== null &&
+          "code" in err &&
+          (err as { code?: string }).code === "P2002";
+
+        if (isP2002) {
+          // A concurrent run created this lead first — converge on recovery.
+          const raced = await prisma.lead.findFirst({
+            where: { orgId, phone: fLead.phone.trim() },
+            select: { id: true },
+          });
+          if (raced) {
+            await this.markFallbackRecovered(fLead.id);
+            await prisma.leadActivity
+              .create({
+                data: {
+                  leadId: raced.id,
+                  orgId,
+                  activityType: "NOTE",
+                  title: "Duplicate fallback enquiry",
+                  notes: `Enquiry from fallback store recovered. Originally submitted at ${fLead.createdAt.toISOString()}`,
+                  completedAt: new Date(),
+                },
+              })
+              .catch(() => undefined);
+            result.duplicates++;
+            continue;
+          }
+        }
+
+        result.failed++;
+        // Keep the record pending so a later run retries it; bump retry_count
+        // so stuck rows are visible in the fallback_leads table.
+        await prisma.fallbackLead
+          .update({
+            where: { id: fLead.id },
+            data: { retryCount: { increment: 1 } },
+          })
+          .catch(() => undefined);
+        console.error(
+          JSON.stringify({
+            event: "lead_fallback_sync_failed",
+            fallbackLeadId: fLead.id,
+            reason: err instanceof Error ? err.message : String(err),
+            timestamp: new Date().toISOString(),
+          }),
+        );
       }
     }
+
+    console.log(
+      JSON.stringify({
+        event: "lead_fallback_sync_succeeded",
+        synced: result.synced,
+        duplicates: result.duplicates,
+        failed: result.failed,
+        timestamp: new Date().toISOString(),
+      }),
+    );
+    return result;
+  }
+
+  private static async markFallbackRecovered(id: string) {
+    await prisma.fallbackLead.update({
+      where: { id },
+      data: { status: "recovered" },
+    });
   }
 
   static async list(ctx: RequestContext, filters: LeadFilters) {

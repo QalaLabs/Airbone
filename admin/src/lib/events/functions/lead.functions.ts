@@ -1,6 +1,7 @@
 import { inngest } from "@/lib/events/inngest";
 import { NotificationService } from "@/lib/services/notification.service";
 import { prisma } from "@/lib/db/client";
+import { LeadService } from "@/lib/services/lead.service";
 
 // ─── lead/created ─────────────────────────────────────────────────────────
 
@@ -144,5 +145,27 @@ export const onLeadActivityCreated = inngest.createFunction(
     // "lead_activity.created" + activity "logged_activity"). The handler's
     // lastActivityAt update duplicated the sync write. No async responsibilities.
     return { ok: true };
+  },
+);
+
+// ─── Fallback lead recovery (cron every 5 min) ────────────────────────────
+//
+// Replays lead rows that were persisted to the Supabase fallback_leads table
+// when the marketing site could not reach this API (timeout / 5xx / network).
+// Idempotent and retry-safe: failed rows stay `pending` with retry_count bumped
+// and are retried on the next tick; rows already in the leads table (by phone
+// or by the unique(orgId, phone) constraint) are marked `recovered`, never
+// duplicated. NOTE: this cron only fires when real Inngest credentials are set
+// (INNGEST_EVENT_KEY != "local"). Until then, recovery remains lazy via the
+// leads-list trigger + the manual scripts/replay-fallback-leads.ts tool.
+
+export const onLeadFallbackSync = inngest.createFunction(
+  { id: "lead-fallback-sync", name: "Lead fallback recovery" },
+  { cron: "*/5 * * * *" },
+  async ({ step }) => {
+    const result = await step.run("sync-fallback-leads", async () => {
+      return LeadService.syncFallbackLeadsCron();
+    });
+    return { ...result, ts: new Date().toISOString() };
   },
 );

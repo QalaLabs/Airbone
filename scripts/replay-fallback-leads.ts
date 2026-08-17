@@ -53,6 +53,9 @@ async function replayFallbackLeads(): Promise<void> {
     .eq('status', 'pending')
     .order('created_at', { ascending: true })
 
+  if (fetchError) {
+    console.error('Fetch error:', fetchError.message || fetchError)
+  }
   if (fetchError || !leads || leads.length === 0) {
     console.log('Replay Success: 0')
     console.log('Replay Failed: 0')

@@ -1,7 +1,13 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  output: "standalone",
+  // This app is its own standalone project — pin tracing to its own directory
+  // so `.next/standalone/server.js` is flat (avoids the workspace-root warning
+  // caused by the repo-root pnpm-lock.yaml) and the Docker COPY paths are stable.
+  outputFileTracingRoot: path.join(__dirname),
   eslint: {
     ignoreDuringBuilds: true,
   },

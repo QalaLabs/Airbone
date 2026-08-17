@@ -56,6 +56,16 @@ export class UserService {
       newValue: { email: input.email, role: input.role, invitedAt: new Date().toISOString() },
     });
 
+    await ActivityFeedService.write({
+      orgId: ctx.orgId,
+      actorId: ctx.user.id,
+      verb: "invited",
+      objectType: "user",
+      objectId: user.id,
+      objectSnapshot: { email: input.email, role: input.role },
+      context: { actorName: ctx.user.name },
+    });
+
     await emitEvent({
       name: "user/invited",
       orgId: ctx.orgId,

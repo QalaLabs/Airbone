@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Airborne Admin OS — Master Gap Matrix</title>
+<style>
+  @page { size: A4 landscape; margin: 12mm; }
+  * { box-sizing: border-box; }
+  body { font-family: "Segoe UI", Arial, sans-serif; font-size: 9px; color: #1a202c; margin: 0; line-height: 1.35; }
+  h1 { font-size: 20px; margin: 0 0 2px 0; }
+  h2 { font-size: 14px; margin: 22px 0 6px 0; border-bottom: 2px solid #1a202c; padding-bottom: 3px; page-break-after: avoid; }
+  h3 { font-size: 11px; margin: 12px 0 4px 0; page-break-after: avoid; }
+  p.sub { color: #4a5568; font-size: 9px; margin: 0 0 8px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 4px 0 10px 0; page-break-inside: auto; }
+  th { background: #1a202c; color: #fff; text-align: left; padding: 4px 5px; font-size: 8.5px; }
+  td { border: 1px solid #cbd5e0; padding: 3px 5px; vertical-align: top; font-size: 8.5px; }
+  tr:nth-child(even) td { background: #f7fafc; }
+  .tag { display: inline-block; padding: 0 5px; border-radius: 3px; font-weight: 700; font-size: 8px; }
+  .w { background: #c6f6d5; color: #22543d; }
+  .p { background: #fefcbf; color: #744210; }
+  .b { background: #fed7d7; color: #742a2a; }
+  .ph { background: #fed7d7; color: #742a2a; }
+  .n { background: #bee3f8; color: #2a4365; }
+  .d { background: #e2e8f0; color: #4a5568; }
+  .df { background: #e2e8f0; color: #4a5568; }
+  .p0 { background: #742a2a; color: #fff; padding: 0 4px; border-radius: 3px; font-weight: 700; }
+  .p1 { background: #c05621; color: #fff; padding: 0 4px; border-radius: 3px; font-weight: 700; }
+  .p2 { background: #b7791f; color: #fff; padding: 0 4px; border-radius: 3px; font-weight: 700; }
+  .p3 { background: #718096; color: #fff; padding: 0 4px; border-radius: 3px; font-weight: 700; }
+  ol, ul { margin: 4px 0 8px 0; padding-left: 18px; }
+  li { margin: 2px 0; }
+  code { font-family: Consolas, monospace; font-size: 8px; background: #edf2f7; padding: 0 3px; border-radius: 2px; }
+  .pagebreak { page-break-before: always; }
+  table.narrow { width: 100%; }
+</style>
+</head>
+<body>
+
+<h1>Airborne Admin OS — Master Gap Matrix (Phase 6 Audit)</h1>
+<p class="sub">Full remaining-functionality audit &bull; C:\Users\pc\Desktop\Airbone\admin &bull; Read-only (no code modified) &bull; Next.js 15 App Router, Prisma/PostgreSQL, NextAuth, TanStack Query, Zod, Inngest</p>
+<p class="sub">Method: end-to-end tracing of all 69 Prisma models, ~190 API route files, 22 services, 17 repositories, 20 validation schemas, all dashboard/faculty/portal pages, Inngest functions, plus live verification from Phases 1&ndash;5.</p>
+
+<h2>Legend</h2>
+<table>
+  <tr><th>STATUS</th><th>Meaning</th><th></th><th>PRIORITY</th><th>Meaning</th></tr>
+  <tr><td><span class="tag w">WORKING</span></td><td>Full trace UI&rarr;API&rarr;validation&rarr;RBAC&rarr;service&rarr;repo&rarr;Prisma&rarr;DB works with real data</td><td></td><td><span class="p0">P0</span></td><td>Production blocker (broken core feature / security)</td></tr>
+  <tr><td><span class="tag p">PARTIAL</span></td><td>Real end-to-end but a meaningful piece is missing</td><td></td><td><span class="p1">P1</span></td><td>Core functionality incomplete</td></tr>
+  <tr><td><span class="tag b">BROKEN</span></td><td>Trace fails (missing route/UI, method mismatch, wrong enum, security gap)</td><td></td><td><span class="p2">P2</span></td><td>Important but non-blocking</td></tr>
+  <tr><td><span class="tag ph">PLACEHOLDER</span></td><td>Fake/hardcoded surface or honest "not connected" stub</td><td></td><td><span class="p3">P3</span></td><td>Polish / future</td></tr>
+  <tr><td><span class="tag n">NOT_CONFIGURED</span></td><td>External provider / engine exists but no credentials or not activated</td><td></td><td></td><td></td></tr>
+  <tr><td><span class="tag d">DEAD</span></td><td>No consumer (route/service/model/UI unused)</td><td></td><td></td><td></td></tr>
+  <tr><td><span class="tag df">DEFERRED</span></td><td>Intentionally out of scope</td><td></td><td></td><td></td></tr>
+</table>
+
+<!-- ============ MATRIX ============ -->
+<h2>Master Admin OS Gap Matrix</h2>
+
+<h3>1. Dashboard</h3>
+<table>
+  <tr><th>MODULE</th><th>ROUTE</th><th>CAPABILITY</th><th>UI</th><th>API</th><th>VALIDATION</th><th>RBAC</th><th>DB</th><th>REAL DATA</th><th>STATUS</th><th>PRIORITY</th><th>REQUIRED FIX</th></tr>
+  <tr><td>Dashboard</td><td>/</td><td>KPI cards + revenue</td><td>(dashboard)/page.tsx:39-67</td><td>api/v1/dashboard/stats/route.ts:9-57</td><td>–</td><td>guard("read","analytics")</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Dashboard</td><td>/</td><td>Recent leads + quick actions</td><td>page.tsx:40-48,125-206</td><td>/api/v1/leads</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Dashboard</td><td>/crm/dashboard</td><td>Alias</td><td>redirect page</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td><span class="tag d">DEAD</span></td><td><span class="p3">P3</span></td><td>Intentional redirect to /; keep documented</td></tr>
+</table>
+
+<h3>2. Leads / CRM</h3>
+<table>
+  <tr><th>MODULE</th><th>ROUTE</th><th>CAPABILITY</th><th>UI</th><th>API</th><th>VALIDATION</th><th>RBAC</th><th>DB</th><th>REAL DATA</th><th>STATUS</th><th>PRIORITY</th><th>REQUIRED FIX</th></tr>
+  <tr><td>Leads</td><td>/leads</td><td>List + create</td><td>leads/page.tsx</td><td>api/v1/leads/route.ts GET/POST</td><td>y</td><td>guard+org+counselor scope</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Leads</td><td>/leads/[id]</td><td>Detail, PATCH, soft-delete</td><td>leads/[id]/page.tsx</td><td>api/v1/leads/[id]/route.ts</td><td>y</td><td>guardRecord ABAC</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Leads</td><td>/leads/[id]</td><td>Timeline activities CRUD</td><td>detail page</td><td>leads/[id]/activities/**</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Leads</td><td>/leads/[id]</td><td>Assign counselor</td><td>detail page</td><td>leads/[id]/assign</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Leads</td><td>/leads/[id]</td><td>Convert &rarr; Admission</td><td>detail page</td><td>leads/[id]/convert</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Leads</td><td>/leads/[id]</td><td>Follow-up scheduling</td><td>detail page</td><td>leads/[id]/follow-up</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Leads</td><td>list</td><td>Scoring + dedup</td><td>badge</td><td>lead.service.ts:369-418,29-39</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>CRM</td><td>/crm/deals</td><td>Pipeline (admission-funnel derived)</td><td>crm/deals/page.tsx</td><td>api/v1/crm/deals/route.ts:78-83</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag df">DEFERRED</span></td><td><span class="p3">P3</span></td><td>Honest deals:false; real deals need new Opportunity model+FK. Relabel UI "Admission Funnel"</td></tr>
+  <tr><td>CRM</td><td>/crm/pipeline</td><td>Alias &rarr; /crm/deals</td><td>redirect</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td><span class="tag d">DEAD</span></td><td><span class="p3">P3</span></td><td>Intentional alias</td></tr>
+  <tr><td>CRM</td><td>/crm/leads</td><td>Alias &rarr; /leads</td><td>redirect</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td><span class="tag d">DEAD</span></td><td><span class="p3">P3</span></td><td>Intentional alias</td></tr>
+  <tr><td>CRM</td><td>/crm/analytics</td><td>Totals/monthly/bySource/byStatus/byCounselor</td><td>crm/analytics/page.tsx</td><td>api/v1/crm/analytics/route.ts:26-229</td><td>y</td><td>guard+counselor ABAC:32-35</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>CRM</td><td>/crm/meetings</td><td>Meeting CRUD (leadActivity)</td><td>crm/meetings/page.tsx</td><td>api/v1/crm/meetings/route.ts</td><td>y</td><td>guard+counselor scope</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>CRM</td><td>/crm/outreach</td><td>Template CRUD + delivery logs</td><td>crm/outreach/page.tsx:343-432</td><td>api/v1/crm/outreach/route.ts</td><td>y</td><td>guard("notifications")</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>Logs empty until Inngest active (see &sect;20)</td></tr>
+</table>
+
+<h3>3. Admissions</h3>
+<table>
+  <tr><th>MODULE</th><th>ROUTE</th><th>CAPABILITY</th><th>UI</th><th>API</th><th>VALIDATION</th><th>RBAC</th><th>DB</th><th>REAL DATA</th><th>STATUS</th><th>PRIORITY</th><th>REQUIRED FIX</th></tr>
+  <tr><td>Admissions</td><td>/admissions</td><td>Kanban + drag-drop</td><td>admissions/page.tsx (dnd-kit)</td><td>api/v1/admissions/route.ts GET/POST</td><td>y + STAGE_TRANSITIONS</td><td>guard+counselor filter</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Admissions</td><td>/admissions</td><td>Detail/update</td><td>card dialog</td><td>api/v1/admissions/[id]/route.ts</td><td>y</td><td>guardRecord</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Admissions</td><td>/admissions</td><td>Stage transitions (+auto Student on ENROLLED, lead CONVERTED)</td><td>stage-log dialog</td><td>admissions/[id]/stage</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Admissions</td><td>/admissions</td><td>Fee-plan picker + balance recalc</td><td>admissions/page.tsx:504-570</td><td>admission.service.ts:48-117</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Admissions</td><td>/admissions</td><td>applicationNo generator</td><td>–</td><td>admission.repository.ts:137-142</td><td>–</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td><span class="p3">P3</span></td><td>count+1 non-atomic (unique constraint backs it)</td></tr>
+</table>
+
+<h3>4. Students</h3>
+<table>
+  <tr><th>MODULE</th><th>ROUTE</th><th>CAPABILITY</th><th>UI</th><th>API</th><th>VALIDATION</th><th>RBAC</th><th>DB</th><th>REAL DATA</th><th>STATUS</th><th>PRIORITY</th><th>REQUIRED FIX</th></tr>
+  <tr><td>Students</td><td>/students</td><td>List + create</td><td>students/page.tsx</td><td>api/v1/students/route.ts GET/POST</td><td>y</td><td>guard+org</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Students</td><td>/students/[id]</td><td>Detail/update/soft-delete</td><td>students/[id]/page.tsx</td><td>api/v1/students/[id]/route.ts</td><td>y</td><td>guardRecord ABAC</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Students</td><td>/students/[id]</td><td>Linked admissions</td><td>detail page</td><td>students/[id]/admissions</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Students</td><td>create</td><td>Event emission</td><td>–</td><td>student.service.ts:69-83</td><td>–</td><td>–</td><td>real</td><td>–</td><td><span class="tag b">BROKEN</span></td><td><span class="p2">P2</span></td><td>Emits admission/created with student id &mdash; should be student/created event</td></tr>
+</table>
+
+<h3>5. Fee Plans / Payments</h3>
+<table>
+  <tr><th>MODULE</th><th>ROUTE</th><th>CAPABILITY</th><th>UI</th><th>API</th><th>VALIDATION</th><th>RBAC</th><th>DB</th><th>REAL DATA</th><th>STATUS</th><th>PRIORITY</th><th>REQUIRED FIX</th></tr>
+  <tr><td>Fee plans</td><td>api/v1/fee-plans/**</td><td>CRUD</td><td>admissions dialogs</td><td>fee-plans/route.ts, [id]/route.ts</td><td>y (items min 1)</td><td>guard("write","admissions")</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>No standalone page &mdash; admission-centric by design</td></tr>
+  <tr><td>Payments</td><td>api/v1/admissions/[id]/payments</td><td>Record payment + receipt no + balance recalc</td><td>admissions/page.tsx:358-368</td><td>payment.service.ts:21-84</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Payments</td><td>api/v1/payments/[id]</td><td>Update/status</td><td>–</td><td>payment.service.ts:91-125</td><td>y</td><td>guard("write","payments")</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Payments</td><td>Razorpay</td><td>Online collection</td><td>–</td><td>crm/integrations/route.ts:81-86</td><td>–</td><td>–</td><td>–</td><td>no</td><td><span class="tag n">NOT_CONFIGURED</span></td><td><span class="p3">P3</span></td><td>No gateway creds; honest payments:false; webhook settings field unused</td></tr>
+</table>
+
+<h3>6. Documents</h3>
+<table>
+  <tr><th>MODULE</th><th>ROUTE</th><th>CAPABILITY</th><th>UI</th><th>API</th><th>VALIDATION</th><th>RBAC</th><th>DB</th><th>REAL DATA</th><th>STATUS</th><th>PRIORITY</th><th>REQUIRED FIX</th></tr>
+  <tr><td>Documents</td><td>api/v1/admissions/[id]/documents</td><td>Upload (R2 presign)</td><td>admissions dialog</td><td>document.service.ts:22-54</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>R2 is legacy path (Supabase used for media); keep as-is</td></tr>
+  <tr><td>Documents</td><td>api/v1/documents/[id]</td><td>Review approve/reject</td><td>admissions dialog</td><td>document.service.ts:120-123</td><td>y</td><td>y (admin re-check)</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Documents</td><td>api/v1/documents/[id]</td><td>Rejection reason</td><td>–</td><td>document.service.ts:125-127</td><td>y</td><td>y</td><td>real</td><td>–</td><td><span class="tag b">BROKEN</span></td><td><span class="p2">P2</span></td><td>Generic Error (&rarr;500) instead of ValidationError (&rarr;400) when rejection reason missing</td></tr>
+</table>
+
+<h3>7. LMS &mdash; Admin Course Builder</h3>
+<table>
+  <tr><th>MODULE</th><th>ROUTE</th><th>CAPABILITY</th><th>UI</th><th>API</th><th>VALIDATION</th><th>RBAC</th><th>DB</th><th>REAL DATA</th><th>STATUS</th><th>PRIORITY</th><th>REQUIRED FIX</th></tr>
+  <tr><td>LMS</td><td>/lms</td><td>Course list/create</td><td>lms/page.tsx:40,45</td><td>api/v1/lms/courses/route.ts</td><td>y</td><td>guard</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>LMS</td><td>/lms/courses/[id]</td><td>Tree view + PATCH</td><td>lms/courses/[id]/page.tsx:1237-1242</td><td>courses/[id]/route.ts</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>LMS</td><td>/lms/courses/[id]</td><td>Delete course</td><td>–</td><td>no DELETE route</td><td>–</td><td>–</td><td>–</td><td>–</td><td><span class="tag b">BROKEN</span></td><td><span class="p1">P1</span></td><td>Add DELETE /courses/[id] + confirm UI (cascade wipes tree)</td></tr>
+  <tr><td>LMS</td><td>/lms/courses/[id]</td><td>Stages CRUD+reorder</td><td>:700-714</td><td>stages/**</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>LMS</td><td>/lms/courses/[id]</td><td>Modules CRUD+reorder+duplicate</td><td>:720-810</td><td>modules/**</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>LMS</td><td>/lms/courses/[id]</td><td>Module quiz settings</td><td>:739</td><td>modules/[moduleId] PATCH</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>LMS</td><td>/lms/courses/[id]</td><td>Chapters/Topics CRUD+reorder+move</td><td>:761-785</td><td>chapters/**, topics/**</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>LMS</td><td>/lms/courses/[id]</td><td>Content create</td><td>:517</td><td>topics/[topicId]/contents</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td><span class="p2">P2</span></td><td>url silently defaults to "#" &mdash; surface in UI</td></tr>
+  <tr><td>LMS</td><td>/lms/courses/[id]</td><td>Questions CRUD + bulk (&le;200)</td><td>:170-205</td><td>questions/**</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>LMS</td><td>/lms/courses/[id]</td><td>Bulk curriculum import</td><td>:749</td><td>courses/[id]/import</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>LMS</td><td>/lms/courses/[id]</td><td>Announcements</td><td>:1171-1175</td><td>announcements/route.ts</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>LMS</td><td>–</td><td>Assign teacher to course</td><td>–</td><td>–</td><td>assignCourseTeacherSchema</td><td>–</td><td>–</td><td>–</td><td><span class="tag d">DEAD</span></td><td><span class="p3">P3</span></td><td>Unused schema; teachers assigned only via batch members</td></tr>
+</table>
+
+<h3>8. LMS &mdash; Batches / Timetable / Attendance / Certificates</h3>
+<table>
+  <tr><th>MODULE</th><th>ROUTE</th><th>CAPABILITY</th><th>UI</th><th>API</th><th>VALIDATION</th><th>RBAC</th><th>DB</th><th>REAL DATA</th><th>STATUS</th><th>PRIORITY</th><th>REQUIRED FIX</th></tr>
+  <tr><td>Batches</td><td>/lms/batches</td><td>CRUD</td><td>lms/batches/page.tsx</td><td>batches/**</td><td>y</td><td>guard</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Batches</td><td>/lms/batches</td><td>Members sync (students+teachers, enrollment sync)</td><td>batches/page.tsx:100</td><td>batches/[id]/members PUT</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Timetable</td><td>/lms/timetable</td><td>CRUD</td><td>lms/timetable/page.tsx</td><td>timetable/**</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td><span class="p3">P3</span></td><td>recurrenceRule column never written (dead field); update lacks endsAt&gt;startsAt recheck</td></tr>
+  <tr><td>Attendance</td><td>/lms/attendance</td><td>Mark sessions+records, list</td><td>lms/attendance/page.tsx:80-102</td><td>attendance/route.ts GET/POST</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Attendance</td><td>–</td><td>Edit/delete session/record</td><td>–</td><td>no routes</td><td>–</td><td>y (delete,lms_attendance unused)</td><td>–</td><td>–</td><td><span class="tag b">BROKEN</span></td><td><span class="p1">P1</span></td><td>Add PATCH/DELETE for sessions+records</td></tr>
+  <tr><td>Certificates</td><td>/lms/certificates</td><td>Issue</td><td>lms/certificates/page.tsx:60</td><td>certificates/route.ts POST</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag b">BROKEN</span></td><td><span class="p0">P0</span></td><td>certNo generated client-side (:28-31 random) &rarr; P2002 collision &rarr; unhandled 500. Move to server + retry/unique + try-catch</td></tr>
+  <tr><td>Certificates</td><td>/lms/certificates</td><td>List</td><td>:45</td><td>certificates/route.ts GET</td><td>–</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Certificates</td><td>–</td><td>Revoke (REVOKED enum exists) / delete</td><td>–</td><td>no routes</td><td>–</td><td>–</td><td>–</td><td>–</td><td><span class="tag b">BROKEN</span></td><td><span class="p1">P1</span></td><td>Add revoke/delete API+UI</td></tr>
+  <tr><td>Enrollments</td><td>/lms/courses/[id]</td><td>List/enroll</td><td>:400-409</td><td>enrollments/route.ts</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Enrollments</td><td>–</td><td>Unenroll / accept-reject</td><td>–</td><td>no route (status only ACTIVE)</td><td>–</td><td>–</td><td>–</td><td>–</td><td><span class="tag b">BROKEN</span></td><td><span class="p1">P1</span></td><td>Add unenroll/drop + lifecycle state</td></tr>
+  <tr><td>Portal access</td><td>/lms</td><td>Provision portal login (argon2, links Student&harr;User)</td><td>lms/page.tsx:155</td><td>portal-access/route.ts</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Admin dash</td><td>api/v1/lms/dashboard/[studentId]</td><td>Per-student dashboard</td><td>no UI</td><td>route exists</td><td>–</td><td>y</td><td>real</td><td>yes</td><td><span class="tag d">DEAD</span></td><td><span class="p3">P3</span></td><td>Build page or remove</td></tr>
+</table>
+
+<h3>9. LMS &mdash; Faculty + Student Portal</h3>
+<table>
+  <tr><th>MODULE</th><th>ROUTE</th><th>CAPABILITY</th><th>UI</th><th>API</th><th>VALIDATION</th><th>RBAC</th><th>DB</th><th>REAL DATA</th><th>STATUS</th><th>PRIORITY</th><th>REQUIRED FIX</th></tr>
+  <tr><td>Faculty</td><td>/faculty</td><td>Dashboard</td><td>(faculty)/faculty/page.tsx:40</td><td>api/v1/lms/faculty/route.ts</td><td>–</td><td>role gate TEACHER/ADMIN</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Faculty</td><td>/faculty/students</td><td>Students list</td><td>:27</td><td>faculty/students/route.ts</td><td>–</td><td>y</td><td>real</td><td>yes</td><td><span class="tag p">PARTIAL</span></td><td><span class="p2">P2</span></td><td>Raw join rows &mdash; student duplicated per batch; no grouping</td></tr>
+  <tr><td>Faculty</td><td>/faculty nav</td><td>"Assignments" link</td><td>(faculty)/layout.tsx:23</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td><span class="tag b">BROKEN</span></td><td><span class="p1">P1</span></td><td>Mislabeled &rarr; links to /lms/timetable; must point to assignments UI</td></tr>
+  <tr><td>Portal</td><td>/portal/*</td><td>Dashboard (enrollments, progress, attendance, announcements, bookmarks, attempts)</td><td>portal/page.tsx:356</td><td>api/v1/lms/me/route.ts</td><td>–</td><td>y (STUDENT-only layout)</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Portal</td><td>/portal/courses*</td><td>Course list + player + progress + bookmarks</td><td>portal/courses/**</td><td>me/courses/[courseId], me/progress, me/bookmarks</td><td>y</td><td>y + enrollment check</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Portal</td><td>quiz</td><td>Quiz fetch (no answer leak) + submit/grading engine</td><td>components/portal/quiz-modal.tsx</td><td>me/courses/[courseId]/quiz/[moduleId]</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>courseId path param ignored; moduleId governs &mdash; verify intentional</td></tr>
+  <tr><td>Portal</td><td>/portal/progress</td><td>Progress page</td><td>:47</td><td>me/route.ts</td><td>–</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Portal</td><td>/portal/attendance</td><td>Monthly/by-subject breakdown</td><td>:53-58</td><td>me/attendance-breakdown</td><td>–</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Portal</td><td>/portal/assessments</td><td>List + self-report</td><td>list only</td><td>me/assessments POST</td><td>y</td><td>STUDENT has write,lms_assessments</td><td>real</td><td>yes</td><td><span class="tag b">BROKEN (security)</span></td><td><span class="p0">P0</span></td><td>Student can POST score+status=PASS directly &rarr; self-grading unlock vector. Gate to quiz-derived sync only or admin/faculty role</td></tr>
+  <tr><td>Portal</td><td>/portal/certificates</td><td>List</td><td>:22</td><td>me/route.ts</td><td>–</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Portal</td><td>/portal/certificates/[certNo]/print</td><td>Print</td><td>:18-31 (server component, direct prisma)</td><td>–</td><td>–</td><td>no ownership/org check</td><td>real</td><td>yes</td><td><span class="tag b">BROKEN (security)</span></td><td><span class="p0">P0</span></td><td>Any student can print any ISSUED cert given certNo/verificationCode &mdash; add student/org authorization</td></tr>
+  <tr><td>Portal</td><td>/portal/profile</td><td>Read-only display</td><td>profile/page.tsx:28-46</td><td>me/route.ts</td><td>–</td><td>y</td><td>real</td><td>yes</td><td><span class="tag p">PARTIAL</span></td><td><span class="p2">P2</span></td><td>No edit capability</td></tr>
+  <tr><td>Portal</td><td>/portal/assistant</td><td>AI tutor</td><td>assistant/page.tsx:49</td><td>assistant/route.ts</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag n">NOT_CONFIGURED</span></td><td><span class="p3">P3</span></td><td>Stub answer without GEMINI_API_KEY (graceful); no usage quota</td></tr>
+</table>
+
+<h3>10. LMS &mdash; Quiz State Machine / Assignments / Dead Model Surface</h3>
+<table>
+  <tr><th>MODULE</th><th>ROUTE</th><th>CAPABILITY</th><th>UI</th><th>API</th><th>VALIDATION</th><th>RBAC</th><th>DB</th><th>REAL DATA</th><th>STATUS</th><th>PRIORITY</th><th>REQUIRED FIX</th></tr>
+  <tr><td>Quiz</td><td>–</td><td>Sequential module unlock (prev PASS)</td><td>–</td><td>lms.service.ts:876-898</td><td>–</td><td>–</td><td>real</td><td>yes</td><td><span class="tag p">PARTIAL</span></td><td><span class="p2">P2</span></td><td>Cross-stage gating absent; unlockRules JSON stored but never evaluated</td></tr>
+  <tr><td>Assignments</td><td>api/v1/lms/assignments/**</td><td>Create/update/submit/grade</td><td>no UI at all</td><td>assignments/**, submissions/[id]/grade</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag b">BROKEN</span></td><td><span class="p1">P1</span></td><td>Faculty cannot view assignments, submissions, or grade &mdash; API-complete, UI-absent. No submission-list GET, no assignment DELETE</td></tr>
+  <tr><td>Assignments</td><td>–</td><td>Resubmit</td><td>–</td><td>assignments/[id]/submit</td><td>y</td><td>y</td><td>real</td><td>–</td><td><span class="tag p">PARTIAL</span></td><td><span class="p2">P2</span></td><td>Resubmit resets status but keeps stale score/feedback &mdash; clear on resubmit</td></tr>
+  <tr><td>Inngest</td><td>–</td><td>LMS events (cert issued, enrollment, attendance SMS)</td><td>–</td><td>events/functions/**</td><td>–</td><td>–</td><td>–</td><td>–</td><td><span class="tag d">DEAD</span></td><td><span class="p2">P2</span></td><td>Zero LMS handlers in Inngest functions; nothing enqueues LMS events</td></tr>
+  <tr><td>LmsNotification</td><td>–</td><td>In-app notifications</td><td>–</td><td>–</td><td>–</td><td>lms_notifications perm exists</td><td>real (table)</td><td>no</td><td><span class="tag d">DEAD</span></td><td><span class="p2">P2</span></td><td>No service/route/UI &mdash; unused table+permission</td></tr>
+  <tr><td>LmsChatRoom/LmsMessage</td><td>–</td><td>Chat</td><td>–</td><td>–</td><td>–</td><td>lms_chat perm exists</td><td>real (table)</td><td>no</td><td><span class="tag d">DEAD</span></td><td><span class="p3">P3</span></td><td>No service/route/UI &mdash; deferred feature</td></tr>
+  <tr><td>Feature gate</td><td>–</td><td>isLmsEnabled (sms.enabled)</td><td>–</td><td>src/lib/lms/feature-flag.ts</td><td>–</td><td>–</td><td>–</td><td>–</td><td><span class="tag d">DEAD</span></td><td><span class="p3">P3</span></td><td>Never imported &mdash; LMS always accessible</td></tr>
+</table>
+
+<h3>11. LMS &mdash; Public Certificate Verification</h3>
+<table>
+  <tr><th>MODULE</th><th>ROUTE</th><th>CAPABILITY</th><th>UI</th><th>API</th><th>VALIDATION</th><th>RBAC</th><th>DB</th><th>REAL DATA</th><th>STATUS</th><th>PRIORITY</th><th>REQUIRED FIX</th></tr>
+  <tr><td>Verify</td><td>/verify/[code]</td><td>Public cert lookup (certNo OR verificationCode, ISSUED only)</td><td>verify/[code]/page.tsx:40</td><td>api/v1/public/lms/certificates/route.ts</td><td>–</td><td>public by design</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+</table>
+
+<h3>12. CMS &mdash; Pages / Sections / Blocks / Versions</h3>
+<table>
+  <tr><th>MODULE</th><th>ROUTE</th><th>CAPABILITY</th><th>UI</th><th>API</th><th>VALIDATION</th><th>RBAC</th><th>DB</th><th>REAL DATA</th><th>STATUS</th><th>PRIORITY</th><th>REQUIRED FIX</th></tr>
+  <tr><td>Pages</td><td>/cms</td><td>List + create + edit metadata</td><td>cms/page.tsx:63-107</td><td>pages/**</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Pages</td><td>/cms</td><td>Publish/status transitions</td><td>:110-121,298-311,399-414</td><td>pages/[id]/publish</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Pages</td><td>/cms</td><td>Version snapshot on publish + list + rollback</td><td>no UI</td><td>versions/**, [vid]/rollback</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag b">BROKEN (API-only)</span></td><td><span class="p1">P1</span></td><td>Server-side complete &mdash; build editor UI (sections/blocks/reorder/versions/rollback). cms/page.tsx is list-only</td></tr>
+  <tr><td>Pages</td><td>/cms</td><td>Section editor</td><td>no UI</td><td>pages/[id]/sections/**</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag b">BROKEN (API-only)</span></td><td><span class="p1">P1</span></td><td>Same as above</td></tr>
+  <tr><td>Pages</td><td>/cms</td><td>Block editor</td><td>no UI</td><td>sections/[sid]/blocks/**</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag b">BROKEN (API-only)</span></td><td><span class="p1">P1</span></td><td>Same + ContentBlock types unseeded &rarr; blockType lookup 404s</td></tr>
+  <tr><td>Pages</td><td>/cms</td><td>Layout reorder</td><td>no UI</td><td>pages/[id]/layout</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag b">BROKEN (API-only)</span></td><td><span class="p1">P1</span></td><td>Same</td></tr>
+  <tr><td>Pages</td><td>/cms</td><td>Live preview</td><td>cms/page.tsx:160-171 fake toggle &rarr; toast only</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td><span class="tag ph">PLACEHOLDER</span></td><td><span class="p2">P2</span></td><td>Replace with real preview (public render/iframe)</td></tr>
+  <tr><td>Pages</td><td>–</td><td>Scheduled publish</td><td>–</td><td>page.service.ts:413-456</td><td>y</td><td>–</td><td>real</td><td>yes</td><td><span class="tag n">NOT_CONFIGURED</span></td><td><span class="p2">P2</span></td><td>Logic exists but driven by cms/scheduled.check Inngest event &mdash; never fires (Inngest disabled). Wire cron/inngest</td></tr>
+  <tr><td>Pages</td><td>–</td><td>Public propagation</td><td>–</td><td>api/public/pages</td><td>–</td><td>public</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+</table>
+
+<h3>13. CMS &mdash; Nav / Content Blocks / Courses / Media</h3>
+<table>
+  <tr><th>MODULE</th><th>ROUTE</th><th>CAPABILITY</th><th>UI</th><th>API</th><th>VALIDATION</th><th>RBAC</th><th>DB</th><th>REAL DATA</th><th>STATUS</th><th>PRIORITY</th><th>REQUIRED FIX</th></tr>
+  <tr><td>Nav</td><td>api/v1/nav/**</td><td>Menu CRUD + nested items</td><td>no UI anywhere</td><td>nav/**, nav.service.ts</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag d">DEAD (route-only)</span></td><td><span class="p1">P1</span></td><td>Build nav management UI (settings or CMS); add to a public endpoint (currently api/public/settings omits navMenus)</td></tr>
+  <tr><td>ContentBlock</td><td>api/v1/blocks/**</td><td>Type registry</td><td>no UI</td><td>blocks/**, block.service.ts</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag d">DEAD (route-only)</span></td><td><span class="p1">P1</span></td><td>Seed block types + registry UI, else block feature unusable end-to-end</td></tr>
+  <tr><td>Courses</td><td>/courses</td><td>List + create</td><td>courses/page.tsx:55-138</td><td>api/v1/courses/**</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Courses</td><td>/courses</td><td>"Go Live" publish</td><td>courses/page.tsx:73-80 sends PATCH</td><td>courses/[id]/publish POST only</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag b">BROKEN</span></td><td><span class="p0">P0</span></td><td>UI method mismatch &rarr; 405, button silently fails. Change to POST</td></tr>
+  <tr><td>Courses</td><td>/courses</td><td>Edit (SEO only)</td><td>:140-154</td><td>courses/[id] PATCH</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag p">PARTIAL</span></td><td><span class="p1">P1</span></td><td>No UI to edit title/duration/fee/category/eligibility/curriculum/banner after creation</td></tr>
+  <tr><td>Courses</td><td>/courses</td><td>Create status select</td><td>:314-317</td><td>createCourseSchema</td><td>stripped</td><td>y</td><td>real</td><td>–</td><td><span class="tag b">BROKEN</span></td><td><span class="p1">P1</span></td><td>Status not in schema &rarr; always DRAFT; remove misleading control or wire it</td></tr>
+  <tr><td>Courses</td><td>/courses</td><td>Curriculum editor</td><td>:376-401 read-only JSON</td><td>–</td><td>–</td><td>–</td><td>real</td><td>yes</td><td><span class="tag b">BROKEN</span></td><td><span class="p1">P1</span></td><td>No add/edit/reorder of modules; build editor</td></tr>
+  <tr><td>Courses</td><td>/courses</td><td>Versions + rollback</td><td>no UI</td><td>versions/**, [vid]/rollback</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag b">BROKEN (API-only)</span></td><td><span class="p1">P1</span></td><td>Add versions UI</td></tr>
+  <tr><td>Courses</td><td>/courses</td><td>Banner/gallery media picker</td><td>missing</td><td>course.service.ts:53-117 (MediaUsage)</td><td>y</td><td>y</td><td>real</td><td>–</td><td><span class="tag p">PARTIAL</span></td><td><span class="p2">P2</span></td><td>Schema supports bannerImageId/galleryIds; add MediaPicker</td></tr>
+  <tr><td>Courses</td><td>/courses</td><td>Archive delete</td><td>:106-115</td><td>courses/[id] DELETE</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td><span class="p3">P3</span></td><td>Toast says "removed from database" but it archives &mdash; fix wording</td></tr>
+  <tr><td>Courses</td><td>–</td><td>Scheduled publish</td><td>–</td><td>course.service.ts:304-350</td><td>y</td><td>–</td><td>real</td><td>yes</td><td><span class="tag n">NOT_CONFIGURED</span></td><td><span class="p2">P2</span></td><td>Same Inngest-driver gap as pages</td></tr>
+  <tr><td>Courses</td><td>–</td><td>Public propagation</td><td>–</td><td>api/public/courses</td><td>–</td><td>public</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Media</td><td>/media</td><td>Upload&rarr;Supabase, folders, search, copy, delete (soft+usage guard)</td><td>media/page.tsx:70-443</td><td>api/v1/media/**</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Media</td><td>/media</td><td>Folder create</td><td>no UI</td><td>media/folders POST</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag b">BROKEN (API-only)</span></td><td><span class="p1">P1</span></td><td>Add "New Folder"</td></tr>
+  <tr><td>Media</td><td>/media</td><td>Rename/move asset</td><td>no UI</td><td>media/[id] PATCH</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag b">BROKEN (API-only)</span></td><td><span class="p1">P1</span></td><td>Asset dialog has only copy/delete/open</td></tr>
+  <tr><td>Media</td><td>/media</td><td>Replace file</td><td>no UI</td><td>media/[id]/replace</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag b">BROKEN (API-only)</span></td><td><span class="p1">P1</span></td><td>Add replace UI</td></tr>
+  <tr><td>Media</td><td>/media</td><td>Bulk delete / multi-select</td><td>missing</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td><span class="tag b">BROKEN</span></td><td><span class="p2">P2</span></td><td>Add</td></tr>
+  <tr><td>Media</td><td>/media</td><td>Folder asset-count badge</td><td>:267-271</td><td>media.repository.ts:41-51</td><td>–</td><td>–</td><td>real</td><td>–</td><td><span class="tag b">BROKEN</span></td><td><span class="p3">P3</span></td><td>FOLDER_SELECT lacks assetCount &rarr; badge never renders</td></tr>
+</table>
+
+<h3>14. Resources / Blog / Jobs / Testimonials (Phase 5 &mdash; live-verified)</h3>
+<table>
+  <tr><th>MODULE</th><th>ROUTE</th><th>CAPABILITY</th><th>UI</th><th>API</th><th>VALIDATION</th><th>RBAC</th><th>DB</th><th>REAL DATA</th><th>STATUS</th><th>PRIORITY</th><th>REQUIRED FIX</th></tr>
+  <tr><td>Resources</td><td>/resources</td><td>Full CRUD + publish/unpublish/archive + gating + download count</td><td>components/cms/resource-manager.tsx</td><td>api/v1/resources/**</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Resources</td><td>/resources</td><td>Public + HMAC gated download (20/min/IP)</td><td>–</td><td>api/public/resources, resource-download</td><td>y</td><td>token</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Blog</td><td>/blog</td><td>Resources manager type=DOCUMENT</td><td>blog/page.tsx</td><td>api/public/blogs</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>Not in sidebar (by design)</td></tr>
+  <tr><td>Jobs</td><td>/jobs, /jobs/[id]</td><td>CRUD + publish transitions</td><td>jobs/page.tsx, jobs/[id]/page.tsx</td><td>api/v1/jobs/**</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Job apps</td><td>/jobs/[id]</td><td>Submit/list/detail</td><td>jobs/[id]/page.tsx</td><td>api/v1/job-applications/**</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Job apps</td><td>/jobs/[id]</td><td>Status change</td><td>:104 offers OFFERED, HIRED</td><td>job-applications/[id]/status</td><td>zod/DB enum lack OFFERED/HIRED (only SELECTED)</td><td>y</td><td>real</td><td>yes</td><td><span class="tag b">BROKEN</span></td><td><span class="p0">P0</span></td><td>UI offers statuses the enum rejects &rarr; 400. Remove OFFERED/HIRED from UI or add to enum+transition map + badge styles</td></tr>
+  <tr><td>Testimonials</td><td>/testimonials</td><td>CRUD + review + featured + avatar + pending badge</td><td>testimonials/page.tsx</td><td>api/v1/testimonials/**</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>P3: no order field UI; no unpublish&rarr;PENDING path</td></tr>
+</table>
+
+<h3>15. Users / Roles / Permissions / Auth</h3>
+<table>
+  <tr><th>MODULE</th><th>ROUTE</th><th>CAPABILITY</th><th>UI</th><th>API</th><th>VALIDATION</th><th>RBAC</th><th>DB</th><th>REAL DATA</th><th>STATUS</th><th>PRIORITY</th><th>REQUIRED FIX</th></tr>
+  <tr><td>Users</td><td>/users</td><td>List/search/create/update/deactivate</td><td>users/page.tsx</td><td>api/v1/users/**</td><td>y</td><td>guard + SUPER_ADMIN role-change guard</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Users</td><td>/users</td><td>Invite</td><td>invite dialog</td><td>users/route.ts action=invite &rarr; user.service.ts:22-51</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag p">PARTIAL</span></td><td><span class="p1">P1</span></td><td>Email never sent (Inngest off + no RESEND_API_KEY); user created isActive:false with unused token; UI toasts success &mdash; surface "email not sent"</td></tr>
+  <tr><td>Users</td><td>api/v1/users/invite/accept</td><td>Accept invite</td><td>no UI</td><td>route exists</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag p">PARTIAL</span></td><td><span class="p1">P1</span></td><td>No accept-invite page for staff</td></tr>
+  <tr><td>Roles</td><td>/users</td><td>Role enum + labels</td><td>users/page.tsx:20-42 hardcoded</td><td>Prisma UserRole</td><td>–</td><td>–</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td><span class="p3">P3</span></td><td>Hardcoded in 2 places; sync risk</td></tr>
+  <tr><td>Permissions</td><td>–</td><td>Per-org permission overrides</td><td>–</td><td>–</td><td>–</td><td>static matrix only</td><td>Permission table UNUSED</td><td>no</td><td><span class="tag p">PARTIAL</span></td><td><span class="p2">P2</span></td><td>Matrix comment claims DB overrides &mdash; aspirational; no API/UI to manage Permission rows</td></tr>
+  <tr><td>Auth</td><td>/login</td><td>Credentials+orgSlug login, argon2, session revocation</td><td>(auth)/login/page.tsx</td><td>lib/auth/config.ts:57-112</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+</table>
+
+<h3>16. Settings / Organization / Campuses / Profile / Password</h3>
+<table>
+  <tr><th>MODULE</th><th>ROUTE</th><th>CAPABILITY</th><th>UI</th><th>API</th><th>VALIDATION</th><th>RBAC</th><th>DB</th><th>REAL DATA</th><th>STATUS</th><th>PRIORITY</th><th>REQUIRED FIX</th></tr>
+  <tr><td>Settings</td><td>/settings</td><td>Read org settings</td><td>settings/page.tsx:30-33</td><td>api/v1/organizations GET</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Settings</td><td>/settings</td><td>Toggles + webhook URLs</td><td>:58-101 + "Saved" toast :39</td><td>organizations PATCH &rarr; org.service.ts:28-56</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag b">BROKEN (fake-success)</span></td><td><span class="p0">P0</span></td><td>Values persist into org.settings JSON but NOTHING consumes them: maintenanceMode, applicationIntake, forceDebugLogs, razorpayWebhook, vapiWebhook, whatsappWebhook; no /api/webhooks/* routes; public intake never checks applicationIntake. Ops believes controls are enforced when they aren't</td></tr>
+  <tr><td>Settings</td><td>/settings</td><td>Env/secrets display</td><td>:164-180</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td><span class="tag w">WORKING</span></td><td>–</td><td>Display-only by design</td></tr>
+  <tr><td>Org</td><td>api/v1/organizations/**</td><td>Tenant scope + SUPER_ADMIN listAll</td><td>–</td><td>organizations/route.ts:14-20</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Campuses</td><td>api/v1/organizations/campuses/**</td><td>CRUD + code-unique + headCounselor org check + delete guard</td><td>–</td><td>org.service.ts CampusService</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>No dedicated UI beyond settings?</td></tr>
+  <tr><td>Profile</td><td>topbar</td><td>"Profile Settings" menu item</td><td>topbar.tsx:78-81</td><td>users/[id] PATCH self-exempt exists</td><td>y</td><td>y</td><td>real</td><td>–</td><td><span class="tag b">BROKEN (no-op)</span></td><td><span class="p1">P1</span></td><td>No handler/navigation &mdash; wire to an edit dialog</td></tr>
+  <tr><td>Password</td><td>–</td><td>Change password</td><td>no UI</td><td>no route (changePasswordSchema at user.schema.ts:31 zero callers)</td><td>y (dead)</td><td>–</td><td>–</td><td>–</td><td><span class="tag d">DEAD</span></td><td><span class="p1">P1</span></td><td>Implement change-password route + UI (self-service)</td></tr>
+</table>
+
+<h3>17. Audit / Activity / Notifications</h3>
+<table>
+  <tr><th>MODULE</th><th>ROUTE</th><th>CAPABILITY</th><th>UI</th><th>API</th><th>VALIDATION</th><th>RBAC</th><th>DB</th><th>REAL DATA</th><th>STATUS</th><th>PRIORITY</th><th>REQUIRED FIX</th></tr>
+  <tr><td>Audit</td><td>/audit</td><td>Immutable hash-chain writes + list/filter/search + CSV export</td><td>audit/page.tsx:33-71</td><td>api/v1/audit/route.ts; audit.service.ts</td><td>y</td><td>guard("read","audit")</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Audit</td><td>–</td><td>Coverage</td><td>–</td><td>written across user/org/campus/lead/media/admission/job/payment/auth services</td><td>–</td><td>–</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>LMS mutations largely unlogged</td></tr>
+  <tr><td>Activity</td><td>–</td><td>Feed writes</td><td>–</td><td>activity.service.ts</td><td>–</td><td>–</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Activity</td><td>–</td><td>Feed read/UI</td><td>no dedicated page/API</td><td>–</td><td>–</td><td>–</td><td>real</td><td>–</td><td><span class="tag p">PARTIAL</span></td><td><span class="p2">P2</span></td><td>No admin surface for activity feed (visible only via CRM detail contexts)</td></tr>
+  <tr><td>Notify</td><td>/crm/outreach</td><td>Template CRUD + dispatch engine + logs</td><td>crm/outreach/page.tsx</td><td>api/v1/crm/outreach/route.ts, notification.service.ts</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>Logs only written when Inngest processes (inactive now)</td></tr>
+  <tr><td>Notify</td><td>–</td><td>Email (Resend)</td><td>–</td><td>notification.service.ts:105-151 real fetch</td><td>–</td><td>–</td><td>real</td><td>–</td><td><span class="tag n">NOT_CONFIGURED</span></td><td><span class="p3">P3</span></td><td>No RESEND_API_KEY &rarr; all email dead</td></tr>
+  <tr><td>Notify</td><td>–</td><td>SMS (Twilio) / WhatsApp (WATI)</td><td>–</td><td>notification.service.ts:98-103</td><td>–</td><td>–</td><td>–</td><td>–</td><td><span class="tag n">NOT_CONFIGURED</span></td><td><span class="p3">P3</span></td><td>Honest NOT_CONFIGURED; no impl. env.ts marks Twilio "reserved"</td></tr>
+  <tr><td>Notify</td><td>–</td><td>In-app inbox</td><td>topbar Bell icon no onClick (topbar.tsx:54-57, fake pulsing dot)</td><td>no inbox API/route</td><td>–</td><td>–</td><td>–</td><td>–</td><td><span class="tag b">BROKEN (no-op)</span></td><td><span class="p1">P1</span></td><td>Add inbox page + IN_APP delivery + wire Bell handler</td></tr>
+  <tr><td>Notify</td><td>/notifications</td><td>Orphan page</td><td>notifications/page.tsx:13-24 "Not Connected"</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td><span class="tag ph">PLACEHOLDER</span></td><td><span class="p2">P2</span></td><td>Not in sidebar; duplicates real Outreach module &mdash; repurpose or remove</td></tr>
+</table>
+
+<h3>18. Workflows / Feature Flags</h3>
+<table>
+  <tr><th>MODULE</th><th>ROUTE</th><th>CAPABILITY</th><th>UI</th><th>API</th><th>VALIDATION</th><th>RBAC</th><th>DB</th><th>REAL DATA</th><th>STATUS</th><th>PRIORITY</th><th>REQUIRED FIX</th></tr>
+  <tr><td>Workflows</td><td>–</td><td>Engine</td><td>–</td><td>–</td><td>–</td><td>–</td><td>Workflow/WorkflowRun tables exist (schema:642,662) &mdash; ZERO src references</td><td>no</td><td><span class="tag d">DEAD</span></td><td><span class="p2">P2</span></td><td>No routes/services/UI; admission stages are static enum, not WorkflowRun-driven. Implement or drop tables</td></tr>
+  <tr><td>Feature Flags</td><td>–</td><td>Manager</td><td>–</td><td>–</td><td>–</td><td>–</td><td>FeatureFlag table (schema:1268) unused; flags live as org featureFlags JSON</td><td>no</td><td><span class="tag d">DEAD</span></td><td><span class="p2">P2</span></td><td>No admin UI/API to manage flags; isLmsEnabled reads JSON but is never used</td></tr>
+</table>
+
+<h3>19. Public Forms / Lead Intake</h3>
+<table>
+  <tr><th>MODULE</th><th>ROUTE</th><th>CAPABILITY</th><th>UI</th><th>API</th><th>VALIDATION</th><th>RBAC</th><th>DB</th><th>REAL DATA</th><th>STATUS</th><th>PRIORITY</th><th>REQUIRED FIX</th></tr>
+  <tr><td>Intake</td><td>api/public/leads</td><td>x-intake-key + 5/min/IP rate-limit + zod + org routing + dedup 409 + leadActivity + UTM + gate token</td><td>(public site)</td><td>api/public/leads/route.ts:17-175</td><td>y</td><td>key + rate</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+  <tr><td>Intake</td><td>–</td><td>applicationIntake toggle enforcement</td><td>–</td><td>api/public/leads/route.ts</td><td>–</td><td>–</td><td>real</td><td>–</td><td><span class="tag b">BROKEN</span></td><td><span class="p0">P0</span></td><td>Toggle never checked &mdash; wire org.settings.applicationIntake into intake gate (see &sect;16)</td></tr>
+  <tr><td>FallbackLead</td><td>–</td><td>Dead-letter queue</td><td>–</td><td>–</td><td>–</td><td>–</td><td>table exists (schema:2078) + migration &mdash; ZERO src usage</td><td>no</td><td><span class="tag d">DEAD</span></td><td><span class="p3">P3</span></td><td>No queue-fallback path ever writes to it</td></tr>
+</table>
+
+<h3>20. Integrations / External Providers</h3>
+<table>
+  <tr><th>MODULE</th><th>ROUTE</th><th>CAPABILITY</th><th>UI</th><th>API</th><th>VALIDATION</th><th>RBAC</th><th>DB</th><th>REAL DATA</th><th>STATUS</th><th>PRIORITY</th><th>REQUIRED FIX</th></tr>
+  <tr><td>Integrations</td><td>/crm/integrations</td><td>Status readout (env-derived, honest)</td><td>crm/integrations/page.tsx</td><td>api/v1/crm/integrations/route.ts:10-103</td><td>–</td><td>y</td><td>env</td><td>–</td><td><span class="tag w">WORKING</span></td><td><span class="p3">P3</span></td><td>Media status computed from R2 env while media uses Supabase &mdash; can misreport health</td></tr>
+  <tr><td>Facebook</td><td>facebook/callback</td><td>OAuth</td><td>page.tsx = plain redirect to /crm/integrations</td><td>no token exchange</td><td>–</td><td>–</td><td>–</td><td>–</td><td><span class="tag d">DEAD</span></td><td><span class="p3">P3</span></td><td>No Meta OAuth, no leads pull; flag-only status</td></tr>
+  <tr><td>Google Ads</td><td>–</td><td>Ingestion</td><td>–</td><td>flag-only</td><td>–</td><td>–</td><td>–</td><td>–</td><td><span class="tag n">NOT_CONFIGURED</span></td><td><span class="p3">P3</span></td><td>Public env flag only</td></tr>
+  <tr><td>Supabase</td><td>–</td><td>Storage</td><td>media upload</td><td>storage/supabase.ts real</td><td>–</td><td>–</td><td>real</td><td>yes</td><td><span class="tag n">CONFIGURED</span></td><td>–</td><td>Only live external provider (creds in .env)</td></tr>
+  <tr><td>Inngest</td><td>api/inngest</td><td>~30 functions served; emitEvent no-op when INNGEST_EVENT_KEY=local</td><td>–</td><td>events/inngest.ts:4-19, events/functions/**</td><td>–</td><td>–</td><td>–</td><td>–</td><td><span class="tag n">NOT_CONFIGURED</span></td><td><span class="p1">P1</span></td><td>All events silently dropped in current env (invite email, lead events, payment receipts, scheduled publish). Set real key + signing key + dev server</td></tr>
+  <tr><td>Gemini</td><td>/portal/assistant</td><td>AI tutor</td><td>–</td><td>assistant/route.ts</td><td>y</td><td>y</td><td>–</td><td>–</td><td><span class="tag n">NOT_CONFIGURED</span></td><td><span class="p3">P3</span></td><td>Stub without key (graceful)</td></tr>
+</table>
+
+<h3>21. Other Pages</h3>
+<table>
+  <tr><th>MODULE</th><th>ROUTE</th><th>CAPABILITY</th><th>UI</th><th>API</th><th>VALIDATION</th><th>RBAC</th><th>DB</th><th>REAL DATA</th><th>STATUS</th><th>PRIORITY</th><th>REQUIRED FIX</th></tr>
+  <tr><td>Vapi</td><td>/vapi</td><td>Voice AI logs</td><td>vapi/page.tsx:13-24 "Not Connected"</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td><span class="tag ph">PLACEHOLDER</span></td><td><span class="p3">P3</span></td><td>Orphan (not in sidebar); settings vapiWebhook unused</td></tr>
+  <tr><td>Errors</td><td>/errors</td><td>Error monitoring</td><td>errors/page.tsx:13-24 "Not Connected"</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td><span class="tag ph">PLACEHOLDER</span></td><td><span class="p3">P3</span></td><td>Orphan; no Sentry/Datadog wiring</td></tr>
+  <tr><td>Blog</td><td>/blog</td><td>Resources DOCUMENT</td><td>blog/page.tsx</td><td>api/v1/resources + api/public/blogs</td><td>y</td><td>y</td><td>real</td><td>yes</td><td><span class="tag w">WORKING</span></td><td>–</td><td>–</td></tr>
+</table>
+
+<!-- ============ 10 SECTIONS ============ -->
+<h2 class="pagebreak">1. Core Modules Already 100% Functional (A)</h2>
+<ol>
+  <li><b>Authentication</b> &mdash; credentials+orgSlug, argon2, session revocation, middleware RBAC</li>
+  <li><b>Dashboard</b> &mdash; real KPI stats + recent leads</li>
+  <li><b>Lead management</b> &mdash; full lifecycle (list/create/detail/timeline/assign/convert/follow-up/scoring/dedup)</li>
+  <li><b>CRM analytics / reports</b> &mdash; real Prisma aggregation, counselor ABAC</li>
+  <li><b>CRM meetings</b></li>
+  <li><b>CRM outreach templates + logs</b> (once Inngest active)</li>
+  <li><b>Admissions</b> &mdash; kanban, stage machine, auto-Student/lead sync, fee-plan binding, payments</li>
+  <li><b>Students</b> &mdash; CRUD + soft-delete + uniqueness + linked admissions</li>
+  <li><b>Fee plans + payment recording</b> &mdash; receipts, balance recalc</li>
+  <li><b>Documents</b> &mdash; R2 presign upload + approve/reject review</li>
+  <li><b>Placements, Hiring Partners, Jobs</b> &mdash; CRUD, publish, public sync, job applications submit/list/detail</li>
+  <li><b>Testimonials, Resources/Blog, Jobs, Course manager (list/create/archive), Media upload/folders/delete</b> &mdash; Phase 5 live-verified</li>
+  <li><b>Public APIs</b> &mdash; pages, resources, blogs, courses, jobs, testimonials, placements, settings, leads (rate-limited+keyed), resource-download (HMAC+rate-limited), certificate verification</li>
+  <li><b>LMS admin builder</b> &mdash; course tree, stages/modules/chapters/topics/contents, questions+bulk, import, announcements, batches+members sync, timetable, attendance marking, enrollments, portal provisioning</li>
+  <li><b>Student portal</b> &mdash; dashboard, course player, progress, bookmarks, quizzes (no answer leak, real grading), attendance breakdown, timetable, announcements, certificates list</li>
+  <li><b>Faculty dashboard</b></li>
+  <li><b>Audit logs</b> &mdash; hash-chained, append-only, filterable + CSV export</li>
+  <li><b>RBAC + org isolation</b> &mdash; guard() + guardRecord() ABAC + orgId-scoped repos everywhere</li>
+  <li><b>Public lead intake</b> &mdash; keyed, rate-limited, deduped, UTM-aware</li>
+</ol>
+
+<h2>2. Core Modules Partially Functional</h2>
+<table class="narrow">
+  <tr><th>Module</th><th>Missing</th></tr>
+  <tr><td>Courses (CMS)</td><td>Edit is SEO-only; no curriculum editor; no versions UI; create status stripped; banner/gallery picker missing</td></tr>
+  <tr><td>Page editor</td><td>All server-side (sections/blocks/reorder/versions/rollback) &mdash; zero UI</td></tr>
+  <tr><td>Media library</td><td>No folder-create/rename/move/replace/bulk UI; asset-count badge dead</td></tr>
+  <tr><td>Nav menus</td><td>API+validation+RBAC complete &mdash; zero UI, no public propagation</td></tr>
+  <tr><td>ContentBlock types</td><td>Registry API only, no types seeded, no UI</td></tr>
+  <tr><td>Users invite</td><td>User created but email never sent; no accept-invite UI</td></tr>
+  <tr><td>Profile/account</td><td>Read-only portal profile; admin "Profile Settings" no-op; no password change</td></tr>
+  <tr><td>Notifications</td><td>Real template/log engine but email/SMS/WhatsApp unconfigured; no in-app inbox (Bell fake)</td></tr>
+  <tr><td>Assignments (LMS)</td><td>Fully implemented API &mdash; zero UI; faculty link mislabeled</td></tr>
+  <tr><td>Scheduled publish (pages+courses)</td><td>Logic exists, never runs (Inngest disabled)</td></tr>
+  <tr><td>Module unlock (LMS)</td><td>In-module sequential gating works; cross-stage + unlockRules unevaluated</td></tr>
+</table>
+
+<h2>3. Broken Core Features (E)</h2>
+<table class="narrow">
+  <tr><th>#</th><th>Broken item</th><th>Why</th><th>Severity</th></tr>
+  <tr><td>1</td><td>Courses "Go Live"</td><td>UI sends PATCH to a POST-only route &rarr; 405, silent failure</td><td>P0</td></tr>
+  <tr><td>2</td><td>Job application status</td><td>UI offers OFFERED/HIRED; zod + DB enum only allow SELECTED &rarr; 400</td><td>P0</td></tr>
+  <tr><td>3</td><td>Settings toggles (intake/maintenance/webhooks)</td><td>Persisted but never consumed anywhere; no webhook routes</td><td>P0</td></tr>
+  <tr><td>4</td><td>Student self-assessment</td><td>STUDENT can POST score+status=PASS via me/assessments &rarr; self-grade unlock vector</td><td>P0</td></tr>
+  <tr><td>5</td><td>Certificate print page</td><td>Direct prisma, no ownership/org check</td><td>P0</td></tr>
+  <tr><td>6</td><td>Certificate issue</td><td>certNo generated client-side &rarr; P2002 collision &rarr; unhandled 500</td><td>P0</td></tr>
+  <tr><td>7</td><td>Missing delete/revoke routes</td><td>Course, assignment, attendance session/record, certificate revoke, unenroll &mdash; all absent</td><td>P1</td></tr>
+  <tr><td>8</td><td>Assignment UI</td><td>API-complete, faculty cannot view/grade</td><td>P1</td></tr>
+  <tr><td>9</td><td>Dashboard-student API</td><td>No UI consumer</td><td>P3</td></tr>
+  <tr><td>10</td><td>Minor issues</td><td>document rejection &rarr;500; student event wrong name; faculty students duplicate rows; media asset-count badge; timetable update recheck</td><td>P2</td></tr>
+</table>
+
+<h2>4. Placeholder / Fake Features</h2>
+<ul>
+  <li>/cms "Preview" button &rarr; toast-only toggle, no preview output</li>
+  <li>/notifications, /vapi, /errors &mdash; static "Not Connected" orphan pages (not in sidebar)</li>
+  <li>Topbar Bell icon &mdash; animated pulsing dot, no onClick, no inbox (implies unread that doesn't exist)</li>
+  <li>Topbar "Profile Settings" / "System Configurations" &mdash; menu items with no handler</li>
+  <li>User invite &mdash; success toast while email silently drops</li>
+  <li>Settings &mdash; "Settings Saved" toast for controls that do nothing</li>
+  <li>AI tutor assistant &mdash; stub answer without GEMINI_API_KEY (declared, honest)</li>
+  <li>Integrations "media: connected" &mdash; computed from R2 env while actual path uses Supabase</li>
+</ul>
+
+<h2>5. External Integrations to Connect at End (B)</h2>
+<p>Resend (email) &rarr; Twilio (SMS) &rarr; WATI (WhatsApp) &rarr; Facebook (OAuth + leads pull) &rarr; Google Ads &rarr; Razorpay (online payments + webhook) &rarr; Inngest (activate event key &mdash; highest leverage: unlocks invite email, lead events, receipts, scheduled publish, outreach dispatch) &rarr; Gemini (AI tutor).</p>
+<p>All have honest abstractions (notification.service.ts dispatch, crm/integrations status, events/inngest.ts gate, env.ts reserved keys). No fake success except the invite/settings toasts noted above.</p>
+
+<h2>6. Intentionally Deferred Features (C)</h2>
+<ul>
+  <li>Deals module (needs new Opportunity model + migration) &mdash; current /crm/deals is admission-funnel derived, honest not_implemented</li>
+  <li>Voice AI (Vapi) call logs</li>
+  <li>Error monitoring (Sentry/Datadog)</li>
+  <li>LMS chat rooms (LmsChatRoom/LmsMessage) &mdash; tables exist, permission defined</li>
+  <li>Public online payment (Razorpay checkout)</li>
+  <li>Per-org Permission-table overrides (static matrix is authoritative)</li>
+</ul>
+
+<h2>7. Dead / Unused Code (D)</h2>
+<ul>
+  <li>Workflow / WorkflowRun models &mdash; zero src references</li>
+  <li>FeatureFlag table &mdash; zero references (superseded by org.featureFlags JSON, itself only read by an unused gate)</li>
+  <li>FallbackLead table &mdash; zero references</li>
+  <li>LmsNotification + lms_notifications permission &mdash; zero service/UI</li>
+  <li>LmsChatRoom/LmsMessage + lms_chat permission &mdash; no service/UI (deferred)</li>
+  <li>isLmsEnabled (src/lib/lms/feature-flag.ts) &mdash; never imported</li>
+  <li>assignCourseTeacherSchema &mdash; no route/UI</li>
+  <li>LmsTimetableSlot.recurrenceRule &mdash; never written</li>
+  <li>LmsCertificateStatus.REVOKED &mdash; no revoke path</li>
+  <li>Nav API + ContentBlock API &mdash; fully built, zero UI</li>
+  <li>api/v1/lms/dashboard/[studentId] &mdash; no UI consumer</li>
+  <li>Alias redirect pages /crm/leads, /crm/pipeline, /crm/dashboard (intentional)</li>
+  <li>Facebook OAuth callback page &mdash; plain redirect, no exchange</li>
+  <li>/vapi, /errors, /notifications pages &mdash; orphan placeholders</li>
+  <li>No service/repository is dead &mdash; all 22 services and 17 repositories are imported</li>
+</ul>
+
+<h2 class="pagebreak">8. P0 Fix List (Production Blockers)</h2>
+<ol>
+  <li><b>Courses "Go Live"</b> &mdash; courses/page.tsx:74 change PATCH &rarr; POST (verify with typecheck + live)</li>
+  <li><b>Job application status</b> &mdash; reconcile OFFERED/HIRED with job.schema.ts + DB enum (SELECTED) + status-badge.tsx styles + transition map</li>
+  <li><b>Settings fake-success</b> &mdash; wire applicationIntake/maintenanceMode into the public intake gate + middleware, or remove the controls; add /api/webhooks/* consumers or drop the fields</li>
+  <li><b>Student self-grade vector</b> &mdash; remove STUDENT write,lms_assessments from permissions.ts (or gate me/assessments POST to quiz-derived sync only)</li>
+  <li><b>Certificate print authorization</b> &mdash; add ownership/org check to /portal/certificates/[certNo]/print</li>
+  <li><b>Certificate certNo generation</b> &mdash; move server-side with collision retry/catch (unhandled P2002 &rarr; 500)</li>
+</ol>
+
+<h2>9. P1 Fix List (Core Functionality Incomplete)</h2>
+<ol>
+  <li><b>Page editor UI</b> (sections/blocks/reorder/versions/rollback) + ContentBlock type seeding + real preview &mdash; server-side already complete</li>
+  <li><b>Nav management UI</b> + nav public propagation</li>
+  <li><b>Course manager completion</b> &mdash; curriculum editor, full edit dialog, versions UI, fix create-status strip, media picker</li>
+  <li><b>Media completion</b> &mdash; folder create/rename/move/replace/bulk UI</li>
+  <li><b>Notifications inbox</b> &mdash; Bell wiring, IN_APP delivery, inbox page; activate Inngest + Resend (or honest "not sent" surface on invite)</li>
+  <li><b>Profile + password change</b> &mdash; wire "Profile Settings", build change-password route+UI, portal profile edit</li>
+  <li><b>LMS assignments UI</b> &mdash; faculty list/submit/grade/submissions + fix mislabeled nav link</li>
+  <li><b>LMS lifecycle routes</b> &mdash; attendance session/record edit+delete, certificate revoke/delete, course delete, unenroll</li>
+  <li><b>Faculty students grouping</b>; build-or-remove dashboard-student UI</li>
+  <li><b>Invite accept UI</b>; surface "email not sent" warnings</li>
+  <li>Minor: document rejection error type; student event name; scheduled-publish scheduler activation</li>
+</ol>
+
+<h2>10. Recommended Implementation Order</h2>
+<h3>Sprint A &mdash; P0 correctness (do not ship without)</h3>
+<ol>
+  <li>Courses "Go Live" method fix</li>
+  <li>Job application status enum reconciliation</li>
+  <li>Settings controls: wire intake/maintenance or remove; webhook honesty</li>
+  <li>Student self-grade fix (permissions)</li>
+  <li>Certificate print authorization + server-side certNo</li>
+</ol>
+<h3>Sprint B &mdash; P1 high-value UI completion (server-side already exists)</h3>
+<ol>
+  <li>Page editor (sections/blocks/reorder/versions/rollback/preview) + ContentBlock seeding</li>
+  <li>Nav management UI + public nav</li>
+  <li>Course manager curriculum editor + full edit + versions</li>
+  <li>Media folder/replace/rename/move/bulk</li>
+  <li>LMS assignments UI + lifecycle routes (attendance edit/delete, cert revoke/delete, unenroll, course delete)</li>
+  <li>Notification inbox + Bell + activate Inngest (unlocks invite email, outreach dispatch, scheduled publish, receipts)</li>
+</ol>
+<h3>Sprint C &mdash; P2 hardening</h3>
+<ol>
+  <li>Document error type, student event name, faculty grouping, unlock-rules evaluation, content-url UX, integrations status accuracy, activity-feed admin surface, honesty fixes (toasts/wording)</li>
+</ol>
+<h3>Sprint D &mdash; P3 + external</h3>
+<ol>
+  <li>Deferred/dead cleanup (Workflow/FeatureFlag/FallbackLead/LmsNotification/chat &mdash; keep or drop), alias/placeholder pages</li>
+  <li>External providers (Resend &rarr; Twilio &rarr; WATI &rarr; Facebook &rarr; Google Ads &rarr; Razorpay &rarr; Gemini)</li>
+</ol>
+<p><b>Explicitly out of scope per rules:</b> auth changes, Elementor/Page Builder, Supabase storage re-architecture, CRM/CMS architecture changes, schema changes without verified necessity, dependency upgrades.</p>
+
+</body>
+</html>

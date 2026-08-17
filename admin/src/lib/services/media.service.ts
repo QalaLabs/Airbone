@@ -14,7 +14,7 @@ import {
   deleteObject,
   createSignedUploadUrl,
   getPublicUrl,
-} from "@/lib/storage/supabase";
+} from "@/lib/storage/gcs";
 import {
   MAX_MEDIA_FILE_SIZE,
   isAllowedMediaType,
