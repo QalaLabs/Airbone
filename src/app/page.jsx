@@ -745,10 +745,14 @@ function FinalCTA() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...values, course: 'DGCA CPL Ground School', source: 'Homepage Final CTA', utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page })
       })
-      if (!res.ok) throw new Error('Lead submit failed')
+      if (!res.ok && res.status !== 409) {
+        // 409 = this phone already has an enquiry on file — not a failure.
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Lead submit failed')
+      }
       setSubmitted(true)
-    } catch {
-      setSubmitError('Something went wrong. Please try again or call +91 99537 77320.')
+    } catch (err) {
+      setSubmitError(err.message && err.message !== 'Lead submit failed' ? err.message : 'Something went wrong. Please try again or call +91 99537 77320.')
     } finally {
       setLoading(false)
     }
@@ -917,7 +921,8 @@ function BookingModal({ open, onClose }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...values, course: 'DGCA CPL Ground School', source: 'Homepage Modal', utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page })
       })
-      if (!res.ok) throw new Error('Lead submit failed')
+      if (!res.ok && res.status !== 409) throw new Error('Lead submit failed')
+      // 409 = this phone already has an enquiry on file — not a failure.
       setStatus('success')
     } catch {
       setStatus('error')

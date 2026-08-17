@@ -50,11 +50,14 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...values, source, utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page })
       })
-      if (res.ok) {
+      if (res.ok || res.status === 409) {
+        // 409 = this phone already has an enquiry on file — not a failure for
+        // the visitor, the admin API already has their details.
         setStatus('success')
       } else {
+        const data = await res.json().catch(() => ({}))
         setStatus('error')
-        triggerToast("We couldn't submit your enquiry", 'Please try again in a few moments or contact us directly via WhatsApp or phone.')
+        triggerToast("We couldn't submit your enquiry", data.error || 'Please try again in a few moments or contact us directly via WhatsApp or phone.')
       }
     } catch {
       setStatus('error')

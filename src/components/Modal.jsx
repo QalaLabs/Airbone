@@ -80,9 +80,16 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
           utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page,
         }),
       })
-      if (!res.ok) throw new Error('Lead submit failed')
-    } catch {
-      setSubmitError('We could not submit your details right now. Please try again or call +91 9953 777 320.')
+      if (!res.ok && res.status !== 409) {
+        // 409 = this phone already has an enquiry on file — treat as success,
+        // the admin API already has their details.
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Lead submit failed')
+      }
+    } catch (err) {
+      setSubmitError(err.message === 'Lead submit failed' || !err.message
+        ? 'We could not submit your details right now. Please try again or call +91 9953 777 320.'
+        : err.message)
       submitLock.current = false
       return
     }

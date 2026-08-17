@@ -220,11 +220,14 @@ export default function MultiStepLeadForm({ courseName = '', source = 'Multi-Ste
           pathname: window.location.pathname || undefined,
         }),
       })
-      if (res.ok) {
+      if (res.ok || res.status === 409) {
+        // 409 = this phone already has an enquiry on file — not a failure for
+        // the visitor, the admin API already has their details.
         setStatus('success')
       } else {
+        const data = await res.json().catch(() => ({}))
         setStatus('error')
-        triggerToast("We couldn't submit your enquiry", 'Please try again in a few moments or contact us directly via WhatsApp or phone.')
+        triggerToast("We couldn't submit your enquiry", data.error || 'Please try again in a few moments or contact us directly via WhatsApp or phone.')
       }
     } catch {
       setStatus('error')

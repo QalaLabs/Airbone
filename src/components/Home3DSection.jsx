@@ -474,11 +474,15 @@ function Modal({ open, type, onClose }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...values, source: 'Homepage Modal', course: values.course || 'DGCA CPL Ground School', utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page })
       })
-      if (!res.ok) throw new Error('Lead submit failed')
+      if (!res.ok && res.status !== 409) {
+        // 409 = this phone already has an enquiry on file — not a failure.
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Lead submit failed')
+      }
       triggerToast('Registration Success', 'Your details have been registered. An admissions advisor will contact you within 24 hours.')
       onClose()
-    } catch {
-      triggerToast('Submission Failed', 'Something went wrong. Please try again or call +91 9953 777 320.')
+    } catch (err) {
+      triggerToast('Submission Failed', err.message && err.message !== 'Lead submit failed' ? err.message : 'Something went wrong. Please try again or call +91 9953 777 320.')
       // Keep form open — never toast success on failure
     } finally {
       setSubmitting(false)
