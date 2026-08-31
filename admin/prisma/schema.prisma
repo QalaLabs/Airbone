@@ -38,6 +38,30 @@ enum LeadStatus {
   APPLICATION_SUBMITTED
   CONVERTED
   LOST
+  // ── Phase 2 workflow (additive) ───────────────────────────────────────
+  // Level-2 "Connected" sub-statuses
+  CONNECTED
+  CALL_BACK
+  PROSPECT
+  WON
+  // Level-2 "Not Connected" sub-statuses
+  NOT_CONNECTED
+  RINGING
+  NOT_REACHABLE
+  SWITCHED_OFF
+  VOICEMAIL
+  // Refined "Lost" reason sub-statuses
+  INCOMING_BARD
+  OUT_OF_SERVICE
+  NOT_AWARE
+  NOT_CONTACTABLE
+  LOCATION_OUT_OF_SCOPE
+  LANGUAGE_BARRIER
+  PRICE_HIGH
+  JOINED_OTHERS
+  NOT_ELIGIBLE
+  INVALID_NUMBER
+  TEST_LEAD
 }
 
 enum LeadSource {
@@ -97,6 +121,20 @@ enum WorkflowTrigger {
   PAYMENT_RECEIVED
   FORM_SUBMITTED
   SCHEDULED
+  // Interconnect OS (additive - mapped from canonical events in src/lib/events/catalog.ts)
+  LEAD_UPDATED
+  APPLICATION_CREATED
+  APPLICATION_APPROVED
+  COURSE_ENROLLED
+  PAYMENT_PENDING
+  PAYMENT_FAILED
+  PAYMENT_REFUNDED
+  WHATSAPP_REPLIED
+  WHATSAPP_OPTED_OUT
+  EBOOK_DOWNLOADED
+  CHATBOT_ESCALATED
+  AI_CALL_COMPLETED
+  CAMPUS_VISIT_BOOKED
 }
 
 enum OrgPlan {
@@ -212,6 +250,8 @@ model Organization {
   lmsTimetableSlots    LmsTimetableSlot[]    @relation("OrgLmsTimetableSlots")
   lmsAssignments       LmsAssignment[]       @relation("OrgLmsAssignments")
   feePlans             FeePlan[]             @relation("OrgFeePlans")
+  whatsappConversations WhatsAppConversation[]
+  whatsappCampaigns    WhatsAppCampaign[]
 
   @@index([slug])
   @@index([isActive])
@@ -308,6 +348,7 @@ model User {
   courseVersions          CourseVersion[]      @relation("CourseVersionCreator")
   createdNavMenus         NavMenu[]            @relation("NavMenuCreator")
   createdResources        Resource[]           @relation("ResourceCreator")
+  whatsappMessagesSent    WhatsAppMessage[]    @relation("WhatsAppMessageSender")
   createdJobs             Job[]                @relation("JobCreator")
   publishedJobs           Job[]                @relation("JobPublisher")
   reviewedApplications    JobApplication[]     @relation("ApplicationReviewer")
@@ -414,6 +455,9 @@ model Lead {
   phone          String     @db.VarChar(20)
   city           String?    @db.VarChar(100)
   state          String?    @db.VarChar(100)
+  pincode        String?    @db.VarChar(10)
+  googleId       String?    @db.VarChar(255)
+  manualAmount   Decimal?   @db.Decimal(12, 2)
   courseInterest String?    @db.VarChar(255)
   source         LeadSource @default(DIRECT)
   status         LeadStatus @default(NEW)
@@ -438,6 +482,9 @@ model Lead {
   isDuplicate Boolean @default(false)
   duplicateOf String? @db.Uuid
 
+  // WhatsApp (Interconnect OS) — contact-level opt-out kill switch
+  whatsappOptOut Boolean @default(false)
+
   // Outcome
   convertedAt DateTime?
   lostReason  String?   @db.Text
@@ -460,6 +507,7 @@ model Lead {
   scoreHistory LeadScoreHistory[]
   admissions   Admission[]   @relation("LeadAdmissions")
   student      Student?      @relation("LeadStudent")
+  whatsappConversations WhatsAppConversation[]
 
   @@index([orgId, status])
   @@index([orgId, assignedTo, createdAt(sort: Desc)])
@@ -643,6 +691,8 @@ model Workflow {
   id                 String          @id @default(uuid()) @db.Uuid
   orgId              String          @db.Uuid
   name               String          @db.VarChar(255)
+  // Stable reference used by START_WORKFLOW steps and the API (unique per org)
+  code               String?         @db.VarChar(100)
   description        String?         @db.Text
   triggerEvent       WorkflowTrigger
   triggerConditions  Json            @default("{}")
@@ -656,29 +706,118 @@ model Workflow {
   runs WorkflowRun[]
 
   @@index([orgId, isActive])
+  @@unique([orgId, code])
   @@map("workflows")
 }
 
 model WorkflowRun {
-  id           String   @id @default(uuid()) @db.Uuid
-  orgId        String   @db.Uuid
-  workflowId   String   @db.Uuid
-  entityType   String   @db.VarChar(100)
-  entityId     String   @db.VarChar(255)
-  triggeredBy  String?  @db.Uuid
-  currentStep  Int      @default(0)
-  status       String   @default("RUNNING") @db.VarChar(30)
-  context      Json     @default("{}")
-  error        String?  @db.Text
-  startedAt    DateTime @default(now())
-  completedAt  DateTime?
+  id            String   @id @default(uuid()) @db.Uuid
+  orgId         String   @db.Uuid
+  workflowId    String   @db.Uuid
+  entityType    String   @db.VarChar(100)
+  entityId      String   @db.VarChar(255)
+  triggeredBy   String?  @db.Uuid
+  currentStep   Int      @default(0)
+  status        String   @default("RUNNING") @db.VarChar(30)
+  context       Json     @default("{}")
+  error         String?  @db.Text
+  // Idempotency: eventName:entityId:requestId — NULL for manual runs.
+  // Unique per (org, workflow, entity); Postgres allows many NULLs so manual
+  // runs are never blocked by the dedup index.
+  dedupKey      String?  @db.VarChar(255)
+  stoppedReason String?  @db.Text
+  startedAt     DateTime @default(now())
+  completedAt   DateTime?
 
   workflow  Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   triggerer User?    @relation(fields: [triggeredBy], references: [id], onDelete: SetNull)
 
   @@index([workflowId])
   @@index([entityType, entityId])
+  @@unique([orgId, workflowId, entityType, entityId, dedupKey])
+  @@index([orgId, status])
   @@map("workflow_runs")
+}
+
+// ─── WHATSAPP (Interconnect OS) ──────────────────────────────────────────────
+// Conversation-level store. Rows are written by the messaging providers
+// (mock in dev, Interakt in prod) and by manual inbox sends / campaigns.
+// Templated notification bookkeeping stays in NotificationLog.
+
+enum WhatsAppMessageDirection {
+  IN
+  OUT
+}
+
+model WhatsAppConversation {
+  id                 String    @id @default(uuid()) @db.Uuid
+  orgId              String    @db.Uuid
+  phone              String    @db.VarChar(20)
+  leadId             String?   @db.Uuid
+  lastMessageAt      DateTime?
+  lastMessagePreview String?   @db.VarChar(255)
+  unreadCount        Int       @default(0)
+  optedOut           Boolean   @default(false)
+  archived           Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  org      Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  lead     Lead?        @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  messages WhatsAppMessage[]
+
+  @@unique([orgId, phone])
+  @@index([orgId, lastMessageAt(sort: Desc)])
+  @@map("whatsapp_conversations")
+}
+
+model WhatsAppMessage {
+  id             String                   @id @default(uuid()) @db.Uuid
+  orgId          String                   @db.Uuid
+  conversationId String                   @db.Uuid
+  direction      WhatsAppMessageDirection
+  body           String                   @db.Text
+  templateName   String?                  @db.VarChar(255)
+  // QUEUED / SENT / DELIVERED / READ / FAILED / RECEIVED
+  status         String                   @default("SENT") @db.VarChar(30)
+  externalId     String?                  @db.VarChar(255)
+  errorMsg       String?                  @db.Text
+  sentBy         String?                  @db.Uuid
+  campaignId     String?                  @db.Uuid
+  createdAt      DateTime                 @default(now())
+
+  conversation WhatsAppConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User?                @relation("WhatsAppMessageSender", fields: [sentBy], references: [id], onDelete: SetNull)
+
+  @@index([conversationId, createdAt])
+  @@index([orgId, createdAt(sort: Desc)])
+  @@map("whatsapp_messages")
+}
+
+model WhatsAppCampaign {
+  id              String    @id @default(uuid()) @db.Uuid
+  orgId           String    @db.Uuid
+  name            String    @db.VarChar(255)
+  message         String    @db.Text
+  templateName    String?   @db.VarChar(255)
+  // { tags?: string[], statuses?: string[] } — audience filter over leads
+  audienceFilter  Json      @default("{}")
+  // DRAFT / LAUNCHING / COMPLETED
+  status          String    @default("DRAFT") @db.VarChar(30)
+  totalRecipients Int       @default(0)
+  sentCount       Int       @default(0)
+  failedCount     Int       @default(0)
+  skippedCount    Int       @default(0)
+  launchedBy      String?   @db.Uuid
+  launchedAt      DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  org      Organization      @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, status])
+  @@map("whatsapp_campaigns")
 }
 
 // ─── STUDENTS ────────────────────────────────────────────────────────────────

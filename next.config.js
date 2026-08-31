@@ -94,6 +94,16 @@ const nextConfig = {
         destination: '/courses/cabin-crew-training',
         permanent: true,
       },
+      {
+        source: '/courses/instrument-rating',
+        destination: '/courses',
+        permanent: true,
+      },
+      {
+        source: '/courses/flight-dispatcher',
+        destination: '/courses',
+        permanent: true,
+      },
     ]
   },
 }

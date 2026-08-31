@@ -26,13 +26,20 @@ import {
   Clock,
   Handshake,
   Mail,
+  MessageCircle,
+  Send,
+  Workflow,
+  Route,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 
-const NAV_GROUPS = [
+const NAV_GROUPS: {
+  label: string;
+  items: { href: string; icon: React.ElementType; label: string; badge?: boolean }[];
+}[] = [
   {
     label: "Core Analytics",
     items: [
@@ -57,6 +64,20 @@ const NAV_GROUPS = [
       { href: "/students", icon: Users, label: "Student Management" },
       { href: "/placements", icon: Briefcase, label: "Placements" },
       { href: "/jobs", icon: Briefcase, label: "Careers & Jobs" },
+    ]
+  },
+  {
+    label: "WhatsApp Business",
+    items: [
+      { href: "/whatsapp", icon: MessageCircle, label: "Overview" },
+      { href: "/whatsapp/inbox", icon: MessageCircle, label: "Inbox" },
+      { href: "/whatsapp/contacts", icon: Users, label: "Contacts" },
+      { href: "/whatsapp/campaigns", icon: Send, label: "Campaigns" },
+      { href: "/whatsapp/automations", icon: Workflow, label: "Automations" },
+      { href: "/whatsapp/sequences", icon: Route, label: "Sequences" },
+      { href: "/whatsapp/templates", icon: FileText, label: "Templates" },
+      { href: "/whatsapp/analytics", icon: PieChart, label: "Analytics" },
+      { href: "/whatsapp/settings", icon: Settings, label: "Settings" },
     ]
   },
   {

@@ -9,6 +9,7 @@
     "start": "next start --port 4000",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test \"src/**/*.test.ts\"",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
@@ -17,6 +18,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:lms": "tsx prisma/seed-lms.ts",
     "db:seed:blocks": "tsx prisma/seed-blocks.ts",
+    "db:seed:workflows": "tsx prisma/seed-workflows.ts",
+    "db:seed:whatsapp": "tsx prisma/seed-whatsapp-demo.ts",
     "db:reset": "prisma migrate reset --force && npm run db:seed",
     "inngest:dev": "npx inngest-cli@latest dev -u http://localhost:3001/api/inngest"
   },

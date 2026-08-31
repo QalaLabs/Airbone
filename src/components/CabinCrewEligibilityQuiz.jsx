@@ -1,12 +1,21 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import LeadForm from './LeadForm'
 
 export default function CabinCrewEligibilityQuiz() {
   const [isOpen, setIsOpen] = useState(false)
   const [answers, setAnswers] = useState({ age: null, height: null, education: null })
   const [step, setStep] = useState(1) // 1: Questions, 2: Result eligible, 3: Result not eligible
+  const panelRef = useRef(null)
+
+  // Reset the modal's scroll/cursor position whenever it opens or the step
+  // changes, so the result is never shown mid-scroll on short viewports.
+  useEffect(() => {
+    if (isOpen && panelRef.current) {
+      panelRef.current.scrollTop = 0
+    }
+  }, [isOpen, step])
 
   const handleAnswer = (field, val) => {
     const nextAnswers = { ...answers, [field]: val }
@@ -71,12 +80,14 @@ export default function CabinCrewEligibilityQuiz() {
           zIndex: 99999,
           padding: '1.5rem',
         }}>
-          <div style={{
+          <div ref={panelRef} style={{
             background: '#ffffff',
             borderRadius: '12px',
             maxWidth: '500px',
             width: '100%',
             padding: '2.5rem',
+            maxHeight: 'calc(100vh - 3rem)',
+            overflowY: 'auto',
             boxShadow: '0 20px 50px rgba(0, 8, 22, 0.3)',
             position: 'relative',
             fontFamily: 'var(--font-b)',

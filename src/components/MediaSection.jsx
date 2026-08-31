@@ -25,6 +25,27 @@ const MEDIA_CARDS = [
     alt: 'Students studying in the Airborne Aviation library',
     title: 'Aviation Library',
     desc: 'A dedicated learning space for focused study, research, and preparation.'
+  },
+  {
+    id: 'flight-training',
+    src: '/footage/cpl-flying-training-cockpit.jpg',
+    alt: 'Cockpit flight training at Airborne Aviation',
+    title: 'Hands-on Flight Training',
+    desc: 'Practical cockpit training and aircraft familiarisation led by experienced instructors.'
+  },
+  {
+    id: 'campus',
+    src: '/campus/campus_facility.jpg',
+    alt: 'Airborne Aviation campus and training facility',
+    title: 'Training Campus',
+    desc: 'Modern training infrastructure built around the real demands of an aviation career.'
+  },
+  {
+    id: 'instructors',
+    src: '/campus/instructor_teaching.jpg',
+    alt: 'Airborne Aviation instructor teaching a class',
+    title: 'Expert Faculty',
+    desc: 'Learn directly from airline veterans and DGCA-qualified instructors in every core subject.'
   }
 ]
 

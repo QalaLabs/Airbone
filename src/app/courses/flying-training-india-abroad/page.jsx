@@ -210,7 +210,6 @@ export default function FlyingTrainingIndiaAbroadPage() {
           relatedCourses={[
             { label: 'CPL Ground School', href: '/courses/commercial-pilot-license-cpl' },
             { label: 'DGCA Ground School', href: '/courses/ground-school' },
-            { label: 'Instrument Rating', href: '/courses/instrument-rating' },
             { label: 'PPL', href: '/courses/private-pilot-license' },
             { label: 'All Courses', href: '/courses' },
           ]}

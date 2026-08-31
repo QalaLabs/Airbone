@@ -21,6 +21,7 @@ const PUBLIC_PATHS = [
   "/api/v1/public",
   "/api/inngest",
   "/api/public",
+  "/api/webhooks",   // external webhook receivers — auth is done inside the handler
   "/_next",
   "/favicon.ico",
 ];

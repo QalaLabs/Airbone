@@ -68,8 +68,8 @@ const PATHWAYS = [
     title: 'Advanced Communication, GD/PI & Personality',
     duration: '3 Months',
     classTime: '90 Minutes',
-    regular: '₹30,000',
-    scholarship: '₹30,000',
+    regular: '₹84,000',
+    scholarship: '₹84,000',
     scholarshipNote: 'For scholarship holders (includes Phase 1)',
     best: 'Candidates with communication or confidence gaps',
     focus: ['Spoken communication improvement', 'GD practice', 'PI preparation', 'Personality development', 'Confidence building'],
@@ -79,8 +79,8 @@ const PATHWAYS = [
     title: 'Basic Communication & Global Hospitality',
     duration: '6 Months',
     classTime: '90 Minutes',
-    regular: '₹30,000',
-    scholarship: '₹54,000',
+    regular: '₹1,14,000',
+    scholarship: '₹1,14,000',
     scholarshipNote: 'For scholarship holders (includes Phase 2 + Phase 1)',
     best: 'Beginners needing complete foundation',
     focus: ['Communication foundation', 'Hospitality standards', 'Grooming basics', 'Professional readiness', 'Zero-to-selection journey'],
@@ -402,7 +402,6 @@ export default function CabinCrewTrainingPage() {
         <CoursePageFooter
           whatsappText="Hi, I'm interested in the Cabin Crew Training program at Airborne Aviation Academy, Dwarka. Please share batch details and fee structure."
           relatedCourses={[
-            { label: 'Flight Dispatcher', href: '/courses/flight-dispatcher' },
             { label: 'Airline Interview Prep', href: '/courses/airline-preparation' },
             { label: 'All Courses', href: '/courses' },
           ]}

@@ -4,6 +4,7 @@ import Footer from '@/components/Footer'
 import Breadcrumb from '@/components/Breadcrumb'
 import JsonLd from '@/components/JsonLd'
 import { buildBlogIndexGraph } from '@/lib/schema'
+import { DEFAULT_COURSE_REVIEWS, PARENT_TESTIMONIALS } from '@/components/CourseReviews'
 
 export const metadata = {
   title: 'Aviation Blog - Pilot Training Guides | Airborne Aviation',
@@ -76,6 +77,38 @@ export default function BlogIndexPage() {
               </Link>
             ))}
           </div>
+
+          <section style={{ marginTop: '4rem' }} aria-labelledby="reviews-heading">
+            <h2 id="reviews-heading" style={{ fontFamily: 'var(--font-h)', fontSize: '1.35rem', fontWeight: 800, color: 'var(--navy)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
+              Student &amp; Parent Reviews
+            </h2>
+            <p style={{ margin: '0 0 1.5rem', color: 'rgba(33,33,33,0.65)', fontSize: '0.92rem', lineHeight: 1.6 }}>
+              What students and their parents say about training and counselling at Airborne.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
+              {[...DEFAULT_COURSE_REVIEWS, ...PARENT_TESTIMONIALS].map((r) => (
+                <figure
+                  key={r.name + r.role}
+                  style={{
+                    margin: 0,
+                    background: '#fff',
+                    border: '1px solid rgba(0,39,76,0.08)',
+                    borderLeft: '3px solid var(--gold)',
+                    padding: '1.25rem',
+                    borderRadius: '2px',
+                  }}
+                >
+                  <blockquote style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.65, color: 'rgba(33,33,33,0.75)' }}>
+                    “{r.quote}”
+                  </blockquote>
+                  <figcaption style={{ marginTop: '0.85rem', fontFamily: 'var(--font-h)', fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--navy)' }}>
+                    {r.name}
+                    <span style={{ display: 'block', marginTop: '0.2rem', fontWeight: 600, color: 'var(--red)', letterSpacing: '0.1em' }}>{r.role}</span>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </section>
         </div>
       </main>
       <Footer />

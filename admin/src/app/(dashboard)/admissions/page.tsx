@@ -138,7 +138,7 @@ interface CounselorOption {
   role?: string;
 }
 
-const PAYMENT_METHODS = ["CASH", "UPI", "BANK_TRANSFER", "CARD", "ONLINE"] as const;
+const PAYMENT_METHODS = ["CASH", "UPI", "BANK_TRANSFER", "CARD", "ONLINE", "CHEQUE", "DD"] as const;
 const FEE_TYPES = ["registration", "tuition", "exam", "hostel", "other"] as const;
 
 const STAGES = [
@@ -391,7 +391,7 @@ function PaymentsPanel({ admissionId, fallback }: { admissionId: string; fallbac
       <div>
         <h3 className="text-sm font-bold text-white flex items-center gap-2 border-b border-white/10 pb-3">
           <Landmark className="h-4 w-4 text-primary" />
-          Payments
+          Payments & Fee Breakdown
         </h3>
         {summary && (
           <p className="text-xs text-muted-foreground mt-2">
@@ -400,6 +400,30 @@ function PaymentsPanel({ admissionId, fallback }: { admissionId: string; fallbac
           </p>
         )}
       </div>
+
+      {list.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+          {FEE_TYPES.map((ft) => {
+            const total = list
+              .filter((p) => (p.feeType ?? "other") === ft)
+              .reduce((s, p) => s + Number(p.amount ?? 0), 0);
+            const label = ft.charAt(0).toUpperCase() + ft.slice(1);
+            return (
+              <div
+                key={ft}
+                className={`p-2.5 rounded-xl border text-center ${
+                  total > 0 ? "border-primary/30 bg-primary/10" : "border-white/5 bg-secondary/30"
+                }`}
+              >
+                <p className="text-[9px] font-extrabold uppercase tracking-wider text-muted-foreground">{label}</p>
+                <p className={`text-sm font-bold mt-0.5 ${total > 0 ? "text-white" : "text-muted-foreground/60"}`}>
+                  {money(total)}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       <form
         className="grid grid-cols-2 gap-2 p-3 rounded-xl border border-white/10 bg-secondary/30"

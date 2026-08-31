@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { LogOut, User, Bell, Search, Command } from "lucide-react";
+import { LogOut, User, Bell, Search, Command, Sun, Moon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { getInitials } from "@/lib/utils";
 import { CommandPalette } from "./command-palette";
 import { apiFetch } from "@/lib/api";
+import { useTheme } from "@/lib/theme";
 
 interface TopbarProps {
   user: {
@@ -32,6 +33,7 @@ export function Topbar({ user }: TopbarProps) {
   const [paletteOpen, setPaletteOpen] = React.useState(false);
   const [notifications, setNotifications] = React.useState<any[]>([]);
   const [unreadCount, setUnreadCount] = React.useState(0);
+  const { theme, setTheme } = useTheme();
 
   React.useEffect(() => {
     apiFetch<any[]>("/notifications")
@@ -65,6 +67,16 @@ export function Topbar({ user }: TopbarProps) {
         </div>
 
         <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground hover:text-primary hover:bg-primary/10"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary hover:bg-primary/10 relative">

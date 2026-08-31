@@ -135,7 +135,6 @@ export default function A320SimulatorPage() {
           relatedCourses={[
             { label: 'ATPL Ground School', href: '/courses/atpl' },
             { label: 'Cadet Preparation', href: '/courses/cadet-preparation' },
-            { label: 'Instrument Rating', href: '/courses/instrument-rating' },
             { label: 'All Courses', href: '/courses' },
           ]}
         />

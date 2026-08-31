@@ -39,6 +39,10 @@ import {
   onTestimonialReviewed,
   onBusinessScheduledCheck,
 } from "@/lib/events/functions/business.functions";
+import {
+  onEventMatchWorkflows,
+  onWorkflowRunRequested,
+} from "@/lib/events/functions/workflow.functions";
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -78,5 +82,8 @@ export const { GET, POST, PUT } = serve({
     onTestimonialSubmitted,
     onTestimonialReviewed,
     onBusinessScheduledCheck,
+    // Interconnect OS — workflow engine
+    onEventMatchWorkflows,
+    onWorkflowRunRequested,
   ],
 });

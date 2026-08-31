@@ -205,7 +205,6 @@ export default function GroundSchoolPage() {
           whatsappText="Hi, I'm interested in the DGCA Ground School at Airborne Aviation Academy, Dwarka. Please share current batch details."
           nextCourses={[
             { label: 'Commercial Pilot License (CPL)', href: '/courses/commercial-pilot-license-cpl', note: 'Ground school leads directly to DGCA CPL - complete your pilot journey' },
-            { label: 'Instrument Rating', href: '/courses/instrument-rating', note: 'Add IR to your CPL - essential for airline operations' },
             { label: 'ATPL Ground School', href: '/courses/atpl', note: 'Upgrade to Captain with ATPL - built on your CPL foundation' },
           ]}
           relatedCourses={[

@@ -16,6 +16,19 @@ export interface AnalyticsTotals {
   activities: number;
   meetings: number;
   calls: number;
+
+  // Phase 2 overview metrics
+  activeLeads: number;
+  newLeadsToday: number;
+  todayFollowUps: number;
+  opportunitySales: number;
+  opportunityCollections: number;
+  collectionsToday: number;
+  totalCollections: number;
+  totalCollectionPending: number;
+  collectionPct: string;
+  workableLeads: number;
+  workablePct: string;
 }
 
 export interface AnalyticsMonth {
@@ -31,6 +44,9 @@ export interface AnalyticsSourceRow {
   leads: number;
   admissions: number;
   conversion: string;
+  lost?: number;
+  workableLeads?: number;
+  workablePct?: string;
 }
 
 export interface AnalyticsStatusRow {
@@ -47,6 +63,8 @@ export interface AnalyticsCounselorRow {
   calls: number;
   meetings: number;
   emails: number;
+  collections?: number;
+  collectionPct?: string;
 }
 
 export interface AnalyticsData {

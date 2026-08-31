@@ -12,11 +12,9 @@ const STATIC_COURSE_SLUGS = [
   'securing-your-childs-future-in-aviation',
   'cabin-crew-training',
   'ground-school',
-  'instrument-rating',
   'multi-engine-rating',
   'private-pilot-license',
   'aviation-english-icao',
-  'flight-dispatcher',
 ]
 
 export default async function sitemap() {

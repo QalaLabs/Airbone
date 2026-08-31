@@ -67,7 +67,7 @@ const SUBJECTS = [
 ]
 
 const FEE_ROWS = [
-  { component: 'CPL Ground School', amount: '₹75,000' },
+  { component: 'CPL Ground School', amount: '₹2,70,000' },
   { component: 'Flying Training (200 Hours)', amount: '₹42,00,000' },
   { component: 'Class 2 & Class 1 Medicals', amount: '₹15,000' },
   { component: 'DGCA Exams & Licensing fees', amount: '₹20,000' },
@@ -282,6 +282,18 @@ export default function CPLPage() {
                 </div>
                 <div style={{ borderRadius: '6px', overflow: 'hidden', aspectRatio: '16/10', boxShadow: '0 4px 20px rgba(0,39,76,0.01)' }}>
                   <img src="/footage/simulator-training.jpg" alt="A320 Simulator Training sessions" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+                <div style={{ borderRadius: '6px', overflow: 'hidden', aspectRatio: '16/10', boxShadow: '0 4px 20px rgba(0,39,76,0.01)' }}>
+                  <img src="/campus/simulator_wide.jpg" alt="A320 full-flight simulator bay at Airborne" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+                <div style={{ borderRadius: '6px', overflow: 'hidden', aspectRatio: '16/10', boxShadow: '0 4px 20px rgba(0,39,76,0.01)' }}>
+                  <img src="/footage/aircraft-ascending.jpg" alt="Aircraft ascending during flight training" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+                <div style={{ borderRadius: '6px', overflow: 'hidden', aspectRatio: '16/10', boxShadow: '0 4px 20px rgba(0,39,76,0.01)' }}>
+                  <img src="/footage/classroom_instructor.jpg" alt="Instructor-led cockpit procedure briefing" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+                <div style={{ borderRadius: '6px', overflow: 'hidden', aspectRatio: '16/10', boxShadow: '0 4px 20px rgba(0,39,76,0.01)' }}>
+                  <img src="/campus/campus_training.jpg" alt="Campus flight training facility at Airborne" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
               </div>
             </div>

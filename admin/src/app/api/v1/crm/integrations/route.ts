@@ -43,12 +43,16 @@ export async function GET() {
         note: "Facebook leads API and comment ad integrations require a Meta App.",
       },
       googleAds: {
-        status: process.env.NEXT_PUBLIC_GOOGLE_ADS_CONFIGURED === "true"
-          ? "connected"
-          : "not_configured",
+        status:
+          process.env.GOOGLE_ADS_WEBHOOK_SECRET
+            ? "connected"
+            : "not_configured",
         provider: "Google Ads",
-        required: ["NEXT_PUBLIC_GOOGLE_ADS_CONFIGURED=true"],
-        note: "Set the flag to advertise that Google Ads lead ingestion is active.",
+        required: ["GOOGLE_ADS_WEBHOOK_SECRET"],
+        note: process.env.GOOGLE_ADS_WEBHOOK_SECRET
+          ? "Google Ads Lead Form webhook is active. Leads are ingested automatically."
+          : "Generate a webhook key from the Integrations page to connect Google Ads Lead Forms.",
+        webhookUrl: `${process.env.NEXT_PUBLIC_ADMIN_URL ?? "https://airborne-admin-368523757732.asia-south1.run.app"}/api/webhooks/google-ads`,
       },
       frappe: {
         status: "removed",
@@ -92,7 +96,7 @@ export async function GET() {
         ],
         notConfigured: Object.entries({
           facebook: !configured(process.env.NEXT_PUBLIC_FACEBOOK_APP_ID, process.env.FACEBOOK_APP_SECRET),
-          googleAds: process.env.NEXT_PUBLIC_GOOGLE_ADS_CONFIGURED !== "true",
+          googleAds: !process.env.GOOGLE_ADS_WEBHOOK_SECRET,
           media: !r2Configured,
           documents: !r2Configured,
           payments: true,

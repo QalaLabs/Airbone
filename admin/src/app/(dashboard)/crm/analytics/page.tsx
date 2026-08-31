@@ -56,6 +56,15 @@ export default function CRMSalesAnalyticsPage() {
   const sourceColumns: CRMColumn<AnalyticsSourceRow>[] = [
     { key: "source", header: "Channel" },
     { key: "leads", header: "Leads", align: "right" },
+    { key: "lost", header: "Lost", align: "right", render: (ch: AnalyticsSourceRow) => <span>{ch.lost ?? 0}</span> },
+    {
+      key: "workablePct",
+      header: "Workable %",
+      align: "right",
+      render: (ch: AnalyticsSourceRow) => (
+        <span className="font-extrabold text-sky-500">{ch.workablePct ?? "0%"}</span>
+      ),
+    },
     { key: "admissions", header: "Admissions", align: "right" },
     {
       key: "conversion",
@@ -85,6 +94,22 @@ export default function CRMSalesAnalyticsPage() {
     { key: "calls", header: "Calls", align: "right" },
     { key: "meetings", header: "Meetings", align: "right" },
     { key: "emails", header: "Emails", align: "right" },
+    {
+      key: "collections",
+      header: "Collections",
+      align: "right",
+      render: (c: AnalyticsCounselorRow) => (
+        <span className="font-bold text-emerald-500">{formatINR(c.collections ?? 0)}</span>
+      ),
+    },
+    {
+      key: "collectionPct",
+      header: "Collection %",
+      align: "right",
+      render: (c: AnalyticsCounselorRow) => (
+        <span className="font-extrabold text-sky-500">{c.collectionPct ?? "0"}%</span>
+      ),
+    },
   ];
 
   return (
@@ -108,6 +133,116 @@ export default function CRMSalesAnalyticsPage() {
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10">
               <Users className="h-5 w-5 text-emerald-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-white/10 shadow-lg">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground font-semibold">Total Active Leads</p>
+              <p className="text-2xl font-bold text-white mt-1">{totals.activeLeads}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">New + Call Back + Prospect</p>
+            </div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-500/10">
+              <Users className="h-5 w-5 text-teal-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-white/10 shadow-lg">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground font-semibold">New Leads (Today)</p>
+              <p className="text-2xl font-bold text-white mt-1">{totals.newLeadsToday}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Lead enquiries created today</p>
+            </div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/10">
+              <TrendingUp className="h-5 w-5 text-blue-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-white/10 shadow-lg">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground font-semibold">Today&apos;s Follow-ups</p>
+              <p className="text-2xl font-bold text-white mt-1">{totals.todayFollowUps}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Needs call-back / prospecting</p>
+            </div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/10">
+              <Target className="h-5 w-5 text-amber-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-white/10 shadow-lg">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground font-semibold">Opportunity Sales (Today)</p>
+              <p className="text-2xl font-bold text-white mt-1">{totals.opportunitySales}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                Collected {formatINR(totals.opportunityCollections)} today
+              </p>
+            </div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10">
+              <DollarSign className="h-5 w-5 text-emerald-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-white/10 shadow-lg">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground font-semibold">Total Collection Pending</p>
+              <p className="text-2xl font-bold text-white mt-1">{formatINR(totals.totalCollectionPending)}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Outstanding fee balance</p>
+            </div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-500/10">
+              <DollarSign className="h-5 w-5 text-rose-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-white/10 shadow-lg">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground font-semibold">Collection %</p>
+              <p className="text-2xl font-bold text-white mt-1">{totals.collectionPct}%</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                {formatINR(totals.totalCollections)} collected of {formatINR(totals.revenue)}
+              </p>
+            </div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-500/10">
+              <DollarSign className="h-5 w-5 text-purple-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-white/10 shadow-lg">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground font-semibold">Workable Leads</p>
+              <p className="text-2xl font-bold text-white mt-1">{totals.workableLeads}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                {totals.workablePct}% of total (excl. lost)
+              </p>
+            </div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-500/10">
+              <Users className="h-5 w-5 text-sky-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-white/10 shadow-lg">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground font-semibold">Collections (Today)</p>
+              <p className="text-2xl font-bold text-white mt-1">{formatINR(totals.collectionsToday)}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Receipts recorded today</p>
+            </div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-500/10">
+              <TrendingUp className="h-5 w-5 text-indigo-500" />
             </div>
           </CardContent>
         </Card>

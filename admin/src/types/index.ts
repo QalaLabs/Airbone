@@ -228,6 +228,37 @@ export interface TestimonialReviewedEvent extends BaseEvent {
   data: { testimonialId: string; status: string; reviewedBy: string };
 }
 
+// ─── Interconnect OS — workflow control plane ────────────────────────────────
+
+export interface WorkflowRunRequestedEvent extends BaseEvent {
+  name: "workflow/run.requested";
+  data: { runId: string };
+}
+
+// ─── Interconnect OS — WhatsApp lifecycle (canonical dot-notation) ───────────
+
+export interface WhatsAppRepliedEvent extends BaseEvent {
+  name: "whatsapp.replied";
+  data: { conversationId: string; leadId?: string; phone: string; body: string; externalId?: string };
+}
+
+export interface WhatsAppOptedOutEvent extends BaseEvent {
+  name: "whatsapp.opted_out";
+  data: { conversationId: string; leadId?: string; phone: string };
+}
+
+export interface CourseEnrolledEvent extends BaseEvent {
+  name: "course.enrolled";
+  data: {
+    studentId: string;
+    studentName: string;
+    courseId: string;
+    courseName: string;
+    batchId?: string;
+    batchName?: string;
+  };
+}
+
 export type AppEvent =
   | LeadCreatedEvent
   | LeadStatusChangedEvent
@@ -257,4 +288,8 @@ export type AppEvent =
   | PlacementCreatedEvent
   | PlacementUpdatedEvent
   | TestimonialSubmittedEvent
-  | TestimonialReviewedEvent;
+  | TestimonialReviewedEvent
+  | WorkflowRunRequestedEvent
+  | WhatsAppRepliedEvent
+  | WhatsAppOptedOutEvent
+  | CourseEnrolledEvent;

@@ -41,7 +41,7 @@ const SUBJECTS = [
   { name: 'Air Navigation (Basics)', detail: 'Map reading, position fixing, cross-country navigation' },
   { name: 'Aviation Meteorology', detail: 'Basic weather systems, clouds, visibility, wind effects on flight' },
   { name: 'Air Regulations', detail: 'Rules of the air, visual flight rules, airspace classifications' },
-  { name: 'Technical General (Piston)', detail: 'Piston engine systems, propellers, basic aerodynamics' },
+  { name: 'Technical General', detail: 'Aircraft powerplant and engine systems, propellers, basic aerodynamics' },
   { name: 'Radio Telephony (RTR)', detail: 'R/T procedures, phraseology, emergency communications' },
 ]
 
@@ -55,7 +55,7 @@ const ELIGIBILITY = [
 
 const PPL_TO_CPL = [
   { step: '1', title: 'Begin with PPL', detail: 'Build foundational flying skills and log initial hours.' },
-  { step: '2', title: 'DGCA Ground School', detail: 'Complete all 5 CPL papers with Capt. Navrang Singh at Airborne.' },
+  { step: '2', title: 'DGCA Ground School', detail: 'Complete all 3 CPL papers with Capt. Navrang Singh at Airborne.' },
   { step: '3', title: 'CPL Flying Training', detail: 'Complete 200 total hours including 100 hours PIC through partner FTO.' },
   { step: '4', title: 'DGCA CPL Issuance', detail: 'Submit logbooks and papers to DGCA for CPL issuance.' },
 ]
@@ -214,7 +214,6 @@ export default function PPLPage() {
           whatsappText="Hi, I'm interested in the Private Pilot License (PPL) course at Airborne Aviation Academy. Please share details and fee."
           nextCourses={[
             { label: 'CPL Ground School', href: '/courses/commercial-pilot-license-cpl', note: 'Step up from PPL to CPL ground school - all PPL hours count toward your CPL' },
-            { label: 'Instrument Rating', href: '/courses/instrument-rating', note: 'Add an Instrument Rating to fly in all weather conditions' },
           ]}
           relatedCourses={[
             { label: 'DGCA Ground School', href: '/courses/ground-school' },

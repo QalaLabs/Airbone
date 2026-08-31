@@ -3,6 +3,13 @@ import { guard } from "@/lib/middleware/permissions";
 import { getRequestContext } from "@/lib/middleware/context";
 import { ok, handleError } from "@/lib/utils/response";
 import type { Prisma } from "@prisma/client";
+import {
+  ACTIVE_LEAD_STATUSES,
+  TODAY_FOLLOW_UP_STATUSES,
+  OPPORTUNITY_STATUS,
+  WON_STATUS,
+  LOST_STATUSES,
+} from "@/lib/leads/lead-status";
 
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -23,6 +30,18 @@ function pct(part: number, total: number): string {
   return ((part / total) * 100).toFixed(1);
 }
 
+function startOfDay(d: Date): Date {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+
+function endOfDay(d: Date): Date {
+  const x = new Date(d);
+  x.setHours(23, 59, 59, 999);
+  return x;
+}
+
 export async function GET() {
   try {
     const ctx = await getRequestContext();
@@ -40,10 +59,6 @@ export async function GET() {
     sixMonthsAgo.setHours(0, 0, 0, 0);
 
     const [
-      totalLeads,
-      pipelineLeads,
-      convertedLeads,
-      lostLeads,
       leadStatusCounts,
       leadSourceCounts,
       leadsInRange,
@@ -56,14 +71,7 @@ export async function GET() {
       admissionsByCounselor,
       counselors,
       studentsCount,
-      admissionLeadsCount,
     ] = await Promise.all([
-      prisma.lead.count({ where: leadWhere }),
-      prisma.lead.count({
-        where: { ...leadWhere, status: { notIn: ["CONVERTED", "LOST"] } },
-      }),
-      prisma.lead.count({ where: { ...leadWhere, status: "CONVERTED" } }),
-      prisma.lead.count({ where: { ...leadWhere, status: "LOST" } }),
       prisma.lead.groupBy({ by: ["status"], where: leadWhere, _count: { _all: true } }),
       prisma.lead.groupBy({ by: ["source"], where: leadWhere, _count: { _all: true } }),
       prisma.lead.findMany({
@@ -105,12 +113,20 @@ export async function GET() {
         orderBy: { name: "asc" },
       }),
       prisma.student.count({ where: { orgId: ctx.orgId, deletedAt: null } }),
-      prisma.lead.count({ where: { ...leadWhere, admissions: { some: {} } } }),
     ]);
 
+    let totalLeads = 0;
+    let pipelineLeads = 0;
+    let convertedLeads = 0;
+    let lostLeads = 0;
+    for (const c of leadStatusCounts) {
+      totalLeads += c._count._all;
+      if (c.status === "CONVERTED" || c.status === "WON") convertedLeads += c._count._all;
+      else if (LOST_STATUSES.includes(c.status as any) || c.status === "LOST") lostLeads += c._count._all;
+      else pipelineLeads += c._count._all;
+    }
+
     const revenue = revenueAgg._sum.amount ? Number(revenueAgg._sum.amount) : 0;
-    const admissionLeads = admissionLeadsCount;
-    const conversionRate = pct(admissionLeads, totalLeads);
 
     // Monthly buckets (last 6 months)
     const monthly: { key: string; label: string; leads: number; admissions: number; revenue: number }[] = [];
@@ -133,24 +149,46 @@ export async function GET() {
       if (bucket) bucket.revenue += Number(p.amount);
     }
 
-    // Leads with admission per source (derived conversion)
-    const admissionLeadIds = new Set(
-      (await prisma.admission.findMany({
-        where: { orgId: ctx.orgId },
-        select: { leadId: true },
-      })).map((a) => a.leadId),
-    );
-    const leadsBySource = new Map<string, { leads: number; admissions: number }>();
-    const leadSourceRows = await prisma.lead.findMany({
-      where: leadWhere,
-      select: { source: true, id: true },
+    // Single scan of the org's admissions — used for source conversion, the
+    // fee ledger, opportunity collections, and per-counselor collections. One
+    // query instead of three separate table scans.
+    const admissionLedger = await prisma.admission.findMany({
+      where: { orgId: ctx.orgId },
+      select: {
+        id: true,
+        leadId: true,
+        feeFinal: true,
+        feeAmount: true,
+        feePaid: true,
+        feeBalance: true,
+        counselorId: true,
+        lead: { select: { status: true, source: true } },
+      },
     });
-    for (const l of leadSourceRows) {
-      const row = leadsBySource.get(l.source) ?? { leads: 0, admissions: 0 };
-      row.leads += 1;
-      if (admissionLeadIds.has(l.id)) row.admissions += 1;
-      leadsBySource.set(l.source, row);
+    const admissionLeadIds = new Set(admissionLedger.map((a) => a.leadId).filter(Boolean));
+    const opportunityAdmissionIds = new Set(
+      admissionLedger
+        .filter((a) => a.lead?.status === WON_STATUS)
+        .map((a) => a.id),
+    );
+
+    const admissionLeads = admissionLeadIds.size;
+    const conversionRate = pct(admissionLeads, totalLeads);
+
+    const leadsBySource = new Map<string, { leads: number; admissions: number }>();
+    for (const c of leadSourceCounts) {
+      leadsBySource.set(c.source, { leads: c._count._all, admissions: 0 });
     }
+    
+    // Add admissions count by source using the admissionLedger
+    for (const a of admissionLedger) {
+      if (a.lead?.source) {
+        const row = leadsBySource.get(a.lead.source) ?? { leads: 0, admissions: 0 };
+        row.admissions += 1;
+        leadsBySource.set(a.lead.source, row);
+      }
+    }
+
     const bySource = Array.from(leadsBySource.entries()).map(([source, row]) => ({
       source,
       leads: row.leads,
@@ -202,6 +240,92 @@ export async function GET() {
       activityTypeCounts.map((c) => [c.activityType, c._count._all]),
     );
 
+    // ── Phase 2 overview metrics ────────────────────────────────────────────
+    const todayStart = startOfDay(new Date());
+    const activeLeadsCount = await prisma.lead.count({
+      where: { ...leadWhere, status: { in: ACTIVE_LEAD_STATUSES } },
+    });
+    const newLeadsToday = await prisma.lead.count({
+      where: { ...leadWhere, createdAt: { gte: todayStart } },
+    });
+    const todayFollowUps = await prisma.lead.count({
+      where: { ...leadWhere, status: { in: TODAY_FOLLOW_UP_STATUSES } },
+    });
+
+    // Opportunity sales: PROSPECT-stage leads that became WON today.
+    const wonToday = await prisma.lead.findMany({
+      where: {
+        ...leadWhere,
+        status: WON_STATUS,
+        convertedAt: { gte: todayStart },
+      },
+      select: { id: true },
+    });
+    const wonTodayIds = wonToday.map((l) => l.id);
+    const opportunitySales = wonTodayIds.length;
+
+    // Opportunity collections: collected from completed payments linked to the
+    // WON-lead admissions (see opportunityAdmissionIds derived from admissionLedger).
+
+    // Collections from completed payments.
+    const paymentsCompleted = await prisma.paymentTransaction.findMany({
+      where: { orgId: ctx.orgId, status: "COMPLETED" },
+      select: { amount: true, createdAt: true, admissionId: true },
+    });
+    const opportunityCollectionsRaw = paymentsCompleted
+      .filter((p) => p.createdAt >= todayStart && p.admissionId && opportunityAdmissionIds.has(p.admissionId))
+      .reduce((s, p) => s + Number(p.amount), 0);
+    const totalCollections = revenue;
+    const collectionsToday = paymentsCompleted
+      .filter((p) => p.createdAt >= todayStart)
+      .reduce((s, p) => s + Number(p.amount), 0);
+
+    // Collection pending & collection % from admission fee ledger
+    // (admissionLedger is fetched once above; reused here and for counselors).
+    const validAdmissions = admissionLedger.filter(
+      (a) => a.feeFinal != null && Number(a.feeFinal) > 0,
+    );
+    const totalfeeFinal = validAdmissions.reduce((s, a) => s + Number(a.feeFinal), 0);
+    const totalPaid = admissionLedger.reduce((s, a) => s + Number(a.feePaid), 0);
+    const totalCollectionPending = admissionLedger.reduce(
+      (s, a) => s + Number(a.feeBalance),
+      0,
+    );
+    const collectionPct = pct(totalPaid, totalfeeFinal);
+
+    // Workable leads % per channel = ((source leads - source lost) / source leads) * 100
+    const lostLeadSourceCounts = await prisma.lead.groupBy({
+      by: ["source"],
+      where: { ...leadWhere, status: { in: LOST_STATUSES } },
+      _count: { _all: true },
+    });
+    const lostBySource = new Map<string, number>();
+    for (const l of lostLeadSourceCounts) {
+      lostBySource.set(l.source, l._count._all);
+    }
+    const workableTotal = totalLeads - lostLeads;
+    const channelRows = bySource.map((c) => {
+      const lost = lostBySource.get(c.source) ?? 0;
+      return {
+        ...c,
+        lost,
+        workableLeads: c.leads - lost,
+        workablePct: `${pct(c.leads - lost, c.leads)}%`,
+      };
+    });
+    const overallWorkablePct = `${pct(workableTotal, totalLeads)}%`;
+
+    // Counsellor collection performance.
+    const admissionByCounselorLedger = new Map<string, number>();
+    const paidByCounselor = new Map<string, number>();
+    for (const a of admissionLedger) {
+      const cid = a.counselorId ?? "unassigned";
+      if (a.feeFinal != null) {
+        admissionByCounselorLedger.set(cid, (admissionByCounselorLedger.get(cid) ?? 0) + Number(a.feeFinal));
+      }
+      paidByCounselor.set(cid, (paidByCounselor.get(cid) ?? 0) + Number(a.feePaid));
+    }
+
     return ok({
       totals: {
         leads: totalLeads,
@@ -221,11 +345,28 @@ export async function GET() {
         activities: activityTypeCounts.reduce((s, c) => s + c._count._all, 0),
         meetings: activityByType.MEETING ?? 0,
         calls: activityByType.CALL ?? 0,
+
+        // Phase 2 overview metrics
+        activeLeads: activeLeadsCount,
+        newLeadsToday,
+        todayFollowUps,
+        opportunitySales,
+        opportunityCollections: Number(opportunityCollectionsRaw.toFixed(2)),
+        collectionsToday: Number(collectionsToday.toFixed(2)),
+        totalCollections: Number(totalCollections.toFixed(2)),
+        totalCollectionPending: Number(totalCollectionPending.toFixed(2)),
+        collectionPct,
+        workableLeads: workableTotal,
+        workablePct: overallWorkablePct,
       },
       monthly,
-      bySource,
+      bySource: channelRows,
       byStatus,
-      byCounselor,
+      byCounselor: byCounselor.map((c) => ({
+        ...c,
+        collections: Number((paidByCounselor.get(c.counselorId) ?? 0).toFixed(2)),
+        collectionPct: pct(paidByCounselor.get(c.counselorId) ?? 0, admissionByCounselorLedger.get(c.counselorId) ?? 0),
+      })),
     });
   } catch (err) {
     return handleError(err);

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db/client";
 import type { RequestContext } from "@/types";
 import { NotFoundError, ForbiddenError, ConflictError, ValidationError } from "@/lib/utils/errors";
 import { LmsService } from "@/lib/services/lms.service";
+import { emitEvent } from "@/lib/events/inngest";
 import type {
   CreateBatchInput,
   UpdateBatchInput,
@@ -128,6 +129,8 @@ export class LmsOpsService {
       }
     }
 
+    let newlyEnrolled: string[] = [];
+
     await prisma.$transaction(async (tx) => {
       if (data.studentIds) {
         // Track who is being removed so course enrollment stays in sync.
@@ -144,6 +147,10 @@ export class LmsOpsService {
           });
           // Keep course enrollment in sync
           for (const studentId of data.studentIds) {
+            const existing = await tx.lmsEnrollment.findUnique({
+              where: { studentId_courseId: { studentId, courseId: batch.courseId } },
+              select: { id: true },
+            });
             await tx.lmsEnrollment.upsert({
               where: { studentId_courseId: { studentId, courseId: batch.courseId } },
               create: {
@@ -155,6 +162,7 @@ export class LmsOpsService {
               },
               update: { batchId, status: "ACTIVE" },
             });
+            if (!existing) newlyEnrolled.push(studentId);
           }
         }
 
@@ -188,6 +196,36 @@ export class LmsOpsService {
         }
       }
     });
+
+    // Brand-new course enrollments feed the automation surface (canonical
+    // course.enrolled → COURSE_ENROLLED trigger). Re-activations stay silent.
+    if (newlyEnrolled.length) {
+      const [course, students] = await Promise.all([
+        prisma.lmsCourse.findUnique({ where: { id: batch.courseId }, select: { title: true } }),
+        prisma.student.findMany({
+          where: { id: { in: newlyEnrolled }, orgId: ctx.orgId },
+          select: { id: true, firstName: true, lastName: true },
+        }),
+      ]);
+      for (const student of students) {
+        await emitEvent({
+          name: "course.enrolled",
+          orgId: ctx.orgId,
+          actorId: ctx.user.id,
+          actorName: ctx.user.name,
+          requestId: ctx.requestId,
+          timestamp: new Date().toISOString(),
+          data: {
+            studentId: student.id,
+            studentName: `${student.firstName} ${student.lastName}`.trim(),
+            courseId: batch.courseId,
+            courseName: course?.title ?? "Course",
+            batchId,
+            batchName: batch.name,
+          },
+        });
+      }
+    }
 
     return this.getBatch(ctx, batchId);
   }

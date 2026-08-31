@@ -27,7 +27,6 @@ export const COURSE_FEE_DISPLAY = {
   'flying-training-india-abroad': '₹65 Lakh* (45–75 Lacs)',
   'securing-your-childs-future-in-aviation': 'Free',
   'private-pilot-license': '₹25,00,000',
-  'instrument-rating': '₹3–5L',
   'multi-engine-rating': '₹3–5L',
   'aviation-english-icao': '₹50K–1L',
 }

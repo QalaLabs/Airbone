@@ -164,14 +164,6 @@ export const COURSE_SCHEMA = {
     path: '/courses/private-pilot-license',
     courseMode: 'onsite',
   },
-  'instrument-rating': {
-    slug: 'instrument-rating',
-    name: 'Instrument Rating Preparation',
-    description:
-      'Instrument Rating theory and procedure familiarisation support at Airborne Aviation Academy, Dwarka.',
-    path: '/courses/instrument-rating',
-    courseMode: 'onsite',
-  },
   'multi-engine-rating': {
     slug: 'multi-engine-rating',
     name: 'Multi-Engine Rating Preparation',
@@ -186,15 +178,6 @@ export const COURSE_SCHEMA = {
     description:
       'ICAO Aviation English training for pilots and aviation professionals at Airborne Aviation Academy, Dwarka.',
     path: '/courses/aviation-english-icao',
-    courseMode: 'onsite',
-    includeInstructor: false,
-  },
-  'flight-dispatcher': {
-    slug: 'flight-dispatcher',
-    name: 'Flight Dispatcher Training',
-    description:
-      'Flight dispatcher / flight operations officer preparation support at Airborne Aviation Academy, Dwarka.',
-    path: '/courses/flight-dispatcher',
     courseMode: 'onsite',
     includeInstructor: false,
   },

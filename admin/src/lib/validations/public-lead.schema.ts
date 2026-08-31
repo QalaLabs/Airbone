@@ -10,6 +10,7 @@ export const publicLeadSchema = z.object({
     .max(20)
     .regex(/^[+\d][\d\s\-()]*$/, "phone must contain digits, spaces, dashes or parentheses"),
   courseInterest: z.string().trim().max(255).nullish(),
+  pincode: z.string().trim().max(10).nullish(),
   source: z.string().trim().max(50).optional(),
   utmSource: z.string().trim().max(255).nullish(),
   utmMedium: z.string().trim().max(255).nullish(),

@@ -95,7 +95,7 @@ img, video { display: block; max-width: 100%; }
 .cursor {
   position: fixed; width: 8px; height: 8px;
   background: var(--red); border-radius: 50%;
-  pointer-events: none; z-index: 9999;
+  pointer-events: none; z-index: 999999;
   transform: translate(-50%,-50%);
   transition: width .2s, height .2s;
   will-change: left, top;
@@ -104,7 +104,7 @@ img, video { display: block; max-width: 100%; }
 .cursor-ring {
   position: fixed; width: 36px; height: 36px;
   border: 1.5px solid rgba(219,36,30,0.55);
-  border-radius: 50%; pointer-events: none; z-index: 9998;
+  border-radius: 50%; pointer-events: none; z-index: 999998;
   transform: translate(-50%,-50%);
   transition: width .4s var(--easeC), height .4s var(--easeC);
   will-change: left, top;
@@ -1162,7 +1162,7 @@ img, video { display: block; max-width: 100%; }
   background: #DB241E;
   border-radius: 50%;
   pointer-events: none;
-  z-index: 99999;
+  z-index: 999999;
   transform: translate(-50%, -50%);
   transition: width 0.15s, height 0.15s, background 0.15s;
 }
@@ -1178,7 +1178,7 @@ img, video { display: block; max-width: 100%; }
   border: 1px solid rgba(255,255,255,0.22);
   border-radius: 50%;
   pointer-events: none;
-  z-index: 99998;
+  z-index: 999998;
   transform: translate(-50%, -50%);
   transition: width 0.3s var(--easeC), height 0.3s var(--easeC), border-color 0.3s, opacity 0.3s;
 }

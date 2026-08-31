@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft, Mail, Phone, Calendar, User, MessageSquare,
   PhoneCall, Clock, FileText, Sparkles, Plus, CheckCircle2,
-  UserPlus, GraduationCap,
+  UserPlus, GraduationCap, Send, Workflow,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -44,6 +44,10 @@ interface Lead {
   score: number;
   courseInterest?: string | null;
   city?: string | null;
+  state?: string | null;
+  pincode?: string | null;
+  googleId?: string | null;
+  manualAmount?: number | string | null;
   nextFollowUp?: string | null;
   lastActivityAt?: string | null;
   convertedAt?: string | null;
@@ -69,22 +73,68 @@ interface LeadActivity {
   createdAt: string;
 }
 
+interface TimelineEntry {
+  id: string;
+  kind: "activity" | "notification" | "automation";
+  at: string;
+  title: string;
+  detail?: string | null;
+  status?: string | null;
+  channel?: string | null;
+  actorName?: string | null;
+  workflowName?: string | null;
+  activityType?: string | null;
+}
+
 interface CounselorOption {
   id: string;
   name: string;
   role: string;
 }
 
-const LEAD_STATUSES = [
-  "NEW",
-  "CONTACTED",
-  "INTERESTED",
-  "FOLLOW_UP",
-  "COUNSELED",
-  "APPLICATION_SUBMITTED",
-  "CONVERTED",
-  "LOST",
+/** Phase 2 status workflow grouped by level for the radio-button picker. */
+const STATUS_GROUPS = [
+  {
+    label: "Level 1 · Connected",
+    statuses: ["NEW", "CONNECTED", "CALL_BACK", "INTERESTED", "PROSPECT", "WON"],
+  },
+  {
+    label: "Level 1 · Not Connected",
+    statuses: ["NOT_CONNECTED", "RINGING", "NOT_REACHABLE", "SWITCHED_OFF", "VOICEMAIL"],
+  },
+  {
+    label: "Lost",
+    statuses: [
+      "LOST",
+      "INCOMING_BARD",
+      "OUT_OF_SERVICE",
+      "NOT_AWARE",
+      "NOT_CONTACTABLE",
+      "LOCATION_OUT_OF_SCOPE",
+      "LANGUAGE_BARRIER",
+      "PRICE_HIGH",
+      "JOINED_OTHERS",
+      "NOT_ELIGIBLE",
+      "INVALID_NUMBER",
+      "TEST_LEAD",
+    ],
+  },
 ] as const;
+
+const LOST_STATUSES = new Set<string>([
+  "LOST",
+  "INCOMING_BARD",
+  "OUT_OF_SERVICE",
+  "NOT_AWARE",
+  "NOT_CONTACTABLE",
+  "LOCATION_OUT_OF_SCOPE",
+  "LANGUAGE_BARRIER",
+  "PRICE_HIGH",
+  "JOINED_OTHERS",
+  "NOT_ELIGIBLE",
+  "INVALID_NUMBER",
+  "TEST_LEAD",
+]);
 
 const ACTIVITY_TYPES = [
   "NOTE",
@@ -138,6 +188,7 @@ export default function LeadDetailPage() {
   const [counselorId, setCounselorId] = React.useState("");
   const [followUp, setFollowUp] = React.useState("");
   const [lostReason, setLostReason] = React.useState("");
+  const [editingStatus, setEditingStatus] = React.useState(false);
 
   const { data: lead, isLoading } = useQuery({
     queryKey: ["lead", id],
@@ -148,6 +199,12 @@ export default function LeadDetailPage() {
   const { data: activities, isLoading: activitiesLoading } = useQuery({
     queryKey: ["lead", id, "activities"],
     queryFn: () => apiFetch<LeadActivity[]>(`/leads/${id}/activities?limit=50`),
+    enabled: !!id,
+  });
+
+  const { data: timeline, isLoading: timelineLoading } = useQuery({
+    queryKey: ["lead", id, "timeline"],
+    queryFn: () => apiFetch<TimelineEntry[]>(`/timeline?entityType=LEAD&entityId=${id}&limit=50`),
     enabled: !!id,
   });
 
@@ -171,6 +228,7 @@ export default function LeadDetailPage() {
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["lead", id] });
     queryClient.invalidateQueries({ queryKey: ["lead", id, "activities"] });
+    queryClient.invalidateQueries({ queryKey: ["lead", id, "timeline"] });
     queryClient.invalidateQueries({ queryKey: ["leads"] });
   };
 
@@ -357,31 +415,18 @@ export default function LeadDetailPage() {
         <div className="flex flex-wrap items-end gap-3">
           <div className="flex flex-col gap-1 text-xs text-muted-foreground font-semibold">
             <span>Status</span>
-            <Select
-              value={lead.status}
-              onValueChange={(v) => {
-                if (v === "LOST" && !lostReason.trim()) {
-                  toast({ title: "Lost reason required", description: "Enter a lost reason below first.", variant: "destructive" });
-                  return;
-                }
-                updateStatusMutation.mutate({
-                  status: v,
-                  lostReason: v === "LOST" ? lostReason : undefined,
-                });
-              }}
-              disabled={updateStatusMutation.isPending}
-            >
-              <SelectTrigger className="w-48 bg-secondary/60 border-white/10 text-white font-bold text-xs h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="glass-panel border-white/10 text-xs">
-                {LEAD_STATUSES.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s.replace(/_/g, " ")}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-2">
+              <StatusBadge status={lead.status} domain="lead" className="h-9 px-3" />
+              <Button
+                size="sm"
+                variant={editingStatus ? "default" : "outline"}
+                onClick={() => setEditingStatus((v) => !v)}
+                className="border-white/10 text-xs font-bold h-9"
+              >
+                <Sparkles className="h-3.5 w-3.5 mr-1" />
+                {editingStatus ? "Close" : "Update Status"}
+              </Button>
+            </div>
           </div>
           <Button size="sm" variant="outline" className="border-white/10 text-xs font-bold" onClick={() => setAssignOpen(true)}>
             <UserPlus className="h-3.5 w-3.5 mr-1" /> Assign
@@ -390,21 +435,75 @@ export default function LeadDetailPage() {
             size="sm"
             className="bg-primary text-white text-xs font-bold"
             onClick={() => convertMutation.mutate()}
-            disabled={convertMutation.isPending || lead.status === "LOST"}
+            disabled={convertMutation.isPending || LOST_STATUSES.has(lead.status)}
           >
             <GraduationCap className="h-3.5 w-3.5 mr-1" /> Convert to Admission
           </Button>
         </div>
       </div>
 
-      <div className="flex gap-2 items-center max-w-xl">
-        <Input
-          placeholder="Lost reason (required when marking LOST)"
-          value={lostReason}
-          onChange={(e) => setLostReason(e.target.value)}
-          className="bg-secondary/40 border-white/10 text-xs"
-        />
-      </div>
+      {editingStatus ? (
+        <div className="glass-card rounded-2xl p-5 border border-white/10 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" /> Update Status
+            </h3>
+            <Button size="sm" variant="outline" className="border-white/10 text-[10px] font-bold" onClick={() => setEditingStatus(false)}>
+              Done
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {STATUS_GROUPS.map((group) => (
+              <div key={group.label} className="space-y-2">
+                <p className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">{group.label}</p>
+                <div className="space-y-1.5">
+                  {group.statuses.map((s) => {
+                    const selected = lead.status === s;
+                    return (
+                      <label
+                        key={s}
+                        className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border cursor-pointer transition-colors text-xs font-bold ${
+                          selected
+                            ? "bg-primary/20 border-primary/40 text-white"
+                            : "bg-secondary/30 border-white/5 text-muted-foreground hover:bg-white/5"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="lead-status"
+                          value={s}
+                          checked={selected}
+                          onChange={() => {
+                            if (LOST_STATUSES.has(s) && !lostReason.trim()) {
+                              toast({ title: "Lost reason required", description: "Add a lost reason below before saving.", variant: "destructive" });
+                              return;
+                            }
+                            updateStatusMutation.mutate({
+                              status: s,
+                              lostReason: LOST_STATUSES.has(s) ? lostReason : undefined,
+                            });
+                          }}
+                          disabled={updateStatusMutation.isPending}
+                          className="accent-primary h-3.5 w-3.5 cursor-pointer"
+                        />
+                        {s.replace(/_/g, " ")}
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="max-w-xl">
+            <Input
+              placeholder="Lost reason (required when marking Lost)"
+              value={lostReason}
+              onChange={(e) => setLostReason(e.target.value)}
+              className="bg-secondary/40 border-white/10 text-xs"
+            />
+          </div>
+        </div>
+      ) : null}
       {lead.lostReason ? (
         <p className="text-xs text-rose-400 font-semibold">Current lost reason: {lead.lostReason}</p>
       ) : null}
@@ -438,6 +537,30 @@ export default function LeadDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
+          <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <h2 className="text-sm font-bold text-white flex items-center gap-2">
+                <PhoneCall className="h-4 w-4 text-primary" /> Log communication
+              </h2>
+              <span className="text-[10px] text-muted-foreground font-semibold">Opens the activity logger prefilled</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {(["CALL", "EMAIL", "WHATSAPP", "SMS", "MEETING"] as const).map((t) => {
+                const Icon = ACTIVITY_ICONS[t] ?? PhoneCall;
+                return (
+                  <Button
+                    key={t}
+                    size="sm"
+                    variant="outline"
+                    className="border-white/10 text-xs font-bold"
+                    onClick={() => openLog(t)}
+                  >
+                    <Icon className="h-3.5 w-3.5 mr-1" /> {t.replace(/_/g, " ")}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
           <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-6">
             <h2 className="text-base font-bold text-white flex items-center gap-2 border-b border-white/10 pb-3">
               <User className="h-4 w-4 text-primary" /> Profile
@@ -448,6 +571,14 @@ export default function LeadDetailPage() {
               <Info label="Course interest" value={lead.courseInterest || "-"} />
               <Info label="Counselor" value={lead.counselor?.name || "Unassigned"} />
               <Info label="City" value={lead.city || "-"} />
+              <Info label="Pincode" value={lead.pincode || "-"} />
+              {lead.googleId ? <Info label="Google ID" value={lead.googleId} mono /> : null}
+              {lead.manualAmount != null ? (
+                <Info
+                  label="Manual amount"
+                  value={`₹${Number(lead.manualAmount).toLocaleString("en-IN")}`}
+                />
+              ) : null}
               <Info
                 label="Last activity"
                 value={lead.lastActivityAt ? formatDateTime(lead.lastActivityAt) : "-"}
@@ -477,12 +608,10 @@ export default function LeadDetailPage() {
           </div>
 
           {activeTab === "timeline" && (
-            <TimelineCard
-              title="Activity timeline"
-              loading={activitiesLoading}
-              items={activityList}
+            <UnifiedTimeline
+              loading={timelineLoading}
+              items={Array.isArray(timeline) ? timeline : []}
               onAdd={() => openLog("NOTE")}
-              onComplete={(aid) => completeTaskMutation.mutate(aid)}
               quickActions
               onQuick={(t) => openLog(t)}
             />
@@ -715,6 +844,116 @@ function Info({
         {Icon ? <Icon className="h-4 w-4 text-primary" /> : null}
         {value}
       </div>
+    </div>
+  );
+}
+
+const KIND_STYLES: Record<
+  TimelineEntry["kind"],
+  { icon: React.ElementType; label: string; badge: string }
+> = {
+  activity: { icon: FileText, label: "Activity", badge: "bg-sky-500/20 text-sky-400 border-sky-500/30" },
+  notification: { icon: Send, label: "Message", badge: "bg-violet-500/20 text-violet-400 border-violet-500/30" },
+  automation: { icon: Workflow, label: "Automation", badge: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
+};
+
+function UnifiedTimeline({
+  loading,
+  items,
+  onAdd,
+  empty = "Nothing yet — activities, messages and automations will appear here.",
+  quickActions,
+  onQuick,
+  quickTypes = ["NOTE", "CALL", "EMAIL", "WHATSAPP", "TASK"],
+}: {
+  loading: boolean;
+  items: TimelineEntry[];
+  onAdd: () => void;
+  empty?: string;
+  quickActions?: boolean;
+  onQuick?: (t: (typeof ACTIVITY_TYPES)[number]) => void;
+  quickTypes?: (typeof ACTIVITY_TYPES)[number][];
+}) {
+  return (
+    <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-6">
+      <div className="flex items-center justify-between border-b border-white/10 pb-3 gap-3 flex-wrap">
+        <div>
+          <h2 className="text-base font-bold text-white flex items-center gap-2">
+            <Clock className="h-4 w-4 text-primary" /> Unified timeline
+          </h2>
+          <p className="text-[10px] text-muted-foreground mt-0.5 font-semibold">
+            Activities · messages · automations in one stream
+          </p>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          {quickActions && onQuick
+            ? quickTypes.map((t) => (
+                <Button key={t} size="sm" variant="outline" className="border-white/10 text-[10px] font-bold" onClick={() => onQuick(t)}>
+                  {t}
+                </Button>
+              ))
+            : null}
+          <Button size="sm" onClick={onAdd} className="bg-primary text-white text-xs font-bold">
+            <Plus className="h-3.5 w-3.5 mr-1" /> Add
+          </Button>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <Skeleton key={i} className="h-16 w-full" />
+          ))}
+        </div>
+      ) : !items.length ? (
+        <p className="text-xs text-muted-foreground text-center py-8 font-semibold">{empty}</p>
+      ) : (
+        <div className="space-y-4">
+          {items.map((entry) => {
+            const kindStyle = KIND_STYLES[entry.kind] ?? KIND_STYLES.activity;
+            const KindIcon = kindStyle.icon;
+            const activityIcon = entry.activityType ? ACTIVITY_ICONS[entry.activityType] : undefined;
+            const Icon = entry.kind === "activity" && activityIcon ? activityIcon : KindIcon;
+            return (
+              <div key={entry.id} className="flex gap-4 p-4 rounded-xl bg-secondary/30 border border-white/5">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary border border-primary/30">
+                  <Icon className="h-4 w-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1 gap-2 flex-wrap">
+                    <span className="text-xs font-bold text-white">{entry.title}</span>
+                    <span className="text-[10px] font-medium text-muted-foreground">{formatDateTime(entry.at)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className={`text-[9px] font-extrabold uppercase tracking-wider border px-1.5 py-0.5 rounded-full ${kindStyle.badge}`}>
+                      {entry.channel ? `${kindStyle.label} · ${entry.channel}` : kindStyle.label}
+                    </span>
+                    {entry.status ? (
+                      <span
+                        className={`text-[9px] font-extrabold uppercase tracking-wider border px-1.5 py-0.5 rounded-full ${
+                          /FAILED|ERROR|OPEN/i.test(entry.status)
+                            ? "bg-rose-500/20 text-rose-400 border-rose-500/30"
+                            : /SENT|DONE|COMPLETED|RUNNING/i.test(entry.status)
+                              ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                              : "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                        }`}
+                      >
+                        {entry.status}
+                      </span>
+                    ) : null}
+                  </div>
+                  {entry.detail ? <p className="text-xs text-muted-foreground leading-relaxed break-words">{entry.detail}</p> : null}
+                  {entry.actorName ? (
+                    <p className="text-[10px] text-primary font-semibold mt-1">
+                      {entry.kind === "automation" ? "Triggered by" : "Logged by"} {entry.actorName}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

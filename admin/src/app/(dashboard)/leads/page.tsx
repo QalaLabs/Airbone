@@ -33,6 +33,9 @@ interface Lead {
   priority: "HIGH" | "MEDIUM" | "LOW";
   score: number;
   courseInterest?: string;
+  pincode?: string;
+  googleId?: string;
+  manualAmount?: number | string | null;
   assignedTo?: { name: string };
   counselor?: { id: string; name: string };
   nextFollowUp?: string | null;
@@ -46,13 +49,21 @@ const createLeadSchema = z.object({
   phone: z.string().min(10, "Phone must be at least 10 characters"),
   source: z.string().min(1, "Source is required"),
   courseInterest: z.string().optional(),
+  pincode: z.string().max(10).optional(),
+  manualAmount: z.coerce.number().nonnegative().optional(),
   notes: z.string().optional(),
 });
 
 type CreateLeadForm = z.infer<typeof createLeadSchema>;
 
 const LEAD_SOURCES = ["HOMEPAGE_CTA", "COURSE_PAGE", "CONTACT_FORM", "CALLBACK_REQUEST", "BROCHURE_DOWNLOAD", "GOOGLE_ADS", "FACEBOOK_ADS", "ORGANIC", "REFERRAL", "WHATSAPP", "DIRECT"];
-const LEAD_STATUSES = ["all", "NEW", "CONTACTED", "INTERESTED", "NOT_INTERESTED", "FOLLOW_UP", "COUNSELED", "CONVERTED", "LOST"];
+const LEAD_STATUSES = [
+  "all", "NEW", "CONNECTED", "CALL_BACK", "INTERESTED", "PROSPECT", "WON",
+  "NOT_CONNECTED", "RINGING", "NOT_REACHABLE", "SWITCHED_OFF", "VOICEMAIL",
+  "LOST", "INCOMING_BARD", "OUT_OF_SERVICE", "NOT_AWARE", "NOT_CONTACTABLE",
+  "LOCATION_OUT_OF_SCOPE", "LANGUAGE_BARRIER", "PRICE_HIGH", "JOINED_OTHERS",
+  "NOT_ELIGIBLE", "INVALID_NUMBER", "TEST_LEAD",
+];
 
 export default function LeadsPage() {
   const queryClient = useQueryClient();
@@ -236,6 +247,19 @@ export default function LeadsPage() {
       cell: ({ row }) => (
         <span className="text-xs font-semibold text-foreground">{row.original.courseInterest ?? "-"}</span>
       ),
+    },
+    {
+      accessorKey: "manualAmount",
+      header: "Manual Amount",
+      cell: ({ row }) => {
+        const amount = row.original.manualAmount;
+        const numeric = typeof amount === "string" ? parseFloat(amount) : amount;
+        return numeric && numeric > 0 ? (
+          <span className="text-xs font-bold text-foreground">₹{numeric.toLocaleString("en-IN")}</span>
+        ) : (
+          <span className="text-xs text-muted-foreground">-</span>
+        );
+      },
     },
     {
       accessorKey: "assignedTo",
@@ -481,6 +505,14 @@ export default function LeadsPage() {
               <div className="space-y-1.5">
                 <Label htmlFor="courseInterest" className="text-xs font-bold text-muted-foreground">Course Interest</Label>
                 <Input id="courseInterest" placeholder="e.g. DGCA CPL Ground School" className="bg-secondary/40 border-white/10 text-sm font-semibold" {...register("courseInterest")} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="pincode" className="text-xs font-bold text-muted-foreground">Location Pincode</Label>
+                <Input id="pincode" placeholder="e.g. 110075" maxLength={10} className="bg-secondary/40 border-white/10 text-sm font-mono" {...register("pincode")} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="manualAmount" className="text-xs font-bold text-muted-foreground">Manual Amount (₹)</Label>
+                <Input id="manualAmount" type="number" min={0} step="0.01" placeholder="Custom financial entry" className="bg-secondary/40 border-white/10 text-sm font-mono" {...register("manualAmount")} />
               </div>
               <div className="col-span-2 space-y-1.5">
                 <Label htmlFor="notes" className="text-xs font-bold text-muted-foreground">Internal Notes & Context</Label>

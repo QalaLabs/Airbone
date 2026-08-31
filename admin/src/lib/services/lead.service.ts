@@ -8,6 +8,7 @@ import { ConflictError, NotFoundError } from "@/lib/utils/errors";
 import type { CreateLeadInput, UpdateLeadInput, LeadFilters, CreateActivityInput } from "@/lib/validations/lead.schema";
 import type { RequestContext } from "@/types";
 import type { LeadStatus, LeadSource } from "@prisma/client";
+import { isLostStatus } from "@/lib/leads/lead-status";
 
 export class LeadService {
   static resolveSource(raw: string = ""): LeadSource {
@@ -718,6 +719,26 @@ export class LeadService {
       APPLICATION_SUBMITTED: 40,
       CONVERTED: 90,
       LOST: 0,
+      CONNECTED: 15,
+      CALL_BACK: 20,
+      PROSPECT: 45,
+      WON: 90,
+      NOT_CONNECTED: 0,
+      RINGING: 0,
+      NOT_REACHABLE: 0,
+      SWITCHED_OFF: 0,
+      VOICEMAIL: 0,
+      INCOMING_BARD: 0,
+      OUT_OF_SERVICE: 0,
+      NOT_AWARE: 0,
+      NOT_CONTACTABLE: 0,
+      LOCATION_OUT_OF_SCOPE: 0,
+      LANGUAGE_BARRIER: 0,
+      PRICE_HIGH: 0,
+      JOINED_OTHERS: 0,
+      NOT_ELIGIBLE: 0,
+      INVALID_NUMBER: 0,
+      TEST_LEAD: 0,
     };
     score += statusBoost[lead.status] ?? 0;
     score += Math.min(15, (byType.CALL ?? 0) * 5);
@@ -764,7 +785,7 @@ export class LeadService {
     const lead = await this.getById(ctx, leadId);
     const { AdmissionService } = await import("@/lib/services/admission.service");
     const { ValidationError } = await import("@/lib/utils/errors");
-    if (lead.status === "LOST") {
+    if (isLostStatus(lead.status)) {
       throw new ValidationError([{ message: "Cannot convert a lost lead" }]);
     }
 

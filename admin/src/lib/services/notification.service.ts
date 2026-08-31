@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/db/client";
 import type { NotificationChannel, NotificationEvent } from "@prisma/client";
+import { getProvider } from "@/lib/messaging";
 
-export const DEFAULT_FROM_EMAIL = "noreply@airborneacademy.in";
+export { DEFAULT_FROM_EMAIL } from "@/lib/messaging/constants";
 
 type DeliveryStatus = "SENT" | "FAILED" | "PENDING" | "NOT_CONFIGURED";
 
@@ -28,6 +29,20 @@ interface NotificationDispatchParams {
 export class NotificationService {
   static async dispatch(params: NotificationDispatchParams): Promise<DeliveryStatus | null> {
     try {
+      // Master switch: automated WhatsApp sends require an explicit opt-in on
+      // the org's feature flags (WhatsApp → Settings). Campaign launches are
+      // deliberate admin actions and go through the provider directly.
+      if (params.channel === "WHATSAPP") {
+        const org = await prisma.organization.findUnique({
+          where: { id: params.orgId },
+          select: { featureFlags: true },
+        });
+        const flags = org?.featureFlags;
+        const enabled =
+          !!flags && typeof flags === "object" && (flags as Record<string, unknown>).whatsappNotifications === true;
+        if (!enabled) return "NOT_CONFIGURED";
+      }
+
       const template = await prisma.notificationTemplate.findFirst({
         where: {
           orgId: params.orgId,
@@ -88,6 +103,10 @@ export class NotificationService {
 }
 
 // ─── Provider dispatch ─────────────────────────────────────────────────────────
+//
+// Transport is delegated to the messaging provider registry
+// (src/lib/messaging) — template resolution, NotificationLog bookkeeping and
+// interpolation stay here.
 
 async function dispatchToProvider(input: {
   channel: NotificationChannel;
@@ -95,59 +114,18 @@ async function dispatchToProvider(input: {
   subject: string | null;
   body: string;
 }): Promise<{ status: DeliveryStatus; errorMsg?: string; externalId?: string }> {
-  if (input.channel !== "EMAIL") {
+  if (input.channel !== "EMAIL" && input.channel !== "SMS" && input.channel !== "WHATSAPP") {
     return {
       status: "NOT_CONFIGURED",
       errorMsg: `${input.channel} channel has no configured provider.`,
     };
   }
 
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey || apiKey.trim().length === 0) {
-    return {
-      status: "NOT_CONFIGURED",
-      errorMsg: "Email provider (Resend) is not configured. Set RESEND_API_KEY.",
-    };
-  }
-
-  const from = process.env.RESEND_FROM_EMAIL ?? DEFAULT_FROM_EMAIL;
-
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 10_000);
-  try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey.trim()}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from,
-        to: input.recipient,
-        subject: input.subject ?? "",
-        text: input.body,
-      }),
-      signal: controller.signal,
-    });
-
-    const payload = (await res.json().catch(() => null)) as { id?: string; message?: string } | null;
-
-    if (!res.ok) {
-      const detail = payload?.message ?? `HTTP ${res.status}`;
-      return { status: "FAILED", errorMsg: `Resend rejected send (${res.status}): ${detail}` };
-    }
-
-    if (!payload?.id) {
-      return { status: "FAILED", errorMsg: "Resend returned 200 without a message id." };
-    }
-
-    return { status: "SENT", externalId: payload.id };
-  } catch (err) {
-    const detail = err instanceof Error ? err.message : String(err);
-    return { status: "FAILED", errorMsg: `Resend request failed: ${detail}` };
-  } finally {
-    clearTimeout(timer);
-  }
+  return getProvider(input.channel).send({
+    to: input.recipient,
+    subject: input.subject ?? undefined,
+    body: input.body,
+  });
 }
 
 // ─── Template interpolation ─────────────────────────────────────────────────────
