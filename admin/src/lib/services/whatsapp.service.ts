@@ -7,8 +7,23 @@ import {
   normalizePhone,
   type InboundWhatsAppMessage,
 } from "@/lib/messaging/inbound";
-import { emitEvent } from "@/lib/events/inngest";
+import { InteraktProvider, maskSecret } from "@/lib/messaging/providers/interakt.provider";
+import {
+  getDefaultInboxTemplateVariableNames,
+  getInteraktDefaultTemplate,
+} from "@/lib/messaging/providers/interakt/config";
+import { buildInboxTemplatePayload } from "@/lib/messaging/providers/interakt/inbox-template";
+import { MockWhatsAppProvider } from "@/lib/messaging/providers/mock.provider";
+import {
+  isInteraktWebhookPayload,
+  parseInteraktWebhook,
+  providerEventId,
+  shouldUpgradeStatus,
+  type NormalizedInteraktWebhook,
+} from "@/lib/messaging/providers/interakt/webhooks";
+import { persistEventForWebhook } from "@/lib/events/dispatch";
 import { AuditService } from "@/lib/services/audit.service";
+import { validUuid } from "@/lib/events/actor";
 import { NotFoundError, ConflictError } from "@/lib/utils/errors";
 import {
   extractTemplateVariables,
@@ -71,7 +86,7 @@ export class WhatsAppService {
         prisma.whatsAppMessage.count({ where: { orgId, direction: "IN", createdAt: { gte: since } } }),
         prisma.whatsAppMessage.count({ where: { orgId, direction: "OUT", status: "FAILED", createdAt: { gte: since } } }),
         prisma.notificationTemplate.count({ where: { orgId, channel: "WHATSAPP", isActive: true } }),
-        prisma.workflow.count({ where: { orgId: orgId, isActive: true } }),
+        prisma.interaktAutomation.count({ where: { orgId, isActive: true } }),
       ]);
 
     const provider = getProvider("WHATSAPP");
@@ -166,16 +181,65 @@ export class WhatsAppService {
     });
   }
 
-  /** Manual free-form send from the inbox. */
+  /** Manual inbox send — dispatches an approved Interakt template (not free-form text). */
   static async sendMessage(ctx: RequestContext, conversationId: string, body: string) {
     const conversation = await prisma.whatsAppConversation.findFirst({
       where: { id: conversationId, orgId: ctx.orgId },
-      select: { id: true, phone: true, optedOut: true },
+      select: {
+        id: true,
+        phone: true,
+        optedOut: true,
+        leadId: true,
+        lead: { select: { name: true, courseInterest: true } },
+      },
     });
     if (!conversation) throw new NotFoundError("Conversation", conversationId);
     if (conversation.optedOut) throw new ConflictError("Contact has opted out of WhatsApp");
 
-    const result = await getProvider("WHATSAPP").send({ to: conversation.phone, body });
+    const templateName = getInteraktDefaultTemplate();
+    if (!templateName) {
+      const errorMsg =
+        "Interakt inbox send requires INTERAKT_DEFAULT_TEMPLATE (approved template code name). Free-form WhatsApp text is not supported by the public API.";
+      return this.persistInboxSendFailure(ctx, conversation, body, errorMsg);
+    }
+
+    const templateRecord = await prisma.notificationTemplate.findFirst({
+      where: { orgId: ctx.orgId, channel: "WHATSAPP", name: templateName, isActive: true },
+      select: { variables: true },
+    });
+
+    const variableNames =
+      templateRecord?.variables?.length ? templateRecord.variables : getDefaultInboxTemplateVariableNames();
+
+    const built = buildInboxTemplatePayload(templateName, variableNames, {
+      typedMessage: body,
+      lead: conversation.lead,
+    });
+
+    if (!built.ok) {
+      return this.persistInboxSendFailure(ctx, conversation, body, built.error, templateName);
+    }
+
+    const result = await getProvider("WHATSAPP").send({
+      to: conversation.phone,
+      body: built.displayBody,
+      templateName: built.templateName,
+      templateLanguage: built.templateLanguage,
+      bodyValues: built.bodyValues,
+      metadata: {
+        conversationId,
+        ...(conversation.leadId ? { leadId: conversation.leadId } : {}),
+      },
+    });
+
+    const status = result.status === "SENT" ? "SENT" : "FAILED";
+    const errorMsg =
+      result.status === "SENT"
+        ? null
+        : result.errorMsg ??
+          (result.status === "NOT_CONFIGURED"
+            ? "WhatsApp provider is not configured."
+            : "Interakt rejected the template send.");
 
     const [message] = await prisma.$transaction([
       prisma.whatsAppMessage.create({
@@ -183,11 +247,19 @@ export class WhatsAppService {
           orgId: ctx.orgId,
           conversationId,
           direction: "OUT",
-          body,
-          status: result.status === "SENT" ? "SENT" : result.status === "FAILED" ? "FAILED" : "QUEUED",
+          body: built.displayBody,
+          templateName: built.templateName,
+          status,
           externalId: result.externalId,
-          errorMsg: result.errorMsg,
+          errorMsg,
           sentBy: ctx.user.id,
+          leadId: conversation.leadId,
+          metadata: {
+            provider: getProvider("WHATSAPP").name,
+            sendStatus: result.status,
+            inboxTypedMessage: body.trim() || null,
+            templateVariables: built.bodyValues ?? [],
+          } as Prisma.InputJsonValue,
         },
         select: { id: true },
       }),
@@ -195,12 +267,50 @@ export class WhatsAppService {
         where: { id: conversationId },
         data: {
           lastMessageAt: new Date(),
-          lastMessagePreview: body.slice(0, 255),
+          lastMessagePreview: built.displayBody.slice(0, 255),
         },
       }),
     ]);
 
-    return { id: message.id, status: result.status, errorMsg: result.errorMsg ?? null };
+    return { id: message.id, status: result.status, errorMsg };
+  }
+
+  private static async persistInboxSendFailure(
+    ctx: RequestContext,
+    conversation: { id: string; leadId: string | null },
+    body: string,
+    errorMsg: string,
+    templateName?: string,
+  ) {
+    const [message] = await prisma.$transaction([
+      prisma.whatsAppMessage.create({
+        data: {
+          orgId: ctx.orgId,
+          conversationId: conversation.id,
+          direction: "OUT",
+          body: body.trim() || `[Template send failed: ${templateName ?? "unset"}]`,
+          templateName: templateName ?? null,
+          status: "FAILED",
+          errorMsg,
+          sentBy: ctx.user.id,
+          leadId: conversation.leadId,
+          metadata: {
+            provider: getProvider("WHATSAPP").name,
+            sendStatus: "FAILED",
+            inboxTypedMessage: body.trim() || null,
+          } as Prisma.InputJsonValue,
+        },
+        select: { id: true },
+      }),
+      prisma.whatsAppConversation.update({
+        where: { id: conversation.id },
+        data: {
+          lastMessageAt: new Date(),
+          lastMessagePreview: body.slice(0, 255) || errorMsg.slice(0, 255),
+        },
+      }),
+    ]);
+    return { id: message.id, status: "FAILED" as const, errorMsg };
   }
 
   // ─── Contacts ───────────────────────────────────────────────────────────────
@@ -407,7 +517,12 @@ export class WhatsAppService {
       });
 
       try {
-        const result = await getProvider("WHATSAPP").send({ to: recipient.phone, body: rendered });
+        const result = await getProvider("WHATSAPP").send({
+          to: recipient.phone,
+          body: rendered,
+          templateName: campaign.templateName ?? undefined,
+          metadata: { leadId: recipient.id, campaignId: campaign.id },
+        });
 
         const conversation = await prisma.whatsAppConversation.upsert({
           where: { orgId_phone: { orgId: ctx.orgId, phone: recipient.phone } },
@@ -435,6 +550,8 @@ export class WhatsAppService {
             errorMsg: result.errorMsg,
             sentBy: ctx.user.id,
             campaignId: campaign.id,
+            leadId: recipient.id,
+            metadata: { provider: getProvider("WHATSAPP").name, sendStatus: result.status } as Prisma.InputJsonValue,
           },
           select: { id: true },
         });
@@ -469,21 +586,8 @@ export class WhatsAppService {
   // ─── Automations & sequences (read views over Workflow) ────────────────────
 
   static async listAutomations(orgId: string) {
-    const workflows = await prisma.workflow.findMany({
-      where: { orgId, isActive: true },
-      select: { id: true, name: true, code: true, triggerEvent: true, steps: true, updatedAt: true },
-      orderBy: { updatedAt: "desc" },
-    });
-
-    return workflows
-      .filter((w) => usesWhatsApp(JSON.stringify(w.steps)) || isWhatsAppTrigger(w.triggerEvent))
-      .map((w) => ({
-        id: w.id,
-        name: w.name,
-        code: w.code,
-        triggerEvent: w.triggerEvent,
-        updatedAt: w.updatedAt.toISOString(),
-      }));
+    const { listInteraktAutomations } = await import("@/lib/automation/interakt-automations");
+    return listInteraktAutomations(orgId);
   }
 
   static async listSequences(orgId: string) {
@@ -685,14 +789,34 @@ export class WhatsAppService {
     });
     const flags = (org?.featureFlags ?? {}) as Record<string, unknown>;
     const provider = getProvider("WHATSAPP");
+    const envProvider = (process.env.WHATSAPP_PROVIDER ?? "").trim().toLowerCase() || null;
+    const apiKey = process.env.INTERAKT_API_KEY?.trim();
+    const webhookSecret = process.env.INTERAKT_WEBHOOK_SECRET || process.env.WHATSAPP_WEBHOOK_SECRET;
+    const configured = provider.isConfigured();
+    const configurationStatus = !envProvider
+      ? "unset"
+      : envProvider === "mock"
+        ? "mock"
+        : envProvider === "interakt" && !apiKey
+          ? "missing_credentials"
+          : configured
+            ? "ready"
+            : "not_registered";
 
     return {
-      providerConfigured: provider.isConfigured(),
+      provider: envProvider === "interakt" || envProvider === "mock" ? envProvider : provider.name,
+      providerConfigured: configured,
       providerName: provider.name,
-      envProvider: process.env.WHATSAPP_PROVIDER ?? null,
+      envProvider,
+      connected: envProvider === "mock" && configured,
+      configurationStatus,
+      credentialsMasked: envProvider === "interakt" ? { apiKey: maskSecret(apiKey) } : null,
       whatsappNotifications: flags.whatsappNotifications === true,
       webhookUrl: `${process.env.NEXT_PUBLIC_ADMIN_URL ?? "https://airborne-admin-368523757732.asia-south1.run.app"}/api/webhooks/whatsapp`,
-      webhookConfigured: Boolean(process.env.WHATSAPP_WEBHOOK_SECRET),
+      webhookConfigured: Boolean(webhookSecret),
+      webhookAuth: envProvider === "interakt" ? "interakt-signature" : "shared-secret",
+      defaultTemplate: getInteraktDefaultTemplate() ?? null,
+      inboxSendMode: "approved_template" as const,
     };
   }
 
@@ -734,12 +858,19 @@ export class WhatsAppService {
     const phone = normalizePhone(msg.phone);
     if (!phone) return { skipped: "invalid_phone" };
 
-    // Link to a lead when one exists for this number: exact match first, then
-    // a last-10-digits suffix match so +91 / country-code variants resolve.
-    let lead: { id: string; whatsappOptOut: boolean } | null = await prisma.lead.findFirst({
-      where: { orgId, phone },
-      select: { id: true, whatsappOptOut: true },
-    });
+    const leadIdHint = validUuid(msg.userIdTrait);
+    let lead: { id: string; whatsappOptOut: boolean } | null = leadIdHint
+      ? await prisma.lead.findFirst({
+          where: { id: leadIdHint, orgId },
+          select: { id: true, whatsappOptOut: true },
+        })
+      : null;
+    if (!lead) {
+      lead = await prisma.lead.findFirst({
+        where: { orgId, phone },
+        select: { id: true, whatsappOptOut: true },
+      });
+    }
     if (!lead && phone.length >= 10) {
       lead = await prisma.lead.findFirst({
         where: { orgId, phone: { endsWith: phone.slice(-10) } },
@@ -782,13 +913,36 @@ export class WhatsAppService {
         body: msg.body,
         status: "RECEIVED",
         externalId: msg.externalId ?? null,
+        leadId: lead?.id ?? null,
+        metadata: {
+          providerCustomerId: msg.providerCustomerId ?? null,
+          userIdTrait: msg.userIdTrait ?? null,
+        } as Prisma.InputJsonValue,
       },
       select: { id: true },
     });
 
+    if (lead) {
+      await prisma.leadActivity.create({
+        data: {
+          leadId: lead.id,
+          orgId,
+          activityType: "WHATSAPP",
+          title: optOut ? "WhatsApp STOP received" : "WhatsApp reply received",
+          notes: msg.body.slice(0, 1000),
+          completedAt: now,
+          metadata: {
+            conversationId: conversation.id,
+            messageId: message.id,
+            externalId: msg.externalId ?? null,
+          } as Prisma.InputJsonValue,
+        },
+      });
+    }
+
     // Keyword side effects — flip the lead-level flag and leave an audit trail.
-    // The kill-switch workflow reacts to the emitted event and stops every
-    // active automation for the entity.
+    // STOP also stops active runs synchronously (compliance); opted_out event
+    // is persisted before HTTP 200 for downstream side effects via cron.
     if ((optOut || optIn) && lead) {
       await prisma.lead.update({ where: { id: lead.id }, data: { whatsappOptOut: optOut } });
       await AuditService.write({
@@ -797,6 +951,17 @@ export class WhatsAppService {
         entityType: "lead",
         entityId: lead.id,
         newValue: { phone, keyword: msg.body.slice(0, 50) },
+      });
+    }
+    if (optOut && lead) {
+      await prisma.workflowRun.updateMany({
+        where: {
+          orgId,
+          entityType: "lead",
+          entityId: lead.id,
+          status: { in: ["RUNNING", "PAUSED"] },
+        },
+        data: { status: "STOPPED", stoppedReason: "Contact opted out via WhatsApp", stoppedAt: new Date(), completedAt: new Date() },
       });
     }
 
@@ -809,7 +974,7 @@ export class WhatsAppService {
     } as const;
 
     if (optOut) {
-      await emitEvent({
+      await persistEventForWebhook({
         ...baseEvent,
         name: "whatsapp.opted_out",
         data: { conversationId: conversation.id, ...(lead && { leadId: lead.id }), phone },
@@ -817,7 +982,7 @@ export class WhatsAppService {
     } else if (!optIn) {
       // Regular replies power reply automations. Opt-in confirmations stay
       // local — there is no opted-in trigger in the catalog by design.
-      await emitEvent({
+      await persistEventForWebhook({
         ...baseEvent,
         name: "whatsapp.replied",
         data: {
@@ -838,6 +1003,295 @@ export class WhatsAppService {
       optIn,
     };
   }
+
+  static async testConnection(): Promise<{
+    ok: boolean;
+    live: boolean;
+    provider: string;
+    status?: number;
+    error?: string;
+  }> {
+    const provider = getProvider("WHATSAPP");
+    if (provider instanceof InteraktProvider) {
+      const result = await provider.testConnection();
+      return { provider: provider.name, ...result };
+    }
+    if (provider instanceof MockWhatsAppProvider) {
+      const result = await provider.testConnection();
+      return { provider: provider.name, ...result };
+    }
+    return {
+      ok: false,
+      live: false,
+      provider: provider.name,
+      error: provider.isConfigured() ? "Provider does not support health checks" : "No WhatsApp provider configured",
+    };
+  }
+
+  /**
+   * Persist an outbound WhatsAppMessage after the provider accepted (or refused)
+   * a send. Idempotent on (orgId, idempotencyKey).
+   */
+  static async persistOutbound(input: {
+    orgId: string;
+    phone: string;
+    body: string;
+    status: string;
+    externalId?: string;
+    errorMsg?: string;
+    templateName?: string;
+    leadId?: string;
+    campaignId?: string;
+    workflowRunId?: string;
+    workflowStepKey?: string;
+    idempotencyKey?: string;
+    sentBy?: string;
+    metadata?: Record<string, unknown>;
+  }): Promise<{ id: string; duplicate?: boolean }> {
+    if (input.idempotencyKey) {
+      const existing = await prisma.whatsAppMessage.findFirst({
+        where: { orgId: input.orgId, idempotencyKey: input.idempotencyKey },
+        select: { id: true },
+      });
+      if (existing) return { id: existing.id, duplicate: true };
+    }
+
+    const phone = normalizePhone(input.phone);
+    const now = new Date();
+    const conversation = await prisma.whatsAppConversation.upsert({
+      where: { orgId_phone: { orgId: input.orgId, phone } },
+      update: {
+        lastMessageAt: now,
+        lastMessagePreview: input.body.slice(0, 255),
+        ...(input.leadId && { leadId: input.leadId }),
+      },
+      create: {
+        orgId: input.orgId,
+        phone,
+        leadId: input.leadId,
+        lastMessageAt: now,
+        lastMessagePreview: input.body.slice(0, 255),
+      },
+      select: { id: true },
+    });
+
+    try {
+      const message = await prisma.whatsAppMessage.create({
+        data: {
+          orgId: input.orgId,
+          conversationId: conversation.id,
+          direction: "OUT",
+          body: input.body,
+          templateName: input.templateName,
+          status: input.status,
+          externalId: input.externalId,
+          errorMsg: input.errorMsg,
+          sentBy: input.sentBy,
+          campaignId: validUuid(input.campaignId),
+          leadId: validUuid(input.leadId),
+          workflowRunId: validUuid(input.workflowRunId),
+          workflowStepKey: input.workflowStepKey,
+          idempotencyKey: input.idempotencyKey,
+          metadata: (input.metadata ?? {}) as Prisma.InputJsonValue,
+        },
+        select: { id: true },
+      });
+      return { id: message.id };
+    } catch (err) {
+      const code = err && typeof err === "object" && "code" in err ? String((err as { code: unknown }).code) : "";
+      if (code === "P2002" && input.idempotencyKey) {
+        const existing = await prisma.whatsAppMessage.findFirst({
+          where: { orgId: input.orgId, idempotencyKey: input.idempotencyKey },
+          select: { id: true },
+        });
+        if (existing) return { id: existing.id, duplicate: true };
+      }
+      throw err;
+    }
+  }
+
+  /**
+   * Reserve an outbound row BEFORE calling Interakt — prevents duplicate sends
+   * when a worker retries after crash/timeout.
+   */
+  static async reserveOutboundSend(input: {
+    orgId: string;
+    phone: string;
+    body: string;
+    templateName?: string;
+    leadId?: string;
+    campaignId?: string;
+    workflowRunId?: string;
+    workflowStepKey?: string;
+    idempotencyKey?: string;
+    sentBy?: string;
+    metadata?: Record<string, unknown>;
+  }): Promise<{ messageId: string; skipSend: boolean; externalId?: string | null }> {
+    if (input.idempotencyKey) {
+      const existing = await prisma.whatsAppMessage.findFirst({
+        where: { orgId: input.orgId, idempotencyKey: input.idempotencyKey },
+        select: { id: true, status: true, externalId: true },
+      });
+      if (existing && existing.status !== "FAILED") {
+        return { messageId: existing.id, skipSend: true, externalId: existing.externalId };
+      }
+      if (existing) {
+        await prisma.whatsAppMessage.update({
+          where: { id: existing.id },
+          data: { status: "QUEUED", errorMsg: null },
+        });
+        return { messageId: existing.id, skipSend: false, externalId: existing.externalId };
+      }
+    }
+
+    const created = await this.persistOutbound({
+      ...input,
+      status: "QUEUED",
+    });
+    return { messageId: created.id, skipSend: created.duplicate === true };
+  }
+
+  static async finalizeOutboundSend(
+    messageId: string,
+    input: { status: string; externalId?: string; errorMsg?: string },
+  ): Promise<void> {
+    await prisma.whatsAppMessage.update({
+      where: { id: messageId },
+      data: {
+        status: input.status,
+        ...(input.externalId !== undefined && { externalId: input.externalId }),
+        ...(input.errorMsg !== undefined && { errorMsg: input.errorMsg }),
+      },
+    });
+  }
+
+  static async handleProviderWebhook(orgId: string, payload: unknown): Promise<IngestResult & { kind?: string }> {
+    if (isInteraktWebhookPayload(payload)) {
+      const event = parseInteraktWebhook(payload);
+      if (!event) return { skipped: "unrecognized_interakt_payload" };
+      const claimed = await this.claimProviderEvent(orgId, "interakt", event);
+      if (!claimed) return { duplicate: true, kind: event.kind };
+
+      if (event.kind === "inbound") {
+        const result = await this.ingestInboundMessage(orgId, {
+          phone: event.phone,
+          body: event.body,
+          externalId: event.providerMessageId,
+          profileName: event.profileName,
+          providerCustomerId: event.providerCustomerId,
+          userIdTrait: event.userIdTrait,
+        });
+        return { ...result, kind: "inbound" };
+      }
+      if (event.kind === "status") {
+        await this.applyDeliveryStatus(orgId, event);
+        return { kind: "status" };
+      }
+      return { skipped: event.kind, kind: event.kind };
+    }
+
+    return { skipped: "not_interakt" };
+  }
+
+  static async applyDeliveryStatus(orgId: string, event: NormalizedInteraktWebhook): Promise<void> {
+    const next = event.internalStatus;
+    if (!next) return;
+
+    let message:
+      | { id: string; status: string; conversationId: string; leadId: string | null; externalId: string | null }
+      | null = null;
+
+    const internalId = validUuid(event.callbackData?.m);
+    if (internalId) {
+      message = await prisma.whatsAppMessage.findFirst({
+        where: { id: internalId, orgId },
+        select: { id: true, status: true, conversationId: true, leadId: true, externalId: true },
+      });
+    }
+    if (!message && event.callbackData?.i) {
+      message = await prisma.whatsAppMessage.findFirst({
+        where: { orgId, idempotencyKey: event.callbackData.i },
+        select: { id: true, status: true, conversationId: true, leadId: true, externalId: true },
+      });
+    }
+    if (!message && event.providerMessageId) {
+      message = await prisma.whatsAppMessage.findFirst({
+        where: { orgId, externalId: event.providerMessageId },
+        select: { id: true, status: true, conversationId: true, leadId: true, externalId: true },
+      });
+    }
+    if (!message) return;
+    if (!shouldUpgradeStatus(message.status, next)) {
+      if (!message.externalId && event.providerMessageId) {
+        await prisma.whatsAppMessage.update({
+          where: { id: message.id },
+          data: { externalId: event.providerMessageId },
+        });
+      }
+      return;
+    }
+
+    await prisma.whatsAppMessage.update({
+      where: { id: message.id },
+      data: {
+        status: next,
+        ...(event.providerMessageId && { externalId: event.providerMessageId }),
+        ...(next === "FAILED" && {
+          errorMsg: event.failureReason ?? event.channelErrorCode ?? "Interakt delivery failed",
+        }),
+      },
+    });
+
+    const name =
+      next === "SENT"
+        ? "whatsapp.sent"
+        : next === "DELIVERED"
+          ? "whatsapp.delivered"
+          : next === "READ"
+            ? "whatsapp.read"
+            : "whatsapp.failed";
+    await persistEventForWebhook({
+      orgId,
+      actorId: "system",
+      actorName: "WhatsApp Webhook",
+      requestId: event.providerMessageId ?? message.id,
+      timestamp: new Date().toISOString(),
+      name,
+      data: {
+        messageId: message.id,
+        conversationId: message.conversationId,
+        ...(message.leadId && { leadId: message.leadId }),
+        ...(event.providerMessageId && { externalId: event.providerMessageId }),
+      },
+    });
+  }
+
+  private static async claimProviderEvent(
+    orgId: string,
+    provider: string,
+    event: NormalizedInteraktWebhook,
+  ): Promise<boolean> {
+    try {
+      await prisma.whatsAppProviderEvent.create({
+        data: {
+          orgId,
+          provider,
+          eventType: event.type,
+          providerEventId: providerEventId(event),
+          payload: {
+            phone: event.phone,
+            messageId: event.providerMessageId ?? null,
+            status: event.internalStatus ?? event.providerStatus ?? null,
+          } as Prisma.InputJsonValue,
+        },
+      });
+      return true;
+    } catch (err) {
+      const code = err && typeof err === "object" && "code" in err ? String((err as { code: unknown }).code) : "";
+      if (code === "P2002") return false;
+      throw err;
+    }
+  }
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -850,14 +1304,6 @@ export interface IngestResult {
   leadId?: string;
   optOut?: boolean;
   optIn?: boolean;
-}
-
-function usesWhatsApp(stepsJson: string): boolean {
-  return stepsJson.includes("SEND_WHATSAPP");
-}
-
-function isWhatsAppTrigger(triggerEvent: string): boolean {
-  return triggerEvent.startsWith("WHATSAPP_");
 }
 
 function interpolate(text: string, variables: Record<string, string>): string {

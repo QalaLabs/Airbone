@@ -32,14 +32,14 @@ gcloud run deploy airborne-web \
   --region asia-south1 \
   --platform managed \
   --allow-unauthenticated \
-  --min-instances 1 \
+  --min-instances 0 \
   --max-instances 4 \
   --port 8080 \
   --cpu 1 \
   --memory 512Mi \
   --concurrency 80 \
   --timeout 60 \
-  --no-cpu-throttling
+  --cpu-boost
 ```
 
 ### airborne-admin (admin + API)
@@ -50,18 +50,16 @@ gcloud run deploy airborne-admin \
   --region asia-south1 \
   --platform managed \
   --allow-unauthenticated \
-  --min-instances 1 \
+  --min-instances 0 \
   --max-instances 4 \
   --port 8080 \
-  --cpu 2 \
+  --cpu 1 \
   --memory 1Gi \
   --concurrency 80 \
   --timeout 120 \
-  --no-cpu-throttling
+  --cpu-boost
 ```
 
-> `--no-cpu-throttling`: keeps CPU allocated while idle so Inngest's
-> poll-based worker stays warm at `min-instances=1`.
 
 ## 3. Health checks
 

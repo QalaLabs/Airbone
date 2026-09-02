@@ -29,8 +29,7 @@ const OPTIONAL_VARS: Record<string, string> = {
   R2_BUCKET_NAME: "Cloudflare R2 (default: airborne-media)",
   R2_BUCKET_DOCS: "Cloudflare R2 docs bucket",
   R2_PUBLIC_URL: "Cloudflare R2 public CDN URL",
-  INNGEST_EVENT_KEY: "Inngest - defaults to 'local' when absent",
-  INNGEST_SIGNING_KEY: "Inngest signing key for production webhook verification",
+  CRON_SECRET: "Cloud Scheduler auth secret for /api/cron/automation",
   TWILIO_ACCOUNT_SID: "Twilio SMS - reserved, not yet active in code",
   TWILIO_AUTH_TOKEN: "Twilio SMS",
   TWILIO_PHONE_NUMBER: "Twilio SMS sender number",
@@ -38,6 +37,18 @@ const OPTIONAL_VARS: Record<string, string> = {
   WATI_API_TOKEN: "WATI WhatsApp",
   RESEND_API_KEY: "Resend transactional email - reserved",
   RESEND_FROM_EMAIL: "Resend sender address",
+  WHATSAPP_PROVIDER: "WhatsApp transport: mock | interakt (unset → noop)",
+  INTERAKT_RATE_LIMIT_PER_MINUTE: "Interakt outbound rate cap per instance (default 480, max 600)",
+  INTERAKT_API_KEY: "Interakt Developer Settings secret — server-side only, Basic auth",
+  INTERAKT_API_BASE_URL: "Interakt API host (default https://api.interakt.ai)",
+  INTERAKT_WEBHOOK_SECRET: "HMAC secret for Interakt-Signature (falls back to WHATSAPP_WEBHOOK_SECRET)",
+  WHATSAPP_WEBHOOK_SECRET: "Shared secret / Interakt webhook HMAC key",
+  WHATSAPP_WEBHOOK_VERIFY_TOKEN: "Meta Cloud API hub.verify_token handshake",
+  INTERAKT_TEMPLATE_LANGUAGE: "Default Interakt template languageCode (en)",
+  INTERAKT_DEFAULT_TEMPLATE: "Fallback Interakt template code name when send has no templateName",
+  INTERAKT_DEFAULT_TEMPLATE_VARIABLES:
+    "Comma-separated inbox variable slots for default template (e.g. leadName,courseInterest)",
+  INTERAKT_API_CAMPAIGN_ID: "Optional Interakt API campaign id attached to template sends",
   UPSTASH_REDIS_REST_URL: "Upstash Redis - reserved for rate-limiting/cache",
   UPSTASH_REDIS_REST_TOKEN: "Upstash Redis",
   PUBLIC_ORG_SLUG: "Org slug for public queries (default: airborne-aviation)",
@@ -89,12 +100,12 @@ export const env = {
   R2_BUCKET_DOCS: process.env.R2_BUCKET_DOCS ?? "airborne-docs",
   R2_PUBLIC_URL: process.env.R2_PUBLIC_URL ?? "",
 
+  // Optional — automation / cron
+  CRON_SECRET: process.env.CRON_SECRET,
+  INTERAKT_RATE_LIMIT_PER_MINUTE: process.env.INTERAKT_RATE_LIMIT_PER_MINUTE,
+
   // Optional — AI
   GEMINI_API_KEY: process.env.GEMINI_API_KEY,
-
-  // Optional — Inngest (safe defaults)
-  INNGEST_EVENT_KEY: process.env.INNGEST_EVENT_KEY ?? "local",
-  INNGEST_SIGNING_KEY: process.env.INNGEST_SIGNING_KEY,
 
   // Optional — notifications (not yet active)
   TWILIO_ACCOUNT_SID: process.env.TWILIO_ACCOUNT_SID,
@@ -104,6 +115,17 @@ export const env = {
   WATI_API_TOKEN: process.env.WATI_API_TOKEN,
   RESEND_API_KEY: process.env.RESEND_API_KEY,
   RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL ?? "noreply@airborneacademy.in",
+
+  WHATSAPP_PROVIDER: process.env.WHATSAPP_PROVIDER,
+  INTERAKT_API_KEY: process.env.INTERAKT_API_KEY,
+  INTERAKT_API_BASE_URL: process.env.INTERAKT_API_BASE_URL ?? "https://api.interakt.ai",
+  INTERAKT_WEBHOOK_SECRET: process.env.INTERAKT_WEBHOOK_SECRET,
+  WHATSAPP_WEBHOOK_SECRET: process.env.WHATSAPP_WEBHOOK_SECRET,
+  WHATSAPP_WEBHOOK_VERIFY_TOKEN: process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN,
+  INTERAKT_TEMPLATE_LANGUAGE: process.env.INTERAKT_TEMPLATE_LANGUAGE ?? "en",
+  INTERAKT_DEFAULT_TEMPLATE: process.env.INTERAKT_DEFAULT_TEMPLATE,
+  INTERAKT_DEFAULT_TEMPLATE_VARIABLES: process.env.INTERAKT_DEFAULT_TEMPLATE_VARIABLES,
+  INTERAKT_API_CAMPAIGN_ID: process.env.INTERAKT_API_CAMPAIGN_ID,
 
   // Optional — org
   PUBLIC_ORG_SLUG: process.env.PUBLIC_ORG_SLUG ?? "airborne-aviation",

@@ -1,3 +1,4 @@
+import { WorkflowRunYield } from "@/lib/automation/step-api";
 import { prisma } from "@/lib/db/client";
 import { validUuid } from "@/lib/events/actor";
 import { AuditService } from "@/lib/services/audit.service";
@@ -8,7 +9,6 @@ import { loadEntitySnapshot } from "./snapshots";
 import {
   RUN_STATUS,
   RUN_TERMINAL_STATUSES,
-  WAIT_CHUNK_MS,
   type ActionContext,
   type WorkflowStep,
 } from "./types";
@@ -80,6 +80,7 @@ async function markStatus(
   status: string,
   extra?: { error?: string; stoppedReason?: string; advanceTo?: number },
 ): Promise<void> {
+  const now = new Date();
   await prisma.workflowRun.update({
     where: { id: runId },
     data: {
@@ -87,7 +88,13 @@ async function markStatus(
       ...(extra?.error !== undefined && { error: extra.error }),
       ...(extra?.stoppedReason !== undefined && { stoppedReason: extra.stoppedReason }),
       ...(extra?.advanceTo !== undefined && { currentStep: extra.advanceTo }),
-      ...(status !== RUN_STATUS.RUNNING && status !== RUN_STATUS.PAUSED && { completedAt: new Date() }),
+      ...(status === RUN_STATUS.PAUSED && { pausedAt: now }),
+      ...(status === RUN_STATUS.STOPPED && { stoppedAt: now }),
+      ...(status !== RUN_STATUS.RUNNING && status !== RUN_STATUS.PAUSED && { completedAt: now }),
+      ...(RUN_TERMINAL_STATUSES.includes(status) && {
+        executionOwner: null,
+        executionLeaseUntil: null,
+      }),
     },
   });
 }
@@ -153,21 +160,27 @@ export async function executeRun(runId: string, stepApi: InngestStepApi): Promis
 
     // ── WAIT ─────────────────────────────────────────────────────────────────
     if (step.type === "WAIT") {
-      let remaining = waitMs(step.duration);
-      let chunkIdx = 0;
-      while (remaining > 0) {
-        const live = await reloadStatus(run.id);
-        if (live !== RUN_STATUS.RUNNING) {
-          return { status: live ?? "MISSING", stepsExecuted: executed };
-        }
-        const slice = Math.min(WAIT_CHUNK_MS, remaining);
-        await stepApi.sleep(`wait-${cursor}-${chunkIdx}`, slice);
-        remaining -= slice;
-        chunkIdx += 1;
-      }
-      await stepApi.run(`advance-${cursor}`, async () => {
-        await markStatus(run.id, RUN_STATUS.RUNNING, { advanceTo: cursor + 1 });
+      const row = await prisma.workflowRun.findUnique({
+        where: { id: run.id },
+        select: { nextRunAt: true },
       });
+      const now = new Date();
+      if (row?.nextRunAt && row.nextRunAt > now) {
+        throw new WorkflowRunYield();
+      }
+      const ms = waitMs(step.duration);
+      if (!row?.nextRunAt) {
+        await prisma.workflowRun.update({
+          where: { id: run.id },
+          data: { nextRunAt: new Date(now.getTime() + ms) },
+        });
+        throw new WorkflowRunYield();
+      }
+      await prisma.workflowRun.update({
+        where: { id: run.id },
+        data: { nextRunAt: null },
+      });
+      await markStatus(run.id, RUN_STATUS.RUNNING, { advanceTo: cursor + 1 });
       cursor += 1;
       continue;
     }

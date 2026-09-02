@@ -69,11 +69,11 @@ export default function WhatsAppInboxPage() {
     onSuccess: (res) => {
       setDraft("");
       invalidate();
-      if (res.status === "SENT") toast({ title: "Message sent" });
+      if (res.status === "SENT") toast({ title: "Template message accepted by Interakt" });
       else
         toast({
           title: `Not sent (${res.status})`,
-          description: res.errorMsg ?? "Provider not configured.",
+          description: res.errorMsg ?? "Interakt rejected the template send.",
           variant: "destructive",
         });
     },
@@ -195,6 +195,9 @@ export default function WhatsAppInboxPage() {
               <MessageSquare className="h-8 w-8 text-muted-foreground mb-3" />
               <p className="text-sm font-bold text-white">Select a conversation</p>
               <p className="text-xs text-muted-foreground mt-1">Messages you send are delivered through the configured provider.</p>
+              <p className="text-[10px] text-amber-400/90 mt-2 max-w-sm mx-auto font-semibold">
+                Inbox sends use an approved Interakt WhatsApp template (not free-form text). Optional note is stored in CRM only.
+              </p>
             </div>
           ) : (
             <>
@@ -260,7 +263,11 @@ export default function WhatsAppInboxPage() {
                   rows={2}
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
-                  placeholder={active.optedOut ? "Contact opted out — sending is blocked" : "Type a message…"}
+                  placeholder={
+                    active.optedOut
+                      ? "Contact opted out — sending is blocked"
+                      : "Optional internal note — sends approved WhatsApp template to contact"
+                  }
                   disabled={active.optedOut}
                   className="bg-secondary/40 border-white/10 text-xs resize-none"
                 />

@@ -1,5 +1,6 @@
 import { LeadRepository } from "@/lib/repositories/lead.repository";
 import { emitEvent } from "@/lib/events/inngest";
+import { emitLeadCreated } from "@/lib/automation/emit-lead-created";
 import { prisma } from "@/lib/db/client";
 import { AuditService } from "@/lib/services/audit.service";
 import { ActivityFeedService } from "@/lib/services/activity.service";
@@ -152,6 +153,14 @@ export class LeadService {
           });
 
           await this.markFallbackRecovered(fLead.id);
+          await emitLeadCreated({
+            orgId,
+            leadId: lead.id,
+            leadName: lead.name,
+            source: sourceEnum,
+            courseInterest: lead.courseInterest,
+            actorName: "Public form (recovered)",
+          });
           result.synced++;
         }
       } catch (err) {
@@ -302,20 +311,15 @@ export class LeadService {
     });
 
     // Emit event — notification/automation only (durable audit is sync above)
-    await emitEvent({
-      name: "lead/created",
+    await emitLeadCreated({
       orgId: ctx.orgId,
+      leadId: lead.id,
+      leadName: lead.name,
+      source: lead.source,
+      courseInterest: lead.courseInterest,
       actorId: ctx.user.id,
       actorName: ctx.user.name,
-      requestId: ctx.requestId,
       ipAddress: ctx.ipAddress,
-      timestamp: new Date().toISOString(),
-      data: {
-        leadId: lead.id,
-        leadName: lead.name,
-        source: lead.source,
-        courseInterest: lead.courseInterest ?? undefined,
-      },
     });
 
     return lead;

@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/client";
-import { isInngestEnabled } from "@/lib/events/inngest";
+import { isAutomationEngineEnabled } from "@/lib/events/dispatch";
 
 export const dynamic = "force-dynamic";
 
-// Readiness: checks the database (the single most important dependency for the
-// admin app) and reports whether the Inngest worker is live. No secrets exposed.
+// Readiness: checks the database and reports automation engine status.
 export async function GET() {
   let dbOk = false;
   let dbError: string | null = null;
@@ -23,7 +22,7 @@ export async function GET() {
       status: ready ? "ready" : "not_ready",
       checks: {
         database: dbOk,
-        inngest_enabled: isInngestEnabled(),
+        automation_engine: isAutomationEngineEnabled(),
       },
       error: dbError,
     },

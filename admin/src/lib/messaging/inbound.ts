@@ -5,21 +5,23 @@
 //   { phone, body, externalId?, profileName? }
 //
 // Supported dialects:
-// 1. Meta WhatsApp Cloud API — entry[].changes[].value.messages[]
+// 1. Interakt message_received — data.customer + data.message
+// 2. Meta WhatsApp Cloud API — entry[].changes[].value.messages[]
 //    { from, id, text: { body }, type: "text" }
-// 2. Generic flat JSON — every provider that can POST
+// 3. Generic flat JSON — every provider that can POST
 //    { phone|from|customerPhone, text|message|body, id? }
+
+import { normalizePhone } from "./phone";
+
+export { normalizePhone };
 
 export interface InboundWhatsAppMessage {
   phone: string;
   body: string;
   externalId?: string;
   profileName?: string;
-}
-
-/** Digits only — the canonical storage/matching form used across the app. */
-export function normalizePhone(raw: string): string {
-  return raw.replace(/\D+/g, "");
+  providerCustomerId?: string;
+  userIdTrait?: string;
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {
@@ -39,6 +41,38 @@ interface MetaMessage {
   text?: { body?: string };
 }
 
+function fromInteraktReceived(payload: Record<string, unknown>): InboundWhatsAppMessage | null {
+  const type = str(payload.type);
+  if (type !== "message_received") return null;
+  const data = asRecord(payload.data) ?? payload;
+  const customer = asRecord(data.customer);
+  const message = asRecord(data.message);
+  if (!customer || !message) return null;
+
+  const phone = normalizePhone(
+    str(customer.channel_phone_number) ??
+      `${str(customer.country_code) ?? ""}${str(customer.phone_number) ?? ""}`,
+  );
+  const content = message.message;
+  const body =
+    typeof content === "string" && content.trim()
+      ? content.trim()
+      : str(message.message_content_type)
+        ? `[${str(message.message_content_type)}]`
+        : undefined;
+  if (!phone || !body) return null;
+
+  const traits = asRecord(customer.traits);
+  return {
+    phone,
+    body,
+    externalId: str(message.id),
+    profileName: traits ? str(traits.name) : undefined,
+    providerCustomerId: str(customer.id),
+    userIdTrait: traits ? str(traits["User Id"]) ?? str(traits.userId) : undefined,
+  };
+}
+
 function fromMetaCloudApi(payload: Record<string, unknown>): InboundWhatsAppMessage | null {
   const entries = Array.isArray(payload.entry) ? payload.entry : [];
   for (const entry of entries) {
@@ -49,7 +83,6 @@ function fromMetaCloudApi(payload: Record<string, unknown>): InboundWhatsAppMess
       const value = changeRec ? asRecord(changeRec.value) : null;
       const messages = value && Array.isArray(value.messages) ? (value.messages as MetaMessage[]) : [];
       for (const msg of messages) {
-        // Only user text messages for now; media/templates are acknowledged but not parsed.
         const body = str(msg.text?.body);
         const from = str(msg.from);
         if (!from || !body) continue;
@@ -90,7 +123,7 @@ function fromFlatJson(payload: Record<string, unknown>): InboundWhatsAppMessage 
 export function parseInboundWhatsApp(payload: unknown): InboundWhatsAppMessage | null {
   const rec = asRecord(payload);
   if (!rec) return null;
-  return fromMetaCloudApi(rec) ?? fromFlatJson(rec);
+  return fromInteraktReceived(rec) ?? fromMetaCloudApi(rec) ?? fromFlatJson(rec);
 }
 
 // ─── Opt-out / opt-in keyword detection ────────────────────────────────────────

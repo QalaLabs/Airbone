@@ -34,3 +34,15 @@ export async function PATCH(req: NextRequest) {
     return handleError(err);
   }
 }
+
+export async function POST() {
+  try {
+    const ctx = await getRequestContext();
+    guard(ctx.user, "write", "settings");
+
+    const result = await WhatsAppService.testConnection();
+    return ok(result);
+  } catch (err) {
+    return handleError(err);
+  }
+}

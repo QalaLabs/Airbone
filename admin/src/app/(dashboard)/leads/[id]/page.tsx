@@ -19,6 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { InteraktSyncCard } from "@/components/leads/interakt-sync-card";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -664,6 +665,7 @@ export default function LeadDetailPage() {
         </div>
 
         <div className="space-y-6">
+          <InteraktSyncCard leadId={id} />
           <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-4">
             <h3 className="text-sm font-bold uppercase tracking-wider text-white border-b border-white/10 pb-3">
               Follow-up

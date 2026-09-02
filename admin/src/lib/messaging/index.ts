@@ -1,6 +1,8 @@
 import type { MessageChannel, MessageProvider } from "./types";
 import { ResendProvider } from "./providers/resend.provider";
 import { NoopProvider } from "./providers/noop.provider";
+import { MockWhatsAppProvider } from "./providers/mock.provider";
+import { InteraktProvider } from "./providers/interakt.provider";
 
 // ─── Provider registry ───────────────────────────────────────────────────────
 //
@@ -8,11 +10,12 @@ import { NoopProvider } from "./providers/noop.provider";
 // without touching call sites:
 //   EMAIL_PROVIDER=resend        (default)
 //   SMS_PROVIDER=                (unset → noop)
-//   WHATSAPP_PROVIDER=mock|interakt   (Phase 5 / Phase 7)
+//   WHATSAPP_PROVIDER=mock|interakt
 
 const REGISTRY: Record<string, (channel: MessageChannel) => MessageProvider> = {
   resend: () => new ResendProvider(),
-  // "mock" and "interakt" register here in later phases.
+  mock: (channel) => (channel === "WHATSAPP" ? new MockWhatsAppProvider() : new NoopProvider(channel)),
+  interakt: (channel) => (channel === "WHATSAPP" ? new InteraktProvider() : new NoopProvider(channel)),
 };
 
 export function getProvider(channel: MessageChannel): MessageProvider {

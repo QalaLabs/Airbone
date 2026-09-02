@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db/client";
 import type { NotificationChannel, NotificationEvent } from "@prisma/client";
 import { getProvider } from "@/lib/messaging";
+import { WhatsAppService } from "@/lib/services/whatsapp.service";
+import { validUuid } from "@/lib/events/actor";
 
 export { DEFAULT_FROM_EMAIL } from "@/lib/messaging/constants";
 
@@ -14,6 +16,9 @@ interface NotificationDispatchParams {
   variables?: Record<string, string>;
   entityType?: string;
   entityId?: string;
+  templateName?: string;
+  idempotencyKey?: string;
+  metadata?: Record<string, string>;
 }
 
 /**
@@ -57,6 +62,79 @@ export class NotificationService {
       const subject = template.subject ? interpolate(template.subject, variables) : null;
       const body = interpolate(template.body, variables);
 
+      if (params.channel === "WHATSAPP" && params.idempotencyKey) {
+        const reserved = await WhatsAppService.reserveOutboundSend({
+          orgId: params.orgId,
+          phone: params.recipient,
+          body,
+          templateName: params.templateName ?? template.name,
+          leadId: validUuid(
+            params.entityType === "lead" ? params.entityId : params.metadata?.leadId,
+          ),
+          campaignId: validUuid(params.metadata?.campaignId),
+          workflowRunId: validUuid(params.metadata?.workflowRunId),
+          workflowStepKey: params.metadata?.workflowStepKey,
+          idempotencyKey: params.idempotencyKey,
+          metadata: { templateId: template.id },
+        });
+        if (reserved.skipSend) {
+          return reserved.externalId ? "SENT" : "PENDING";
+        }
+
+        const log = await prisma.notificationLog.create({
+          data: {
+            orgId: params.orgId,
+            templateId: template.id,
+            event: params.event,
+            channel: params.channel,
+            recipient: params.recipient,
+            subject,
+            body,
+            status: "PENDING",
+            entityType: params.entityType,
+            entityId: params.entityId,
+          },
+        });
+
+        const result = await dispatchToProvider({
+          channel: params.channel,
+          recipient: params.recipient,
+          subject,
+          body,
+          templateName: params.templateName ?? template.name,
+          metadata: {
+            ...(params.metadata ?? {}),
+            ...(params.entityId ? { leadId: params.entityId } : {}),
+            ...(params.idempotencyKey ? { idempotencyKey: params.idempotencyKey } : {}),
+            messageId: reserved.messageId,
+          },
+        });
+
+        const waStatus =
+          result.status === "SENT" ? "SENT" : result.status === "FAILED" ? "FAILED" : "QUEUED";
+        await WhatsAppService.finalizeOutboundSend(reserved.messageId, {
+          status: waStatus,
+          externalId: result.externalId,
+          errorMsg: result.errorMsg,
+        });
+
+        try {
+          await prisma.notificationLog.update({
+            where: { id: log.id },
+            data: {
+              status: result.status,
+              errorMsg: result.errorMsg ?? null,
+              externalId: result.externalId ?? null,
+              sentAt: result.status === "SENT" ? new Date() : null,
+            },
+          });
+        } catch (updateErr) {
+          console.error("[NotificationService] status update failed", updateErr);
+        }
+
+        return result.status;
+      }
+
       const log = await prisma.notificationLog.create({
         data: {
           orgId: params.orgId,
@@ -77,7 +155,35 @@ export class NotificationService {
         recipient: params.recipient,
         subject,
         body,
+        templateName: params.templateName ?? template.name,
+        metadata: {
+          ...(params.metadata ?? {}),
+          ...(params.entityId ? { leadId: params.entityId } : {}),
+          ...(params.idempotencyKey ? { idempotencyKey: params.idempotencyKey } : {}),
+        },
       });
+
+      if (params.channel === "WHATSAPP") {
+        const waStatus =
+          result.status === "SENT" ? "SENT" : result.status === "FAILED" ? "FAILED" : "QUEUED";
+        await WhatsAppService.persistOutbound({
+          orgId: params.orgId,
+          phone: params.recipient,
+          body,
+          status: waStatus,
+          externalId: result.externalId,
+          errorMsg: result.errorMsg,
+          templateName: params.templateName ?? template.name,
+          leadId: validUuid(
+            params.entityType === "lead" ? params.entityId : params.metadata?.leadId,
+          ),
+          campaignId: validUuid(params.metadata?.campaignId),
+          workflowRunId: validUuid(params.metadata?.workflowRunId),
+          workflowStepKey: params.metadata?.workflowStepKey,
+          idempotencyKey: params.idempotencyKey,
+          metadata: { notificationLogId: log.id, providerStatus: result.status },
+        });
+      }
 
       try {
         await prisma.notificationLog.update({
@@ -113,6 +219,8 @@ async function dispatchToProvider(input: {
   recipient: string;
   subject: string | null;
   body: string;
+  templateName?: string;
+  metadata?: Record<string, string>;
 }): Promise<{ status: DeliveryStatus; errorMsg?: string; externalId?: string }> {
   if (input.channel !== "EMAIL" && input.channel !== "SMS" && input.channel !== "WHATSAPP") {
     return {
@@ -125,6 +233,8 @@ async function dispatchToProvider(input: {
     to: input.recipient,
     subject: input.subject ?? undefined,
     body: input.body,
+    templateName: input.templateName,
+    metadata: input.metadata,
   });
 }
 

@@ -1,19 +1,33 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { PlugZap, CheckCircle2, XCircle } from "lucide-react";
+import { PlugZap, CheckCircle2, XCircle, Activity } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
 import { toast } from "@/components/ui/use-toast";
 
 interface Settings {
+  provider: string;
   providerConfigured: boolean;
   providerName: string;
   envProvider: string | null;
+  connected: boolean;
+  configurationStatus: string;
+  credentialsMasked: { apiKey: string | null } | null;
   whatsappNotifications: boolean;
   webhookUrl: string;
   webhookConfigured: boolean;
+  webhookAuth: string;
+}
+
+interface HealthResult {
+  ok: boolean;
+  live: boolean;
+  provider: string;
+  status?: number;
+  error?: string;
 }
 
 export default function WhatsAppSettingsPage() {
@@ -37,6 +51,21 @@ export default function WhatsAppSettingsPage() {
     onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
+  const testMutation = useMutation({
+    mutationFn: () => apiFetch<HealthResult>("/whatsapp/settings", { method: "POST" }),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["whatsapp", "settings"] });
+      toast({
+        title: result.live ? "Interakt connected" : result.ok ? "Provider reachable (not live)" : "Connection failed",
+        description: result.live
+          ? "A real Get Users request against api.interakt.ai succeeded."
+          : result.error ?? `HTTP ${result.status ?? "n/a"}`,
+        variant: result.live ? "default" : "destructive",
+      });
+    },
+    onError: (err: Error) => toast({ title: "Test failed", description: err.message, variant: "destructive" }),
+  });
+
   return (
     <div className="space-y-6 pb-12 max-w-2xl">
       <div>
@@ -53,22 +82,43 @@ export default function WhatsAppSettingsPage() {
               <PlugZap className="h-4 w-4 text-primary" /> Provider
             </h2>
             <div className="flex items-center gap-3">
-              {data.providerConfigured ? (
+              {data.connected ? (
                 <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
               ) : (
                 <XCircle className="h-5 w-5 text-amber-400 shrink-0" />
               )}
-              <div>
+              <div className="flex-1 min-w-0">
                 <p className="text-xs font-bold text-white">
-                  {data.providerConfigured ? `Configured via "${data.providerName}"` : "No provider configured"}
+                  {data.connected
+                    ? `Connected via "${data.providerName}"`
+                    : data.providerConfigured
+                      ? `Configured via "${data.providerName}" — not live`
+                      : "No provider configured"}
                 </p>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
-                  Set <span className="font-mono">WHATSAPP_PROVIDER=mock</span> for local testing or{" "}
-                  <span className="font-mono">interakt</span> (plus API credentials) for production. Current value:{" "}
-                  <span className="font-mono">{data.envProvider ?? "unset"}</span>. Until configured, all sends are
-                  recorded as NOT_CONFIGURED — nothing is faked.
+                  Provider <span className="font-mono">{data.provider}</span> · status{" "}
+                  <span className="font-mono">{data.configurationStatus}</span> · env{" "}
+                  <span className="font-mono">{data.envProvider ?? "unset"}</span>. Set{" "}
+                  <span className="font-mono">WHATSAPP_PROVIDER=mock</span> for local testing or{" "}
+                  <span className="font-mono">interakt</span> plus <span className="font-mono">INTERAKT_API_KEY</span>{" "}
+                  for production. Live Interakt is never claimed until a real API call succeeds.
                 </p>
+                {data.credentialsMasked?.apiKey && (
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    API key <span className="font-mono">{data.credentialsMasked.apiKey}</span>
+                  </p>
+                )}
               </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs font-bold shrink-0"
+                onClick={() => testMutation.mutate()}
+                disabled={testMutation.isPending}
+              >
+                <Activity className="h-3.5 w-3.5" />
+                {testMutation.isPending ? "Testing…" : "Test connection"}
+              </Button>
             </div>
           </div>
 
@@ -78,18 +128,19 @@ export default function WhatsAppSettingsPage() {
             </h2>
             <div className="space-y-2">
               <p className="text-xs font-bold text-white">
-                {data.webhookConfigured ? "Configured" : "Not configured"}
+                {data.webhookConfigured ? "Configured" : "Not configured"} · auth{" "}
+                <span className="font-mono">{data.webhookAuth}</span>
               </p>
               <p className="text-[11px] text-muted-foreground break-all font-mono bg-secondary/30 rounded-lg p-2.5 border border-white/5">
                 {data.webhookUrl}
               </p>
               <p className="text-[11px] text-muted-foreground">
-                Point your WhatsApp provider here. Set <span className="font-mono">WHATSAPP_WEBHOOK_SECRET</span> and
-                send it as the <span className="font-mono">x-webhook-secret</span> header (or{" "}
-                <span className="font-mono">?secret=</span>). For Meta Cloud API verification set{" "}
-                <span className="font-mono">WHATSAPP_WEBHOOK_VERIFY_TOKEN</span>. Inbound messages thread into the
-                inbox, opt-out keywords stop all automations, and replies fire the{" "}
-                <span className="font-mono">whatsapp.replied</span> workflow trigger.
+                Point Interakt Developer Settings here. Interakt signs the body with HMAC-SHA256 in{" "}
+                <span className="font-mono">Interakt-Signature</span> (secret ={" "}
+                <span className="font-mono">INTERAKT_WEBHOOK_SECRET</span> or{" "}
+                <span className="font-mono">WHATSAPP_WEBHOOK_SECRET</span>). Generic/Meta providers still send{" "}
+                <span className="font-mono">x-webhook-secret</span>. Inbound replies thread into the inbox; STOP
+                keywords set opt-out and halt marketing workflows.
               </p>
             </div>
           </div>

@@ -5,7 +5,7 @@ import type { LeadSource } from "@prisma/client";
 import { checkRateLimit } from "@/lib/utils/rate-limit";
 import { generateResourceToken } from "@/lib/utils/resource-token";
 import { publicLeadSchema } from "@/lib/validations/public-lead.schema";
-import { emitEvent } from "@/lib/events/inngest";
+import { emitLeadCreated } from "@/lib/automation/emit-lead-created";
 import { AuditService } from "@/lib/services/audit.service";
 import { ActivityFeedService } from "@/lib/services/activity.service";
 import { checkMaintenance } from "@/lib/middleware/maintenance";
@@ -107,6 +107,15 @@ export async function POST(req: NextRequest) {
         select: { id: true, name: true, createdAt: true },
       });
       if (replayed) {
+        await emitLeadCreated({
+          orgId: org.id,
+          leadId: replayed.id,
+          leadName: replayed.name,
+          source: leadSource,
+          courseInterest: courseInterest,
+          actorName: "Public form",
+          ipAddress: ip,
+        });
         const gateToken = generateResourceToken(normalizedPhone);
         console.log(JSON.stringify({
           event: "lead_replayed",
@@ -190,6 +199,15 @@ export async function POST(req: NextRequest) {
             select: { id: true, name: true, createdAt: true },
           });
           if (raced) {
+            await emitLeadCreated({
+              orgId: org.id,
+              leadId: raced.id,
+              leadName: raced.name,
+              source: leadSource,
+              courseInterest: courseInterest,
+              actorName: "Public form",
+              ipAddress: ip,
+            });
             const gateToken = generateResourceToken(normalizedPhone);
             console.log(JSON.stringify({
               event: "lead_replayed",
@@ -202,6 +220,21 @@ export async function POST(req: NextRequest) {
               { status: 200 },
             );
           }
+        }
+        const existingByPhone = await prisma.lead.findFirst({
+          where: { orgId: org.id, phone: normalizedPhone },
+          select: { id: true, name: true },
+        });
+        if (existingByPhone) {
+          await emitLeadCreated({
+            orgId: org.id,
+            leadId: existingByPhone.id,
+            leadName: existingByPhone.name,
+            source: leadSource,
+            courseInterest: courseInterest,
+            actorName: "Public form",
+            ipAddress: ip,
+          });
         }
         console.log(JSON.stringify({
           event: "lead_duplicate",
@@ -243,21 +276,15 @@ export async function POST(req: NextRequest) {
       context: { actorName: "Public form" },
     });
 
-    // Emit NEW_LEAD event for notification worker / audit pipeline
-    await emitEvent({
-      name: "lead/created",
+    // Emit after the lead row exists. Interakt track is inline + idempotent on lead id.
+    await emitLeadCreated({
       orgId: org.id,
-      actorId: "system",
+      leadId: lead.id,
+      leadName: lead.name,
+      source: leadSource,
+      courseInterest: courseInterest,
       actorName: "Public form",
-      requestId: ip,
       ipAddress: ip,
-      timestamp: new Date().toISOString(),
-      data: {
-        leadId: lead.id,
-        leadName: lead.name,
-        source: leadSource,
-        courseInterest: courseInterest ?? undefined,
-      },
     });
 
     // Issue a short-lived token granting access to gated resources

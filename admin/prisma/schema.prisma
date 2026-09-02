@@ -250,8 +250,12 @@ model Organization {
   lmsTimetableSlots    LmsTimetableSlot[]    @relation("OrgLmsTimetableSlots")
   lmsAssignments       LmsAssignment[]       @relation("OrgLmsAssignments")
   feePlans             FeePlan[]             @relation("OrgFeePlans")
-  whatsappConversations WhatsAppConversation[]
-  whatsappCampaigns    WhatsAppCampaign[]
+  whatsappConversations   WhatsAppConversation[]
+  whatsappCampaigns      WhatsAppCampaign[]
+  whatsappProviderEvents WhatsAppProviderEvent[]
+  internalEvents         InternalEvent[]
+  interaktLeadSyncs      InteraktLeadSync[]
+  interaktAutomations    InteraktAutomation[]
 
   @@index([slug])
   @@index([isActive])
@@ -508,6 +512,7 @@ model Lead {
   admissions   Admission[]   @relation("LeadAdmissions")
   student      Student?      @relation("LeadStudent")
   whatsappConversations WhatsAppConversation[]
+  interaktSyncs InteraktLeadSync[]
 
   @@index([orgId, status])
   @@index([orgId, assignedTo, createdAt(sort: Desc)])
@@ -711,22 +716,29 @@ model Workflow {
 }
 
 model WorkflowRun {
-  id            String   @id @default(uuid()) @db.Uuid
-  orgId         String   @db.Uuid
-  workflowId    String   @db.Uuid
-  entityType    String   @db.VarChar(100)
-  entityId      String   @db.VarChar(255)
-  triggeredBy   String?  @db.Uuid
-  currentStep   Int      @default(0)
-  status        String   @default("RUNNING") @db.VarChar(30)
-  context       Json     @default("{}")
-  error         String?  @db.Text
+  id            String    @id @default(uuid()) @db.Uuid
+  orgId         String    @db.Uuid
+  workflowId    String    @db.Uuid
+  entityType    String    @db.VarChar(100)
+  entityId      String    @db.VarChar(255)
+  triggeredBy   String?   @db.Uuid
+  currentStep   Int       @default(0)
+  // RUNNING (= active), PAUSED, COMPLETED, STOPPED, FAILED, CANCELLED
+  status        String    @default("RUNNING") @db.VarChar(30)
+  context       Json      @default("{}")
+  error         String?   @db.Text
   // Idempotency: eventName:entityId:requestId — NULL for manual runs.
   // Unique per (org, workflow, entity); Postgres allows many NULLs so manual
   // runs are never blocked by the dedup index.
-  dedupKey      String?  @db.VarChar(255)
-  stoppedReason String?  @db.Text
-  startedAt     DateTime @default(now())
+  dedupKey      String?   @db.VarChar(255)
+  stoppedReason String?   @db.Text
+  nextRunAt     DateTime?
+  retryCount    Int       @default(0)
+  pausedAt      DateTime?
+  stoppedAt     DateTime?
+  executionOwner      String?   @db.VarChar(128)
+  executionLeaseUntil DateTime?
+  startedAt     DateTime  @default(now())
   completedAt   DateTime?
 
   workflow  Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
@@ -736,7 +748,94 @@ model WorkflowRun {
   @@index([entityType, entityId])
   @@unique([orgId, workflowId, entityType, entityId, dedupKey])
   @@index([orgId, status])
+  @@index([status, nextRunAt])
+  @@index([status, executionLeaseUntil])
   @@map("workflow_runs")
+}
+
+// Persisted internal automation bus — replaces Inngest event delivery for
+// workflow matching, side-effect handlers, and audit. Deduped on requestId.
+model InternalEvent {
+  id          String    @id @default(uuid()) @db.Uuid
+  orgId       String    @db.Uuid
+  name        String    @db.VarChar(120)
+  requestId   String    @db.VarChar(255)
+  actorId     String?   @db.VarChar(255)
+  actorName   String?   @db.VarChar(255)
+  payload              Json      @default("{}")
+  processedAt          DateTime?
+  attemptCount         Int       @default(0)
+  lastError            String?   @db.Text
+  nextAttemptAt        DateTime?
+  failedAt             DateTime?
+  processingOwner      String?   @db.VarChar(128)
+  processingLeaseUntil DateTime?
+  createdAt            DateTime  @default(now())
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, name, requestId], map: "internal_events_dedup")
+  @@index([orgId, createdAt(sort: Desc)])
+  @@index([processedAt, failedAt, nextAttemptAt])
+  @@map("internal_events")
+}
+
+// Interakt Advanced control-plane mapping. Airborne does not execute these
+// workflows — Interakt does. Rows store the dashboard reference + templates
+// involved so Admin can show real config without inventing an Interakt API.
+model InteraktAutomation {
+  id              String   @id @default(uuid()) @db.Uuid
+  orgId           String   @db.Uuid
+  code            String   @db.VarChar(80)
+  name            String   @db.VarChar(255)
+  triggerEvent    String   @default("lead_created") @db.VarChar(80)
+  courseKey       String?  @db.VarChar(80)
+  leadSourceGroup String?  @db.VarChar(80)
+  provider        String   @default("interakt") @db.VarChar(40)
+  workflowRef     String?  @db.VarChar(255)
+  campaignRef     String?  @db.VarChar(255)
+  templates       Json     @default("[]")
+  isActive        Boolean  @default(true)
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, code])
+  @@index([orgId, isActive])
+  @@map("interakt_automations")
+}
+
+// Per-lead Interakt track idempotency + observability. Not a job queue.
+model InteraktLeadSync {
+  id              String    @id @default(uuid()) @db.Uuid
+  orgId           String    @db.Uuid
+  leadId          String    @db.Uuid
+  eventName       String    @db.VarChar(80)
+  status          String    @db.VarChar(40)
+  contactSynced   Boolean   @default(false)
+  eventSent       Boolean   @default(false)
+  courseKey       String?   @db.VarChar(80)
+  leadSource      String?   @db.VarChar(80)
+  skipReason      String?   @db.VarChar(255)
+  providerUserId  String?   @db.VarChar(255)
+  providerEventId String?   @db.VarChar(255)
+  workflowRef     String?   @db.VarChar(255)
+  errorMessage    String?   @db.Text
+  retryCount      Int       @default(0)
+  lastAttemptAt   DateTime?
+  succeededAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  lead Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([leadId, eventName])
+  @@index([orgId, status, updatedAt(sort: Desc)])
+  @@index([orgId, eventName, eventSent])
+  @@map("interakt_lead_syncs")
 }
 
 // ─── WHATSAPP (Interconnect OS) ──────────────────────────────────────────────
@@ -784,6 +883,12 @@ model WhatsAppMessage {
   errorMsg       String?                  @db.Text
   sentBy         String?                  @db.Uuid
   campaignId     String?                  @db.Uuid
+  leadId         String?                  @db.Uuid
+  workflowRunId  String?                  @db.Uuid
+  workflowStepKey String?                 @db.VarChar(64)
+  idempotencyKey String?                  @db.VarChar(255)
+  // Provider response + correlation (callback_data, Interakt payload slice).
+  metadata       Json                     @default("{}")
   createdAt      DateTime                 @default(now())
 
   conversation WhatsAppConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
@@ -791,7 +896,27 @@ model WhatsAppMessage {
 
   @@index([conversationId, createdAt])
   @@index([orgId, createdAt(sort: Desc)])
+  @@index([orgId, externalId])
+  @@unique([orgId, idempotencyKey], map: "wa_messages_idempotency_key")
   @@map("whatsapp_messages")
+}
+
+// Dedup table for Interakt (and future) webhook deliveries. One row per
+// (org, provider, eventType, providerEventId) — retries hit the unique index.
+model WhatsAppProviderEvent {
+  id              String   @id @default(uuid()) @db.Uuid
+  orgId           String   @db.Uuid
+  provider        String   @db.VarChar(40)
+  eventType       String   @db.VarChar(80)
+  providerEventId String   @db.VarChar(255)
+  payload         Json     @default("{}")
+  createdAt       DateTime @default(now())
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, provider, eventType, providerEventId], map: "wa_provider_events_dedup_key")
+  @@index([orgId, createdAt(sort: Desc)])
+  @@map("whatsapp_provider_events")
 }
 
 model WhatsAppCampaign {

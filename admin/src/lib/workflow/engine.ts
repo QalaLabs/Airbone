@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/db/client";
 import type { Prisma, WorkflowTrigger } from "@prisma/client";
 import { validUuid } from "@/lib/events/actor";
-import { emitEvent } from "@/lib/events/inngest";
-import { EVENT_TRIGGER_MAP, WORKFLOW_RUN_EVENT, normalizeEventName } from "@/lib/events/catalog";
+import { enqueueWorkflowRun } from "@/lib/automation/workflow-dispatcher";
+import { EVENT_TRIGGER_MAP, normalizeEventName } from "@/lib/events/catalog";
 import { evaluateCondition } from "./conditions";
 import { loadEntitySnapshot, resolveEntityFromEvent } from "./snapshots";
 
@@ -76,15 +76,7 @@ export async function matchAndStartRuns(input: {
       result.created += 1;
       result.runIds.push(run.id);
 
-      await emitEvent({
-        name: WORKFLOW_RUN_EVENT,
-        orgId: input.orgId,
-        actorId: input.actorId ?? "system",
-        actorName: input.actorName ?? "Workflow Engine",
-        requestId: input.requestId ?? `wf-${run.id}`,
-        timestamp: new Date().toISOString(),
-        data: { runId: run.id },
-      });
+      enqueueWorkflowRun(run.id);
     } catch (err) {
       // P2002 unique-violation on dedupKey → this exact event already started
       // this workflow for this entity. That is success from the engine's point

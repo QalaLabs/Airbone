@@ -1,8 +1,7 @@
 import { LeadStatus, type Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/client";
 import { validUuid } from "@/lib/events/actor";
-import { emitEvent } from "@/lib/events/inngest";
-import { WORKFLOW_RUN_EVENT } from "@/lib/events/catalog";
+import { processWorkflowRunWithClaim } from "@/lib/automation/workflow-dispatcher";
 import { AuditService } from "@/lib/services/audit.service";
 import { ActivityFeedService } from "@/lib/services/activity.service";
 import { NotificationService } from "@/lib/services/notification.service";
@@ -99,15 +98,24 @@ export async function executeAction(
       // Routed through the existing notification pipeline. Until the WhatsApp
       // provider abstraction lands this honestly records NOT_CONFIGURED —
       // delivery is never faked.
+      const leadIdRaw =
+        ctx.entityType === "lead" ? ctx.entityId : resolvePath(snapshotCtx, "leadId");
+      const leadId = typeof leadIdRaw === "string" ? leadIdRaw : undefined;
       const status = await NotificationService.dispatch({
         orgId: ctx.orgId,
         event: "WORKFLOW_TRIGGERED",
         channel: "WHATSAPP",
         recipient,
         variables: { ...variables, workflowRunId: ctx.runId },
-        // Logged against the entity so it surfaces on its unified timeline.
         entityType: ctx.entityType.toLowerCase(),
         entityId: ctx.entityId,
+        templateName: step.templateName,
+        idempotencyKey: ctx.idempotencyKey,
+        metadata: {
+          ...(leadId ? { leadId } : {}),
+          workflowRunId: ctx.runId,
+          workflowStepKey: step.name ?? "SEND_WHATSAPP",
+        },
       });
       return { ok: true, detail: `whatsapp:${status ?? "no-template"}` };
     }
@@ -291,15 +299,7 @@ export async function executeAction(
           context: { startedByRunId: ctx.runId } as Prisma.InputJsonValue,
         },
       });
-      await emitEvent({
-        name: WORKFLOW_RUN_EVENT,
-        orgId: ctx.orgId,
-        actorId: ctx.actorId ?? "system",
-        actorName: "Workflow Engine",
-        requestId: ctx.requestId ?? `wf-${ctx.runId}`,
-        timestamp: new Date().toISOString(),
-        data: { runId: run.id },
-      });
+      void processWorkflowRunWithClaim(run.id);
       return { ok: true, detail: `started run ${run.id}` };
     }
 
@@ -325,7 +325,7 @@ export async function stopAllRunsForEntity(
       status: { in: ["RUNNING", "PAUSED"] },
       ...(exceptRunId && { id: { not: exceptRunId } }),
     },
-    data: { status: "STOPPED", stoppedReason: reason, completedAt: new Date() },
+    data: { status: "STOPPED", stoppedReason: reason, stoppedAt: new Date(), completedAt: new Date() },
   });
   return result.count;
 }

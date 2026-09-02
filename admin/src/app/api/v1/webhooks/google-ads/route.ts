@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/client";
 import { guard } from "@/lib/middleware/permissions";
 import { getRequestContext } from "@/lib/middleware/context";
 import { ok, handleError } from "@/lib/utils/response";
+import { orgWebhookKey } from "@/lib/webhooks/google-ads.service";
 
 const ADMIN_URL =
   process.env.NEXT_PUBLIC_ADMIN_URL ??
@@ -10,26 +11,23 @@ const ADMIN_URL =
 
 const WEBHOOK_URL = `${ADMIN_URL}/api/webhooks/google-ads`;
 
-// ─── GET: return webhook URL + whether a key is configured ───────────────────
+// ─── GET: return webhook URL + whether any key is configured ────────────────
+// A key is "configured" when either the org-settings key (rotated from this
+// page, effective immediately) OR the env-var key (Cloud Run / Secret Manager
+// bootstrap) exists. The webhook endpoint accepts both.
 export async function GET() {
   try {
     const ctx = await getRequestContext();
     guard(ctx.user, "read", "leads");
 
-    // Check env first (prod Secret Manager), then org settings (dev)
-    const envKey = process.env.GOOGLE_ADS_WEBHOOK_SECRET;
-    let keyConfigured = Boolean(envKey && envKey.trim().length > 0);
+    const envKey = (process.env.GOOGLE_ADS_WEBHOOK_SECRET ?? "").trim();
+    const org = await prisma.organization.findUnique({
+      where: { id: ctx.orgId },
+      select: { settings: true },
+    });
+    const orgKey = org ? orgWebhookKey(org.settings) : null;
 
-    if (!keyConfigured) {
-      const org = await prisma.organization.findUnique({
-        where: { id: ctx.orgId },
-        select: { settings: true },
-      });
-      const s = org?.settings as Record<string, unknown> | null;
-      keyConfigured =
-        typeof s?.googleAdsWebhookSecret === "string" &&
-        (s.googleAdsWebhookSecret as string).length > 0;
-    }
+    const keyConfigured = Boolean(envKey || orgKey);
 
     return ok({ webhookUrl: WEBHOOK_URL, keyConfigured });
   } catch (err) {
@@ -37,21 +35,19 @@ export async function GET() {
   }
 }
 
-// ─── POST: generate (or regenerate) a new webhook secret ─────────────────────
+// ─── POST: generate (or regenerate) a new webhook secret ────────────────────
+// The new key is persisted to org settings and becomes valid immediately at
+// the webhook endpoint. The env-var key (Secret Manager) remains valid as an
+// additional accepted key until it is removed from the Cloud Run service env.
 export async function POST() {
   try {
     const ctx = await getRequestContext();
     guard(ctx.user, "write", "leads");
 
-    // Generate a cryptographically random key (UUID v4 — 36 chars)
+    // Cryptographically random UUID v4 (122 bits of entropy).
     const newKey = crypto.randomUUID();
 
-    // In production Cloud Run, GOOGLE_ADS_WEBHOOK_SECRET is injected via
-    // Secret Manager. We store the key in org settings as the source of
-    // truth that the webhook endpoint will pick up (env var takes priority
-    // in prod once the Cloud Run service is redeployed with the new secret
-    // version, but org-settings works immediately as a fallback).
-    // Fetch existing settings first, then merge
+    // Merge into existing org settings (never clobber unrelated settings).
     const existingOrg = await prisma.organization.findUnique({
       where: { id: ctx.orgId },
       select: { settings: true },
@@ -69,7 +65,7 @@ export async function POST() {
       },
     });
 
-    // Return full key only once — caller should copy immediately
+    // Return the full key exactly once — caller must copy it immediately.
     const keyPreview = `${newKey.slice(0, 8)}...${newKey.slice(-4)}`;
 
     console.log(JSON.stringify({
@@ -81,8 +77,8 @@ export async function POST() {
 
     return ok({
       webhookUrl: WEBHOOK_URL,
-      key: newKey,          // full key — shown once
-      keyPreview,           // short preview for display after close
+      key: newKey,
+      keyPreview,
       keyConfigured: true,
     });
   } catch (err) {

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import NextAuth from "next-auth";
 import { authConfig } from "@/lib/auth/auth.config";
+import { isCronAutomationPath } from "@/lib/automation/cron-paths";
 import { generateRequestId } from "@/lib/utils/crypto";
 
 const { auth } = NextAuth(authConfig);
@@ -19,7 +20,6 @@ const PUBLIC_PATHS = [
   "/api/v1/auth",
   "/api/v1/users/invite/accept",
   "/api/v1/public",
-  "/api/inngest",
   "/api/public",
   "/api/webhooks",   // external webhook receivers — auth is done inside the handler
   "/_next",
@@ -31,6 +31,11 @@ const DEV_ONLY_PATHS = ["/dev"];
 
 export default auth((req: NextRequest & { auth?: { user?: { orgId?: string; id?: string; role?: string } } | null }) => {
   const { pathname } = req.nextUrl;
+
+  // Cron automation — session auth skipped; CRON_SECRET validated in route handler.
+  if (isCronAutomationPath(pathname)) {
+    return NextResponse.next();
+  }
 
   // Block dev-only routes in production (middleware guard — defense in depth
   // alongside the client-side check in /dev/auto-login/page.tsx)
@@ -77,6 +82,10 @@ export default auth((req: NextRequest & { auth?: { user?: { orgId?: string; id?:
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    /*
+     * Session middleware runs on all routes except static assets and the cron
+     * automation endpoint (authenticated via CRON_SECRET in the route handler).
+     */
+    "/((?!_next/static|_next/image|favicon.ico|api/cron/automation).*)",
   ],
 };

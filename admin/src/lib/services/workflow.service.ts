@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/db/client";
-import { emitEvent } from "@/lib/events/inngest";
-import { WORKFLOW_RUN_EVENT } from "@/lib/events/catalog";
+import { processWorkflowRunWithClaim } from "@/lib/automation/workflow-dispatcher";
 import { AuditService } from "@/lib/services/audit.service";
 import { ActivityFeedService } from "@/lib/services/activity.service";
 import { WorkflowRepository } from "@/lib/repositories/workflow.repository";
@@ -148,15 +147,7 @@ export class WorkflowService {
       },
     });
 
-    await emitEvent({
-      name: WORKFLOW_RUN_EVENT,
-      orgId: ctx.orgId,
-      actorId: ctx.user.id,
-      actorName: ctx.user.name,
-      requestId: ctx.requestId,
-      timestamp: new Date().toISOString(),
-      data: { runId: run.id },
-    });
+    await processWorkflowRunWithClaim(run.id);
 
     await AuditService.write({
       orgId: ctx.orgId,
@@ -196,21 +187,15 @@ export class WorkflowService {
       where: { id: run.id },
       data: {
         status: nextStatus,
+        ...(action === "pause" && { pausedAt: new Date() }),
+        ...(action === "resume" && { pausedAt: null, nextRunAt: null }),
         ...(nextStatus !== "RUNNING" && nextStatus !== "PAUSED" && { completedAt: new Date() }),
-        ...(action === "cancel" && { stoppedReason: `Cancelled by ${ctx.user.name}` }),
+        ...(action === "cancel" && { stoppedReason: `Cancelled by ${ctx.user.name}`, stoppedAt: new Date() }),
       },
     });
 
     if (action === "resume") {
-      await emitEvent({
-        name: WORKFLOW_RUN_EVENT,
-        orgId: ctx.orgId,
-        actorId: ctx.user.id,
-        actorName: ctx.user.name,
-        requestId: ctx.requestId,
-        timestamp: new Date().toISOString(),
-        data: { runId: run.id },
-      });
+      await processWorkflowRunWithClaim(run.id);
     }
 
     await AuditService.write({

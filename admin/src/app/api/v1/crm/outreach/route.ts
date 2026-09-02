@@ -8,7 +8,7 @@ import {
   outreachTemplateSchema,
   toggleTemplateSchema,
 } from "@/lib/validations/outreach.schema";
-import { isInngestEnabled } from "@/lib/events/inngest";
+import { isAutomationEngineEnabled } from "@/lib/events/dispatch";
 
 function configured(key?: string): boolean {
   return Boolean(key && key.trim().length > 0);
@@ -97,10 +97,10 @@ export async function GET() {
         },
       },
       dispatchEngine: {
-        inngestEnabled: isInngestEnabled(),
-        note: isInngestEnabled()
-          ? "Inngest event key is configured. Delivery records are written when a notification worker processes queued events."
-          : "Inngest is not configured — queued notification events are not being processed.",
+        automationEnabled: isAutomationEngineEnabled(),
+        note: isAutomationEngineEnabled()
+          ? "PostgreSQL internal_events + Cloud Scheduler cron dispatch workflow and notification side effects."
+          : "Automation engine unavailable.",
       },
     });
   } catch (err) {

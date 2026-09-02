@@ -38,7 +38,7 @@ interface IntegrationsData {
   googleAds: IntegrationStatus;
   media: IntegrationStatus;
   documents: IntegrationStatus;
-  inngest: IntegrationStatus;
+  automation: IntegrationStatus;
   payments: IntegrationStatus;
   frappe: IntegrationStatus;
   summary: { connected: string[]; notConfigured: string[] };
@@ -416,10 +416,10 @@ export default function CRMIntegrationsPage() {
         />
 
         <IntegrationCard
-          title="Event Dispatch (Inngest)"
+          title="Automation Engine (PostgreSQL + Cron)"
           icon={<Zap className="h-4 w-4 text-primary" />}
-          status={data.inngest.status}
-          body={data.inngest.note ?? ""}
+          status={data.automation.status}
+          body={data.automation.note ?? ""}
         />
 
         <IntegrationCard

@@ -247,6 +247,11 @@ export interface WhatsAppOptedOutEvent extends BaseEvent {
   data: { conversationId: string; leadId?: string; phone: string };
 }
 
+export interface WhatsAppStatusEvent extends BaseEvent {
+  name: "whatsapp.sent" | "whatsapp.delivered" | "whatsapp.read" | "whatsapp.failed";
+  data: { messageId: string; conversationId: string; leadId?: string; externalId?: string };
+}
+
 export interface CourseEnrolledEvent extends BaseEvent {
   name: "course.enrolled";
   data: {
@@ -292,4 +297,5 @@ export type AppEvent =
   | WorkflowRunRequestedEvent
   | WhatsAppRepliedEvent
   | WhatsAppOptedOutEvent
+  | WhatsAppStatusEvent
   | CourseEnrolledEvent;

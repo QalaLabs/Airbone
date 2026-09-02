@@ -39,8 +39,12 @@ Cloud Run service must exist in the **same project**; bind at deploy time with
 | `SUPABASE_URL` | `airborne-admin/SUPABASE_URL` | storage |
 | `SUPABASE_SERVICE_ROLE_KEY` | `airborne-admin/SUPABASE_SERVICE_ROLE_KEY` | server-only |
 | `SUPABASE_STORAGE_BUCKET` | plain env (non-secret) | `media` |
-| `INNGEST_EVENT_KEY` | `airborne-admin/INNGEST_EVENT_KEY` | keep `local` until ready |
-| `INNGEST_SIGNING_KEY` | `airborne-admin/INNGEST_SIGNING_KEY` | |
+| `CRON_SECRET` | `airborne-admin/CRON_SECRET` | Bearer token for Cloud Scheduler → `/api/cron/automation` |
+| `WHATSAPP_PROVIDER` | plain env (non-secret) | `mock` locally, `interakt` in prod |
+| `INTERAKT_API_KEY` | `airborne-admin/INTERAKT_API_KEY` | server-side only, never `NEXT_PUBLIC_*` |
+| `INTERAKT_WEBHOOK_SECRET` | `airborne-admin/INTERAKT_WEBHOOK_SECRET` | HMAC key for `Interakt-Signature` |
+| `WHATSAPP_WEBHOOK_SECRET` | `airborne-admin/WHATSAPP_WEBHOOK_SECRET` | fallback HMAC / shared secret |
+| `INTERAKT_DEFAULT_TEMPLATE` | plain env (non-secret) | optional approved template code name |
 | `FACEBOOK_APP_SECRET` | `airborne-admin/FACEBOOK_APP_SECRET` | optional CRM integration |
 | `R2_*` | `airborne-admin/R2_*` | documents feature only |
 | `GEMINI_API_KEY` | `airborne-admin/GEMINI_API_KEY` | optional |
@@ -63,7 +67,7 @@ Cloud Run service must exist in the **same project**; bind at deploy time with
 ## Boundary enforcement
 
 The marketing service must never receive `DATABASE_URL`, `DIRECT_URL`,
-`AUTH_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, or `INNGEST_*`. This was the exact
+`AUTH_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, or `INTERAKT_*`. This was the exact
 leak fixed in `.env.vercel.marketing.production` — keep it that way in Secret
 Manager: secrets are per-service, so just don't reference admin secrets on
 `airborne-web`.

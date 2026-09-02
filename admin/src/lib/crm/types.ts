@@ -119,7 +119,7 @@ export interface OutreachData {
     sms: OutreachProvider;
     whatsapp: OutreachProvider;
   };
-  dispatchEngine: { inngestEnabled: boolean; note: string };
+  dispatchEngine: { automationEnabled: boolean; note: string };
 }
 
 export interface MeetingLead {
@@ -200,7 +200,7 @@ export interface IntegrationsData {
   frappe: IntegrationStatus;
   media: IntegrationStatus;
   documents: IntegrationStatus;
-  inngest: IntegrationStatus;
+  automation: IntegrationStatus;
   payments: IntegrationStatus;
   summary: {
     connected: string[];
