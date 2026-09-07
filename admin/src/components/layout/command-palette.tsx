@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Search, Command, CornerDownLeft, FileText, Users, GraduationCap, BookOpen, Briefcase, Settings, Star, ShieldCheck, Activity, Globe, Image as ImageIcon, PieChart, Mail, CalendarDays, Handshake } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { resolvePaletteKey, wrapIndex } from "./command-palette-keys";
 
 const MODULES = [
   { id: "dashboard", name: "Operations Dashboard", category: "Analytics & Core", shortcut: "G D", href: "/", icon: Activity },
@@ -31,41 +32,66 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
   const [search, setSearch] = React.useState("");
   const [selectedIndex, setSelectedIndex] = React.useState(0);
 
+  const openRef = React.useRef(open);
+  openRef.current = open;
+  const onOpenChangeRef = React.useRef(onOpenChange);
+  onOpenChangeRef.current = onOpenChange;
+  const routerRef = React.useRef(router);
+  routerRef.current = router;
+
   const filtered = React.useMemo(() => {
     if (!search) return MODULES;
     return MODULES.filter(m => m.name.toLowerCase().includes(search.toLowerCase()) || m.category.toLowerCase().includes(search.toLowerCase()));
   }, [search]);
 
+  const filteredRef = React.useRef(filtered);
+  filteredRef.current = filtered;
+
+  const selectedIndexRef = React.useRef(selectedIndex);
+  selectedIndexRef.current = selectedIndex;
+
   React.useEffect(() => {
     setSelectedIndex(0);
   }, [search]);
 
+  // N-01: stable listener — reads fresh state through refs, adds the missing
+  // Escape handler advertised in the footer ("ESC to exit").
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+      const action = resolvePaletteKey(e, openRef.current);
+      if (!action) return;
+      if (action.type === "toggle") {
         e.preventDefault();
-        onOpenChange(!open);
+        onOpenChangeRef.current(!openRef.current);
+        return;
       }
-      if (open) {
-        if (e.key === "ArrowDown") {
-          e.preventDefault();
-          setSelectedIndex((prev) => (prev + 1) % filtered.length);
-        } else if (e.key === "ArrowUp") {
-          e.preventDefault();
-          setSelectedIndex((prev) => (prev - 1 + filtered.length) % filtered.length);
-        } else if (e.key === "Enter") {
-          e.preventDefault();
-          if (filtered[selectedIndex]) {
-            router.push(filtered[selectedIndex].href);
-            onOpenChange(false);
+      if (!openRef.current) return;
+      e.preventDefault();
+      const list = filteredRef.current;
+      const idx = selectedIndexRef.current;
+      switch (action.type) {
+        case "close":
+          onOpenChangeRef.current(false);
+          break;
+        case "move": {
+          const next = wrapIndex(idx, action.delta, list.length);
+          setSelectedIndex(next);
+          break;
+        }
+        case "select": {
+          const target = list[idx];
+          if (target) {
+            routerRef.current.push(target.href);
+            onOpenChangeRef.current(false);
           }
+          break;
         }
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, filtered, selectedIndex, onOpenChange, router]);
+  }, []);
 
   return (
     <AnimatePresence>

@@ -62,7 +62,6 @@ export function MediaPicker({ value, onChange, label = "Media" }: MediaPickerPro
         {selected ? (
           <div className="flex flex-1 items-center gap-3 rounded-lg border border-white/10 bg-secondary/40 px-3 py-2">
             {selected.mimeType.startsWith("image/") ? (
-              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={selected.fileUrl}
                 alt={selected.name}
@@ -164,7 +163,6 @@ export function MediaPicker({ value, onChange, label = "Media" }: MediaPickerPro
                     >
                       <div className="flex aspect-video w-full items-center justify-center bg-slate-950/60">
                         {asset.mimeType.startsWith("image/") ? (
-                          // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={asset.fileUrl}
                             alt={asset.name}

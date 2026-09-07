@@ -45,6 +45,7 @@ function mapJob(j) {
     salaryMin: j.salaryMin,
     salaryMax: j.salaryMax,
     currency: j.currency,
+    publishedAt: j.publishedAt ?? null,
   }
 }
 
@@ -856,6 +857,53 @@ export default function JobsClient() {
       )}
 
       <Footer />
+
+      {/* JobPosting structured data — canonical PUBLISHED jobs from Admin CMS */}
+      {!loading && !error && jobs.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@graph': jobs
+                .filter((j) => j.role && j.description)
+                .map((j) => {
+                  const posting = {
+                    '@type': 'JobPosting',
+                    title: j.role,
+                    description: (j.description || '').slice(0, 4000),
+                    datePosted: j.publishedAt,
+                    hiringOrganization: {
+                      '@type': 'Organization',
+                      name: 'Airborne Aviation Academy',
+                      sameAs: 'https://www.airborneaviation.in',
+                    },
+                    jobLocation: {
+                      '@type': 'Place',
+                      address: { '@type': 'PostalAddress', addressLocality: j.location || 'India' },
+                    },
+                    directApply: true,
+                  }
+                  if (j.closesAt) posting.validThrough = j.closesAt
+                  if (j.type) posting.employmentType = j.type.toUpperCase().replace(/[\s/-]+/g, '_')
+                  if (j.salaryMin || j.salaryMax) {
+                    posting.baseSalary = {
+                      '@type': 'MonetaryAmount',
+                      currency: j.currency || 'INR',
+                      value: {
+                        '@type': 'QuantitativeValue',
+                        minValue: j.salaryMin ? j.salaryMin * (j.salaryFrequency === 'yearly' ? 1 : 12) : undefined,
+                        maxValue: j.salaryMax ? j.salaryMax * (j.salaryFrequency === 'yearly' ? 1 : 12) : undefined,
+                        unitText: j.salaryFrequency === 'yearly' ? 'YEAR' : 'MONTH',
+                      },
+                    }
+                  }
+                  return posting
+                }),
+            }),
+          }}
+        />
+      )}
     </>
   )
 }

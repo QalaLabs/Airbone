@@ -10,7 +10,7 @@ import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
   title: 'Aviation English ICAO Level 4 Delhi | Airborne Aviation',
-  description: 'Achieve ICAO English Level 4 for your DGCA CPL or RTR licence at Airborne Aviation Academy, Dwarka Delhi - 2,500+ students trained. Structured aviation English course. Fees ₹50K–1L.',
+  description: 'Achieve ICAO English Level 4 for your DGCA CPL or RTR licence at Airborne Aviation Academy, Dwarka Delhi - structured aviation English training since 2009. Fees ₹50K–1L.',
   alternates: { canonical: '/courses/aviation-english-icao' },
 }
 

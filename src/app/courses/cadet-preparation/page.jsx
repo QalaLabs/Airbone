@@ -11,7 +11,7 @@ import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
   title: 'Cadet Pilot Program Prep IndiGo, Air India, Akasa | Airborne',
-  description: 'Prepare for IndiGo, Air India & Akasa cadet pilot programs at Airborne, Dwarka - 2,500+ students trained. Aptitude tests, GD-PI, simulator prep - join now.',
+  description: 'Prepare for IndiGo, Air India & Akasa cadet pilot programs at Airborne, Dwarka - structured training since 2009. Aptitude tests, GD-PI, simulator prep - join now.',
   alternates: { canonical: '/courses/cadet-preparation' },
 }
 

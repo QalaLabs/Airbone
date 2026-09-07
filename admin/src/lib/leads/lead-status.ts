@@ -12,11 +12,23 @@ import { LeadStatus } from "@prisma/client";
  * Level 2 (Lost reasons):
  *   INCOMING_BARD, OUT_OF_SERVICE, NOT_AWARE, NOT_CONTACTABLE,
  *   LOCATION_OUT_OF_SCOPE, LANGUAGE_BARRIER, PRICE_HIGH, JOINED_OTHERS,
- *   NOT_ELIGIBLE, INVALID_NUMBER, TEST_LEAD
+ *   NOT_ELIGIBLE, INVALID_NUMBER, TEST_LEAD,
+ *   NOT_INTERESTED, REASON_NOT_SHARED, JOB_SEEKER
  *
  * Legacy values (CONTACTED / FOLLOW_UP / COUNSELED / APPLICATION_SUBMITTED)
  * remain in the DB enum for backward compatibility with historical data and
  * automations; new leads use the Phased 2 hierarchy above.
+ *
+ * Canonical transition rules (Section 3, Phase B/N):
+ *   - The DB enum is the ONLY vocabulary for lead status.
+ *   - WON / CONVERTED are SYSTEM-ONLY terminal states (reached by admission
+ *     enrollment / deal-won); a generic lead status PATCH cannot set them.
+ *   - Entering any LOST status persists a loss reason (the status itself is a
+ *     taxonomy value; REASON_NOT_SHARED is a first-class persisted reason).
+ *   - Entering PROSPECT ensures a Deal record exists (auto-created,
+ *     idempotent + concurrency-safe via deals(orgId, leadId) unique).
+ *   - Prior lead statuses must be one of the transitions returned by
+ *     getAllowedLeadStatuses(); service layer enforces it.
  */
 
 export interface LeadStatusLevel {
@@ -65,6 +77,9 @@ export const LEAD_STATUS_HIERARCHY: LeadStatusLevel[] = [
       LeadStatus.NOT_ELIGIBLE,
       LeadStatus.INVALID_NUMBER,
       LeadStatus.TEST_LEAD,
+      LeadStatus.NOT_INTERESTED,
+      LeadStatus.REASON_NOT_SHARED,
+      LeadStatus.JOB_SEEKER,
     ],
   },
 ];
@@ -88,7 +103,23 @@ export const LOST_STATUSES: LeadStatus[] = [
   LeadStatus.NOT_ELIGIBLE,
   LeadStatus.INVALID_NUMBER,
   LeadStatus.TEST_LEAD,
+  LeadStatus.NOT_INTERESTED,
+  LeadStatus.REASON_NOT_SHARED,
+  LeadStatus.JOB_SEEKER,
 ];
+
+/** Default persisted loss-reason text for reason-only lost statuses. */
+export const LOSS_REASON_DEFAULT_TEXT: Partial<Record<LeadStatus, string>> = {
+  [LeadStatus.NOT_INTERESTED]: "Not interested in the course",
+  [LeadStatus.REASON_NOT_SHARED]: "Not Interested — Reason Not Shared",
+  [LeadStatus.JOB_SEEKER]: "Lead is job-seeking, not a course prospect",
+  [LeadStatus.NOT_ELIGIBLE]: "Not eligible for the course",
+  [LeadStatus.PRICE_HIGH]: "Price / budget mismatch",
+  [LeadStatus.LOCATION_OUT_OF_SCOPE]: "Location out of scope",
+  [LeadStatus.LANGUAGE_BARRIER]: "Language barrier",
+  [LeadStatus.INVALID_NUMBER]: "Invalid phone number",
+  [LeadStatus.TEST_LEAD]: "Test lead",
+};
 
 /** Productive statuses for funnel metrics. */
 export const CONNECTED_STATUSES: LeadStatus[] = [
@@ -142,6 +173,8 @@ export const LEAD_STATUS_COLORS: Record<string, string> = {
   CONTACTED: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
   INTERESTED: "bg-green-500/20 text-green-400 border-green-500/30",
   NOT_INTERESTED: "bg-red-500/20 text-red-400 border-red-500/30",
+  REASON_NOT_SHARED: "bg-red-500/10 text-red-400 border-red-500/30",
+  JOB_SEEKER: "bg-red-500/10 text-red-400 border-red-500/30",
   FOLLOW_UP: "bg-orange-500/20 text-orange-400 border-orange-500/30",
   COUNSELED: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
   APPLICATION_SUBMITTED: "bg-purple-500/20 text-purple-400 border-purple-500/30",
@@ -168,3 +201,59 @@ export const LEAD_STATUS_COLORS: Record<string, string> = {
   INVALID_NUMBER: "bg-gray-500/10 text-gray-400 border-gray-500/30",
   TEST_LEAD: "bg-gray-500/10 text-gray-400 border-gray-500/30",
 };
+
+/**
+ * System-only terminal statuses: reached exclusively by the conversion path
+ * (deal won → admission enrolled → lead CONVERTED, or direct admission
+ * enrollment). A generic lead status change cannot enter these.
+ */
+export const LOCKED_LEAD_STATUSES: LeadStatus[] = [
+  LeadStatus.WON,
+  LeadStatus.CONVERTED,
+];
+
+/** Legacy statuses preserved in the DB enum for historical data/automation. */
+export const LEGACY_LEAD_STATUSES: LeadStatus[] = [
+  LeadStatus.CONTACTED,
+  LeadStatus.FOLLOW_UP,
+  LeadStatus.COUNSELED,
+  LeadStatus.APPLICATION_SUBMITTED,
+];
+
+/**
+ * Canonical validated transition model (Phase B/N).
+ *
+ * Returns every status a lead may be moved to from `from`:
+ *  - WON / CONVERTED: locked (no manual moves).
+ *  - APPLICATION_SUBMITTED (legacy): only lost-statuses or PROSPECT re-open.
+ *  - Lost statuses: any active status (re-open) or another lost reason.
+ *  - Everything else: any status that is not system-locked.
+ *
+ * NOTE: the vocabulary is bounded by the DB enum; this function guarantees
+ * intent (e.g. no manual WON), not string freedom.
+ */
+export function getAllowedLeadStatuses(from: LeadStatus): LeadStatus[] {
+  if (LOCKED_LEAD_STATUSES.includes(from)) return [];
+  const allMinusLocked = [
+    ...ALL_LEAD_STATUSES,
+    ...LEGACY_LEAD_STATUSES,
+  ].filter((s) => !LOCKED_LEAD_STATUSES.includes(s));
+  if (from === LeadStatus.APPLICATION_SUBMITTED) {
+    return [...LOST_STATUSES, LeadStatus.PROSPECT];
+  }
+  if (isLostStatus(from)) {
+    return [...allMinusLocked].filter(
+      (s) => !isLostStatus(s) || s === LeadStatus.LOST,
+    );
+  }
+  return allMinusLocked;
+}
+
+/** Canonical guard used by the service layer before any status write. */
+export function canTransitionLeadStatus(
+  from: LeadStatus,
+  to: LeadStatus,
+): boolean {
+  if (from === to) return true;
+  return getAllowedLeadStatuses(from).includes(to);
+}

@@ -18,6 +18,7 @@ const FEE_PLAN_SELECT = {
       id: true,
       name: true,
       amount: true,
+      percentOfFee: true,
       dueOffsetDays: true,
       sortOrder: true,
       metadata: true,
@@ -72,7 +73,8 @@ export class FeePlanRepository {
         items: {
           create: input.items.map((item, idx) => ({
             name: item.name,
-            amount: item.amount,
+            amount: item.amount ?? 0,
+            percentOfFee: item.percentOfFee,
             dueOffsetDays: item.dueOffsetDays,
             sortOrder: item.sortOrder ?? idx,
             metadata: (item.metadata ?? {}) as Prisma.InputJsonValue,
@@ -94,7 +96,8 @@ export class FeePlanRepository {
           data: input.items.map((item, idx) => ({
             feePlanId: id,
             name: item.name,
-            amount: item.amount,
+            amount: item.amount ?? 0,
+            percentOfFee: item.percentOfFee,
             dueOffsetDays: item.dueOffsetDays,
             sortOrder: item.sortOrder ?? idx,
             metadata: (item.metadata ?? {}) as Prisma.InputJsonValue,

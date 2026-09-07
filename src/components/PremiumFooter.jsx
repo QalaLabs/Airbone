@@ -124,7 +124,7 @@ export default function PremiumFooter({ onBookDemo }) {
         <div className="pf-inner">
           <div className="pf-trust-grid">
             {[
-              { stat: '2,500+', label: 'Students Trained' },
+              { stat: 'Since', label: '2009' },
               { stat: '15+',    label: 'Years Experience' },
               { stat: 'DGCA',   label: 'Focused Training' },
               { stat: '25',     label: 'Max Batch Size' },

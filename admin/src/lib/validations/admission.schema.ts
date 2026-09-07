@@ -6,13 +6,23 @@ export const createAdmissionSchema = z.object({
   campusId: z.string().uuid().optional(),
   counselorId: z.string().uuid().optional(),
   courseName: z.string().max(255).optional(),
+  courseId: z.string().uuid().optional(),
   batchName: z.string().max(255).optional(),
   batchStartDate: z.string().datetime().optional(),
+  batchId: z.string().uuid().optional(),
   feePlanId: z.string().uuid().optional(),
   feeAmount: z.number().positive().optional(),
   feeDiscount: z.number().min(0).default(0),
   notes: z.string().max(5000).optional(),
   metadata: z.record(z.unknown()).optional(),
+}).superRefine((v, ctx) => {
+  if (v.feeAmount !== undefined && v.feeDiscount > v.feeAmount) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["feeDiscount"],
+      message: "Fee discount cannot exceed the fee amount",
+    });
+  }
 });
 
 export const updateAdmissionSchema = z.object({
@@ -20,13 +30,23 @@ export const updateAdmissionSchema = z.object({
   counselorId: z.string().uuid().optional().nullable(),
   studentId: z.string().uuid().optional().nullable(),
   courseName: z.string().max(255).optional(),
+  courseId: z.string().uuid().optional().nullable(),
   batchName: z.string().max(255).optional(),
   batchStartDate: z.string().datetime().optional().nullable(),
+  batchId: z.string().uuid().optional().nullable(),
   feePlanId: z.string().uuid().optional().nullable(),
   feeAmount: z.number().positive().optional(),
   feeDiscount: z.number().min(0).optional(),
   notes: z.string().max(5000).optional(),
   metadata: z.record(z.unknown()).optional(),
+}).superRefine((v, ctx) => {
+  if (v.feeAmount !== undefined && v.feeDiscount !== undefined && v.feeDiscount > v.feeAmount) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["feeDiscount"],
+      message: "Fee discount cannot exceed the fee amount",
+    });
+  }
 });
 
 export const changeStageSchema = z.object({

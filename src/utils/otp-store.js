@@ -12,12 +12,23 @@ const VERIFIED_TOKEN_TTL_MS = 15 * 60 * 1000
 const otpStore = new Map()      // phone -> { hash, expiresAt, attempts }
 const verifiedStore = new Map() // token -> { phone, expiresAt }
 
-function hash(code, phone) {
+function loadOtpSecret() {
   // Dedicated marketing-only OTP salt. AUTH_SECRET is accepted for back-compat
   // but is an admin-app credential and should be removed from the marketing
   // environment in favour of OTP_HASH_SECRET.
-  const secret = process.env.OTP_HASH_SECRET || process.env.AUTH_SECRET || 'airborne-otp-salt'
-  return crypto.createHash('sha256').update(`${phone}:${code}:${secret}`).digest('hex')
+  // L-05: fail-closed — refuse to hash when no secret is configured rather
+  // than silently using the committed dev literal.
+  const secret = process.env.OTP_HASH_SECRET || process.env.AUTH_SECRET
+  if (!secret) {
+    throw new Error(
+      "OTP_HASH_SECRET (or AUTH_SECRET) is not configured — cannot hash OTP codes securely",
+    )
+  }
+  return secret
+}
+
+function hash(code, phone) {
+  return crypto.createHash('sha256').update(`${phone}:${code}:${loadOtpSecret()}`).digest('hex')
 }
 
 function cleanup(store) {

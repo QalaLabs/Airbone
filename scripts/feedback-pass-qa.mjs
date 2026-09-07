@@ -1,6 +1,6 @@
 const checks = [
   ['/courses/atpl', [['2–3', true], ['4–6', false], ['Age 21', true], ['Parents on Airborne', true]]],
-  ['/courses/cabin-crew-training', [['₹59,000', true], ['₹5,000', false], ['100%*', true], ['Parents on Airborne', true]]],
+  ['/courses/cabin-crew-training', [['₹54,000', true], ['₹59,000', false], ['₹5,000', false], ['100%*', true], ['Parents on Airborne', true]]],
   ['/courses/flying-training-india-abroad', [['Parent Centric', true], ['Comprehensive CPL Flight Training', true]]],
   ['/courses/gd-pi', [['Parents on Airborne', true], ['₹30,000', true]]],
   ['/courses/commercial-pilot-license-cpl', [['Issuance Requirements', true], ['Parents on Airborne', true]]],

@@ -95,8 +95,8 @@ const STATS = [
     )
   },
   {
-    value: '2,500+',
-    label: 'STUDENTS TRAINED',
+    value: '2009',
+    label: 'TRAINING SINCE',
     desc1: 'From classroom lessons',
     desc2: 'to cockpit success.',
     color: '#D8A027',

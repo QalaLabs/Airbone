@@ -62,6 +62,9 @@ enum LeadStatus {
   NOT_ELIGIBLE
   INVALID_NUMBER
   TEST_LEAD
+  NOT_INTERESTED
+  REASON_NOT_SHARED
+  JOB_SEEKER
 }
 
 enum LeadSource {
@@ -135,6 +138,9 @@ enum WorkflowTrigger {
   CHATBOT_ESCALATED
   AI_CALL_COMPLETED
   CAMPUS_VISIT_BOOKED
+  // CRM pipeline (additive)
+  DEAL_CREATED
+  DEAL_STAGE_CHANGED
 }
 
 enum OrgPlan {
@@ -192,65 +198,66 @@ enum TestimonialStatus {
 // ─── ORGANIZATIONS (Multi-tenant root) ──────────────────────────────────────
 
 model Organization {
-  id             String    @id @default(uuid()) @db.Uuid
-  name           String    @db.VarChar(255)
-  slug           String    @unique @db.VarChar(100)
-  domain         String?   @db.VarChar(255)
-  plan           OrgPlan   @default(STARTER)
-  planExpiresAt  DateTime?
-  logoUrl        String?
-  settings       Json      @default("{}")
-  featureFlags   Json      @default("{}")
-  parentOrgId    String?   @db.Uuid
-  isActive       Boolean   @default(true)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id            String    @id @default(uuid()) @db.Uuid
+  name          String    @db.VarChar(255)
+  slug          String    @unique @db.VarChar(100)
+  domain        String?   @db.VarChar(255)
+  plan          OrgPlan   @default(STARTER)
+  planExpiresAt DateTime?
+  logoUrl       String?
+  settings      Json      @default("{}")
+  featureFlags  Json      @default("{}")
+  parentOrgId   String?   @db.Uuid
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   // Self-referential for HQ → campus hierarchy
-  parentOrg      Organization?  @relation("OrgHierarchy", fields: [parentOrgId], references: [id])
-  childOrgs      Organization[] @relation("OrgHierarchy")
+  parentOrg Organization?  @relation("OrgHierarchy", fields: [parentOrgId], references: [id])
+  childOrgs Organization[] @relation("OrgHierarchy")
 
   // Relations
-  users          User[]
-  campuses       Campus[]
-  leads          Lead[]
-  students       Student[]            @relation("OrgStudents")
-  admissions     Admission[]          @relation("OrgAdmissions")
-  documents      Document[]           @relation("OrgDocuments")
-  payments       PaymentTransaction[] @relation("OrgPayments")
-  auditLogs      AuditLog[]
-  eventLogs      EventLog[]
-  activityFeed   ActivityFeedItem[]
-  permissions    Permission[]
-  workflows      Workflow[]
+  users           User[]
+  campuses        Campus[]
+  leads           Lead[]
+  deals           Deal[]
+  students        Student[]              @relation("OrgStudents")
+  admissions      Admission[]            @relation("OrgAdmissions")
+  documents       Document[]             @relation("OrgDocuments")
+  payments        PaymentTransaction[]   @relation("OrgPayments")
+  auditLogs       AuditLog[]
+  eventLogs       EventLog[]
+  activityFeed    ActivityFeedItem[]
+  permissions     Permission[]
+  workflows       Workflow[]
   featureFlagRows FeatureFlag[]
-  notifTemplates NotificationTemplate[]
-  mediaFolders   MediaFolder[]        @relation("OrgMediaFolders")
-  mediaAssets    MediaAsset[]         @relation("OrgMediaAssets")
-  contentBlocks  ContentBlock[]       @relation("OrgContentBlocks")
-  pages          Page[]               @relation("OrgPages")
-  courses        Course[]             @relation("OrgCourses")
-  navMenus       NavMenu[]            @relation("OrgNavMenus")
-  resources      Resource[]           @relation("OrgResources")
-  jobs           Job[]                @relation("OrgJobs")
-  jobApplications JobApplication[]    @relation("OrgJobApplications")
-  placements     Placement[]          @relation("OrgPlacements")
-  hiringPartners HiringPartner[]      @relation("OrgHiringPartners")
-  testimonials   Testimonial[]        @relation("OrgTestimonials")
+  notifTemplates  NotificationTemplate[]
+  mediaFolders    MediaFolder[]          @relation("OrgMediaFolders")
+  mediaAssets     MediaAsset[]           @relation("OrgMediaAssets")
+  contentBlocks   ContentBlock[]         @relation("OrgContentBlocks")
+  pages           Page[]                 @relation("OrgPages")
+  courses         Course[]               @relation("OrgCourses")
+  navMenus        NavMenu[]              @relation("OrgNavMenus")
+  resources       Resource[]             @relation("OrgResources")
+  jobs            Job[]                  @relation("OrgJobs")
+  jobApplications JobApplication[]       @relation("OrgJobApplications")
+  placements      Placement[]            @relation("OrgPlacements")
+  hiringPartners  HiringPartner[]        @relation("OrgHiringPartners")
+  testimonials    Testimonial[]          @relation("OrgTestimonials")
 
   // SMS / LMS (additive)
-  lmsCourses           LmsCourse[]           @relation("OrgLmsCourses")
-  lmsEnrollments       LmsEnrollment[]       @relation("OrgLmsEnrollments")
-  lmsAttendanceSessions LmsAttendanceSession[] @relation("OrgLmsAttendanceSessions")
-  lmsCertificates      LmsCertificate[]      @relation("OrgLmsCertificates")
-  lmsChatRooms         LmsChatRoom[]         @relation("OrgLmsChatRooms")
-  lmsNotifications     LmsNotification[]     @relation("OrgLmsNotifications")
-  lmsAnnouncements     LmsAnnouncement[]     @relation("OrgLmsAnnouncements")
-  lmsBatches           LmsBatch[]            @relation("OrgLmsBatches")
-  lmsTimetableSlots    LmsTimetableSlot[]    @relation("OrgLmsTimetableSlots")
-  lmsAssignments       LmsAssignment[]       @relation("OrgLmsAssignments")
-  feePlans             FeePlan[]             @relation("OrgFeePlans")
-  whatsappConversations   WhatsAppConversation[]
+  lmsCourses             LmsCourse[]             @relation("OrgLmsCourses")
+  lmsEnrollments         LmsEnrollment[]         @relation("OrgLmsEnrollments")
+  lmsAttendanceSessions  LmsAttendanceSession[]  @relation("OrgLmsAttendanceSessions")
+  lmsCertificates        LmsCertificate[]        @relation("OrgLmsCertificates")
+  lmsChatRooms           LmsChatRoom[]           @relation("OrgLmsChatRooms")
+  lmsNotifications       LmsNotification[]       @relation("OrgLmsNotifications")
+  lmsAnnouncements       LmsAnnouncement[]       @relation("OrgLmsAnnouncements")
+  lmsBatches             LmsBatch[]              @relation("OrgLmsBatches")
+  lmsTimetableSlots      LmsTimetableSlot[]      @relation("OrgLmsTimetableSlots")
+  lmsAssignments         LmsAssignment[]         @relation("OrgLmsAssignments")
+  feePlans               FeePlan[]               @relation("OrgFeePlans")
+  whatsappConversations  WhatsAppConversation[]
   whatsappCampaigns      WhatsAppCampaign[]
   whatsappProviderEvents WhatsAppProviderEvent[]
   internalEvents         InternalEvent[]
@@ -281,13 +288,13 @@ model Campus {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  org             Organization         @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  headCounselor   User?                @relation("CampusHead", fields: [headCounselorId], references: [id], onDelete: SetNull)
-  users           User[]               @relation("CampusUsers")
-  leads           Lead[]
-  students        Student[]            @relation("CampusStudents")
-  admissions      Admission[]          @relation("CampusAdmissions")
-  payments        PaymentTransaction[] @relation("CampusPayments")
+  org           Organization         @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  headCounselor User?                @relation("CampusHead", fields: [headCounselorId], references: [id], onDelete: SetNull)
+  users         User[]               @relation("CampusUsers")
+  leads         Lead[]
+  students      Student[]            @relation("CampusStudents")
+  admissions    Admission[]          @relation("CampusAdmissions")
+  payments      PaymentTransaction[] @relation("CampusPayments")
 
   @@unique([orgId, code])
   @@index([orgId])
@@ -320,61 +327,64 @@ model User {
   updatedAt     DateTime  @updatedAt
   deletedAt     DateTime?
 
-  org           Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  campus        Campus?      @relation("CampusUsers", fields: [campusId], references: [id], onDelete: SetNull)
+  org    Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  campus Campus?      @relation("CampusUsers", fields: [campusId], references: [id], onDelete: SetNull)
 
   // Auth.js adapter relations
-  accounts      Account[]
-  sessions      Session[]
+  accounts Account[]
+  sessions Session[]
 
   // Business relations
-  assignedLeads           Lead[]               @relation("LeadCounselor")
-  createdLeads            Lead[]               @relation("LeadCreator")
-  leadActivities          LeadActivity[]
-  auditLogs               AuditLog[]
-  activityFeed            ActivityFeedItem[]
-  headOfCampuses          Campus[]             @relation("CampusHead")
-  workflowRuns            WorkflowRun[]
-  counseledAdmissions     Admission[]          @relation("AdmissionCounselor")
-  stageChangedAdmissions  Admission[]          @relation("AdmissionStageChanger")
-  stageLogActions         AdmissionStageLog[]  @relation("StageLogActor")
-  uploadedDocuments       Document[]           @relation("DocumentUploader")
-  reviewedDocuments       Document[]           @relation("DocumentReviewer")
-  collectedPayments       PaymentTransaction[] @relation("PaymentCollector")
-  mediaFolders            MediaFolder[]        @relation("MediaFolderCreator")
-  uploadedMediaAssets     MediaAsset[]         @relation("MediaAssetUploader")
-  createdBlocks           ContentBlock[]       @relation("ContentBlockCreator")
-  createdPages            Page[]               @relation("PageCreator")
-  publishedPages          Page[]               @relation("PagePublisher")
-  pageVersions            PageVersion[]        @relation("PageVersionCreator")
-  createdCourses          Course[]             @relation("CourseCreator")
-  publishedCourses        Course[]             @relation("CoursePublisher")
-  courseVersions          CourseVersion[]      @relation("CourseVersionCreator")
-  createdNavMenus         NavMenu[]            @relation("NavMenuCreator")
-  createdResources        Resource[]           @relation("ResourceCreator")
-  whatsappMessagesSent    WhatsAppMessage[]    @relation("WhatsAppMessageSender")
-  createdJobs             Job[]                @relation("JobCreator")
-  publishedJobs           Job[]                @relation("JobPublisher")
-  reviewedApplications    JobApplication[]     @relation("ApplicationReviewer")
-  createdPlacements       Placement[]          @relation("PlacementCreator")
-  createdHiringPartners   HiringPartner[]      @relation("HiringPartnerCreator")
-  reviewedTestimonials    Testimonial[]        @relation("TestimonialReviewer")
+  assignedLeads          Lead[]               @relation("LeadCounselor")
+  createdLeads           Lead[]               @relation("LeadCreator")
+  ownedDeals             Deal[]               @relation("DealOwner")
+  createdDeals           Deal[]               @relation("DealCreator")
+  leadActivities         LeadActivity[]
+  auditLogs              AuditLog[]
+  activityFeed           ActivityFeedItem[]
+  headOfCampuses         Campus[]             @relation("CampusHead")
+  workflowRuns           WorkflowRun[]
+  counseledAdmissions    Admission[]          @relation("AdmissionCounselor")
+  stageChangedAdmissions Admission[]          @relation("AdmissionStageChanger")
+  stageLogActions        AdmissionStageLog[]  @relation("StageLogActor")
+  uploadedDocuments      Document[]           @relation("DocumentUploader")
+  reviewedDocuments      Document[]           @relation("DocumentReviewer")
+  collectedPayments      PaymentTransaction[] @relation("PaymentCollector")
+  refundedPayments       PaymentTransaction[] @relation("PaymentRefunder")
+  mediaFolders           MediaFolder[]        @relation("MediaFolderCreator")
+  uploadedMediaAssets    MediaAsset[]         @relation("MediaAssetUploader")
+  createdBlocks          ContentBlock[]       @relation("ContentBlockCreator")
+  createdPages           Page[]               @relation("PageCreator")
+  publishedPages         Page[]               @relation("PagePublisher")
+  pageVersions           PageVersion[]        @relation("PageVersionCreator")
+  createdCourses         Course[]             @relation("CourseCreator")
+  publishedCourses       Course[]             @relation("CoursePublisher")
+  courseVersions         CourseVersion[]      @relation("CourseVersionCreator")
+  createdNavMenus        NavMenu[]            @relation("NavMenuCreator")
+  createdResources       Resource[]           @relation("ResourceCreator")
+  whatsappMessagesSent   WhatsAppMessage[]    @relation("WhatsAppMessageSender")
+  createdJobs            Job[]                @relation("JobCreator")
+  publishedJobs          Job[]                @relation("JobPublisher")
+  reviewedApplications   JobApplication[]     @relation("ApplicationReviewer")
+  createdPlacements      Placement[]          @relation("PlacementCreator")
+  createdHiringPartners  HiringPartner[]      @relation("HiringPartnerCreator")
+  reviewedTestimonials   Testimonial[]        @relation("TestimonialReviewer")
 
   // SMS / LMS portal (additive)
-  studentProfile          Student?             @relation("StudentAuthUser")
-  teachingCourses         LmsCourseTeacher[]   @relation("LmsCourseTeacher")
-  lmsProgress             LmsStudentProgress[] @relation("LmsProgressStudent")
-  lmsAssessments          LmsAssessment[]      @relation("LmsAssessmentStudent")
-  lmsSentMessages         LmsMessage[]         @relation("LmsSentMessages")
-  lmsNotifications        LmsNotification[]    @relation("LmsNotificationUser")
-  issuedCertificates      LmsCertificate[]     @relation("LmsCertificateIssuer")
-  markedAttendance        LmsAttendanceRecord[] @relation("LmsAttendanceMarker")
-  lmsQuizAttempts         LmsQuizAttempt[]     @relation("LmsQuizAttemptUser")
-  lmsAnnouncements        LmsAnnouncement[]    @relation("LmsAnnouncementCreator")
-  lmsBatchTeaching        LmsBatchTeacher[]    @relation("LmsBatchTeacher")
-  lmsTimetableTeaching    LmsTimetableSlot[]   @relation("LmsTimetableTeacher")
-  lmsAssignmentsCreated   LmsAssignment[]      @relation("LmsAssignmentCreator")
-  lmsSubmissionsGraded    LmsAssignmentSubmission[] @relation("LmsSubmissionGrader")
+  studentProfile        Student?                  @relation("StudentAuthUser")
+  teachingCourses       LmsCourseTeacher[]        @relation("LmsCourseTeacher")
+  lmsProgress           LmsStudentProgress[]      @relation("LmsProgressStudent")
+  lmsAssessments        LmsAssessment[]           @relation("LmsAssessmentStudent")
+  lmsSentMessages       LmsMessage[]              @relation("LmsSentMessages")
+  lmsNotifications      LmsNotification[]         @relation("LmsNotificationUser")
+  issuedCertificates    LmsCertificate[]          @relation("LmsCertificateIssuer")
+  markedAttendance      LmsAttendanceRecord[]     @relation("LmsAttendanceMarker")
+  lmsQuizAttempts       LmsQuizAttempt[]          @relation("LmsQuizAttemptUser")
+  lmsAnnouncements      LmsAnnouncement[]         @relation("LmsAnnouncementCreator")
+  lmsBatchTeaching      LmsBatchTeacher[]         @relation("LmsBatchTeacher")
+  lmsTimetableTeaching  LmsTimetableSlot[]        @relation("LmsTimetableTeacher")
+  lmsAssignmentsCreated LmsAssignment[]           @relation("LmsAssignmentCreator")
+  lmsSubmissionsGraded  LmsAssignmentSubmission[] @relation("LmsSubmissionGrader")
 
   @@unique([email, orgId])
   @@index([orgId, role])
@@ -432,14 +442,14 @@ model VerificationToken {
 // ─── PERMISSIONS (RBAC + ABAC) ──────────────────────────────────────────────
 
 model Permission {
-  id           String   @id @default(uuid()) @db.Uuid
-  orgId        String   @db.Uuid
-  role         UserRole
-  resource     String   @db.VarChar(100)
-  action       String   @db.VarChar(50)
-  conditions   Json?
-  campusScope  Boolean  @default(false)
-  createdAt    DateTime @default(now())
+  id          String   @id @default(uuid()) @db.Uuid
+  orgId       String   @db.Uuid
+  role        UserRole
+  resource    String   @db.VarChar(100)
+  action      String   @db.VarChar(50)
+  conditions  Json?
+  campusScope Boolean  @default(false)
+  createdAt   DateTime @default(now())
 
   org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
@@ -478,9 +488,9 @@ model Lead {
   landingPage String? @db.Text
 
   // Scoring
-  score       Int     @default(0)
-  tags        String[]
-  customFields Json   @default("{}")
+  score        Int      @default(0)
+  tags         String[]
+  customFields Json     @default("{}")
 
   // Dedup
   isDuplicate Boolean @default(false)
@@ -490,34 +500,35 @@ model Lead {
   whatsappOptOut Boolean @default(false)
 
   // Outcome
-  convertedAt DateTime?
-  lostReason  String?   @db.Text
-  nextFollowUp DateTime?
+  convertedAt    DateTime?
+  lostReason     String?   @db.Text
+  nextFollowUp   DateTime?
   lastActivityAt DateTime?
 
-  metadata    Json      @default("{}")
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime?
+  metadata  Json      @default("{}")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   // Relations
-  org          Organization  @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  campus       Campus?       @relation(fields: [campusId], references: [id], onDelete: SetNull)
-  counselor    User?         @relation("LeadCounselor", fields: [assignedTo], references: [id], onDelete: SetNull)
-  creator      User?         @relation("LeadCreator", fields: [createdBy], references: [id], onDelete: SetNull)
-  duplicateRef Lead?         @relation("LeadDuplicate", fields: [duplicateOf], references: [id], onDelete: SetNull)
-  duplicates   Lead[]        @relation("LeadDuplicate")
-  activities   LeadActivity[]
-  scoreHistory LeadScoreHistory[]
-  admissions   Admission[]   @relation("LeadAdmissions")
-  student      Student?      @relation("LeadStudent")
+  org                   Organization           @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  campus                Campus?                @relation(fields: [campusId], references: [id], onDelete: SetNull)
+  counselor             User?                  @relation("LeadCounselor", fields: [assignedTo], references: [id], onDelete: SetNull)
+  creator               User?                  @relation("LeadCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  duplicateRef          Lead?                  @relation("LeadDuplicate", fields: [duplicateOf], references: [id], onDelete: SetNull)
+  duplicates            Lead[]                 @relation("LeadDuplicate")
+  activities            LeadActivity[]
+  scoreHistory          LeadScoreHistory[]
+  admissions            Admission[]            @relation("LeadAdmissions")
+  deals                 Deal[]                 @relation("LeadDeals")
+  student               Student?               @relation("LeadStudent")
   whatsappConversations WhatsAppConversation[]
-  interaktSyncs InteraktLeadSync[]
+  interaktSyncs         InteraktLeadSync[]
 
+  @@unique([orgId, phone])
   @@index([orgId, status])
   @@index([orgId, assignedTo, createdAt(sort: Desc)])
   @@index([orgId, createdAt(sort: Desc)])
-  @@unique([orgId, phone])
   @@index([phone, orgId])
   @@index([email, orgId])
   @@index([orgId, score(sort: Desc)])
@@ -527,25 +538,28 @@ model Lead {
 // ─── LEAD ACTIVITIES ────────────────────────────────────────────────────────
 
 model LeadActivity {
-  id            String       @id @default(uuid()) @db.Uuid
-  leadId        String       @db.Uuid
-  orgId         String       @db.Uuid
-  performedBy   String?      @db.Uuid
-  activityType  ActivityType
-  title         String?      @db.VarChar(500)
-  notes         String?      @db.Text
-  outcome       String?      @db.VarChar(255)
-  nextAction    String?      @db.Text
-  dueAt         DateTime?
-  completedAt   DateTime?
-  durationMins  Int?
-  metadata      Json         @default("{}")
-  createdAt     DateTime     @default(now())
+  id           String       @id @default(uuid()) @db.Uuid
+  leadId       String       @db.Uuid
+  orgId        String       @db.Uuid
+  dealId       String?      @db.Uuid
+  performedBy  String?      @db.Uuid
+  activityType ActivityType
+  title        String?      @db.VarChar(500)
+  notes        String?      @db.Text
+  outcome      String?      @db.VarChar(255)
+  nextAction   String?      @db.Text
+  dueAt        DateTime?
+  completedAt  DateTime?
+  durationMins Int?
+  metadata     Json         @default("{}")
+  createdAt    DateTime     @default(now())
 
   lead      Lead  @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  deal      Deal? @relation(fields: [dealId], references: [id], onDelete: SetNull)
   performer User? @relation(fields: [performedBy], references: [id], onDelete: SetNull)
 
   @@index([leadId, createdAt(sort: Desc)])
+  @@index([dealId, createdAt(sort: Desc)])
   @@index([performedBy])
   @@index([dueAt])
   @@index([orgId, dueAt])
@@ -568,25 +582,90 @@ model LeadScoreHistory {
   @@map("lead_score_history")
 }
 
+// ─── DEAL / OPPORTUNITY ──────────────────────────────────────────────────────
+//
+// A Deal is a persisted sales opportunity tied 1:1 to a Lead (canonical person
+// record — no duplicate contact tables). Stages reuse `AdmissionStage` because
+// the product's sales funnel IS the admission funnel (audit §F07: "the native
+// equivalent is the admission funnel"): ENQUIRY → DOCUMENT_COLLECTION →
+// VERIFICATION → OFFER_LETTER → FEE_PAYMENT → ENROLLED, with DROPPED/CANCELLED
+// as terminal lost stages. WON ⇔ stage ENROLLED (wonAt set), LOST ⇔ DROPPED or
+// CANCELLED (lostAt + lostReason set).
+//
+// Lifecycle conventions (mirrors Lead/Admission):
+//  - `convertedAt`  = moment the Deal produced an Admission (deal → admission)
+//  - `wonAt`        = moment the Deal reached ENROLLED
+//  - `lostAt`       = moment the Deal reached DROPPED/CANCELLED (needs lostReason)
+//  - `revertedAt`   = moment the Deal was reverted to Prospect (Change Deal To
+//                     Prospect) — the Deal is archived (isActive=false) and
+//                     kept for audit; the lead is restored to PROSPECT.
+//  - `admissionId`  unique-non-null link: a Deal can own at most one converted
+//                     Admission (partial unique in Postgres) → concurrent
+//                     conversion requests cannot create duplicate Admissions.
+//  - `@@unique([orgId, leadId])` → concurrent Prospect→Deal conversions can
+//                     never create two Deals for the same lead (P2002 recovery).
+
+model Deal {
+  id              String         @id @default(uuid()) @db.Uuid
+  orgId           String         @db.Uuid
+  leadId          String         @db.Uuid
+  admissionId     String?        @unique @db.Uuid
+  title           String         @db.VarChar(255)
+  stage           AdmissionStage @default(ENQUIRY)
+  value           Decimal?       @db.Decimal(12, 2)
+  currency        String         @default("INR") @db.VarChar(3)
+  expectedCloseAt DateTime?
+  source          LeadSource?
+  assignedTo      String?        @db.Uuid
+  createdBy       String?        @db.Uuid
+  notes           String?        @db.Text
+  lostReason      String?        @db.Text
+  wonAt           DateTime?
+  lostAt          DateTime?
+  convertedAt     DateTime?
+  revertedAt      DateTime?
+  isActive        Boolean        @default(true)
+  metadata        Json           @default("{}")
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  deletedAt       DateTime?
+
+  org        Organization   @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  lead       Lead           @relation("LeadDeals", fields: [leadId], references: [id], onDelete: Cascade)
+  admission  Admission?     @relation("DealAdmission", fields: [admissionId], references: [id], onDelete: SetNull)
+  counselor  User?          @relation("DealOwner", fields: [assignedTo], references: [id], onDelete: SetNull)
+  creator    User?          @relation("DealCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  activities LeadActivity[]
+
+  @@unique([orgId, leadId])
+  @@index([orgId, stage])
+  @@index([orgId, isActive, stage])
+  @@index([orgId, assignedTo])
+  @@index([orgId, createdAt(sort: Desc)])
+  @@index([orgId, wonAt])
+  @@index([orgId, updatedAt(sort: Desc)])
+  @@map("deals")
+}
+
 // ─── AUDIT LOGS (Append-only, hash-chained) ──────────────────────────────────
 
 model AuditLog {
-  id          BigInt   @id @default(autoincrement())
-  orgId       String   @db.Uuid
-  userId      String?  @db.Uuid
-  sessionId   String?  @db.Uuid
-  requestId   String?  @db.Uuid
-  action      String   @db.VarChar(100)
-  entityType  String   @db.VarChar(100)
-  entityId    String?  @db.VarChar(255)
-  oldValue    Json?
-  newValue    Json?
-  diff        Json?
-  ipAddress   String?  @db.VarChar(45)
-  userAgent   String?  @db.Text
-  prevHash    String?  @db.VarChar(64)
-  rowHash     String?  @db.VarChar(64)
-  occurredAt  DateTime @default(now())
+  id         BigInt   @id @default(autoincrement())
+  orgId      String   @db.Uuid
+  userId     String?  @db.Uuid
+  sessionId  String?  @db.Uuid
+  requestId  String?  @db.VarChar(255)
+  action     String   @db.VarChar(100)
+  entityType String   @db.VarChar(100)
+  entityId   String?  @db.VarChar(255)
+  oldValue   Json?
+  newValue   Json?
+  diff       Json?
+  ipAddress  String?  @db.VarChar(45)
+  userAgent  String?  @db.Text
+  prevHash   String?  @db.VarChar(64)
+  rowHash    String?  @db.VarChar(64)
+  occurredAt DateTime @default(now())
 
   org  Organization @relation(fields: [orgId], references: [id])
   user User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
@@ -600,15 +679,15 @@ model AuditLog {
 // ─── EVENT LOG (Immutable event stream) ──────────────────────────────────────
 
 model EventLog {
-  id          BigInt   @id @default(autoincrement())
-  orgId       String   @db.Uuid
-  eventName   String   @db.VarChar(255)
-  actorId     String?  @db.Uuid
-  actorType   String?  @db.VarChar(50)
-  entityType  String?  @db.VarChar(100)
-  entityId    String?  @db.VarChar(255)
-  payload     Json     @default("{}")
-  occurredAt  DateTime @default(now())
+  id         BigInt   @id @default(autoincrement())
+  orgId      String   @db.Uuid
+  eventName  String   @db.VarChar(255)
+  actorId    String?  @db.Uuid
+  actorType  String?  @db.VarChar(50)
+  entityType String?  @db.VarChar(100)
+  entityId   String?  @db.VarChar(255)
+  payload    Json     @default("{}")
+  occurredAt DateTime @default(now())
 
   org Organization @relation(fields: [orgId], references: [id])
 
@@ -667,21 +746,21 @@ model NotificationTemplate {
 // ─── NOTIFICATION LOGS ──────────────────────────────────────────────────────
 
 model NotificationLog {
-  id          String              @id @default(uuid()) @db.Uuid
-  orgId       String              @db.Uuid
-  templateId  String?             @db.Uuid
-  event       NotificationEvent?
-  channel     NotificationChannel
-  recipient   String              @db.VarChar(255)
-  subject     String?             @db.Text
-  body        String?             @db.Text
-  status      String              @default("PENDING") @db.VarChar(30)
-  errorMsg    String?             @db.Text
-  externalId  String?             @db.VarChar(255)
-  entityType  String?             @db.VarChar(100)
-  entityId    String?             @db.VarChar(255)
-  sentAt      DateTime?
-  createdAt   DateTime            @default(now())
+  id         String              @id @default(uuid()) @db.Uuid
+  orgId      String              @db.Uuid
+  templateId String?             @db.Uuid
+  event      NotificationEvent?
+  channel    NotificationChannel
+  recipient  String              @db.VarChar(255)
+  subject    String?             @db.Text
+  body       String?             @db.Text
+  status     String              @default("PENDING") @db.VarChar(30)
+  errorMsg   String?             @db.Text
+  externalId String?             @db.VarChar(255)
+  entityType String?             @db.VarChar(100)
+  entityId   String?             @db.VarChar(255)
+  sentAt     DateTime?
+  createdAt  DateTime            @default(now())
 
   template NotificationTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
 
@@ -693,60 +772,60 @@ model NotificationLog {
 // ─── WORKFLOWS ───────────────────────────────────────────────────────────────
 
 model Workflow {
-  id                 String          @id @default(uuid()) @db.Uuid
-  orgId              String          @db.Uuid
-  name               String          @db.VarChar(255)
+  id                String          @id @default(uuid()) @db.Uuid
+  orgId             String          @db.Uuid
+  name              String          @db.VarChar(255)
   // Stable reference used by START_WORKFLOW steps and the API (unique per org)
-  code               String?         @db.VarChar(100)
-  description        String?         @db.Text
-  triggerEvent       WorkflowTrigger
-  triggerConditions  Json            @default("{}")
-  steps              Json            @default("[]")
-  isActive           Boolean         @default(true)
-  version            Int             @default(1)
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
+  code              String?         @db.VarChar(100)
+  description       String?         @db.Text
+  triggerEvent      WorkflowTrigger
+  triggerConditions Json            @default("{}")
+  steps             Json            @default("[]")
+  isActive          Boolean         @default(true)
+  version           Int             @default(1)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
 
   org  Organization  @relation(fields: [orgId], references: [id], onDelete: Cascade)
   runs WorkflowRun[]
 
-  @@index([orgId, isActive])
   @@unique([orgId, code])
+  @@index([orgId, isActive])
   @@map("workflows")
 }
 
 model WorkflowRun {
-  id            String    @id @default(uuid()) @db.Uuid
-  orgId         String    @db.Uuid
-  workflowId    String    @db.Uuid
-  entityType    String    @db.VarChar(100)
-  entityId      String    @db.VarChar(255)
-  triggeredBy   String?   @db.Uuid
-  currentStep   Int       @default(0)
+  id                  String    @id @default(uuid()) @db.Uuid
+  orgId               String    @db.Uuid
+  workflowId          String    @db.Uuid
+  entityType          String    @db.VarChar(100)
+  entityId            String    @db.VarChar(255)
+  triggeredBy         String?   @db.Uuid
+  currentStep         Int       @default(0)
   // RUNNING (= active), PAUSED, COMPLETED, STOPPED, FAILED, CANCELLED
-  status        String    @default("RUNNING") @db.VarChar(30)
-  context       Json      @default("{}")
-  error         String?   @db.Text
+  status              String    @default("RUNNING") @db.VarChar(30)
+  context             Json      @default("{}")
+  error               String?   @db.Text
   // Idempotency: eventName:entityId:requestId — NULL for manual runs.
   // Unique per (org, workflow, entity); Postgres allows many NULLs so manual
   // runs are never blocked by the dedup index.
-  dedupKey      String?   @db.VarChar(255)
-  stoppedReason String?   @db.Text
-  nextRunAt     DateTime?
-  retryCount    Int       @default(0)
-  pausedAt      DateTime?
-  stoppedAt     DateTime?
+  dedupKey            String?   @db.VarChar(255)
+  stoppedReason       String?   @db.Text
+  nextRunAt           DateTime?
+  retryCount          Int       @default(0)
+  pausedAt            DateTime?
+  stoppedAt           DateTime?
   executionOwner      String?   @db.VarChar(128)
   executionLeaseUntil DateTime?
-  startedAt     DateTime  @default(now())
-  completedAt   DateTime?
+  startedAt           DateTime  @default(now())
+  completedAt         DateTime?
 
   workflow  Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   triggerer User?    @relation(fields: [triggeredBy], references: [id], onDelete: SetNull)
 
+  @@unique([orgId, workflowId, entityType, entityId, dedupKey])
   @@index([workflowId])
   @@index([entityType, entityId])
-  @@unique([orgId, workflowId, entityType, entityId, dedupKey])
   @@index([orgId, status])
   @@index([status, nextRunAt])
   @@index([status, executionLeaseUntil])
@@ -756,12 +835,12 @@ model WorkflowRun {
 // Persisted internal automation bus — replaces Inngest event delivery for
 // workflow matching, side-effect handlers, and audit. Deduped on requestId.
 model InternalEvent {
-  id          String    @id @default(uuid()) @db.Uuid
-  orgId       String    @db.Uuid
-  name        String    @db.VarChar(120)
-  requestId   String    @db.VarChar(255)
-  actorId     String?   @db.VarChar(255)
-  actorName   String?   @db.VarChar(255)
+  id                   String    @id @default(uuid()) @db.Uuid
+  orgId                String    @db.Uuid
+  name                 String    @db.VarChar(120)
+  requestId            String    @db.VarChar(255)
+  actorId              String?   @db.VarChar(255)
+  actorName            String?   @db.VarChar(255)
   payload              Json      @default("{}")
   processedAt          DateTime?
   attemptCount         Int       @default(0)
@@ -861,8 +940,8 @@ model WhatsAppConversation {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  org      Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  lead     Lead?        @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  org      Organization      @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  lead     Lead?             @relation(fields: [leadId], references: [id], onDelete: SetNull)
   messages WhatsAppMessage[]
 
   @@unique([orgId, phone])
@@ -871,33 +950,33 @@ model WhatsAppConversation {
 }
 
 model WhatsAppMessage {
-  id             String                   @id @default(uuid()) @db.Uuid
-  orgId          String                   @db.Uuid
-  conversationId String                   @db.Uuid
-  direction      WhatsAppMessageDirection
-  body           String                   @db.Text
-  templateName   String?                  @db.VarChar(255)
+  id              String                   @id @default(uuid()) @db.Uuid
+  orgId           String                   @db.Uuid
+  conversationId  String                   @db.Uuid
+  direction       WhatsAppMessageDirection
+  body            String                   @db.Text
+  templateName    String?                  @db.VarChar(255)
   // QUEUED / SENT / DELIVERED / READ / FAILED / RECEIVED
-  status         String                   @default("SENT") @db.VarChar(30)
-  externalId     String?                  @db.VarChar(255)
-  errorMsg       String?                  @db.Text
-  sentBy         String?                  @db.Uuid
-  campaignId     String?                  @db.Uuid
-  leadId         String?                  @db.Uuid
-  workflowRunId  String?                  @db.Uuid
-  workflowStepKey String?                 @db.VarChar(64)
-  idempotencyKey String?                  @db.VarChar(255)
+  status          String                   @default("SENT") @db.VarChar(30)
+  externalId      String?                  @db.VarChar(255)
+  errorMsg        String?                  @db.Text
+  sentBy          String?                  @db.Uuid
+  campaignId      String?                  @db.Uuid
+  leadId          String?                  @db.Uuid
+  workflowRunId   String?                  @db.Uuid
+  workflowStepKey String?                  @db.VarChar(64)
+  idempotencyKey  String?                  @db.VarChar(255)
   // Provider response + correlation (callback_data, Interakt payload slice).
-  metadata       Json                     @default("{}")
-  createdAt      DateTime                 @default(now())
+  metadata        Json                     @default("{}")
+  createdAt       DateTime                 @default(now())
 
   conversation WhatsAppConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender       User?                @relation("WhatsAppMessageSender", fields: [sentBy], references: [id], onDelete: SetNull)
 
+  @@unique([orgId, idempotencyKey], map: "wa_messages_idempotency_key")
   @@index([conversationId, createdAt])
   @@index([orgId, createdAt(sort: Desc)])
   @@index([orgId, externalId])
-  @@unique([orgId, idempotencyKey], map: "wa_messages_idempotency_key")
   @@map("whatsapp_messages")
 }
 
@@ -939,7 +1018,7 @@ model WhatsAppCampaign {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  org      Organization      @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@index([orgId, status])
   @@map("whatsapp_campaigns")
@@ -991,26 +1070,26 @@ model Student {
   updatedAt      DateTime      @updatedAt
   deletedAt      DateTime?
 
-  org        Organization         @relation("OrgStudents", fields: [orgId], references: [id], onDelete: Cascade)
-  campus     Campus?              @relation("CampusStudents", fields: [campusId], references: [id], onDelete: SetNull)
-  lead       Lead?                @relation("LeadStudent", fields: [leadId], references: [id], onDelete: SetNull)
-  user       User?                @relation("StudentAuthUser", fields: [userId], references: [id], onDelete: SetNull)
-  admissions Admission[]
-  documents     Document[]           @relation("StudentDocuments")
-  payments      PaymentTransaction[] @relation("StudentPayments")
-  applications  JobApplication[]     @relation("StudentApplications")
-  placements    Placement[]          @relation("StudentPlacements")
-  testimonials  Testimonial[]        @relation("StudentTestimonials")
+  org          Organization         @relation("OrgStudents", fields: [orgId], references: [id], onDelete: Cascade)
+  campus       Campus?              @relation("CampusStudents", fields: [campusId], references: [id], onDelete: SetNull)
+  lead         Lead?                @relation("LeadStudent", fields: [leadId], references: [id], onDelete: SetNull)
+  user         User?                @relation("StudentAuthUser", fields: [userId], references: [id], onDelete: SetNull)
+  admissions   Admission[]
+  documents    Document[]           @relation("StudentDocuments")
+  payments     PaymentTransaction[] @relation("StudentPayments")
+  applications JobApplication[]     @relation("StudentApplications")
+  placements   Placement[]          @relation("StudentPlacements")
+  testimonials Testimonial[]        @relation("StudentTestimonials")
 
   // SMS / LMS
-  lmsEnrollments       LmsEnrollment[]       @relation("StudentLmsEnrollments")
-  lmsProgress          LmsStudentProgress[]  @relation("StudentLmsProgress")
-  lmsAssessments       LmsAssessment[]       @relation("StudentLmsAssessments")
-  lmsAttendanceRecords LmsAttendanceRecord[] @relation("StudentLmsAttendance")
-  lmsCertificates      LmsCertificate[]      @relation("StudentLmsCertificates")
-  lmsQuizAttempts      LmsQuizAttempt[]      @relation("StudentLmsQuizAttempts")
-  lmsBookmarks         LmsBookmark[]         @relation("StudentLmsBookmarks")
-  lmsBatchMemberships  LmsBatchStudent[]     @relation("StudentLmsBatches")
+  lmsEnrollments           LmsEnrollment[]           @relation("StudentLmsEnrollments")
+  lmsProgress              LmsStudentProgress[]      @relation("StudentLmsProgress")
+  lmsAssessments           LmsAssessment[]           @relation("StudentLmsAssessments")
+  lmsAttendanceRecords     LmsAttendanceRecord[]     @relation("StudentLmsAttendance")
+  lmsCertificates          LmsCertificate[]          @relation("StudentLmsCertificates")
+  lmsQuizAttempts          LmsQuizAttempt[]          @relation("StudentLmsQuizAttempts")
+  lmsBookmarks             LmsBookmark[]             @relation("StudentLmsBookmarks")
+  lmsBatchMemberships      LmsBatchStudent[]         @relation("StudentLmsBatches")
   lmsAssignmentSubmissions LmsAssignmentSubmission[] @relation("StudentLmsSubmissions")
 
   @@unique([orgId, studentCode])
@@ -1045,9 +1124,9 @@ model FeePlan {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  org         Organization  @relation("OrgFeePlans", fields: [orgId], references: [id], onDelete: Cascade)
-  items       FeePlanItem[]
-  admissions  Admission[]   @relation("AdmissionFeePlan")
+  org        Organization  @relation("OrgFeePlans", fields: [orgId], references: [id], onDelete: Cascade)
+  items      FeePlanItem[]
+  admissions Admission[]   @relation("AdmissionFeePlan")
 
   @@index([orgId, isActive])
   @@index([orgId, createdAt(sort: Desc)])
@@ -1055,15 +1134,16 @@ model FeePlan {
 }
 
 model FeePlanItem {
-  id           String   @id @default(uuid()) @db.Uuid
-  feePlanId    String   @db.Uuid
-  name         String   @db.VarChar(255)
-  amount       Decimal  @db.Decimal(10, 2)
-  dueOffsetDays Int     @default(0)
-  sortOrder    Int      @default(0)
-  metadata     Json     @default("{}")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String   @id @default(uuid()) @db.Uuid
+  feePlanId     String   @db.Uuid
+  name          String   @db.VarChar(255)
+  amount        Decimal  @db.Decimal(10, 2)
+  percentOfFee  Decimal? @db.Decimal(5, 2)
+  dueOffsetDays Int      @default(0)
+  sortOrder     Int      @default(0)
+  metadata      Json     @default("{}")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   feePlan FeePlan @relation(fields: [feePlanId], references: [id], onDelete: Cascade)
 
@@ -1080,8 +1160,10 @@ model Admission {
   applicationNo  String         @db.VarChar(50)
   stage          AdmissionStage @default(ENQUIRY)
   courseName     String?        @db.VarChar(255)
+  courseId       String?        @db.Uuid
   batchName      String?        @db.VarChar(255)
   batchStartDate DateTime?
+  batchId        String?        @db.Uuid
   feePlanId      String?        @db.Uuid
   feeAmount      Decimal?       @db.Decimal(10, 2)
   feeDiscount    Decimal        @default(0) @db.Decimal(10, 2)
@@ -1100,6 +1182,9 @@ model Admission {
   campus       Campus?              @relation("CampusAdmissions", fields: [campusId], references: [id], onDelete: SetNull)
   student      Student?             @relation(fields: [studentId], references: [id], onDelete: SetNull)
   lead         Lead                 @relation("LeadAdmissions", fields: [leadId], references: [id])
+  deal         Deal?                @relation("DealAdmission")
+  course       Course?              @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  batch        LmsBatch?            @relation(fields: [batchId], references: [id], onDelete: SetNull)
   feePlan      FeePlan?             @relation("AdmissionFeePlan", fields: [feePlanId], references: [id], onDelete: SetNull)
   counselor    User?                @relation("AdmissionCounselor", fields: [counselorId], references: [id], onDelete: SetNull)
   stageChanger User?                @relation("AdmissionStageChanger", fields: [stageChangedBy], references: [id], onDelete: SetNull)
@@ -1113,6 +1198,8 @@ model Admission {
   @@index([leadId])
   @@index([counselorId])
   @@index([feePlanId])
+  @@index([courseId])
+  @@index([batchId])
   @@index([orgId, createdAt(sort: Desc)])
   @@map("admissions")
 }
@@ -1232,6 +1319,10 @@ model PaymentTransaction {
   gatewayResponse Json?
   notes           String?       @db.Text
   collectedBy     String?       @db.Uuid
+  idempotencyKey  String?       @db.VarChar(255)
+  refundedAmount  Decimal       @default(0) @db.Decimal(10, 2)
+  refundedAt      DateTime?
+  refundedBy      String?       @db.Uuid
   metadata        Json          @default("{}")
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -1241,12 +1332,16 @@ model PaymentTransaction {
   admission Admission    @relation("AdmissionPayments", fields: [admissionId], references: [id])
   student   Student?     @relation("StudentPayments", fields: [studentId], references: [id], onDelete: SetNull)
   collector User?        @relation("PaymentCollector", fields: [collectedBy], references: [id], onDelete: SetNull)
+  refunder  User?        @relation("PaymentRefunder", fields: [refundedBy], references: [id], onDelete: SetNull)
 
+  @@unique([orgId, idempotencyKey])
+  @@unique([orgId, receiptNo])
   @@index([orgId, status])
   @@index([admissionId])
   @@index([studentId])
   @@index([orgId, paidAt(sort: Desc)])
   @@index([orgId, createdAt(sort: Desc)])
+  @@index([orgId, refundedAt(sort: Desc)])
   @@map("payment_transactions")
 }
 
@@ -1475,10 +1570,11 @@ model Course {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  org       Organization   @relation("OrgCourses", fields: [orgId], references: [id], onDelete: Cascade)
-  creator   User?          @relation("CourseCreator", fields: [createdBy], references: [id], onDelete: SetNull)
-  publisher User?          @relation("CoursePublisher", fields: [publishedBy], references: [id], onDelete: SetNull)
-  versions  CourseVersion[]
+  org        Organization    @relation("OrgCourses", fields: [orgId], references: [id], onDelete: Cascade)
+  creator    User?           @relation("CourseCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  publisher  User?           @relation("CoursePublisher", fields: [publishedBy], references: [id], onDelete: SetNull)
+  versions   CourseVersion[]
+  admissions Admission[]
 
   @@unique([orgId, slug])
   @@index([orgId, status])
@@ -1547,31 +1643,31 @@ model FeatureFlag {
 // ─── SPRINT 4: RESOURCES CMS ─────────────────────────────────────────────────
 
 model Resource {
-  id           String       @id @default(uuid()) @db.Uuid
-  orgId        String       @db.Uuid
-  title        String       @db.VarChar(255)
-  slug         String       @db.VarChar(255)
-  description  String?      @db.Text
-  type         ResourceType
-  status       ContentStatus @default(DRAFT)
-  fileUrl      String?      @db.Text
-  externalUrl  String?      @db.Text
-  thumbnailId  String?      @db.Uuid
-  tags         String[]
-  category     String?      @db.VarChar(100)
-  isGated      Boolean      @default(false)
-  downloadCount Int         @default(0)
-  seoTitle     String?      @db.VarChar(255)
-  seoDesc      String?      @db.Text
-  publishedAt  DateTime?
-  scheduledAt  DateTime?
-  metadata     Json         @default("{}")
-  createdBy    String?      @db.Uuid
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id            String        @id @default(uuid()) @db.Uuid
+  orgId         String        @db.Uuid
+  title         String        @db.VarChar(255)
+  slug          String        @db.VarChar(255)
+  description   String?       @db.Text
+  type          ResourceType
+  status        ContentStatus @default(DRAFT)
+  fileUrl       String?       @db.Text
+  externalUrl   String?       @db.Text
+  thumbnailId   String?       @db.Uuid
+  tags          String[]
+  category      String?       @db.VarChar(100)
+  isGated       Boolean       @default(false)
+  downloadCount Int           @default(0)
+  seoTitle      String?       @db.VarChar(255)
+  seoDesc       String?       @db.Text
+  publishedAt   DateTime?
+  scheduledAt   DateTime?
+  metadata      Json          @default("{}")
+  createdBy     String?       @db.Uuid
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
-  org          Organization @relation("OrgResources", fields: [orgId], references: [id], onDelete: Cascade)
-  creator      User?        @relation("ResourceCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  org     Organization @relation("OrgResources", fields: [orgId], references: [id], onDelete: Cascade)
+  creator User?        @relation("ResourceCreator", fields: [createdBy], references: [id], onDelete: SetNull)
 
   @@unique([orgId, slug])
   @@index([orgId, status])
@@ -1597,10 +1693,10 @@ model HiringPartner {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  org         Organization    @relation("OrgHiringPartners", fields: [orgId], references: [id], onDelete: Cascade)
-  creator     User?           @relation("HiringPartnerCreator", fields: [createdBy], references: [id], onDelete: SetNull)
-  jobs        Job[]
-  placements  Placement[]
+  org        Organization @relation("OrgHiringPartners", fields: [orgId], references: [id], onDelete: Cascade)
+  creator    User?        @relation("HiringPartnerCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  jobs       Job[]
+  placements Placement[]
 
   @@unique([orgId, slug])
   @@index([orgId, isActive])
@@ -1626,7 +1722,7 @@ model Job {
   publishedAt     DateTime?
   closesAt        DateTime?
   tags            String[]
-  courseIds       String[]  // courses whose graduates are eligible
+  courseIds       String[] // courses whose graduates are eligible
   seoTitle        String?   @db.VarChar(255)
   seoDesc         String?   @db.Text
   metadata        Json      @default("{}")
@@ -1635,11 +1731,11 @@ model Job {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  org            Organization    @relation("OrgJobs", fields: [orgId], references: [id], onDelete: Cascade)
-  hiringPartner  HiringPartner?  @relation(fields: [hiringPartnerId], references: [id], onDelete: SetNull)
-  creator        User?           @relation("JobCreator", fields: [createdBy], references: [id], onDelete: SetNull)
-  publisher      User?           @relation("JobPublisher", fields: [publishedBy], references: [id], onDelete: SetNull)
-  applications   JobApplication[]
+  org           Organization     @relation("OrgJobs", fields: [orgId], references: [id], onDelete: Cascade)
+  hiringPartner HiringPartner?   @relation(fields: [hiringPartnerId], references: [id], onDelete: SetNull)
+  creator       User?            @relation("JobCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  publisher     User?            @relation("JobPublisher", fields: [publishedBy], references: [id], onDelete: SetNull)
+  applications  JobApplication[]
 
   @@unique([orgId, slug])
   @@index([orgId, status])
@@ -1648,22 +1744,22 @@ model Job {
 }
 
 model JobApplication {
-  id           String               @id @default(uuid()) @db.Uuid
-  orgId        String               @db.Uuid
-  jobId        String               @db.Uuid
-  studentId    String?              @db.Uuid
-  applicantName String             @db.VarChar(255)
-  applicantEmail String            @db.VarChar(255)
-  applicantPhone String?           @db.VarChar(20)
-  resumeUrl    String?             @db.Text
-  coverLetter  String?             @db.Text
-  status       JobApplicationStatus @default(SUBMITTED)
-  reviewedBy   String?             @db.Uuid
-  reviewedAt   DateTime?
-  reviewNotes  String?             @db.Text
-  metadata     Json                @default("{}")
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
+  id             String               @id @default(uuid()) @db.Uuid
+  orgId          String               @db.Uuid
+  jobId          String               @db.Uuid
+  studentId      String?              @db.Uuid
+  applicantName  String               @db.VarChar(255)
+  applicantEmail String               @db.VarChar(255)
+  applicantPhone String?              @db.VarChar(20)
+  resumeUrl      String?              @db.Text
+  coverLetter    String?              @db.Text
+  status         JobApplicationStatus @default(SUBMITTED)
+  reviewedBy     String?              @db.Uuid
+  reviewedAt     DateTime?
+  reviewNotes    String?              @db.Text
+  metadata       Json                 @default("{}")
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
 
   org      Organization @relation("OrgJobApplications", fields: [orgId], references: [id], onDelete: Cascade)
   job      Job          @relation(fields: [jobId], references: [id], onDelete: Cascade)
@@ -1695,10 +1791,10 @@ model Placement {
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
-  org            Organization  @relation("OrgPlacements", fields: [orgId], references: [id], onDelete: Cascade)
-  student        Student       @relation("StudentPlacements", fields: [studentId], references: [id], onDelete: Cascade)
-  hiringPartner  HiringPartner? @relation(fields: [hiringPartnerId], references: [id], onDelete: SetNull)
-  creator        User?          @relation("PlacementCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  org           Organization   @relation("OrgPlacements", fields: [orgId], references: [id], onDelete: Cascade)
+  student       Student        @relation("StudentPlacements", fields: [studentId], references: [id], onDelete: Cascade)
+  hiringPartner HiringPartner? @relation(fields: [hiringPartnerId], references: [id], onDelete: SetNull)
+  creator       User?          @relation("PlacementCreator", fields: [createdBy], references: [id], onDelete: SetNull)
 
   @@index([orgId, studentId])
   @@index([orgId, status])
@@ -1804,30 +1900,30 @@ enum LmsCertificateStatus {
 }
 
 model LmsCourse {
-  id            String        @id @default(uuid()) @db.Uuid
-  orgId         String        @db.Uuid
+  id                String        @id @default(uuid()) @db.Uuid
+  orgId             String        @db.Uuid
   // Optional link to marketing CMS course (never merges schemas)
-  marketingCourseId String?   @db.Uuid
-  slug          String        @db.VarChar(255)
-  title         String        @db.VarChar(255)
-  description   String?       @db.Text
-  status        ContentStatus @default(DRAFT)
-  isPublished   Boolean       @default(false)
-  metadata      Json          @default("{}")
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  marketingCourseId String?       @db.Uuid
+  slug              String        @db.VarChar(255)
+  title             String        @db.VarChar(255)
+  description       String?       @db.Text
+  status            ContentStatus @default(DRAFT)
+  isPublished       Boolean       @default(false)
+  metadata          Json          @default("{}")
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
-  org         Organization      @relation("OrgLmsCourses", fields: [orgId], references: [id], onDelete: Cascade)
-  stages      LmsStage[]
-  teachers    LmsCourseTeacher[]
-  enrollments LmsEnrollment[]
-  chatRooms   LmsChatRoom[]
-  certificates LmsCertificate[]
+  org                Organization           @relation("OrgLmsCourses", fields: [orgId], references: [id], onDelete: Cascade)
+  stages             LmsStage[]
+  teachers           LmsCourseTeacher[]
+  enrollments        LmsEnrollment[]
+  chatRooms          LmsChatRoom[]
+  certificates       LmsCertificate[]
   attendanceSessions LmsAttendanceSession[]
-  announcements LmsAnnouncement[]
-  batches     LmsBatch[]
-  timetableSlots LmsTimetableSlot[]
-  assignments LmsAssignment[]
+  announcements      LmsAnnouncement[]
+  batches            LmsBatch[]
+  timetableSlots     LmsTimetableSlot[]
+  assignments        LmsAssignment[]
 
   @@unique([orgId, slug])
   @@index([orgId, status])
@@ -1862,24 +1958,24 @@ model LmsStage {
 }
 
 model LmsModule {
-  id      String @id @default(uuid()) @db.Uuid
-  title   String @db.VarChar(255)
-  order   Int    @default(0)
-  stageId String @db.Uuid
+  id                 String  @id @default(uuid()) @db.Uuid
+  title              String  @db.VarChar(255)
+  order              Int     @default(0)
+  stageId            String  @db.Uuid
   // e.g. unlock after N days / mock-test gate metadata
-  unlockRules Json @default("{}")
-  passPercent Int @default(70)
-  maxAttempts Int @default(3)
+  unlockRules        Json    @default("{}")
+  passPercent        Int     @default(70)
+  maxAttempts        Int     @default(3)
   // Phase C - random quiz sets (null = use all questions)
   quizQuestionCount  Int?
   randomizeQuestions Boolean @default(false)
 
-  stage       LmsStage        @relation(fields: [stageId], references: [id], onDelete: Cascade)
-  chapters    LmsChapter[]
-  assessments LmsAssessment[]
-  questions   LmsQuestion[]
+  stage        LmsStage         @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  chapters     LmsChapter[]
+  assessments  LmsAssessment[]
+  questions    LmsQuestion[]
   quizAttempts LmsQuizAttempt[]
-  assignments LmsAssignment[]
+  assignments  LmsAssignment[]
 
   @@index([stageId, order])
   @@map("lms_modules")
@@ -2221,6 +2317,7 @@ model LmsBatch {
   timetableSlots     LmsTimetableSlot[]
   attendanceSessions LmsAttendanceSession[]
   assignments        LmsAssignment[]
+  admissions         Admission[]
 
   @@index([orgId, courseId])
   @@index([orgId, type])
@@ -2317,17 +2414,17 @@ model LmsAssignment {
 }
 
 model LmsAssignmentSubmission {
-  id           String               @id @default(uuid()) @db.Uuid
-  assignmentId String               @db.Uuid
-  studentId    String               @db.Uuid
-  fileUrl      String?              @db.Text
-  body         String?              @db.Text
+  id           String              @id @default(uuid()) @db.Uuid
+  assignmentId String              @db.Uuid
+  studentId    String              @db.Uuid
+  fileUrl      String?             @db.Text
+  body         String?             @db.Text
   score        Int?
-  status       LmsSubmissionStatus  @default(SUBMITTED)
-  feedback     String?              @db.Text
-  submittedAt  DateTime             @default(now())
+  status       LmsSubmissionStatus @default(SUBMITTED)
+  feedback     String?             @db.Text
+  submittedAt  DateTime            @default(now())
   gradedAt     DateTime?
-  gradedBy     String?              @db.Uuid
+  gradedBy     String?             @db.Uuid
 
   assignment LmsAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
   student    Student       @relation("StudentLmsSubmissions", fields: [studentId], references: [id], onDelete: Cascade)

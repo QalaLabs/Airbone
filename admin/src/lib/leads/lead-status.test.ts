@@ -8,9 +8,13 @@ import {
   TODAY_FOLLOW_UP_STATUSES,
   OPPORTUNITY_STATUS,
   WON_STATUS,
+  LOCKED_LEAD_STATUSES,
+  LOSS_REASON_DEFAULT_TEXT,
   isLostStatus,
   isActiveStatus,
   statusLabel,
+  canTransitionLeadStatus,
+  getAllowedLeadStatuses,
 } from "./lead-status";
 import { createLeadSchema, leadFiltersSchema } from "../validations/lead.schema";
 
@@ -26,6 +30,9 @@ test("LOST_STATUSES contains terminal statuses and excludes WON", () => {
   assert.ok(LOST_STATUSES.includes(LeadStatus.PRICE_HIGH));
   assert.ok(LOST_STATUSES.includes(LeadStatus.NOT_ELIGIBLE));
   assert.ok(LOST_STATUSES.includes(LeadStatus.TEST_LEAD));
+  assert.ok(LOST_STATUSES.includes(LeadStatus.NOT_INTERESTED));
+  assert.ok(LOST_STATUSES.includes(LeadStatus.REASON_NOT_SHARED));
+  assert.ok(LOST_STATUSES.includes(LeadStatus.JOB_SEEKER));
   assert.ok(!LOST_STATUSES.includes(LeadStatus.WON));
   assert.ok(!LOST_STATUSES.includes(LeadStatus.PROSPECT));
 });
@@ -104,4 +111,62 @@ test("leadFiltersSchema accepts all new lead statuses", async () => {
 test("leadFiltersSchema rejects an unknown status", async () => {
   const r = await leadFiltersSchema.safeParseAsync({ status: "IMAGINARY_STATUS" });
   assert.equal(r.success, false);
+});
+
+test("SECTION3: LOST_STATUSES includes the new lost taxonomy values", () => {
+  assert.ok(LOST_STATUSES.includes(LeadStatus.NOT_INTERESTED));
+  assert.ok(LOST_STATUSES.includes(LeadStatus.REASON_NOT_SHARED));
+  assert.ok(isLostStatus(LeadStatus.NOT_INTERESTED));
+  assert.ok(isLostStatus(LeadStatus.REASON_NOT_SHARED));
+});
+
+test("SECTION3: reason-only lost statuses have a default persisted reason", () => {
+  assert.equal(
+    LOSS_REASON_DEFAULT_TEXT[LeadStatus.NOT_INTERESTED],
+    "Not interested in the course",
+  );
+  assert.equal(
+    LOSS_REASON_DEFAULT_TEXT[LeadStatus.REASON_NOT_SHARED],
+    "Not Interested — Reason Not Shared",
+  );
+});
+
+test("SECTION3: leadFiltersSchema accepts NOT_INTERESTED / REASON_NOT_SHARED", async () => {
+  for (const s of ["NOT_INTERESTED", "REASON_NOT_SHARED"]) {
+    const r = await leadFiltersSchema.safeParseAsync({ status: s });
+    assert.equal(r.success, true, `${s} should be a valid filter status`);
+  }
+});
+
+test("SECTION3: WON / CONVERTED are system-locked (no manual moves)", () => {
+  for (const locked of LOCKED_LEAD_STATUSES) {
+    assert.equal(canTransitionLeadStatus(locked, LeadStatus.PROSPECT), false);
+    assert.equal(canTransitionLeadStatus(locked, LeadStatus.LOST), false);
+    assert.equal(canTransitionLeadStatus(locked, locked), true);
+  }
+});
+
+test("SECTION3: any active status may move to a lost status (reason persisted)", () => {
+  for (const from of [LeadStatus.NEW, LeadStatus.CONNECTED, LeadStatus.PROSPECT]) {
+    for (const to of [LeadStatus.NOT_INTERESTED, LeadStatus.REASON_NOT_SHARED, LeadStatus.PRICE_HIGH]) {
+      assert.equal(canTransitionLeadStatus(from, to), true, `${from} → ${to}`);
+    }
+  }
+});
+
+test("SECTION3: lost statuses may be re-opened to an active status", () => {
+  for (const from of [LeadStatus.NOT_INTERESTED, LeadStatus.REASON_NOT_SHARED, LeadStatus.PRICE_HIGH]) {
+    assert.equal(canTransitionLeadStatus(from, LeadStatus.PROSPECT), true);
+    assert.equal(canTransitionLeadStatus(from, LeadStatus.INTERESTED), true);
+  }
+});
+
+test("SECTION3: does not transition a lead to WON/CONVERTED via the generic path", () => {
+  for (const target of [LeadStatus.WON, LeadStatus.CONVERTED]) {
+    assert.equal(
+      getAllowedLeadStatuses(LeadStatus.PROSPECT).includes(target),
+      false,
+      `${target} must not be reachable via generic status change`,
+    );
+  }
 });

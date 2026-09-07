@@ -149,8 +149,8 @@ const TICKER_ITEMS = [
   { name: 'Ruzal Dhral', airline: 'IndiGo Cadet' },
   { name: 'Capt. Nipun Singh', airline: 'Air India' },
   { name: 'Capt. Himanish Sagwal', airline: 'Emirates' },
-  { name: 'Batch 2023', airline: '100% Pass Rate' },
-  { name: 'Batch 2024', airline: '100% Pass Rate' },
+  { name: 'Batch 2023', airline: 'Strong Pass Rate' },
+  { name: 'Batch 2024', airline: 'Strong Pass Rate' },
   { name: 'DGCA CPL Ground School', airline: 'Dwarka, Delhi' },
   { name: 'Max 25 Students', airline: 'Per Batch' },
   { name: '15+ Years', airline: 'Teaching Excellence' },
@@ -270,7 +270,7 @@ function Act4Overlay({ visible }) {
         {[
           { label: 'SIMULATOR', value: 'FTD LEVEL 5' },
           { label: 'CERTIFICATE', value: 'DGCA COMPLIANT' },
-          { label: 'SESSION RATE', value: '₹12,000' },
+          { label: 'SESSION RATE', value: '₹10,000' },
         ].map(c => (
           <div key={c.label} className="hud-card">
             <div className="hud-label">{c.label}</div>
@@ -341,8 +341,8 @@ function Act6Overlay({ visible }) {
         <div style={{ display: 'flex', gap: '3rem', marginTop: '0.5rem', marginBottom: '1.5rem' }}>
           {[
             { num: '15+ YRS', label: 'Teaching Excellence' },
-            { num: '100%',    label: 'DGCA Pass Rate' },
-            { num: '2,100+',  label: 'Aspirants Guided' },
+            { num: 'STRONG', label: 'DGCA Results' },
+            { num: '2009',    label: 'Since' },
           ].map(s => (
             <div key={s.label} style={{ textAlign: 'center' }}>
               <div style={{ fontFamily: 'var(--font-h)', fontSize: 'clamp(2rem,4vw,3.2rem)', fontWeight: 900, color: 'var(--gold)' }}>{s.num}</div>

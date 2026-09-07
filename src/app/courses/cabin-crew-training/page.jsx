@@ -8,7 +8,16 @@ import CourseReviews from '@/components/CourseReviews'
 import JsonLd from '@/components/JsonLd'
 import { buildCoursePageGraph } from '@/lib/schema'
 import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
+import { fetchPublic } from '@/lib/adminApi'
+import { displayCourseFee, courseFeeNumeric } from '@/lib/courseFees'
 import CabinCrewEligibilityQuiz from '@/components/CabinCrewEligibilityQuiz'
+
+export const revalidate = 60
+
+// BD-2: Cabin Crew displayed tuition is canonical from Admin (₹54,000 seeded).
+// The legacy ₹54K / ₹84K / ₹1,14K pathway units were removed (stale).
+const CANONICAL_SLUG = 'cabin-crew'
+const OFFLINE_FEE_FALLBACK = '₹54,000' // matches canonical Admin seed; resilience only
 
 export const metadata = {
   title: 'Cabin Crew Training Delhi | Scholarship Available | Airborne',
@@ -25,16 +34,14 @@ export const metadata = {
   },
 }
 
-const coursePageGraph = buildCoursePageGraph({
-  ...COURSE_SCHEMA['cabin-crew-training'],
-  faqs: [
+const CABIN_FAQS = [
   {
     q: 'Who teaches the cabin crew program at Airborne?',
     a: 'Capt. Mukul Mitra Barua (ex-cabin & cockpit crew, Alliance Air) and Rajeet Khalsa (retired AGM Training, Air India, 37+ years). Not generalist coaches - real airline industry professionals.'
   },
   {
     q: 'What is the cabin crew course fee at Airborne?',
-    a: 'Tuition ₹59,000. 100%* scholarship offer upon scoring ≥70% on the eligibility assessment. *Terms apply - Batch scholarship conditions explained at counselling.'
+    a: 'Tuition ₹54,000. 100%* scholarship offer upon scoring ≥70% on the eligibility assessment. *Terms apply - Batch scholarship conditions explained at counselling.'
   },
   {
     q: 'Can boys join the cabin crew program?',
@@ -48,8 +55,7 @@ const coursePageGraph = buildCoursePageGraph({
     q: 'What is the minimum height for cabin crew?',
     a: 'Most Indian airlines require a minimum height of 157 cm for cabin crew. Airborne screens candidates during eligibility assessment and prepares them for airline-standard requirements.'
   }
-],
-})
+]
 
 const PATHWAYS = [
   {
@@ -57,9 +63,6 @@ const PATHWAYS = [
     title: 'Elite Cabin Crew Finishing Batch',
     duration: '3 Months',
     classTime: '90 Minutes',
-    regular: '₹54,000',
-    scholarship: '₹0',
-    scholarshipNote: '100% Scholarship (score ≥70%, + ₹5,000 registration fee)',
     best: 'Near-selection candidates needing final polish',
     focus: ['Final grooming polish', 'Professional presence', 'Service behaviour refinement', 'GD and PI readiness', 'Interview finishing support'],
   },
@@ -68,9 +71,6 @@ const PATHWAYS = [
     title: 'Advanced Communication, GD/PI & Personality',
     duration: '3 Months',
     classTime: '90 Minutes',
-    regular: '₹84,000',
-    scholarship: '₹84,000',
-    scholarshipNote: 'For scholarship holders (includes Phase 1)',
     best: 'Candidates with communication or confidence gaps',
     focus: ['Spoken communication improvement', 'GD practice', 'PI preparation', 'Personality development', 'Confidence building'],
   },
@@ -79,9 +79,6 @@ const PATHWAYS = [
     title: 'Basic Communication & Global Hospitality',
     duration: '6 Months',
     classTime: '90 Minutes',
-    regular: '₹1,14,000',
-    scholarship: '₹1,14,000',
-    scholarshipNote: 'For scholarship holders (includes Phase 2 + Phase 1)',
     best: 'Beginners needing complete foundation',
     focus: ['Communication foundation', 'Hospitality standards', 'Grooming basics', 'Professional readiness', 'Zero-to-selection journey'],
   },
@@ -105,7 +102,19 @@ const CAREER_OPTIONS = [
   { role: 'Travel & Tourism Executive', sector: 'Tourism Sector' },
 ]
 
-export default function CabinCrewTrainingPage() {
+export default async function CabinCrewTrainingPage() {
+  // BD-2 / BD-1: resolve Canonical fee from Admin (seeded ₹54,000), fall back offline.
+  const course = await fetchPublic('/courses', { slug: 'cabin-crew', limit: 1 })
+  const dbFee = course?.[0]?.fee ?? null
+  const feeLabel = displayCourseFee(CANONICAL_SLUG, dbFee) || OFFLINE_FEE_FALLBACK
+  const priceNumeric = courseFeeNumeric(CANONICAL_SLUG, dbFee)
+  const coursePageGraph = buildCoursePageGraph({
+    ...COURSE_SCHEMA['cabin-crew-training'],
+    price: priceNumeric != null ? String(priceNumeric) : COURSE_SCHEMA['cabin-crew-training'].price,
+    duration: course?.[0]?.duration ?? COURSE_SCHEMA['cabin-crew-training'].duration,
+    faqs: CABIN_FAQS,
+  })
+
   return (
     <>
       <JsonLd data={coursePageGraph} />
@@ -133,7 +142,7 @@ export default function CabinCrewTrainingPage() {
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
-                📍 Dwarka, Delhi · 3–6 Months · ₹59,000
+                📍 Dwarka, Delhi · 3–6 Months · {feeLabel}
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
                 Cabin Crew & Aviation Hospitality Training - Dwarka, Delhi
@@ -181,7 +190,7 @@ export default function CabinCrewTrainingPage() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem' }}>
                   <div>
                     <span className="course-sidebar-label" style={{ display: 'block', marginBottom: '0.25rem' }}>Course Fee</span>
-                    <div className="course-sidebar-price" style={{ margin: 0 }}>₹59,000</div>
+                    <div className="course-sidebar-price" style={{ margin: 0 }}>{feeLabel}</div>
                     <span className="course-sidebar-note" style={{ display: 'block', marginTop: '0.25rem' }}>*Upon Scoring ≥70%</span>
                   </div>
                   <div>
@@ -212,26 +221,6 @@ export default function CabinCrewTrainingPage() {
                           <div style={{ fontSize: '0.78rem', color: 'rgba(0, 39, 76, 0.45)', marginTop: '0.2rem' }}>{p.duration} · {p.classTime} daily · Best for: {p.best}</div>
                         </div>
                       </div>
-                      <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
-                        <div>
-                          <div style={{ fontSize: '0.65rem', color: 'rgba(0, 39, 76, 0.45)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.2rem' }}>PATHWAY PRICE</div>
-                          <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 800, color: 'var(--navy)' }}>{p.regular}</div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '0.65rem', color: 'rgba(219,36,30,0.9)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.2rem' }}>SCHOLARSHIP PRICE</div>
-                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem' }}>
-                            <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.5rem', fontWeight: 900, color: '#DB241E', textShadow: p.scholarship === '₹0' ? '0 0 10px rgba(219,36,30,0.15)' : 'none' }}>
-                              {p.scholarship}
-                            </span>
-                            {p.scholarship === '₹0' && (
-                              <span style={{ fontSize: '0.625rem', fontWeight: 700, color: 'var(--gold)', background: 'rgba(216, 160, 39, 0.12)', border: '1px solid rgba(216, 160, 39, 0.25)', padding: '0.1rem 0.4rem', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.04em', alignSelf: 'center' }}>
-                                Free Training
-                              </span>
-                            )}
-                          </div>
-                          <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#DB241E', marginTop: '0.15rem' }}>{p.scholarshipNote}</div>
-                        </div>
-                      </div>
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                       {p.focus.map((f, j) => (
@@ -240,6 +229,9 @@ export default function CabinCrewTrainingPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+              <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.9rem', color: 'rgba(0, 39, 76, 0.65)', lineHeight: '1.6' }}>
+                Every pathway is covered under the program tuition of <strong style={{ color: 'var(--navy)' }}>{feeLabel}</strong>. A 100%* scholarship is available upon scoring ≥70% on the eligibility assessment. <em>*Terms apply — batch scholarship conditions explained at counselling.</em>
               </div>
               <div style={{ marginTop: '3rem', textAlign: 'center' }}>
                 <a 
@@ -370,7 +362,7 @@ export default function CabinCrewTrainingPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
                 {[
                   { q: 'Who teaches the cabin crew program at Airborne?', a: 'Capt. Mukul Mitra Barua (ex-cabin & cockpit crew, Alliance Air) and Rajeet Khalsa (retired AGM Training, Air India, 37+ years). Not generalist coaches - real airline industry professionals.' },
-                  { q: 'What is the cabin crew course fee?', a: 'Tuition ₹59,000. 100%* scholarship offer upon scoring ≥70% on the assessment. *Terms apply - explained at counselling.' },
+                  { q: 'What is the cabin crew course fee?', a: 'Tuition ₹54,000. 100%* scholarship offer upon scoring ≥70% on the assessment. *Terms apply - explained at counselling.' },
                   { q: 'Can boys join the cabin crew program?', a: 'Yes. The program is open to all candidates meeting eligibility criteria. Airlines hire male cabin crew across domestic and international carriers.' },
                   { q: 'Does Airborne guarantee cabin crew placement?', a: 'No institute can guarantee airline selection. Airborne provides structured interview preparation, resume coaching, mock interviews, and career guidance. Final selection rests with the airline.' },
                   { q: 'Why are your fees higher than other institutes?', a: 'Because this is airline-standard training - taught by actual airline professionals, not generalist coaches. Compare trainers, structure, and outcomes - not just price.' },
@@ -390,7 +382,7 @@ export default function CabinCrewTrainingPage() {
           <div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               <LeadForm
-                courseName="Cabin Crew Training (₹59,000)"
+                courseName={`Cabin Crew Training (${feeLabel})`}
                 source="Course Detail: cabin-crew-training"
                 successMessage="Thank you! Your Cabin Crew Training enquiry has been received. An Airborne admissions counsellor will contact you within 24 hours."
               />

@@ -28,7 +28,7 @@ const coursePageGraph = buildCoursePageGraph({
   ...COURSE_SCHEMA['atpl'],
   imagePath: '/campus/a320_sim.jpg',
   price: '150000',
-  duration: 'P2M',
+  duration: 'P4M',
   faqs: [
     {
       q: 'Should I do ATPL after CPL?',
@@ -93,13 +93,13 @@ export default function ATPLPage() {
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
-                Dwarka, Delhi · Age 21+ · 2–3 Months · ₹1,50,000
+                Dwarka, Delhi · Age 21+ · 4–6 Months · ₹1,50,000
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
                 Our ATPL Program Prepares Commercial Pilots for the DGCA ATPL Written and Viva Examinations
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75', maxWidth: '100%' }}>
-                Airborne Aviation Academy offers ATPL (Airline Transport Pilot License) ground school classes in Dwarka, Delhi. Our ATPL program prepares commercial pilots for the DGCA ATPL written and Viva - the final certification step before command. Eligibility: 21 years. Duration: 2–3 months.
+                Airborne Aviation Academy offers ATPL (Airline Transport Pilot License) ground school classes in Dwarka, Delhi. Our ATPL program prepares commercial pilots for the DGCA ATPL written and Viva - the final certification step before command. Eligibility: 21 years. Duration: 4–6 months.
               </p>
             </div>
 
@@ -192,7 +192,7 @@ export default function ATPLPage() {
                   },
                   {
                     q: 'How long does ATPL ground school take?',
-                    a: "Airborne's ATPL ground school runs 2–3 months depending on batch schedule and student pace. Eligibility: 21 years. Weekend and weekday batches available.",
+      a: "Airborne's ATPL ground school runs 4–6 months depending on batch schedule and student pace. Eligibility: 21 years. Weekend and weekday batches available.",
                   },
                 ].map((faq, i) => (
                   <div key={i} className="course-faq-item">

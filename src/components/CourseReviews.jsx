@@ -1,5 +1,12 @@
+import { fetchPublic } from '@/lib/adminApi'
+
 /**
  * Shared course page reviews (1–3) + optional parent testimonial block.
+ *
+ * Canonical source: Admin Testimonial (APPROVED, featured-first) via
+ * /api/public/testimonials. DEFAULT_COURSE_REVIEWS / PARENT_TESTIMONIALS are
+ * the documented OFFLINE-ONLY fallback (exact pre-Section-6 copy) — they are
+ * never rendered when Admin is reachable.
  */
 export const DEFAULT_COURSE_REVIEWS = [
   {
@@ -32,8 +39,22 @@ export const PARENT_TESTIMONIALS = [
   },
 ]
 
-export default function CourseReviews({ reviews = DEFAULT_COURSE_REVIEWS, title = 'Student & Parent Reviews' }) {
-  const list = reviews.slice(0, 3)
+export default async function CourseReviews({ reviews, title = 'Student & Parent Reviews' }) {
+  // Canonical: Admin APPROVED testimonials; fallback: documented hardcoded set.
+  let list = null
+  const apiReviews = await fetchPublic('/testimonials', { limit: 6 })
+  if (Array.isArray(apiReviews) && apiReviews.length > 0) {
+    list = apiReviews
+      .filter((t) => t?.content)
+      .map((t) => ({
+        name: t.authorName || 'Airborne Student',
+        role: t.authorTitle || (t.batchYear ? `Batch ${t.batchYear}` : 'Student'),
+        quote: t.content,
+      }))
+      .slice(0, 3)
+  }
+  if (!list) list = (reviews || DEFAULT_COURSE_REVIEWS).slice(0, 3)
+
   return (
     <section style={{ marginTop: '3.5rem', marginBottom: '2rem' }} aria-labelledby="course-reviews-heading">
       <h2 id="course-reviews-heading" style={{ fontFamily: 'var(--font-h)', fontSize: '1.35rem', fontWeight: 800, color: 'var(--navy)', marginBottom: '1.25rem' }}>

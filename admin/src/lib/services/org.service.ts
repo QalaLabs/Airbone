@@ -6,11 +6,26 @@ import { prisma } from "@/lib/db/client";
 import type { CreateOrgInput, UpdateOrgInput, CreateCampusInput, UpdateCampusInput } from "@/lib/validations/org.schema";
 import type { RequestContext } from "@/types";
 
+/**
+ * M-04: write-only keys that must never be echoed back through the org API.
+ * `organization.settings` is a free-form JSON blob and server-side webhook
+ * authenticators are stored there; they are ROOT-ONLY inputs and must never
+ * reach the browser even to an authenticated ADMIN/SUPER_ADMIN.
+ */
+export const ORG_SETTINGS_WRITE_ONLY_KEYS = [
+  "googleAdsWebhookSecret", // org-rotated Google Ads webhook authenticator
+  "envVars", // legacy live-credentials map (cloud secrets should live in Secret Manager)
+  "interaktWebhookSecret", // in case ever persisted — write-only by convention
+  "whatsappWebhookSecret", // in case ever persisted — write-only by convention
+] as const;
+
 /** Strip secret-like blobs so they never reach the browser. */
-function sanitizeOrgSettings(settings: unknown): Record<string, unknown> {
+export function sanitizeOrgSettings(settings: unknown): Record<string, unknown> {
   if (!settings || typeof settings !== "object" || Array.isArray(settings)) return {};
   const next = { ...(settings as Record<string, unknown>) };
-  delete next.envVars;
+  for (const key of ORG_SETTINGS_WRITE_ONLY_KEYS) {
+    delete next[key];
+  }
   return next;
 }
 

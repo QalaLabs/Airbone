@@ -1,6 +1,6 @@
 import { type NextRequest } from "next/server";
 import { LeadService } from "@/lib/services/lead.service";
-import { guard } from "@/lib/middleware/permissions";
+import { guard, getCounselorCondition, guardRecord } from "@/lib/middleware/permissions";
 import { getRequestContext } from "@/lib/middleware/context";
 import { ok, handleError } from "@/lib/utils/response";
 import { updateFollowUpSchema } from "@/lib/validations/lead.schema";
@@ -15,6 +15,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
     const body = await req.json() as unknown;
     const input = updateFollowUpSchema.parse(body);
+
+    const existing = await LeadService.getById(ctx, id);
+    const condition = getCounselorCondition(ctx.user);
+    guardRecord(ctx.user, "write", "leads", existing as unknown as Record<string, unknown>, condition);
 
     const lead = await LeadService.updateFollowUp(ctx, id, input.nextFollowUp);
     return ok(lead);

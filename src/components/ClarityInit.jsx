@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import Clarity from '@microsoft/clarity'
 
-const CLARITY_PROJECT_ID = 'xv0yvv94yd'
+const CLARITY_PROJECT_ID = process.env.NEXT_PUBLIC_CLARITY_ID || 'xv0yvv94yd'
 
 let clarityInitialized = false
 

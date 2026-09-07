@@ -5,8 +5,12 @@ const ADMIN_API_URL = process.env.ADMIN_API_URL ?? 'http://localhost:4000'
 export async function GET(req) {
   try {
     const url = new URL(req.url)
-    const limit = url.searchParams.get('limit') ?? '9'
-    const res = await fetch(`${ADMIN_API_URL}/api/public/courses?limit=${limit}`, {
+    // Catalog pages request everything published; upstream caps at 50.
+    const limit = url.searchParams.get('limit') ?? '100'
+    const slug = url.searchParams.get('slug')
+    let upstream = `${ADMIN_API_URL}/api/public/courses?limit=${limit}`
+    if (slug) upstream += `&slug=${encodeURIComponent(slug)}`
+    const res = await fetch(upstream, {
       next: { revalidate: 60 },
     })
     if (!res.ok) throw new Error('Upstream failed')

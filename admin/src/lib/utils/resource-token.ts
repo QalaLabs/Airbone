@@ -2,8 +2,22 @@ import crypto from "crypto"
 
 const EXPIRY_MS = 60 * 60 * 1000 // 1 hour
 
+const FALLBACK_SECRET = "dev-fallback-secret"
+
+// M-06: fail-closed. The intake/gated-download token HMAC must never fall back
+// to a known, committed dev secret. If PUBLIC_INTAKE_KEY is absent (or still
+// set to the legacy placeholder) we refuse to sign — minting/verifying both
+// short-circuit instead of silently using a public secret.
+function loadSecret(): string {
+  const secret = process.env.PUBLIC_INTAKE_KEY
+  if (!secret || secret === FALLBACK_SECRET) {
+    throw new Error("PUBLIC_INTAKE_KEY is not configured")
+  }
+  return secret
+}
+
 function sign(payload: string): string {
-  const secret = process.env.PUBLIC_INTAKE_KEY ?? "dev-fallback-secret"
+  const secret = loadSecret()
   return crypto.createHmac("sha256", secret).update(payload).digest("hex")
 }
 

@@ -7,42 +7,47 @@ import CourseReviews from '@/components/CourseReviews'
 import JsonLd from '@/components/JsonLd'
 import { buildCoursePageGraph } from '@/lib/schema'
 import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
+import { fetchPublic } from '@/lib/adminApi'
+import { displayCourseFee, courseFeeNumeric } from '@/lib/courseFees'
+
+// BD-1: Admin DB fee (canonical ₹1,00,000) overrides stale ₹1,25,000.
+const CANONICAL_SLUG = 'airline-preparation'
+const OFFLINE_FEE_FALLBACK = '₹1,00,000' // matches canonical Admin seed; resilience only
+
+export const revalidate = 60
 
 export const metadata = {
   title: 'Comprehensive Airline Preparation Program | DGCA + A320 + ADAPT + GD/PI | Airborne Delhi',
-  description: 'CPL to First Officer in 2.5 months. DGCA Ground Refresher, ADAPT Screening, A320 Systems & Sim Prep, and GD/PI - all in one program. 4 hrs/day. ₹1,25,000. Airborne Aviation Academy, Dwarka Delhi.',
+  description: 'CPL to First Officer in 2.5 months. DGCA Ground Refresher, ADAPT Screening, A320 Systems & Sim Prep, and GD/PI - all in one program. 4 hrs/day. ₹1,00,000. Airborne Aviation Academy, Dwarka Delhi.',
   alternates: { canonical: '/courses/airline-preparation' },
 }
 
-const coursePageGraph = buildCoursePageGraph({
-  ...COURSE_SCHEMA['airline-preparation'],
-  faqs: [
-    {
-      q: 'What does the Comprehensive Airline Preparation Program cover?',
-      a: 'The program covers four pillars: DGCA Ground Refresher (Navigation, Technical General, Meteorology, Air Regulation), ADAPT Screening Preparation (psychometric, mental math, physics), Airbus A320 Systems & Simulator Orientation, and Group Discussion & Personal Interview coaching. All in 2.5 months, 4 hours per day.',
-    },
-    {
-      q: 'Who is this program for?',
-      a: 'CPL holders preparing for airline selection - IndiGo, Air India, Akasa Air, and similar carriers. The curriculum is built around airline hiring filters: written tests, ADAPT psychometric screening, simulator checks, and HR/GD/PI rounds.',
-    },
-    {
-      q: 'How is this different from the GD & PI Course?',
-      a: 'The GD & PI Course (₹30,000) covers only communication skills and interview prep. This program is the full pre-airline track - it adds DGCA ground subject refresher, ADAPT test training, and A320 systems preparation on top of GD/PI coaching.',
-    },
-    {
-      q: 'What is the daily schedule?',
-      a: 'Each day runs 4 hours: 2 hours of Navigation or Technical General, 1 hour of Meteorology or ADAPT training, and 1 hour of A320 Systems or Simulator Orientation. The schedule is designed for focused, daily progression - not cramming.',
-    },
-    {
-      q: 'Do I need to know A320 systems before joining?',
-      a: 'No prior A320 knowledge required. The program builds from aircraft general principles through each system, then moves into cockpit orientation and mock simulator sessions in the final weeks.',
-    },
-    {
-      q: 'What is ADAPT and why does it matter?',
-      a: 'ADAPT is an airline pre-screening test covering cognitive ability, numerical reasoning, psychometric profiling, and physics. Airlines like IndiGo use it as a filter before interview rounds. We prepare you with mock ADAPT test environments and full module-wise practice.',
-    },
-  ],
-})
+const AIRLINE_FAQS = [
+  {
+    q: 'What does the Comprehensive Airline Preparation Program cover?',
+    a: 'The program covers four pillars: DGCA Ground Refresher (Navigation, Technical General, Meteorology, Air Regulation), ADAPT Screening Preparation (psychometric, mental math, physics), Airbus A320 Systems & Simulator Orientation, and Group Discussion & Personal Interview coaching. All in 2.5 months, 4 hours per day.',
+  },
+  {
+    q: 'Who is this program for?',
+    a: 'CPL holders preparing for airline selection - IndiGo, Air India, Akasa Air, and similar carriers. The curriculum is built around airline hiring filters: written tests, ADAPT psychometric screening, simulator checks, and HR/GD/PI rounds.',
+  },
+  {
+    q: 'How is this different from the GD & PI Course?',
+    a: 'The GD & PI Course (₹30,000) covers only communication skills and interview prep. This program is the full pre-airline track - it adds DGCA ground subject refresher, ADAPT test training, and A320 systems preparation on top of GD/PI coaching.',
+  },
+  {
+    q: 'What is the daily schedule?',
+    a: 'Each day runs 4 hours: 2 hours of Navigation or Technical General, 1 hour of Meteorology or ADAPT training, and 1 hour of A320 Systems or Simulator Orientation. The schedule is designed for focused, daily progression - not cramming.',
+  },
+  {
+    q: 'Do I need to know A320 systems before joining?',
+    a: 'No prior A320 knowledge required. The program builds from aircraft general principles through each system, then moves into cockpit orientation and mock simulator sessions in the final weeks.',
+  },
+  {
+    q: 'What is ADAPT and why does it matter?',
+    a: 'ADAPT is an airline pre-screening test covering cognitive ability, numerical reasoning, psychometric profiling, and physics. Airlines like IndiGo use it as a filter before interview rounds. We prepare you with mock ADAPT test environments and full module-wise practice.',
+  },
+]
 
 const MODULES = [
   {
@@ -145,7 +150,19 @@ const tableHeader = {
   whiteSpace: 'nowrap',
 }
 
-export default function AirlinePreparationPage() {
+export default async function AirlinePreparationPage() {
+  const course = await fetchPublic('/courses', { slug: 'airline-preparation', limit: 1 })
+  const dbFee = course?.[0]?.fee ?? null
+  const feeLabel = displayCourseFee(CANONICAL_SLUG, dbFee) || OFFLINE_FEE_FALLBACK
+  const priceNumeric = courseFeeNumeric(CANONICAL_SLUG, dbFee)
+
+  const coursePageGraph = buildCoursePageGraph({
+    ...COURSE_SCHEMA['airline-preparation'],
+    price: priceNumeric != null ? String(priceNumeric) : COURSE_SCHEMA['airline-preparation'].price,
+    duration: course?.[0]?.duration ?? COURSE_SCHEMA['airline-preparation'].duration,
+    faqs: AIRLINE_FAQS,
+  })
+
   return (
     <>
       <JsonLd data={coursePageGraph} />
@@ -180,7 +197,7 @@ export default function AirlinePreparationPage() {
             {/* SECTION 1: Hero / Introduction */}
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
-                📍 Dwarka, Delhi · 2.5 Months · 4 Hrs/Day · ₹1,25,000
+                📍 Dwarka, Delhi · 2.5 Months · 4 Hrs/Day · {feeLabel}
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
                 Comprehensive Airline Preparation Program
@@ -387,7 +404,7 @@ export default function AirlinePreparationPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               <div className="course-sidebar-card">
                 <span className="course-sidebar-label">Course Fee</span>
-                <div className="course-sidebar-price">₹1,25,000</div>
+                <div className="course-sidebar-price">{feeLabel}</div>
                 <span className="course-sidebar-note">Full airline preparation program</span>
                 <div style={{ margin: '1.25rem 0', borderTop: '1px solid rgba(0, 39, 76, 0.08)' }} />
                 <span className="course-sidebar-label">Duration</span>
@@ -403,7 +420,7 @@ export default function AirlinePreparationPage() {
                   ))}
                 </div>
               </div>
-              <LeadForm courseName="Comprehensive Airline Preparation Program (₹1,25,000)" source="Course Detail: airline-preparation" />
+              <LeadForm courseName={`Comprehensive Airline Preparation Program (${feeLabel})`} source="Course Detail: airline-preparation" />
             </div>
           </div>
 
@@ -412,7 +429,7 @@ export default function AirlinePreparationPage() {
         <CourseReviews />
 
         <CoursePageFooter
-          whatsappText="Hi, I'm interested in the Comprehensive Airline Preparation Program (₹1,25,000) at Airborne Aviation Academy. Please share details."
+          whatsappText={`Hi, I'm interested in the Comprehensive Airline Preparation Program (${feeLabel}) at Airborne Aviation Academy. Please share details.`}
           nextCourses={[
             { label: 'GD & PI Course (₹30,000)', href: '/courses/gd-pi', note: 'Foundational interview track if you want only GD/PI preparation' },
             { label: 'Cadet Pilot Preparation', href: '/courses/cadet-preparation', note: 'Full aptitude, SIM and interview prep for IndiGo, Air India & Akasa cadet programs' },

@@ -101,7 +101,7 @@ export default function GroundSchoolPage() {
                 DGCA Ground School Classes in Dwarka, Delhi - DGCA Complied
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
-                Airborne Aviation Academy offers DGCA Complied ground school classes in Dwarka, New Delhi. All DGCA subjects covered by Capt. Navrang Singh - who has personally trained 2,500+ aviation aspirants since 2009. Duration: 3–6 months.
+                Airborne Aviation Academy offers DGCA Complied ground school classes in Dwarka, New Delhi. All DGCA subjects covered by Capt. Navrang Singh - who has personally trained aviation aspirants since 2009. Duration: 3–6 months.
               </p>
             </div>
 
@@ -142,7 +142,7 @@ export default function GroundSchoolPage() {
                   Capt. Navrang Singh is the co-founder of Airborne Aviation Academy and has been teaching DGCA ground school personally since 2009. With 15+ years of flight instruction experience, he strips DGCA syllabi down to first principles - Air Regulations, Technical General, Navigation, Meteorology, RTR - taught the way you will actually use them in the cockpit.
                 </p>
                 <div style={{ marginTop: '1.5rem', display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
-                  {['15+ Years Teaching', '2,500+ Students', '100% First-Attempt Pass Rate', 'Personal Classes - No Substitutes'].map((stat, i) => (
+                  {['15+ Years Teaching', 'Training Since 2009', 'Strong First-Attempt Pass Record', 'Personal Classes - No Substitutes'].map((stat, i) => (
                     <span key={i} style={{ fontSize: '0.75rem', fontFamily: 'var(--font-h)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--navy)', background: 'rgba(216,160,39,0.08)', border: '1px solid rgba(216,160,39,0.2)', padding: '0.35rem 0.85rem', borderRadius: '2px' }}>{stat}</span>
                   ))}
                 </div>

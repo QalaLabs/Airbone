@@ -17,11 +17,15 @@ interface WriteAuditParams {
 }
 
 export class AuditService {
-  // Append one audit row with hash-chain integrity
-  static async write(params: WriteAuditParams): Promise<void> {
+  // Append one audit row with hash-chain integrity.
+  // Pass tx when writing inside a database transaction so the audit row shares
+  // the same commit/rollback fate as the financial write.
+  static async write(params: WriteAuditParams, tx?: Prisma.TransactionClient): Promise<void> {
     try {
+      const db = tx ?? prisma;
+
       // Fetch last row for hash chaining (per org)
-      const lastRow = await prisma.auditLog.findFirst({
+      const lastRow = await db.auditLog.findFirst({
         where: { orgId: params.orgId },
         orderBy: { id: "desc" },
         select: { id: true, rowHash: true },
@@ -34,7 +38,7 @@ export class AuditService {
         ? computeDiff(params.oldValue, params.newValue)
         : null;
 
-      const created = await prisma.auditLog.create({
+      const created = await db.auditLog.create({
         data: {
           orgId: params.orgId,
           userId: params.userId,
@@ -64,7 +68,7 @@ export class AuditService {
         prevHash: created.prevHash,
       });
 
-      await prisma.auditLog.update({
+      await db.auditLog.update({
         where: { id: created.id },
         data: { rowHash },
       });

@@ -20,6 +20,40 @@ export function normalizePhone(raw: string): string {
 }
 
 /**
+ * Deterministic candidate forms for resolving a stored CRM contact from a raw
+ * inbound number (provider webhook, form, API body). Returns the full set of
+ * storage-format candidates so matching never depends on the exact +91 /
+ * spaces / leading-0 shape a provider happened to send.
+ */
+export function contactCandidates(raw: string): string[] {
+  const digits = normalizePhone(raw);
+  if (!digits) return [];
+
+  const candidates = new Set<string>();
+  const bare = raw.trim();
+
+  if (bare) candidates.add(bare);
+  candidates.add(digits);
+
+  const international = digits.startsWith("91") ? digits : `91${digits.slice(-10)}`;
+  candidates.add(`+${international}`);
+  candidates.add(international);
+
+  const national = digits.length > 10 && digits.startsWith("91") ? digits.slice(2) : digits;
+  if (national.length === 10) candidates.add(national);
+
+  // Last-10-digits suffix is the storage format for seeded +91 leads.
+  const last10 = digits.slice(-10);
+  if (last10.length === 10) {
+    candidates.add(last10);
+    candidates.add(`+91${last10}`);
+    candidates.add(`91${last10}`);
+  }
+
+  return [...candidates];
+}
+
+/**
  * Split a raw Indian mobile into Interakt's countryCode + phoneNumber.
  * Returns null when the national number is not 10 digits after stripping.
  */

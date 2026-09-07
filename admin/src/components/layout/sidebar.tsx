@@ -30,6 +30,9 @@ import {
   Send,
   Workflow,
   Route,
+  Landmark,
+  Receipt,
+  Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -64,6 +67,13 @@ const NAV_GROUPS: {
       { href: "/students", icon: Users, label: "Student Management" },
       { href: "/placements", icon: Briefcase, label: "Placements" },
       { href: "/jobs", icon: Briefcase, label: "Careers & Jobs" },
+    ]
+  },
+  {
+    label: "Finance & Billing",
+    items: [
+      { href: "/payments", icon: Wallet, label: "Payments Ledger" },
+      { href: "/fee-plans", icon: Receipt, label: "Fee Plans" },
     ]
   },
   {

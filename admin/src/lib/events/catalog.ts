@@ -36,6 +36,12 @@ export const CANONICAL_EVENTS = {
   WHATSAPP_FAILED: "whatsapp.failed",
   WHATSAPP_REPLIED: "whatsapp.replied",
   WHATSAPP_OPTED_OUT: "whatsapp.opted_out",
+  // CRM pipeline / deal lifecycle (Section 3)
+  DEAL_CREATED: "deal.created",
+  DEAL_STAGE_CHANGED: "deal.stage_changed",
+  DEAL_ASSIGNED: "deal.assigned",
+  DEAL_CONVERTED_TO_ADMISSION: "deal.converted_to_admission",
+  DEAL_REVERTED_TO_PROSPECT: "deal.reverted_to_prospect",
 } as const;
 
 export type CanonicalEvent = (typeof CANONICAL_EVENTS)[keyof typeof CANONICAL_EVENTS];
@@ -49,6 +55,11 @@ const ALIASES: Record<string, CanonicalEvent> = {
   "admission/created": CANONICAL_EVENTS.APPLICATION_CREATED,
   "admission/stage.changed": CANONICAL_EVENTS.APPLICATION_STAGE_CHANGED,
   "payment/received": CANONICAL_EVENTS.PAYMENT_SUCCESS,
+  "deal/created": CANONICAL_EVENTS.DEAL_CREATED,
+  "deal/stage.changed": CANONICAL_EVENTS.DEAL_STAGE_CHANGED,
+  "deal/assigned": CANONICAL_EVENTS.DEAL_ASSIGNED,
+  "deal/converted_to_admission": CANONICAL_EVENTS.DEAL_CONVERTED_TO_ADMISSION,
+  "deal/reverted_to_prospect": CANONICAL_EVENTS.DEAL_REVERTED_TO_PROSPECT,
 };
 
 /**
@@ -84,6 +95,8 @@ export const EVENT_TRIGGER_MAP: Partial<Record<CanonicalEvent, WorkflowTrigger>>
   [CANONICAL_EVENTS.PAYMENT_REFUNDED]: "PAYMENT_REFUNDED",
   [CANONICAL_EVENTS.WHATSAPP_REPLIED]: "WHATSAPP_REPLIED",
   [CANONICAL_EVENTS.WHATSAPP_OPTED_OUT]: "WHATSAPP_OPTED_OUT",
+  [CANONICAL_EVENTS.DEAL_CREATED]: "DEAL_CREATED",
+  [CANONICAL_EVENTS.DEAL_STAGE_CHANGED]: "DEAL_STAGE_CHANGED",
 };
 
 // Raw Inngest event names the workflow engine function subscribes to.
@@ -97,6 +110,12 @@ export const TRIGGERABLE_INNGEST_EVENTS: string[] = [
   "admission/created",
   "admission/stage.changed",
   "payment/received",
+  // legacy deal emitters (Section 3 DealService)
+  "deal/created",
+  "deal/stage.changed",
+  "deal/assigned",
+  "deal/converted_to_admission",
+  "deal/reverted_to_prospect",
   // canonical emitters (Interconnect OS modules)
   CANONICAL_EVENTS.LEAD_UPDATED,
   CANONICAL_EVENTS.APPLICATION_APPROVED,
@@ -110,6 +129,12 @@ export const TRIGGERABLE_INNGEST_EVENTS: string[] = [
   CANONICAL_EVENTS.CHATBOT_ESCALATED,
   CANONICAL_EVENTS.AI_CALL_COMPLETED,
   CANONICAL_EVENTS.CAMPUS_VISIT_BOOKED,
+  // deal lifecycle (Section 3)
+  CANONICAL_EVENTS.DEAL_CREATED,
+  CANONICAL_EVENTS.DEAL_STAGE_CHANGED,
+  CANONICAL_EVENTS.DEAL_ASSIGNED,
+  CANONICAL_EVENTS.DEAL_CONVERTED_TO_ADMISSION,
+  CANONICAL_EVENTS.DEAL_REVERTED_TO_PROSPECT,
 ];
 
 // Internal control-plane event used to execute a specific WorkflowRun

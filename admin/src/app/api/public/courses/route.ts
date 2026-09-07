@@ -17,6 +17,9 @@ const COURSE_SELECT = {
   isFeatured: true,
   order: true,
   metadata: true,
+  seoTitle: true,
+  seoDesc: true,
+  seoKeywords: true,
   publishedAt: true,
   status: true,
 } as const;

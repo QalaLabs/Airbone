@@ -4,11 +4,18 @@ import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
 import JsonLd from '@/components/JsonLd'
 import { buildArticlePageGraph } from '@/lib/schema'
+import { fetchPublic } from '@/lib/adminApi'
 
-export const metadata = {
-  title: 'DGCA Ground School Guide - All Subjects, Exams & Prep Strategy 2026',
-  description: 'Complete DGCA ground school guide for CPL and ATPL aspirants. Covers all 6 exam subjects, exam schedule, pass criteria, preparation strategies, and common mistakes. By Airborne Aviation Academy.',
-  alternates: { canonical: '/blog/dgca-ground-school-guide' },
+export const revalidate = 60
+
+export async function generateMetadata() {
+  // Canonical: Admin Resource (PUBLISHED) SEO fields; static fallback when Admin offline.
+  const blog = await fetchPublic('/blogs', { slug: 'dgca-ground-school-guide' })
+  return {
+    title: blog?.seoTitle ?? 'DGCA Ground School Guide - All Subjects, Exams & Prep Strategy 2026',
+    description: blog?.seoDesc ?? blog?.description ?? 'Complete DGCA ground school guide for CPL and ATPL aspirants. Covers all 6 exam subjects, exam schedule, pass criteria, preparation strategies, and common mistakes. By Airborne Aviation Academy.',
+    alternates: { canonical: '/blog/dgca-ground-school-guide' },
+  }
 }
 
 const FAQS = [
@@ -139,7 +146,7 @@ export default function DGCAGroundSchoolGuidePage() {
           <div style={{ background: '#ffffff', border: '1px solid rgba(0,39,76,0.08)', padding: '1.75rem', borderRadius: '1px', marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
             <div>
               <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.95rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '0.35rem' }}>DGCA CPL Ground School at Airborne</h3>
-              <p style={{ fontSize: '0.82rem', color: 'rgba(33,33,33,0.65)', fontFamily: 'var(--font-b)', margin: 0 }}>Max 25 students per batch · Taught by Capt. Navrang Singh · 100% first-attempt pass record</p>
+              <p style={{ fontSize: '0.82rem', color: 'rgba(33,33,33,0.65)', fontFamily: 'var(--font-b)', margin: 0 }}>Max 25 students per batch · Taught by Capt. Navrang Singh · Strong first-attempt pass record</p>
             </div>
             <Link href="/courses/commercial-pilot-license-cpl" className="btn btn-ghost" style={{ textDecoration: 'none', flexShrink: 0 }}>View Course →</Link>
           </div>

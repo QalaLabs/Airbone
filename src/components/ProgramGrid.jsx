@@ -1,129 +1,44 @@
 'use client'
 
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, useInView } from 'framer-motion'
 import Link from 'next/link'
 import ProgramCard from '@/components/ProgramCard'
+import { resolveCatalogItems, LEGACY_COURSE_ITEMS } from '@/lib/publicCourses'
 
-/* Sequence matches homepage / courses listing (feedback C6 / L12) */
-const PROGRAMS = [
-  {
-    id: 'dgca-ground-school',
-    title: 'DGCA CPL Ground Classes',
-    tag: 'Ground School',
-    duration: '3–6 Months',
-    desc: 'Intensive ground school covering DGCA CPL subjects. Eligibility: 10+2 Physics & Maths. Duration: 3–6 months. Taught by Capt. Navrang Singh.',
-    price: '₹2,70,000',
-    href: '/courses/commercial-pilot-license-cpl',
-    accent: 'var(--gold)',
-  },
-  {
-    id: 'cpl',
-    title: 'Commercial Pilot License (CPL)',
-    tag: 'Flying Training',
-    duration: '12–18 Months',
-    desc: 'Complete CPL path with flying training guidance and Indian CPL conversion support. Cost may vary ₹45–75 Lakh (typical ~₹65 Lakh). Duration: 12–18 months.',
-    price: '₹65 Lakh*',
-    href: '/courses/flying-training-india-abroad',
-    accent: 'var(--red)',
-  },
-  {
-    id: 'cadet',
-    title: 'Cadet Preparation',
-    tag: 'Cadet Selection',
-    duration: 'Flexible',
-    desc: 'The quickest entry into aviation. IndiGo, Air India, and Akasa cadet pilot program preparation.',
-    price: '₹50,000',
-    href: '/courses/cadet-preparation',
-    accent: 'var(--red)',
-  },
-  {
-    id: 'airline-prep',
-    title: 'Airline Preparation',
-    tag: 'Airline Prep',
-    duration: '3 Months',
-    desc: 'Structured airline interview preparation - GD, PI, and soft skills for IndiGo, Air India, Akasa and more. Duration: 3 months.',
-    price: '₹1,25,000',
-    href: '/courses/airline-preparation',
-    accent: 'var(--red)',
-  },
-  {
-    id: 'gd-pi',
-    title: 'GD & PI Course',
-    tag: 'GD / PI',
-    duration: '3 Months',
-    desc: 'Group discussions, panel interviews, and personal development masterclasses led by retired Air India AGM Rajeet Khalsa. Duration: 3 months.',
-    price: '₹30,000',
-    href: '/courses/gd-pi',
-    accent: 'var(--gold)',
-  },
-  {
-    id: 'cas-compass',
-    title: 'CASS Compass Adapt',
-    tag: 'Aptitude Test',
-    duration: '1 Month',
-    desc: 'Structured preparation for airline pilot aptitude test batteries - numerical, spatial, psychomotor, and multi-tasking.',
-    price: '₹30,000',
-    href: '/courses/cas-compass-adapt',
-    accent: 'var(--gold)',
-  },
-  {
-    id: 'atpl',
-    title: 'ATPL Ground School',
-    tag: 'Ground School',
-    duration: '2–3 Months',
-    desc: 'DGCA ATPL written and viva preparation for commercial pilots upgrading toward command. Eligibility: 21 years. Duration: 2–3 months.',
-    price: '₹1,50,000',
-    href: '/courses/atpl',
-    accent: 'var(--gold)',
-  },
-  {
-    id: 'simulator',
-    title: 'Airbus A320 Simulator FBS',
-    tag: 'Simulator',
-    duration: 'Flexible',
-    desc: 'In-house Airbus A320 FBS simulator. Eligibility: CPL. Type rating familiarisation and airline SIM prep.',
-    price: '₹12,000',
-    href: '/courses/a320-simulator',
-    accent: 'var(--gold)',
-  },
-  {
-    id: 'flying-guide',
-    title: "Securing Your Child's Future in Aviation",
-    tag: 'Parents',
-    duration: 'Flexible',
-    desc: 'Comprehensive CPL flight training guidance and Indian CPL conversion support - built for parents and aspirants.',
-    price: 'Free',
-    href: '/courses/securing-your-childs-future-in-aviation',
-    accent: 'var(--red)',
-  },
-  {
-    id: 'cabin-crew',
-    title: 'Cabin Crew Training',
-    tag: 'Hospitality',
-    duration: '3–6 Months',
-    desc: 'Cabin crew & aviation hospitality training with 100%* scholarship offer upon scoring ≥70%.',
-    price: '₹59,000',
-    href: '/courses/cabin-crew-training',
-    accent: 'var(--gold)',
-  },
-  {
-    id: 'ppl',
-    title: 'Private Pilot License (PPL)',
-    tag: 'Flying Training',
-    duration: '3–6 Months',
-    desc: 'Initial pilot license program. Complete flight training hours and ground school preparation for private pilot license certification.',
-    price: '₹25,00,000',
-    href: '/courses/private-pilot-license',
-    accent: 'var(--red)',
-  },
-]
+/* Sequence matches homepage / courses listing (feedback C6 / L12).
+   Canonical catalog (Admin PUBLISHED courses) is fetched on mount via the
+   public-proxy; LEGACY_COURSE_ITEMS is the documented offline fallback and is
+   shown/swapped until the fetch resolves. */
 
-
+const FALLBACK_PROGRAMS = LEGACY_COURSE_ITEMS
 
 export default function ProgramGrid() {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, amount: 0.1 })
+  const [programs, setPrograms] = useState(FALLBACK_PROGRAMS)
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch('/api/public-proxy/courses?limit=100', {
+          cache: 'no-store',
+        })
+        if (!res.ok) throw new Error('courses proxy failed')
+        const json = await res.json()
+        if (cancelled) return
+        if (Array.isArray(json?.data) && json.data.length > 0) {
+          setPrograms(resolveCatalogItems(json.data))
+        }
+      } catch {
+        // Offline — keep the documented legacy fallback.
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   return (
     <section
@@ -219,7 +134,7 @@ export default function ProgramGrid() {
 
         {/* 4×2 Premium Grid */}
         <div className="program-grid-4x2">
-          {PROGRAMS.map((program, i) => (
+          {programs.map((program, i) => (
             <ProgramCard key={program.id} program={program} index={i} />
           ))}
         </div>

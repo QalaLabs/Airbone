@@ -71,7 +71,7 @@ const FEE_ROWS = [
   { component: 'Flying Training (200 Hours)', amount: '₹42,00,000' },
   { component: 'Class 2 & Class 1 Medicals', amount: '₹15,000' },
   { component: 'DGCA Exams & Licensing fees', amount: '₹20,000' },
-  { component: 'Simulator Sessions (A320 FBS)', amount: '₹12,000' },
+  { component: 'Simulator Sessions (A320 FBS)', amount: '₹10,000' },
   { component: 'Total (approximate)', amount: '₹55–65 lakh' },
 ]
 

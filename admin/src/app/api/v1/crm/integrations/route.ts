@@ -51,12 +51,27 @@ export async function GET() {
         status: configured(
           process.env.NEXT_PUBLIC_FACEBOOK_APP_ID,
           process.env.FACEBOOK_APP_SECRET,
+          process.env.FACEBOOK_WEBHOOK_VERIFY_TOKEN,
+          process.env.FACEBOOK_PAGE_ACCESS_TOKEN,
         )
-          ? "connected"
+          ? "configured_not_verified"
           : "not_configured",
         provider: "Meta for Business",
-        required: ["NEXT_PUBLIC_FACEBOOK_APP_ID", "FACEBOOK_APP_SECRET"],
-        note: "Facebook leads API and comment ad integrations require a Meta App.",
+        required: [
+          "NEXT_PUBLIC_FACEBOOK_APP_ID",
+          "FACEBOOK_APP_SECRET",
+          "FACEBOOK_WEBHOOK_VERIFY_TOKEN",
+          "FACEBOOK_PAGE_ACCESS_TOKEN",
+        ],
+        note: configured(
+          process.env.NEXT_PUBLIC_FACEBOOK_APP_ID,
+          process.env.FACEBOOK_APP_SECRET,
+          process.env.FACEBOOK_WEBHOOK_VERIFY_TOKEN,
+          process.env.FACEBOOK_PAGE_ACCESS_TOKEN,
+        )
+          ? "Credentials present but the Meta connection has not been live-verified in this environment."
+          : "Facebook Lead Ads webhook is not configured. Add app credentials to enable lead ingestion.",
+        webhookUrl: `${ADMIN_URL}/api/webhooks/facebook`,
       },
       googleAds: {
         status: googleAdsConfigured ? "connected" : "not_configured",
@@ -106,7 +121,12 @@ export async function GET() {
           ...(configured(process.env.CRON_SECRET) ? (["automation"] as const) : []),
         ],
         notConfigured: Object.entries({
-          facebook: !configured(process.env.NEXT_PUBLIC_FACEBOOK_APP_ID, process.env.FACEBOOK_APP_SECRET),
+          facebook: !configured(
+            process.env.NEXT_PUBLIC_FACEBOOK_APP_ID,
+            process.env.FACEBOOK_APP_SECRET,
+            process.env.FACEBOOK_WEBHOOK_VERIFY_TOKEN,
+            process.env.FACEBOOK_PAGE_ACCESS_TOKEN,
+          ),
           googleAds: !googleAdsConfigured,
           media: !r2Configured,
           documents: !r2Configured,

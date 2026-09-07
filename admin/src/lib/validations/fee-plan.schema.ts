@@ -1,12 +1,18 @@
 import { z } from "zod";
 
-export const feePlanItemSchema = z.object({
-  name: z.string().min(1).max(255),
-  amount: z.number().positive(),
-  dueOffsetDays: z.number().int().min(0).default(0),
-  sortOrder: z.number().int().min(0).default(0),
-  metadata: z.record(z.unknown()).optional(),
-});
+export const feePlanItemSchema = z
+  .object({
+    name: z.string().min(1).max(255),
+    // Exactly one of amount (fixed rupee) or percentOfFee (% of course fee).
+    amount: z.number().positive().max(9_999_999.99).optional(),
+    percentOfFee: z.number().positive().max(100).optional(),
+    dueOffsetDays: z.number().int().min(0).default(0),
+    sortOrder: z.number().int().min(0).default(0),
+    metadata: z.record(z.unknown()).optional(),
+  })
+  .refine((item) => (item.amount !== undefined) !== (item.percentOfFee !== undefined), {
+    message: "Each item must specify exactly one of a fixed amount or a percent of the course fee",
+  });
 
 export const createFeePlanSchema = z.object({
   name: z.string().min(1).max(255),

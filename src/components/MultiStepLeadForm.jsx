@@ -338,7 +338,7 @@ export default function MultiStepLeadForm({ courseName = '', source = 'Multi-Ste
                 This helps us recommend the right path and financing options for you.
               </p>
               <YesNo
-                label="Total cost for the CPL program is approximately ₹80 Lakh, inclusive of Flying Training (at FTO). Given this fee structure, would you be prepared to meet the financial commitment required for this course?"
+                label="Total cost for the CPL program is approximately ₹55-65 lakh, inclusive of Flying Training (at FTO). Given this fee structure, would you be prepared to meet the financial commitment required for this course?"
                 value={screening.canAfford}
                 onChange={(v) => setScreening((s) => ({ ...s, canAfford: v, priority: v === 'No' ? 'financing' : 'standard' }))}
               />

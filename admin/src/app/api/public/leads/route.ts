@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/db/client";
 import type { LeadSource } from "@prisma/client";
-import { checkRateLimit } from "@/lib/utils/rate-limit";
+import { consumeRateLimit, rateLimitHeaders } from "@/lib/utils/rate-limit";
+import { resolveClientIp } from "@/lib/utils/client-ip";
+import { safeEqualString } from "@/lib/utils/crypto";
 import { generateResourceToken } from "@/lib/utils/resource-token";
 import { publicLeadSchema } from "@/lib/validations/public-lead.schema";
 import { emitLeadCreated } from "@/lib/automation/emit-lead-created";
@@ -22,28 +24,20 @@ export async function POST(req: NextRequest) {
   try {
     await checkMaintenance();
     const apiKey = req.headers.get("x-intake-key");
-    if (!process.env.PUBLIC_INTAKE_KEY || apiKey !== process.env.PUBLIC_INTAKE_KEY) {
+    if (!process.env.PUBLIC_INTAKE_KEY || !safeEqualString(apiKey, process.env.PUBLIC_INTAKE_KEY)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
   // Rate limit: 5 requests per minute per IP
-  const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    req.headers.get("x-real-ip") ??
-    "unknown";
-  const { allowed, remaining, resetAt } = checkRateLimit(`lead:${ip}`, 5, 60_000);
+  const ip = resolveClientIp(req);
+  const decision = await consumeRateLimit(`lead:${ip}`, 5, 60_000);
 
-  if (!allowed) {
+  if (!decision.allowed) {
     return NextResponse.json(
       { error: "Too many requests. Please try again later." },
       {
         status: 429,
-        headers: {
-          "Retry-After": String(Math.ceil((resetAt - Date.now()) / 1000)),
-          "X-RateLimit-Limit": "5",
-          "X-RateLimit-Remaining": "0",
-          "X-RateLimit-Reset": String(Math.ceil(resetAt / 1000)),
-        },
+        headers: rateLimitHeaders(decision),
       },
     );
   }
@@ -295,7 +289,7 @@ export async function POST(req: NextRequest) {
         success: true,
         data: lead,
         gateToken,
-        meta: { "X-RateLimit-Remaining": String(remaining) },
+        meta: { "X-RateLimit-Remaining": String(decision.remaining) },
       },
       { status: 201 },
     );

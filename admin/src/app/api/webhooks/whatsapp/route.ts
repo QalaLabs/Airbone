@@ -2,24 +2,30 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/db/client";
 import { parseInboundWhatsApp } from "@/lib/messaging/inbound";
-import { isInteraktWebhookPayload, verifyInteraktSignature } from "@/lib/messaging/providers/interakt/webhooks";
+import {
+  authorizeWhatsAppWebhookPost,
+  isInteraktWebhookPayload,
+  loadInteraktWebhookSecret,
+  loadLegacyWhatsAppWebhookSecret,
+} from "@/lib/messaging/providers/interakt/webhooks";
 import { WhatsAppService } from "@/lib/services/whatsapp.service";
+import { safeEqualString } from "@/lib/utils/crypto";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 // ─── Inbound WhatsApp webhook ────────────────────────────────────────────────
 //
-// Public endpoint — middleware exempts /api/webhooks from session auth.
+// Public endpoint — matcher excludes /api/webhooks from session middleware so
+// the raw body is not cloned/re-encoded before HMAC verification.
 //
 //   GET  → Meta Cloud API subscription handshake (hub.challenge).
-//   POST → Interakt HMAC (Interakt-Signature) when that header is present;
+//   POST → Interakt HMAC (Interakt-Signature) of the exact raw body;
 //          otherwise the shared-secret x-webhook-secret / ?secret= check.
 //
 // Persistence (dedup, inbound thread, delivery status) happens in this
 // handler before HTTP 200. Workflow fan-out is persisted to internal_events
 // and processed by cron — no fire-and-forget after response.
-
-function webhookSecret(): string | undefined {
-  return process.env.INTERAKT_WEBHOOK_SECRET?.trim() || process.env.WHATSAPP_WEBHOOK_SECRET?.trim() || undefined;
-}
 
 export async function GET(req: NextRequest) {
   const mode = req.nextUrl.searchParams.get("hub.mode");
@@ -27,7 +33,7 @@ export async function GET(req: NextRequest) {
   const challenge = req.nextUrl.searchParams.get("hub.challenge");
 
   const expected = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN;
-  if (mode === "subscribe" && expected && token === expected && challenge) {
+  if (mode === "subscribe" && expected && safeEqualString(token, expected) && challenge) {
     return new NextResponse(challenge, { status: 200 });
   }
   return NextResponse.json({ error: "verification_failed" }, { status: 403 });
@@ -35,26 +41,39 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const secret = webhookSecret();
-    if (!secret) {
-      console.warn("[WhatsApp Webhook] No webhook secret configured — rejecting");
-      return NextResponse.json({ received: false, error: "not_configured" }, { status: 403 });
-    }
+    const interaktWebhookSecret = loadInteraktWebhookSecret();
+    const legacyWebhookSecret = loadLegacyWhatsAppWebhookSecret();
 
-    const rawBody = await req.text();
-    const interaktSig = req.headers.get("interakt-signature") ?? req.headers.get("Interakt-Signature");
+    // Exact request bytes — HMAC must run before JSON.parse / re-stringify.
+    const rawBuffer = Buffer.from(await req.arrayBuffer());
+    const rawBody = rawBuffer.toString("utf8");
+    const interaktSig = req.headers.get("interakt-signature");
 
-    if (interaktSig) {
-      if (!verifyInteraktSignature(rawBody, interaktSig, secret)) {
-        console.warn("[WhatsApp Webhook] Invalid Interakt-Signature");
-        return NextResponse.json({ received: false, error: "invalid_signature" }, { status: 403 });
-      }
-    } else {
-      const provided = req.headers.get("x-webhook-secret") ?? req.nextUrl.searchParams.get("secret");
-      if (provided !== secret) {
+    const auth = authorizeWhatsAppWebhookPost({
+      rawBody: rawBuffer,
+      interaktSignature: interaktSig,
+      sharedSecretHeader: req.headers.get("x-webhook-secret"),
+      querySecret: req.nextUrl.searchParams.get("secret"),
+      interaktWebhookSecret,
+      legacyWebhookSecret,
+    });
+
+    if (!auth.ok) {
+      if (auth.error === "invalid_signature") {
+        console.warn("[WhatsApp Webhook] Invalid Interakt-Signature", auth.diagnostics);
+      } else if (auth.error === "not_configured") {
+        console.warn("[WhatsApp Webhook] No webhook secret configured — rejecting", {
+          secretConfigured: false,
+          secretLength: 0,
+          receivedPrefix: auth.diagnostics?.receivedPrefix ?? "none",
+          receivedSignatureLength: auth.diagnostics?.receivedSignatureLength ?? 0,
+          computedSignatureLength: 0,
+          comparisonFailed: true,
+        });
+      } else {
         console.warn("[WhatsApp Webhook] Invalid secret provided");
-        return NextResponse.json({ received: false, error: "invalid_secret" }, { status: 403 });
       }
+      return NextResponse.json({ received: false, error: auth.error }, { status: 403 });
     }
 
     const org = await prisma.organization.findFirst({

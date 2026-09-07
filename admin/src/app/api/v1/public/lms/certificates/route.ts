@@ -1,7 +1,8 @@
 import { type NextRequest } from "next/server";
 import { LmsService } from "@/lib/services/lms.service";
 import { ok, handleError } from "@/lib/utils/response";
-import { checkRateLimit } from "@/lib/utils/rate-limit";
+import { consumeRateLimit } from "@/lib/utils/rate-limit";
+import { resolveClientIp } from "@/lib/utils/client-ip";
 import { RateLimitError } from "@/lib/utils/errors";
 
 /** Public endpoint — no auth required. Verifies a certificate by verificationCode. */
@@ -14,11 +15,8 @@ export async function GET(req: NextRequest) {
     }
 
     // Prevent code brute-forcing / enumeration: 20 attempts per IP per minute.
-    const ip =
-      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-      req.headers.get("x-real-ip") ??
-      "unknown";
-    const { allowed } = checkRateLimit(`lms-cert-verify:${ip}`, 20, 60_000);
+    const ip = resolveClientIp(req);
+    const { allowed } = await consumeRateLimit(`lms-cert-verify:${ip}`, 20, 60_000);
     if (!allowed) throw new RateLimitError();
 
     const cert = await LmsService.verifyCertificate(code);

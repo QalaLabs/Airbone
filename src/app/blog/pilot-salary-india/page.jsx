@@ -4,11 +4,18 @@ import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
 import JsonLd from '@/components/JsonLd'
 import { buildArticlePageGraph } from '@/lib/schema'
+import { fetchPublic } from '@/lib/adminApi'
 
-export const metadata = {
-  title: 'Pilot Salary in India 2026 - CPL vs ATPL Income Guide | Airborne',
-  description: 'Complete pilot salary guide for India in 2026. First Officer vs Captain pay at IndiGo, Air India, Akasa, Vistara. CPL salary expectations, growth timeline, and perks explained.',
-  alternates: { canonical: '/blog/pilot-salary-india' },
+export const revalidate = 60
+
+export async function generateMetadata() {
+  // Canonical: Admin Resource (PUBLISHED) SEO fields; static fallback when Admin offline.
+  const blog = await fetchPublic('/blogs', { slug: 'pilot-salary-india' })
+  return {
+    title: blog?.seoTitle ?? 'Pilot Salary in India 2026 - CPL vs ATPL Income Guide | Airborne',
+    description: blog?.seoDesc ?? blog?.description ?? 'Complete pilot salary guide for India in 2026. First Officer vs Captain pay at IndiGo, Air India, Akasa, Vistara. CPL salary expectations, growth timeline, and perks explained.',
+    alternates: { canonical: '/blog/pilot-salary-india' },
+  }
 }
 
 const FAQS = [

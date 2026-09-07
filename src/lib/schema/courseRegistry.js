@@ -1,6 +1,9 @@
 /**
- * Verified course schema registry — prices/durations from live course pages.
- * Descriptions avoid unverifiable superlatives (handled further by sanitizeSchemaText).
+ * Course schema registry — prices/durations mirror canonical Admin DB seeds for
+ * DB-backed courses (BD-1 / BD-3); static-only courses keep their documented
+ * exception values. Pages that already fetch the Admin course override these
+ * with live DB values at render time. Descriptions avoid unverifiable
+ * superlatives (handled further by sanitizeSchemaText).
  */
 
 export const COURSE_SCHEMA = {
@@ -93,7 +96,7 @@ export const COURSE_SCHEMA = {
       'Airline Transport Pilot License ground school in Dwarka, Delhi - DGCA ATPL theory subjects with onsite and online training support at Airborne Aviation Academy.',
     path: '/courses/atpl',
     price: '150000',
-    duration: 'P2M',
+    duration: 'P4M',
     courseMode: 'blended',
     imagePath: '/footage/classroom.jpg',
     teaches: ['ATPL Air Navigation', 'ATPL Meteorology', 'ATPL Air Regulations', 'ATPL Technical'],
@@ -105,8 +108,8 @@ export const COURSE_SCHEMA = {
     description:
       'Cabin crew training in Dwarka, Delhi led by airline-experienced trainers. Structured pathways covering safety, soft skills, and airline interview readiness.',
     path: '/courses/cabin-crew-training',
-    price: '59000',
-    duration: 'P1M',
+    price: '54000',
+    duration: 'P3M',
     courseMode: 'onsite',
     includeInstructor: false,
     imagePath: '/footage/cabin-crew-training-hero.jpg',
@@ -117,6 +120,8 @@ export const COURSE_SCHEMA = {
     description:
       'Preparation for IndiGo, Air India, Akasa and other cadet pilot selection processes - aptitude, GD/PI, and simulator familiarisation support.',
     path: '/courses/cadet-preparation',
+    price: '50000',
+    duration: 'P3M',
     courseMode: 'onsite',
     imagePath: '/campus/cadet-pilot-training.jpg',
   },
@@ -126,6 +131,7 @@ export const COURSE_SCHEMA = {
     description:
       'A320 FTD Level 5 simulator sessions at Airborne Aviation Academy, Dwarka - airline interview prep, type-rating familiarisation, and cadet selection practice.',
     path: '/courses/a320-simulator',
+    price: '10000',
     courseMode: 'onsite',
     imagePath: '/footage/cockpit_instruments_closeup.jpg',
     includeInstructor: false,
@@ -136,14 +142,18 @@ export const COURSE_SCHEMA = {
     description:
       'Structured preparation for DGCA CASS Compass and ADAPT pilot aptitude screening tests at Airborne Aviation Academy, Dwarka.',
     path: '/courses/cas-compass-adapt',
+    price: '30000',
+    duration: 'P4W',
     courseMode: 'onsite',
   },
   'airline-preparation': {
     slug: 'airline-preparation',
     name: 'Comprehensive Airline Preparation Program',
     description:
-      'Transition from CPL holder to First Officer. 2.5-month airline preparation program at Airborne, Dwarka covering DGCA Ground Refresher, ADAPT Screening, A320 Systems & Sim Prep, and GD/PI. 4 hours/day. ₹1,25,000.',
+      'Transition from CPL holder to First Officer. 2.5-month airline preparation program at Airborne, Dwarka covering DGCA Ground Refresher, ADAPT Screening, A320 Systems & Sim Prep, and GD/PI. 4 hours/day.',
     path: '/courses/airline-preparation',
+    price: '100000',
+    duration: 'P4W',
     courseMode: 'onsite',
     includeInstructor: false,
   },

@@ -41,12 +41,28 @@ export const assignLeadSchema = z.object({
   counselorId: z.string().uuid(),
 });
 
+export const bulkAssignLeadsSchema = z.object({
+  leadIds: z.array(z.string().uuid()).min(1).max(500),
+  counselorId: z.string().uuid(),
+  note: z.string().max(1000).optional(),
+});
+
+/** Server-side priority derived from lead score (Phase 2 page mapping). */
+export const LEAD_PRIORITY_SCORE = {
+  HIGH: 80,
+  MEDIUM: 50,
+  LOW: 0,
+} as const;
+
+export type LeadPriority = keyof typeof LEAD_PRIORITY_SCORE; // "HIGH" | "MEDIUM" | "LOW"
+
 export const leadFiltersSchema = z.object({
   status: z.nativeEnum(LeadStatus).optional(),
   source: z.nativeEnum(LeadSource).optional(),
   assignedTo: z.string().uuid().optional(),
   campusId: z.string().uuid().optional(),
   courseInterest: z.string().optional(),
+  priority: z.enum(["HIGH", "MEDIUM", "LOW"]).optional(),
   search: z.string().max(255).optional(),
   dateFrom: z.string().datetime().optional(),
   dateTo: z.string().datetime().optional(),
@@ -85,6 +101,21 @@ export const scheduleMeetingSchema = z.object({
   notes: z.string().max(5000).optional(),
   outcome: z.string().max(255).optional(),
   metadata: z.record(z.unknown()).optional(),
+});
+
+export const updateMeetingSchema = z.object({
+  title: z.string().max(500).optional(),
+  dueAt: z.string().datetime().optional(),
+  durationMins: z.number().int().min(0).max(1440).optional(),
+  notes: z.string().max(5000).optional(),
+  outcome: z.string().max(255).optional(),
+  metadata: z.record(z.unknown()).optional(),
+});
+
+// Meeting completion / cancellation action for the dedicated route.
+export const meetingActionSchema = z.object({
+  action: z.enum(["complete", "cancel"]),
+  outcome: z.string().max(255).optional(),
 });
 
 export const completeActivitySchema = z.object({

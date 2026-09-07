@@ -66,6 +66,10 @@ export class MediaService {
     ctx: RequestContext,
     input: PresignMediaInput,
   ): Promise<{ uploadUrl: string; fileKey: string; fileUrl: string }> {
+    // M-05: reject unlisted MIME types before minting a signed upload URL.
+    if (!isAllowedMediaType(input.contentType)) {
+      throw new ValidationError([{ message: `File type "${input.contentType}" is not supported` }]);
+    }
     const fileKey = buildFileKey(ctx.orgId, input.fileName);
     const uploadUrl = await createSignedUploadUrl(fileKey, input.contentType);
 
@@ -157,6 +161,10 @@ export class MediaService {
 
   // Register an asset that is already in storage (legacy presign→PUT flow).
   static async register(ctx: RequestContext, input: RegisterAssetInput) {
+    // M-05: server-side allowlist parity with upload()/getPresignedUrl().
+    if (!isAllowedMediaType(input.mimeType)) {
+      throw new ValidationError([{ message: `File type "${input.mimeType}" is not supported` }]);
+    }
     const asset = await MediaRepository.create(ctx.orgId, ctx.user.id, input);
 
     // Durable audit/activity owned by the sync register path (Inngest-independent)
@@ -221,6 +229,11 @@ export class MediaService {
   static async replace(ctx: RequestContext, id: string, input: ReplaceAssetInput) {
     const existing = await MediaRepository.findById(ctx.orgId, id);
     if (!existing) throw new NotFoundError("MediaAsset", id);
+
+    // M-05: server-side allowlist parity with upload()/getPresignedUrl().
+    if (!isAllowedMediaType(input.mimeType)) {
+      throw new ValidationError([{ message: `File type "${input.mimeType}" is not supported` }]);
+    }
 
     const newAssetId = uuid();
     const newAsset = await MediaRepository.replace(ctx.orgId, id, input, newAssetId);

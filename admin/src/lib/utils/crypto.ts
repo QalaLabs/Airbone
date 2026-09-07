@@ -1,7 +1,24 @@
-import { createHash } from "crypto";
+import { createHash, timingSafeEqual } from "crypto";
 
 export function sha256(input: string): string {
   return createHash("sha256").update(input).digest("hex");
+}
+
+/**
+ * Length-safe, constant-time string comparison. `timingSafeEqual` throws when
+ * buffers differ in length, so lengths are compared first (a length check does
+ * not leak useful timing information here — attacker and secret lengths are
+ * both effectively knowable).
+ */
+export function safeEqualString(
+  a: string | null | undefined,
+  b: string | null | undefined,
+): boolean {
+  if (a == null || b == null) return false;
+  const x = Buffer.from(a, "utf8");
+  const y = Buffer.from(b, "utf8");
+  if (x.length !== y.length) return false;
+  return timingSafeEqual(x, y);
 }
 
 export function buildAuditRowHash(fields: {

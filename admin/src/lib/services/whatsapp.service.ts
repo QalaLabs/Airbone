@@ -8,6 +8,7 @@ import {
   type InboundWhatsAppMessage,
 } from "@/lib/messaging/inbound";
 import { InteraktProvider, maskSecret } from "@/lib/messaging/providers/interakt.provider";
+import { contactCandidates } from "@/lib/messaging/phone";
 import {
   getDefaultInboxTemplateVariableNames,
   getInteraktDefaultTemplate,
@@ -871,9 +872,19 @@ export class WhatsAppService {
         select: { id: true, whatsappOptOut: true },
       });
     }
-    if (!lead && phone.length >= 10) {
+    if (!lead) {
       lead = await prisma.lead.findFirst({
         where: { orgId, phone: { endsWith: phone.slice(-10) } },
+        orderBy: { createdAt: "desc" },
+        select: { id: true, whatsappOptOut: true },
+      });
+    }
+    // Canonical candidate forms (raw / digits / +91 / national / last-10 suffix)
+    // so resolution never depends on the exact shape the provider sent.
+    if (!lead) {
+      const candidates = contactCandidates(msg.phone);
+      lead = await prisma.lead.findFirst({
+        where: { orgId, phone: { in: candidates } },
         orderBy: { createdAt: "desc" },
         select: { id: true, whatsappOptOut: true },
       });

@@ -1,0 +1,40 @@
+   ▲ Next.js 15.5.19
+   - Local:        http://localhost:3210
+   - Network:      http://192.168.1.3:3210
+
+ ✓ Starting...
+ ⚠ "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+ ✓ Ready in 822ms
+[31m[auth][error][0m CredentialsSignin: Read more at https://errors.authjs.dev#credentialssignin
+    at fw (C:\Users\pc\Desktop\Airbone\admin\.next\server\chunks\2599.js:404:41006)
+    at async fF (C:\Users\pc\Desktop\Airbone\admin\.next\server\chunks\2599.js:404:50586)
+    at async fH (C:\Users\pc\Desktop\Airbone\admin\.next\server\chunks\2599.js:404:54838)
+    at async rH.do (C:\Users\pc\Desktop\Airbone\admin\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:5:21048)
+    at async rH.handle (C:\Users\pc\Desktop\Airbone\admin\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:5:25866)
+    at async k (C:\Users\pc\Desktop\Airbone\admin\.next\server\app\api\auth\[...nextauth]\route.js:1:3318)
+    at async rH.handleResponse (C:\Users\pc\Desktop\Airbone\admin\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:1:110708)
+    at async g (C:\Users\pc\Desktop\Airbone\admin\.next\server\app\api\auth\[...nextauth]\route.js:1:4321)
+    at async D (C:\Users\pc\Desktop\Airbone\admin\.next\server\app\api\auth\[...nextauth]\route.js:1:5443)
+    at async NextNodeServer.renderToResponseWithComponentsImpl (C:\Users\pc\Desktop\Airbone\admin\node_modules\next\dist\server\base-server.js:1430:9)
+[31m[auth][error][0m MissingCSRF: CSRF token was missing during an action callback. Read more at https://errors.authjs.dev#missingcsrf
+    at cj (C:\Users\pc\Desktop\Airbone\admin\.next\server\chunks\2599.js:1:66081)
+    at fF (C:\Users\pc\Desktop\Airbone\admin\.next\server\chunks\2599.js:404:50578)
+    at async fH (C:\Users\pc\Desktop\Airbone\admin\.next\server\chunks\2599.js:404:54838)
+    at async rH.do (C:\Users\pc\Desktop\Airbone\admin\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:5:21048)
+    at async rH.handle (C:\Users\pc\Desktop\Airbone\admin\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:5:25866)
+    at async k (C:\Users\pc\Desktop\Airbone\admin\.next\server\app\api\auth\[...nextauth]\route.js:1:3318)
+    at async rH.handleResponse (C:\Users\pc\Desktop\Airbone\admin\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:1:110708)
+    at async g (C:\Users\pc\Desktop\Airbone\admin\.next\server\app\api\auth\[...nextauth]\route.js:1:4321)
+    at async D (C:\Users\pc\Desktop\Airbone\admin\.next\server\app\api\auth\[...nextauth]\route.js:1:5443)
+    at async NextNodeServer.renderToResponseWithComponentsImpl (C:\Users\pc\Desktop\Airbone\admin\node_modules\next\dist\server\base-server.js:1430:9)
+[31m[auth][error][0m MissingCSRF: CSRF token was missing during an action callback. Read more at https://errors.authjs.dev#missingcsrf
+    at cj (C:\Users\pc\Desktop\Airbone\admin\.next\server\chunks\2599.js:1:66081)
+    at fF (C:\Users\pc\Desktop\Airbone\admin\.next\server\chunks\2599.js:404:50578)
+    at async fH (C:\Users\pc\Desktop\Airbone\admin\.next\server\chunks\2599.js:404:54838)
+    at async rH.do (C:\Users\pc\Desktop\Airbone\admin\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:5:21048)
+    at async rH.handle (C:\Users\pc\Desktop\Airbone\admin\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:5:25866)
+    at async k (C:\Users\pc\Desktop\Airbone\admin\.next\server\app\api\auth\[...nextauth]\route.js:1:3318)
+    at async rH.handleResponse (C:\Users\pc\Desktop\Airbone\admin\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:1:110708)
+    at async g (C:\Users\pc\Desktop\Airbone\admin\.next\server\app\api\auth\[...nextauth]\route.js:1:4321)
+    at async D (C:\Users\pc\Desktop\Airbone\admin\.next\server\app\api\auth\[...nextauth]\route.js:1:5443)
+    at async NextNodeServer.renderToResponseWithComponentsImpl (C:\Users\pc\Desktop\Airbone\admin\node_modules\next\dist\server\base-server.js:1430:9)

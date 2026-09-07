@@ -123,8 +123,10 @@ export default function CRMOutreachPage() {
   const totalSent = data.delivery.sent;
   const totalFailed = data.delivery.failed;
   const totalPending = data.delivery.pending;
-  const openRate = totalSent > 0 ? "—" : "0";
-  const replyRate = totalSent > 0 ? "—" : "0";
+  // Honest metrics: "…" when the platform has no persisted measurement — the
+  // server never fabricates zeros for email open/reply rates.
+  const openRate = data.delivery.emailOpenRate == null ? "…" : `${Math.round(data.delivery.emailOpenRate * 100)}%`;
+  const replyRate = data.delivery.replyRate == null ? "…" : `${Math.round(data.delivery.replyRate * 100)}%`;
 
   const templateColumns: CRMColumn<OutreachData["templates"][number]>[] = [
     {
@@ -273,17 +275,23 @@ export default function CRMOutreachPage() {
       <div className="grid gap-4 md:grid-cols-3">
         {(["email", "sms", "whatsapp"] as const).map((key) => {
           const p = data.providers[key];
+          const statusLabel =
+            p.status === "connected"
+              ? "Connected / verified"
+              : p.status === "configured_not_verified"
+                ? "Configured, not verified"
+                : "Not configured";
+          const live = p.status === "connected";
           return (
             <Card key={key} className="bg-card border-white/10 shadow-lg">
               <CardContent className="p-4 flex items-center justify-between">
                 <div>
                   <p className="text-xs text-muted-foreground font-semibold">{p.provider} ({key})</p>
-                  <p className="text-sm font-bold text-white mt-1">
-                    {p.configured ? "Configured" : "Not configured"}
-                  </p>
+                  <p className="text-sm font-bold text-white mt-1">{statusLabel}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{p.note}</p>
                 </div>
-                <Badge className={`${p.configured ? "bg-emerald-500" : "bg-gray-500"} text-white border-none text-[9px]`}>
-                  {p.configured ? "LIVE" : "NOT_CONFIGURED"}
+                <Badge className={`${live ? "bg-emerald-500" : p.status === "configured_not_verified" ? "bg-amber-500" : "bg-gray-500"} text-white border-none text-[9px]`}>
+                  {live ? "VERIFIED" : p.status === "configured_not_verified" ? "NOT_VERIFIED" : "NOT_CONFIGURED"}
                 </Badge>
               </CardContent>
             </Card>
@@ -419,6 +427,9 @@ function NewTemplateForm({
       <div className="space-y-1">
         <Label className="text-xs text-muted-foreground">Variables (comma separated)</Label>
         <Input value={variables} onChange={(e) => setVariables(e.target.value)} placeholder="leadName, courseName" className="h-9 text-xs" />
+        <p className="text-[10px] text-muted-foreground">
+          Allowed: leadName, firstName, lastName, phone, email, courseName, counselorName, amount, dueDate, link
+        </p>
       </div>
       <div className="flex justify-end gap-2 pt-1">
         <Button type="button" size="sm" variant="outline" className="h-8 text-xs border-white/10" onClick={onCancel}>

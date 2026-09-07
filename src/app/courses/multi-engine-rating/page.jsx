@@ -10,7 +10,7 @@ import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 
 export const metadata = {
   title: 'Multi-Engine Rating India - DGCA Complied | Airborne Aviation',
-  description: 'Add a DGCA Multi-Engine Rating to your PPL or CPL at Airborne Aviation Academy, Dwarka - 2,500+ students trained. Twin-engine aircraft training. PPL/CPL holders. Fees ₹3–5L. Enquire.',
+  description: 'Add a DGCA Multi-Engine Rating to your PPL or CPL at Airborne Aviation Academy, Dwarka - structured aviation training since 2009. Twin-engine aircraft training. PPL/CPL holders. Fees ₹3–5L. Enquire.',
   alternates: { canonical: '/courses/multi-engine-rating' },
 }
 

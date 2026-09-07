@@ -23,7 +23,7 @@ interface GoogleAdsWebhookData {
 }
 
 interface IntegrationStatus {
-  status: "connected" | "not_configured" | "removed";
+  status: "connected" | "configured_not_verified" | "not_configured" | "removed";
   provider?: string;
   note?: string;
   required?: string[];
@@ -49,13 +49,14 @@ interface IntegrationsData {
 function StatusBadge({ status }: { status: IntegrationStatus["status"] }) {
   const map = {
     connected: { label: "Connected", cls: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" },
+    configured_not_verified: { label: "Configured, Not Verified", cls: "bg-amber-500/20 text-amber-400 border border-amber-500/30" },
     not_configured: { label: "Not Configured", cls: "bg-gray-500/20 text-gray-400 border border-gray-500/30" },
     removed: { label: "Removed", cls: "bg-gray-500/20 text-gray-400 border border-gray-500/30" },
   } as const;
   const s = map[status] ?? map.not_configured;
   return (
     <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold", s.cls)}>
-      <span className={cn("h-1.5 w-1.5 rounded-full", status === "connected" ? "bg-emerald-400" : "bg-gray-500")} />
+      <span className={cn("h-1.5 w-1.5 rounded-full", status === "connected" ? "bg-emerald-400" : status === "configured_not_verified" ? "bg-amber-400" : "bg-gray-500")} />
       {s.label}
     </span>
   );
@@ -294,12 +295,14 @@ function IntegrationCard({
   status,
   body,
   required,
+  children,
 }: {
   title: string;
   icon: React.ReactNode;
   status: IntegrationStatus["status"];
   body: string;
   required?: string[];
+  children?: React.ReactNode;
 }) {
   return (
     <Card className="bg-card border-white/10 shadow-lg">
@@ -324,6 +327,7 @@ function IntegrationCard({
             ))}
           </div>
         )}
+        {children}
       </CardContent>
     </Card>
   );
@@ -398,7 +402,24 @@ export default function CRMIntegrationsPage() {
           status={data.facebook.status}
           body={data.facebook.note ?? ""}
           required={data.facebook.required}
-        />
+        >
+          {data.facebook.webhookUrl && data.facebook.status !== "not_configured" && (
+            <div className="pt-1 space-y-1.5">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                Webhook URL
+              </p>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 rounded-lg border border-white/10 bg-secondary/30 px-3 py-2 font-mono text-xs text-white truncate">
+                  {data.facebook.webhookUrl}
+                </div>
+                <CopyButton value={data.facebook.webhookUrl} />
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                In Meta: App → Webhooks → Page &quot;leadgen&quot; → verify token (FACEBOOK_WEBHOOK_VERIFY_TOKEN).
+              </p>
+            </div>
+          )}
+        </IntegrationCard>
 
         <IntegrationCard
           title="Media Storage (Cloudflare R2)"

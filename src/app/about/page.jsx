@@ -59,8 +59,8 @@ const FOUNDERS = [
 
 const STATS = [
   { value: '15+ Yrs', label: 'Teaching Legacy' },
-  { value: '100%', label: 'DGCA Exam Pass Rate' },
-  { value: '2,500+', label: 'Aspirants Mentored' },
+  { value: 'Strong', label: 'DGCA Exam Results' },
+  { value: 'Since 2009', label: 'Aspirants Mentored' },
   { value: 'Max 25', label: 'Student Batch Limit' }
 ]
 
@@ -177,7 +177,7 @@ export default function AboutPage() {
               <div className="timeline-year">2009</div>
               <h4 className="timeline-title">CPL Tutoring Operations Begun</h4>
               <p className="timeline-text">
-                Started taking classes for CPL in Sector 12, Dwarka from home, delivering a 100% result in the first batches.
+                Started taking classes for CPL in Sector 12, Dwarka from home, delivering strong results in the first batches.
               </p>
             </div>
 
@@ -231,7 +231,7 @@ export default function AboutPage() {
               <div className="timeline-year">2026</div>
               <h4 className="timeline-title">Private Limited Incorporation</h4>
               <p className="timeline-text">
-                Incorporated as a private limited aviation training organization, with the student community base touching 2500+ annually.
+                Incorporated as a private limited aviation training organization, with a growing student community base.
               </p>
             </div>
           </div>

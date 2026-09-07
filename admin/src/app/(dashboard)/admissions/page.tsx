@@ -28,6 +28,8 @@ import {
   ExternalLink,
   Check,
   X,
+  RotateCcw,
+  IndianRupee,
 } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { apiFetch } from "@/lib/api";
@@ -82,6 +84,8 @@ interface PaymentRow {
   receiptNo?: string | null;
   feeType?: string | null;
   referenceNo?: string | null;
+  refundedAmount?: number | string | null;
+  refundedAt?: string | null;
   paidAt?: string | null;
   createdAt: string;
 }
@@ -93,6 +97,7 @@ interface PaymentSummary {
   feeFinal?: number | string | null;
   feePaid?: number | string | null;
   feeBalance?: number | string | null;
+  refundedTotal?: number | string | null;
   paymentCount?: number;
 }
 
@@ -101,10 +106,14 @@ interface FeePlanOption {
   name: string;
   currency?: string;
   isActive?: boolean;
-  items?: { id: string; name: string; amount: number | string; dueOffsetDays?: number }[];
+  items?: { id: string; name: string; amount: number | string; percentOfFee?: number | string | null; dueOffsetDays?: number }[];
 }
 
 interface AdmissionDetail extends AdmissionListItem {
+  courseId?: string | null;
+  batchId?: string | null;
+  course?: { id: string; title: string } | null;
+  batch?: { id: string; name: string; type?: string; startDate?: string | null; endDate?: string | null; capacity?: number | null; course?: { id: string; title: string } | null } | null;
   batchName?: string | null;
   batchStartDate?: string | null;
   counselorId?: string | null;
@@ -114,6 +123,7 @@ interface AdmissionDetail extends AdmissionListItem {
   feePlanId?: string | null;
   feePlan?: FeePlanOption | null;
   feeAmount?: number | string | null;
+  feeDiscount?: number | string | null;
   feePaid?: number | string | null;
   feeBalance?: number | string | null;
   feeFinal?: number | string | null;
@@ -138,7 +148,7 @@ interface CounselorOption {
   role?: string;
 }
 
-const PAYMENT_METHODS = ["CASH", "UPI", "BANK_TRANSFER", "CARD", "ONLINE", "CHEQUE", "DD"] as const;
+const PAYMENT_METHODS = ["CASH", "UPI", "BANK_TRANSFER", "CARD", "CHEQUE", "DD"] as const;
 const FEE_TYPES = ["registration", "tuition", "exam", "hostel", "other"] as const;
 
 const STAGES = [
@@ -171,6 +181,44 @@ function toIsoDate(dateStr: string) {
 function fromIsoDate(iso?: string | null) {
   if (!iso) return "";
   return iso.slice(0, 10);
+}
+
+function paymentStatusClass(status: string) {
+  if (status === "COMPLETED") return "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
+  if (status === "PENDING") return "bg-amber-500/20 text-amber-400 border-amber-500/30";
+  if (status === "FAILED") return "bg-rose-500/20 text-rose-400 border-rose-500/30";
+  if (status === "PARTIALLY_REFUNDED") return "bg-blue-500/20 text-blue-400 border-blue-500/30";
+  if (status === "REFUNDED") return "bg-sky-500/20 text-sky-400 border-sky-500/30";
+  return "bg-slate-500/20 text-slate-400 border-slate-500/30";
+}
+
+function addDays(base: string, offsetDays: number) {
+  if (!base || !offsetDays) return null;
+  const d = new Date(base);
+  if (Number.isNaN(d.getTime())) return null;
+  d.setDate(d.getDate() + offsetDays);
+  return d.toLocaleDateString("en-IN");
+}
+
+function planItemDueDate(admission: Pick<AdmissionDetail, "batchStartDate" | "createdAt">, offsetDays?: number) {
+  if (!offsetDays) return null;
+  const base = admission.batchStartDate ?? admission.createdAt;
+  return base ? addDays(base, offsetDays) : null;
+}
+
+function enrollmentInfo(admission: AdmissionDetail | undefined) {
+  const e = admission?.metadata?.enrollment;
+  if (!e || typeof e !== "object" || Array.isArray(e)) return null;
+  const rec = e as Record<string, unknown>;
+  const num = (v: unknown) => {
+    const n = Number(v ?? 0);
+    return Number.isFinite(n) ? n : 0;
+  };
+  return {
+    enrolledAt: typeof rec.enrolledAt === "string" ? rec.enrolledAt : undefined,
+    balanceAtEnrollment: num(rec.balanceAtEnrollment),
+    fullPaymentAtEnrollment: typeof rec.fullPaymentAtEnrollment === "string" ? rec.fullPaymentAtEnrollment : undefined,
+  };
 }
 
 
@@ -346,12 +394,24 @@ function DocumentsPanel({ admissionId, fallback }: { admissionId: string; fallba
   );
 }
 
-function PaymentsPanel({ admissionId, fallback }: { admissionId: string; fallback?: PaymentRow[] }) {
+function PaymentsPanel({
+  admissionId,
+  feeAmount,
+  feeDiscount,
+  fallback,
+}: {
+  admissionId: string;
+  feeAmount?: number | string | null;
+  feeDiscount?: number | string | null;
+  fallback?: PaymentRow[];
+}) {
   const queryClient = useQueryClient();
   const [amount, setAmount] = React.useState("");
   const [method, setMethod] = React.useState<(typeof PAYMENT_METHODS)[number]>("UPI");
   const [feeType, setFeeType] = React.useState<(typeof FEE_TYPES)[number]>("tuition");
   const [referenceNo, setReferenceNo] = React.useState("");
+  const [feeAmountDraft, setFeeAmountDraft] = React.useState(feeAmount ? String(Number(feeAmount)) : "");
+  const [feeDiscountDraft, setFeeDiscountDraft] = React.useState(feeDiscount ? String(Number(feeDiscount)) : "");
 
   const { data: payments, isLoading } = useQuery({
     queryKey: ["admission", admissionId, "payments"],
@@ -363,6 +423,13 @@ function PaymentsPanel({ admissionId, fallback }: { admissionId: string; fallbac
   });
   const list = payments ?? fallback ?? [];
 
+  const invalidatePayments = () => {
+    queryClient.invalidateQueries({ queryKey: ["admission", admissionId, "payments"] });
+    queryClient.invalidateQueries({ queryKey: ["admission", admissionId, "payments-summary"] });
+    queryClient.invalidateQueries({ queryKey: ["admission", admissionId] });
+    queryClient.invalidateQueries({ queryKey: ["admissions"] });
+  };
+
   const createMutation = useMutation({
     mutationFn: () =>
       apiFetch(`/admissions/${admissionId}/payments`, {
@@ -372,19 +439,49 @@ function PaymentsPanel({ admissionId, fallback }: { admissionId: string; fallbac
           method,
           feeType,
           referenceNo: referenceNo || undefined,
+          idempotencyKey: crypto.randomUUID(),
         }),
       }),
     onSuccess: () => {
       setAmount("");
       setReferenceNo("");
-      queryClient.invalidateQueries({ queryKey: ["admission", admissionId, "payments"] });
-      queryClient.invalidateQueries({ queryKey: ["admission", admissionId, "payments-summary"] });
-      queryClient.invalidateQueries({ queryKey: ["admission", admissionId] });
-      queryClient.invalidateQueries({ queryKey: ["admissions"] });
+      invalidatePayments();
       toast({ title: "Payment recorded" });
     },
     onError: (err: Error) => toast({ title: "Payment failed", description: err.message, variant: "destructive" }),
   });
+
+  const refundMutation = useMutation({
+    mutationFn: ({ paymentId, refundAmount }: { paymentId: string; refundAmount: number }) =>
+      apiFetch(`/payments/${paymentId}/refunds`, {
+        method: "POST",
+        body: JSON.stringify({ amount: refundAmount, notes: "Refunded from admissions dossier" }),
+      }),
+    onSuccess: () => {
+      invalidatePayments();
+      toast({ title: "Refund recorded" });
+    },
+    onError: (err: Error) => toast({ title: "Refund failed", description: err.message, variant: "destructive" }),
+  });
+
+  const feeEditMutation = useMutation({
+    mutationFn: () =>
+      apiFetch(`/admissions/${admissionId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          feeAmount: feeAmountDraft !== "" ? Number(feeAmountDraft) : undefined,
+          feeDiscount: feeDiscountDraft !== "" ? Number(feeDiscountDraft) : undefined,
+        }),
+      }),
+    onSuccess: () => {
+      invalidatePayments();
+      toast({ title: "Fee updated" });
+    },
+    onError: (err: Error) => toast({ title: "Update failed", description: err.message, variant: "destructive" }),
+  });
+
+  const netOf = (p: PaymentRow) => Number(p.amount ?? 0) - Number(p.refundedAmount ?? 0);
+  const balance = Number(summary?.feeBalance ?? (feeAmount ?? 0));
 
   return (
     <div className="space-y-4">
@@ -394,11 +491,62 @@ function PaymentsPanel({ admissionId, fallback }: { admissionId: string; fallbac
           Payments & Fee Breakdown
         </h3>
         {summary && (
-          <p className="text-xs text-muted-foreground mt-2">
-            Final {money(summary.feeFinal)} · Paid {money(summary.feePaid)} · Balance {money(summary.feeBalance)}
-            {summary.paymentCount != null ? ` · ${summary.paymentCount} receipt(s)` : ""}
-          </p>
+          <div className="mt-2 space-y-1">
+            <p className="text-xs text-muted-foreground">
+              Course {money(summary.feeAmount)} · Discount {money(summary.feeDiscount)} · Final {money(summary.feeFinal)} · Paid{" "}
+              {money(summary.feePaid)}
+            </p>
+            <p className="text-xs">
+              Balance{" "}
+              <span className={balance <= 0 ? "font-bold text-emerald-400" : "font-bold text-amber-400"}>
+                {money(summary.feeBalance)}
+              </span>
+              {Number(summary.refundedTotal ?? 0) > 0 && (
+                <span className="text-muted-foreground"> · Refunded {money(summary.refundedTotal)}</span>
+              )}
+              {Number(summary.feeBalance ?? 0) < 0 && (
+                <span className="text-muted-foreground"> (credit on account)</span>
+              )}
+              {summary.paymentCount != null ? ` · ${summary.paymentCount} receipt(s)` : ""}
+            </p>
+          </div>
         )}
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 p-3 rounded-xl border border-white/10 bg-secondary/30">
+        <div className="space-y-1 col-span-2">
+          <Label className="text-[10px] font-bold text-muted-foreground">Edit course fee</Label>
+          <div className="flex gap-2">
+            <Input
+              type="number"
+              min="0"
+              step="0.01"
+              value={feeAmountDraft}
+              onChange={(e) => setFeeAmountDraft(e.target.value)}
+              className="h-8 text-xs bg-secondary/40 border-white/10"
+              placeholder="Fee amount"
+            />
+            <Input
+              type="number"
+              min="0"
+              step="0.01"
+              value={feeDiscountDraft}
+              onChange={(e) => setFeeDiscountDraft(e.target.value)}
+              className="h-8 text-xs bg-secondary/40 border-white/10"
+              placeholder="Discount"
+            />
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="h-8 text-xs whitespace-nowrap"
+              disabled={feeEditMutation.isPending}
+              onClick={() => feeEditMutation.mutate()}
+            >
+              Save fee
+            </Button>
+          </div>
+        </div>
       </div>
 
       {list.length > 0 && (
@@ -406,7 +554,7 @@ function PaymentsPanel({ admissionId, fallback }: { admissionId: string; fallbac
           {FEE_TYPES.map((ft) => {
             const total = list
               .filter((p) => (p.feeType ?? "other") === ft)
-              .reduce((s, p) => s + Number(p.amount ?? 0), 0);
+              .reduce((s, p) => s + Math.max(0, netOf(p)), 0);
             const label = ft.charAt(0).toUpperCase() + ft.slice(1);
             return (
               <div
@@ -473,18 +621,51 @@ function PaymentsPanel({ admissionId, fallback }: { admissionId: string; fallbac
         <p className="text-xs text-muted-foreground text-center py-4">No receipts yet.</p>
       ) : (
         <div className="space-y-2 max-h-48 overflow-y-auto">
-          {list.map((p) => (
-            <div key={p.id} className="flex items-center justify-between text-xs p-2.5 rounded-lg border border-white/5 bg-slate-900/60">
-              <div>
-                <p className="font-mono font-bold text-white">{p.receiptNo ?? "-"}</p>
-                <p className="text-[10px] text-muted-foreground">{p.paidAt ? formatDate(p.paidAt) : "-"} · {p.method}</p>
+          {list.map((p) => {
+            const remaining = Number(p.amount ?? 0) - Number(p.refundedAmount ?? 0);
+            const refundable = remaining > 0 && (p.status === "COMPLETED" || p.status === "PARTIALLY_REFUNDED");
+            return (
+              <div key={p.id} className="flex items-center justify-between gap-2 text-xs p-2.5 rounded-lg border border-white/5 bg-slate-900/60">
+                <div className="min-w-0">
+                  <p className="font-mono font-bold text-white truncate">{p.receiptNo ?? "-"}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {p.paidAt ? formatDate(p.paidAt) : "-"} · {p.method}
+                    {p.feeType ? ` · ${p.feeType}` : ""}
+                  </p>
+                  <span className={`inline-block rounded-full border px-1.5 py-0.5 text-[9px] font-bold mt-0.5 ${paymentStatusClass(p.status)}`}>
+                    {p.status}
+                  </span>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="font-bold text-emerald-400">{money(p.amount)}</p>
+                  {Number(p.refundedAmount ?? 0) > 0 && (
+                    <p className="text-[10px] font-bold text-sky-400">−{money(p.refundedAmount)}</p>
+                  )}
+                  {refundable && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-1.5 text-[10px] text-sky-400 hover:text-sky-300 gap-1"
+                      disabled={refundMutation.isPending}
+                      onClick={() => {
+                        const amt = window.prompt(`Refund amount (max ₹${remaining.toLocaleString("en-IN")}):`, String(remaining));
+                        if (!amt) return;
+                        const n = Number(amt);
+                        if (!Number.isFinite(n) || n <= 0 || n > remaining) {
+                          toast({ title: "Invalid refund amount", variant: "destructive" });
+                          return;
+                        }
+                        refundMutation.mutate({ paymentId: p.id, refundAmount: n });
+                      }}
+                    >
+                      <RotateCcw className="h-3 w-3" /> Refund
+                    </Button>
+                  )}
+                </div>
               </div>
-              <div className="text-right">
-                <p className="font-bold text-emerald-400">{money(p.amount)}</p>
-                <p className="text-[10px] text-muted-foreground">{p.status}</p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
@@ -501,15 +682,17 @@ function BatchCounselorPanel({
   const [batchName, setBatchName] = React.useState(admission.batchName ?? "");
   const [batchStartDate, setBatchStartDate] = React.useState(fromIsoDate(admission.batchStartDate));
   const [lmsBatchId, setLmsBatchId] = React.useState(
-    typeof admission.metadata?.lmsBatchId === "string" ? admission.metadata.lmsBatchId : "",
+    typeof admission.metadata?.lmsBatchId === "string" ? admission.metadata.lmsBatchId : admission.batchId ?? "",
   );
+  const [courseId, setCourseId] = React.useState(admission.courseId ?? "");
   const [counselorId, setCounselorId] = React.useState(admission.counselorId ?? "");
   const [feePlanId, setFeePlanId] = React.useState(admission.feePlanId ?? "");
 
   React.useEffect(() => {
     setBatchName(admission.batchName ?? "");
     setBatchStartDate(fromIsoDate(admission.batchStartDate));
-    setLmsBatchId(typeof admission.metadata?.lmsBatchId === "string" ? admission.metadata.lmsBatchId : "");
+    setLmsBatchId(typeof admission.metadata?.lmsBatchId === "string" ? admission.metadata.lmsBatchId : admission.batchId ?? "");
+    setCourseId(admission.courseId ?? "");
     setCounselorId(admission.counselorId ?? "");
     setFeePlanId(admission.feePlanId ?? "");
   }, [admission]);
@@ -532,6 +715,17 @@ function BatchCounselorPanel({
         return await apiFetch<FeePlanOption[]>("/fee-plans?isActive=true&limit=100");
       } catch {
         return [] as FeePlanOption[];
+      }
+    },
+  });
+
+  const { data: courses } = useQuery({
+    queryKey: ["courses", "options"],
+    queryFn: async () => {
+      try {
+        return await apiFetch<{ id: string; title: string; courseCode?: string }[]>("/courses?limit=100");
+      } catch {
+        return [] as { id: string; title: string; courseCode?: string }[];
       }
     },
   });
@@ -559,11 +753,13 @@ function BatchCounselorPanel({
 
   const saveBatch = () => {
     const selected = batches?.find((b) => b.id === lmsBatchId);
-    const name = selected?.name || batchName;
+    const name = (selected?.name ?? "") || batchName;
     const prev = { ...(admission.metadata ?? {}) };
     if (lmsBatchId) prev.lmsBatchId = lmsBatchId;
     else delete prev.lmsBatchId;
     updateMutation.mutate({
+      courseId: courseId || null,
+      batchId: lmsBatchId || null,
       batchName: name || undefined,
       batchStartDate: toIsoDate(batchStartDate) ?? null,
       metadata: prev,
@@ -605,12 +801,48 @@ function BatchCounselorPanel({
           </Button>
         </div>
         {admission.feePlan && (
-          <p className="text-[10px] text-muted-foreground">
-            Current: {admission.feePlan.name}
-            {admission.feePlan.items?.length
-              ? ` · ${admission.feePlan.items.length} installment(s) · Fee ${money(admission.feeFinal ?? admission.feeAmount)}`
-              : ""}
-          </p>
+          <div className="text-[10px] text-muted-foreground space-y-0.5">
+            <p>
+              Current: {admission.feePlan.name}
+              {admission.feePlan.items?.length
+                ? ` · ${admission.feePlan.items.length} installment(s) · Fee ${money(admission.feeFinal ?? admission.feeAmount)}`
+                : ""}
+            </p>
+            {admission.feePlan.items?.length ? (
+              <div className="pl-1 border-l border-white/10">
+                {admission.feePlan.items.map((it) => (
+                  <p key={it.id}>
+                    • {it.name}:{" "}
+                    {it.percentOfFee != null
+                      ? `${it.percentOfFee}% of course fee${admission.feeAmount != null ? ` (${money((Number(it.percentOfFee) / 100) * Number(admission.feeAmount))})` : ""}`
+                      : money(it.amount)}
+                    {planItemDueDate(admission, it.dueOffsetDays)
+                      ? ` · due ${planItemDueDate(admission, it.dueOffsetDays)}`
+                      : ""}
+                  </p>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-1">
+        <Label className="text-[10px] font-bold text-muted-foreground">Course (fee model)</Label>
+        <select
+          value={courseId}
+          onChange={(e) => setCourseId(e.target.value)}
+          className="flex h-8 w-full rounded-lg border border-white/10 bg-secondary/60 px-2 text-xs font-bold"
+        >
+          <option value="">None / manual fee</option>
+          {(courses ?? []).map((co) => (
+            <option key={co.id} value={co.id}>
+              {co.title}{co.courseCode ? ` (${co.courseCode})` : ""}
+            </option>
+          ))}
+        </select>
+        {admission.course && (
+          <p className="text-[10px] text-muted-foreground">Current: {admission.course.title}</p>
         )}
       </div>
 
@@ -634,6 +866,9 @@ function BatchCounselorPanel({
               </option>
             ))}
           </select>
+          {admission.batch && (
+            <p className="text-[10px] text-muted-foreground">Current: {admission.batch.name}</p>
+          )}
         </div>
       )}
 
@@ -778,21 +1013,42 @@ function AdmissionDetailDialog({
               </p>
             </div>
             {admission && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold px-3 py-1 bg-primary/20 text-white border border-primary/30 rounded-full">
-                  {admission.stage.replace(/_/g, " ")}
-                </span>
-                {canEnroll && (
-                  <Button
-                    size="sm"
-                    className="text-xs font-bold bg-teal-600 hover:bg-teal-500"
-                    disabled={enrollMutation.isPending}
-                    onClick={() => enrollMutation.mutate()}
-                  >
-                    <GraduationCap className="h-3.5 w-3.5 mr-1" />
-                    {enrollMutation.isPending ? "Enrolling…" : "Enroll"}
-                  </Button>
+              <div className="flex flex-col items-end gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold px-3 py-1 bg-primary/20 text-white border border-primary/30 rounded-full">
+                    {admission.stage.replace(/_/g, " ")}
+                  </span>
+                  {canEnroll && (
+                    <Button
+                      size="sm"
+                      className="text-xs font-bold bg-teal-600 hover:bg-teal-500"
+                      disabled={enrollMutation.isPending}
+                      onClick={() => enrollMutation.mutate()}
+                    >
+                      <GraduationCap className="h-3.5 w-3.5 mr-1" />
+                      {enrollMutation.isPending ? "Enrolling…" : "Enroll"}
+                    </Button>
+                  )}
+                </div>
+                {canEnroll && Number(admission.feeBalance ?? 0) > 0 && (
+                  <span className="text-[10px] font-bold text-amber-400 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5">
+                    Outstanding {money(admission.feeBalance)} will be recorded at enrollment
+                  </span>
                 )}
+                {admission.stage === "ENROLLED" && enrollmentInfo(admission) ? (
+                  <span className="text-[10px] font-bold text-teal-400 rounded-full border border-teal-500/30 bg-teal-500/10 px-2 py-0.5">
+                    Enrolled{(() => {
+                      const en = enrollmentInfo(admission);
+                      if (!en) return "";
+                      return [
+                        en.enrolledAt ? ` ${formatDate(en.enrolledAt)}` : "",
+                        en.balanceAtEnrollment > 0
+                          ? ` · outstanding at enrollment ${money(en.balanceAtEnrollment)}`
+                          : " · fully paid",
+                      ].join("");
+                    })()}
+                  </span>
+                ) : null}
               </div>
             )}
           </div>
@@ -819,7 +1075,12 @@ function AdmissionDetailDialog({
               </div>
             </div>
             <div className="p-6 bg-slate-900/50 space-y-6">
-              <PaymentsPanel admissionId={admission.id} fallback={admission.payments} />
+              <PaymentsPanel
+                admissionId={admission.id}
+                feeAmount={admission.feeAmount}
+                feeDiscount={admission.feeDiscount}
+                fallback={admission.payments}
+              />
               <BatchCounselorPanel admission={admission} onUpdated={invalidate} />
               <div className="flex justify-end pt-2 border-t border-white/10">
                 <Button variant="outline" onClick={onClose} className="border-white/10 hover:bg-white/5 text-xs font-bold">

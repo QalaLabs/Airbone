@@ -37,6 +37,90 @@ const STUDENT_SELECT = {
   campus: { select: { id: true, name: true, code: true, city: true } },
 } satisfies Prisma.StudentSelect;
 
+// Detail view keeps the same base fields but also surfaces the genuinely
+// related records a "Student Profile / detailed options" screen needs:
+// course, batch, admission, LMS enrollment, documents, payment summary.
+const STUDENT_DETAIL_SELECT = {
+  ...STUDENT_SELECT,
+  lead: { select: { id: true, name: true, email: true, phone: true } },
+  admissions: {
+    orderBy: { createdAt: "desc" as const },
+    take: 3,
+    select: {
+      id: true,
+      applicationNo: true,
+      stage: true,
+      courseName: true,
+      batchName: true,
+      batchStartDate: true,
+      feeAmount: true,
+      feeDiscount: true,
+      feeFinal: true,
+      feePaid: true,
+      feeBalance: true,
+      counselorId: true,
+      counselor: { select: { id: true, name: true } },
+      course: { select: { id: true, title: true } },
+      batch: { select: { id: true, name: true, capacity: true } },
+      campus: { select: { id: true, name: true } },
+      _count: { select: { documents: true } },
+    },
+  },
+  lmsEnrollments: {
+    orderBy: { enrolledAt: "desc" as const },
+    take: 5,
+    select: {
+      id: true,
+      status: true,
+      enrolledAt: true,
+      batchId: true,
+      course: { select: { id: true, title: true, slug: true } },
+      batch: { select: { id: true, name: true } },
+    },
+  },
+  lmsBatchMemberships: {
+    orderBy: { createdAt: "desc" as const },
+    take: 5,
+    select: {
+      id: true,
+      batch: { select: { id: true, name: true, startDate: true, endDate: true, capacity: true, type: true } },
+    },
+  },
+  documents: {
+    orderBy: { createdAt: "desc" as const },
+    take: 12,
+    select: {
+      id: true,
+      name: true,
+      documentType: true,
+      status: true,
+      fileUrl: true,
+      fileSizeBytes: true,
+      createdAt: true,
+      reviewedAt: true,
+      admissionId: true,
+    },
+  },
+  payments: {
+    orderBy: { createdAt: "desc" as const },
+    take: 12,
+    select: {
+      id: true,
+      amount: true,
+      refundedAmount: true,
+      currency: true,
+      method: true,
+      status: true,
+      feeType: true,
+      receiptNo: true,
+      paidAt: true,
+      createdAt: true,
+      admissionId: true,
+      admission: { select: { applicationNo: true } },
+    },
+  },
+} satisfies Prisma.StudentSelect;
+
 export class StudentRepository {
   static async findMany(orgId: string, filters: StudentFilters) {
     const where: Prisma.StudentWhereInput = {
@@ -76,7 +160,7 @@ export class StudentRepository {
   static async findById(orgId: string, id: string) {
     return prisma.student.findFirst({
       where: { id, orgId, deletedAt: null },
-      select: STUDENT_SELECT,
+      select: STUDENT_DETAIL_SELECT,
     });
   }
 

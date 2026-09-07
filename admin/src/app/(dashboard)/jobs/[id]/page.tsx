@@ -27,7 +27,7 @@ interface Job {
   location?: string;
   salaryMin?: number;
   salaryMax?: number;
-  hiringPartner?: { name: string };
+  hiringPartner?: { name: string; logoId?: string | null };
   postedAt?: string;
   expiresAt?: string;
   createdAt: string;
@@ -57,6 +57,13 @@ export default function JobDetailPage() {
     queryKey: ["job", id],
     queryFn: () => apiFetch<Job>(`/jobs/${id}`),
     enabled: !!id,
+  });
+
+  const logoId = job?.hiringPartner?.logoId ?? null;
+  const { data: logoAsset } = useQuery({
+    queryKey: ["media", logoId],
+    queryFn: () => apiFetch<{ fileUrl: string; altText?: string | null }>(`/media/${logoId}`),
+    enabled: !!logoId,
   });
 
   const { data: applications, isLoading: appsLoading } = useQuery({
@@ -145,9 +152,22 @@ export default function JobDetailPage() {
         <Button variant="ghost" size="icon" onClick={() => router.push("/jobs")}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-bold text-foreground">{job.title}</h1>
-          <p className="text-sm text-muted-foreground">{job.hiringPartner?.name ?? "Direct Hire"}</p>
+        <div className="flex-1 min-w-0 flex items-center gap-3">
+          {logoAsset?.fileUrl ? (
+            <img
+              src={logoAsset.fileUrl}
+              alt={logoAsset.altText ?? job.hiringPartner?.name ?? job.title}
+              className="h-11 w-11 rounded-full border border-white/10 object-cover flex-shrink-0"
+            />
+          ) : (
+            <div className="h-11 w-11 rounded-full border border-primary/30 bg-secondary/40 flex items-center justify-center text-base font-bold text-primary flex-shrink-0">
+              {(job.hiringPartner?.name ?? job.title ?? "J").charAt(0).toUpperCase()}
+            </div>
+          )}
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold text-foreground truncate">{job.title}</h1>
+            <p className="text-sm text-muted-foreground">{job.hiringPartner?.name ?? "Direct Hire"}</p>
+          </div>
         </div>
         <StatusBadge status={job.status} domain="job" />
       </div>

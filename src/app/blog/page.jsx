@@ -4,6 +4,7 @@ import Footer from '@/components/Footer'
 import Breadcrumb from '@/components/Breadcrumb'
 import JsonLd from '@/components/JsonLd'
 import { buildBlogIndexGraph } from '@/lib/schema'
+import { fetchPublic } from '@/lib/adminApi'
 import { DEFAULT_COURSE_REVIEWS, PARENT_TESTIMONIALS } from '@/components/CourseReviews'
 
 export const metadata = {
@@ -12,9 +13,14 @@ export const metadata = {
   alternates: { canonical: '/blog' },
 }
 
+export const revalidate = 60
+
 const blogIndexGraph = buildBlogIndexGraph()
 
-const POSTS = [
+/* OFFLINE-ONLY fallback — mirrors the pre-Section-6 blog list exactly.
+   Admin Resource records (DOCUMENT / category=blog, PUBLISHED) are the
+   canonical blog catalog (BD-4: no separate Blog model). */
+const LEGACY_POSTS = [
   {
     slug: 'how-to-become-pilot-india',
     title: 'How to Become a Pilot in India After Class 12',
@@ -37,7 +43,17 @@ const POSTS = [
   },
 ]
 
-export default function BlogIndexPage() {
+export default async function BlogIndexPage() {
+  // Canonical: Admin PUBLISHED blog Resources (title/description). Fallback: legacy list.
+  const apiBlogs = await fetchPublic('/blogs', { limit: 100 })
+  const posts = Array.isArray(apiBlogs) && apiBlogs.length > 0
+    ? apiBlogs.map((b) => ({
+        slug: b.slug,
+        title: b.title,
+        excerpt: b.description || 'Read the full guide.',
+      }))
+    : LEGACY_POSTS
+
   return (
     <>
       <JsonLd data={blogIndexGraph} />
@@ -54,7 +70,7 @@ export default function BlogIndexPage() {
           </p>
 
           <div style={{ display: 'grid', gap: '1.25rem', marginTop: '3rem' }}>
-            {POSTS.map((post) => (
+            {posts.map((post) => (
               <Link
                 key={post.slug}
                 href={`/blog/${post.slug}`}

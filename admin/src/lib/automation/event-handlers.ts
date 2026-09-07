@@ -15,8 +15,8 @@ async function handleLeadCreated(event: AppEvent): Promise<void> {
     select: { id: true },
   });
   if (!alreadyScored) {
-    const lead = await prisma.lead.findUnique({
-      where: { id: leadId },
+    const lead = await prisma.lead.findFirst({
+      where: { id: leadId, orgId: event.orgId },
       select: { email: true, city: true, courseInterest: true, source: true, utmCampaign: true },
     });
     if (lead) {
@@ -29,7 +29,7 @@ async function handleLeadCreated(event: AppEvent): Promise<void> {
       score = Math.min(score, 100);
 
       await prisma.$transaction([
-        prisma.lead.update({ where: { id: leadId }, data: { score } }),
+        prisma.lead.updateMany({ where: { id: leadId, orgId: event.orgId }, data: { score } }),
         prisma.leadScoreHistory.create({
           data: { leadId, orgId: event.orgId, score, reason: "Initial score on creation" },
         }),
@@ -50,8 +50,8 @@ async function handleLeadAssigned(event: AppEvent): Promise<void> {
   if (typeof d.counselorId !== "string" || typeof d.leadId !== "string") return;
 
   const [counselor, lead] = await Promise.all([
-    prisma.user.findUnique({ where: { id: d.counselorId }, select: { email: true, name: true } }),
-    prisma.lead.findUnique({ where: { id: d.leadId }, select: { phone: true, courseInterest: true } }),
+    prisma.user.findFirst({ where: { id: d.counselorId, orgId: event.orgId }, select: { email: true, name: true } }),
+    prisma.lead.findFirst({ where: { id: d.leadId, orgId: event.orgId }, select: { phone: true, courseInterest: true } }),
   ]);
   if (!counselor?.email) return;
 
@@ -79,14 +79,14 @@ async function handleAdmissionCreated(event: AppEvent): Promise<void> {
   };
   if (typeof d.leadId !== "string" || typeof d.admissionId !== "string") return;
 
-  const lead = await prisma.lead.findUnique({
-    where: { id: d.leadId },
+  const lead = await prisma.lead.findFirst({
+    where: { id: d.leadId, orgId: event.orgId },
     select: { assignedTo: true, name: true },
   });
   if (!lead?.assignedTo) return;
 
-  const counselor = await prisma.user.findUnique({
-    where: { id: lead.assignedTo },
+  const counselor = await prisma.user.findFirst({
+    where: { id: lead.assignedTo, orgId: event.orgId },
     select: { email: true, name: true },
   });
   if (!counselor?.email) return;
@@ -119,15 +119,15 @@ async function handlePaymentReceived(event: AppEvent): Promise<void> {
 
   let recipientEmail: string | null = null;
   if (typeof d.studentId === "string") {
-    const student = await prisma.student.findUnique({
-      where: { id: d.studentId },
+    const student = await prisma.student.findFirst({
+      where: { id: d.studentId, orgId: event.orgId },
       select: { email: true },
     });
     recipientEmail = student?.email ?? null;
   }
   if (!recipientEmail && typeof d.admissionId === "string") {
-    const admission = await prisma.admission.findUnique({
-      where: { id: d.admissionId },
+    const admission = await prisma.admission.findFirst({
+      where: { id: d.admissionId, orgId: event.orgId },
       select: { lead: { select: { email: true } } },
     });
     recipientEmail = admission?.lead?.email ?? null;

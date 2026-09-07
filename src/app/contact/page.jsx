@@ -7,7 +7,7 @@ import { buildContactGraph } from '@/lib/schema'
 export const metadata = {
   title: 'Contact Airborne Aviation Academy - Dwarka, Delhi | Capt. Navrang Singh',
   description: 'Contact Airborne Aviation Academy, Dwarka Delhi. Led by Capt. Navrang Singh. E-549, Ramphal Chowk, Sector 7. CPL, ATPL, DGCA ground classes. +91 9953 777 320.',
-  alternates: { canonical: 'https://www.airborneaviation.in/contact/' },
+  alternates: { canonical: '/contact' },
   openGraph: {
     title: 'Contact Airborne Aviation Academy - Dwarka, Delhi | Capt. Navrang Singh',
     description: 'Contact Airborne Aviation Academy, Dwarka Delhi. Led by Capt. Navrang Singh. E-549, Ramphal Chowk, Sector 7.',

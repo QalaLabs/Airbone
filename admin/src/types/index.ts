@@ -106,7 +106,15 @@ export interface UserInvitedEvent extends BaseEvent {
 
 export interface AdmissionCreatedEvent extends BaseEvent {
   name: "admission/created";
-  data: { admissionId: string; applicationNo: string; leadId: string; leadName: string; campusId?: string };
+  data: {
+    admissionId: string;
+    applicationNo: string;
+    leadId: string;
+    leadName: string;
+    campusId?: string;
+    courseId?: string;
+    batchId?: string;
+  };
 }
 
 export interface AdmissionStageChangedEvent extends BaseEvent {
@@ -117,6 +125,19 @@ export interface AdmissionStageChangedEvent extends BaseEvent {
 export interface PaymentReceivedEvent extends BaseEvent {
   name: "payment/received";
   data: { paymentId: string; admissionId: string; studentId?: string; amount: string; method: string; receiptNo?: string };
+}
+
+export interface PaymentRefundedEvent extends BaseEvent {
+  name: "payment.refunded";
+  data: {
+    paymentId: string;
+    admissionId: string;
+    studentId?: string;
+    amount: string;
+    refundedAmount: string;
+    status: string;
+    receiptNo?: string;
+  };
 }
 
 export interface DocumentUploadedEvent extends BaseEvent {
@@ -264,6 +285,38 @@ export interface CourseEnrolledEvent extends BaseEvent {
   };
 }
 
+// ─── Section 3 — CRM Pipeline / Deal lifecycle ───────────────────────────────
+
+export interface DealCreatedEvent extends BaseEvent {
+  name: "deal/created";
+  data: { dealId: string; leadId: string; title: string; stage: string };
+}
+
+export interface DealStageChangedEvent extends BaseEvent {
+  name: "deal/stage.changed";
+  data: { dealId: string; leadId: string; fromStage: string; toStage: string };
+}
+
+export interface DealAssignedEvent extends BaseEvent {
+  name: "deal/assigned";
+  data: { dealId: string; counselorId: string; counselorName: string };
+}
+
+export interface DealConvertedToAdmissionEvent extends BaseEvent {
+  name: "deal/converted_to_admission";
+  data: { dealId: string; admissionId: string; applicationNo: string; leadId: string };
+}
+
+export interface DealRevertedToProspectEvent extends BaseEvent {
+  name: "deal/reverted_to_prospect";
+  data: { dealId: string; leadId: string };
+}
+
+export interface LeadBulkAssignedEvent extends BaseEvent {
+  name: "lead/bulk.assigned";
+  data: { leadIds: string[]; count: number; counselorId: string; counselorName: string };
+}
+
 export type AppEvent =
   | LeadCreatedEvent
   | LeadStatusChangedEvent
@@ -273,6 +326,7 @@ export type AppEvent =
   | AdmissionCreatedEvent
   | AdmissionStageChangedEvent
   | PaymentReceivedEvent
+  | PaymentRefundedEvent
   | DocumentUploadedEvent
   | DocumentReviewedEvent
   | MediaUploadedEvent
@@ -298,4 +352,10 @@ export type AppEvent =
   | WhatsAppRepliedEvent
   | WhatsAppOptedOutEvent
   | WhatsAppStatusEvent
-  | CourseEnrolledEvent;
+  | CourseEnrolledEvent
+  | DealCreatedEvent
+  | DealStageChangedEvent
+  | DealAssignedEvent
+  | DealConvertedToAdmissionEvent
+  | DealRevertedToProspectEvent
+  | LeadBulkAssignedEvent;

@@ -29,7 +29,7 @@ export const viewport = {
 
 export const metadata = {
   title: 'Pilot Training in Delhi DGCA Complied | Airborne Aviation',
-  description: "India's DGCA Complied pilot training academy in Dwarka, Delhi. CPL, ATPL, Cabin Crew & Ground School. 2,500+ graduates in top airlines. Enrol today.",
+  description: "India's DGCA Complied pilot training academy in Dwarka, Delhi. CPL, ATPL, Cabin Crew & Ground School. Structured training for airline careers since 2009. Enrol today.",
   metadataBase: new URL('https://www.airborneaviation.in'),
   icons: {
     icon: [
@@ -44,7 +44,7 @@ export const metadata = {
   },
   openGraph: {
     title: 'Pilot Training in Delhi DGCA Complied | Airborne Aviation',
-    description: "India's DGCA Complied pilot training academy in Dwarka, Delhi. CPL, ATPL, Cabin Crew & Ground School. 2,500+ graduates in top airlines. Enrol today.",
+    description: "India's DGCA Complied pilot training academy in Dwarka, Delhi. CPL, ATPL, Cabin Crew & Ground School. Structured training for airline careers since 2009. Enrol today.",
     url: 'https://www.airborneaviation.in',
     siteName: 'Airborne Aviation Academy',
     images: [
@@ -61,10 +61,15 @@ export const metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Pilot Training in Delhi DGCA Complied | Airborne Aviation',
-    description: "India's DGCA Complied pilot training academy in Dwarka, Delhi. CPL, ATPL, Cabin Crew & Ground School. 2,500+ graduates in top airlines. Enrol today.",
+    description: "India's DGCA Complied pilot training academy in Dwarka, Delhi. CPL, ATPL, Cabin Crew & Ground School. Structured training for airline careers since 2009. Enrol today.",
     images: ['https://www.airborneaviation.in/campus/og_image.jpg'],
   },
 }
+
+// L-06: env-driven integration IDs (current values are production defaults)
+const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID || 'GTM-KCM9CDK9'
+const GA4_ID = process.env.NEXT_PUBLIC_GA4_ID || 'G-KB3Y1MSLR6'
+const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || '974236902284876'
 
 export default function RootLayout({ children }) {
   return (
@@ -77,7 +82,7 @@ export default function RootLayout({ children }) {
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-KCM9CDK9');`,
+})(window,document,'script','dataLayer','${GTM_ID}');`,
           }}
         />
         {/* End Google Tag Manager */}
@@ -88,7 +93,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         {/* Google Analytics GA4 */}
         <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-KB3Y1MSLR6"
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA4_ID}`}
           strategy="afterInteractive"
         />
         <Script id="google-analytics" strategy="afterInteractive">
@@ -97,7 +102,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
 
-            gtag('config', 'G-KB3Y1MSLR6');
+            gtag('config', '${GA4_ID}');
           `}
         </Script>
         {/* Meta Pixel Code */}
@@ -111,7 +116,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             t.src=v;s=b.getElementsByTagName(e)[0];
             s.parentNode.insertBefore(t,s)}(window, document,'script',
             'https://connect.facebook.net/en_US/fbevents.js');
-            fbq('init', '974236902284876');
+            fbq('init', '${META_PIXEL_ID}');
             fbq('track', 'PageView');
           `}
         </Script>
@@ -121,7 +126,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-KCM9CDK9"
+            src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
             height="0"
             width="0"
             style={{ display: 'none', visibility: 'hidden' }}
@@ -134,7 +139,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             height="1"
             width="1"
             style={{ display: 'none' }}
-            src="https://www.facebook.com/tr?id=974236902284876&ev=PageView&noscript=1"
+            src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`}
             alt=""
           />
         </noscript>

@@ -82,8 +82,8 @@ export async function executeAction(
       if (optOutFlag === undefined) {
         const linkedLeadId = resolvePath(snapshotCtx, "leadId");
         if (typeof linkedLeadId === "string") {
-          const linked = await prisma.lead.findUnique({
-            where: { id: linkedLeadId },
+          const linked = await prisma.lead.findFirst({
+            where: { id: linkedLeadId, orgId: ctx.orgId },
             select: { whatsappOptOut: true },
           });
           optOutFlag = linked?.whatsappOptOut;
@@ -172,8 +172,8 @@ export async function executeAction(
         return { ok: true, skipped: true, detail: "No lead or counselorId configured" };
       }
       const previous = resolvePath(snapshotCtx, "assignedTo");
-      await prisma.lead.update({
-        where: { id: leadId },
+      await prisma.lead.updateMany({
+        where: { id: leadId, orgId: ctx.orgId },
         data: { assignedTo: step.counselorId },
       });
       await writeLeadActivity(
@@ -199,7 +199,7 @@ export async function executeAction(
         throw new Error(`Invalid LeadStatus in workflow step: ${step.status}`);
       }
       const previous = resolvePath(snapshotCtx, "status");
-      await prisma.lead.update({ where: { id: leadId }, data: { status: step.status as LeadStatus } });
+      await prisma.lead.updateMany({ where: { id: leadId, orgId: ctx.orgId }, data: { status: step.status as LeadStatus } });
       await prisma.leadActivity.create({
         data: {
           leadId,
@@ -240,7 +240,7 @@ export async function executeAction(
       if (nextTags.length === currentTags.length && step.type === "ADD_TAG") {
         return { ok: true, skipped: true, detail: "Tag already present" };
       }
-      await prisma.lead.update({ where: { id: leadId }, data: { tags: nextTags } });
+      await prisma.lead.updateMany({ where: { id: leadId, orgId: ctx.orgId }, data: { tags: nextTags } });
       await writeSystemAudit(ctx, step.type === "ADD_TAG" ? "workflow.tag_added" : "workflow.tag_removed", leadId, {
         tag: step.tag,
         runId: ctx.runId,
@@ -262,15 +262,15 @@ export async function executeAction(
         step.fields.nextFollowUpInDays !== undefined
           ? new Date(Date.now() + step.fields.nextFollowUpInDays * 86_400_000)
           : undefined;
-      await prisma.lead.update({
-        where: { id: leadId },
+      await prisma.lead.updateMany({
+        where: { id: leadId, orgId: ctx.orgId },
         data: {
           ...(step.fields.courseInterest !== undefined && { courseInterest: step.fields.courseInterest }),
           ...(step.fields.city !== undefined && { city: step.fields.city }),
           ...(step.fields.state !== undefined && { state: step.fields.state }),
           ...(nextFollowUp !== undefined && { nextFollowUp }),
           customFields: mergedCustom as Prisma.InputJsonValue,
-        } as Prisma.LeadUncheckedUpdateInput,
+        } as Prisma.LeadUncheckedUpdateManyInput,
       });
       await writeSystemAudit(ctx, "workflow.lead_updated", leadId, { fields: step.fields, runId: ctx.runId });
       return { ok: true };

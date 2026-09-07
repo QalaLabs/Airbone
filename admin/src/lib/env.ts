@@ -49,14 +49,17 @@ const OPTIONAL_VARS: Record<string, string> = {
   INTERAKT_DEFAULT_TEMPLATE_VARIABLES:
     "Comma-separated inbox variable slots for default template (e.g. leadName,courseInterest)",
   INTERAKT_API_CAMPAIGN_ID: "Optional Interakt API campaign id attached to template sends",
-  UPSTASH_REDIS_REST_URL: "Upstash Redis - reserved for rate-limiting/cache",
-  UPSTASH_REDIS_REST_TOKEN: "Upstash Redis",
+  UPSTASH_REDIS_REST_URL: "Upstash Redis REST - ACTIVE: distributed rate-limit backend (with RATE_LIMIT_STORE=auto/upstash)",
+  UPSTASH_REDIS_REST_TOKEN: "Upstash Redis REST token",
+  RATE_LIMIT_STORE: "auto | memory | upstash - select rate-limit backend (default auto)",
+  TRUSTED_PROXY: "none | cloud-run - client IP trust for rate-limit keys (default none)",
   PUBLIC_ORG_SLUG: "Org slug for public queries (default: airborne-aviation)",
   NEXT_PUBLIC_APP_URL: "Public URL of admin app",
   NEXT_PUBLIC_APP_NAME: "App display name",
   NEXT_PUBLIC_FACEBOOK_APP_ID: "Meta/Facebook CRM integration",
-  NEXT_PUBLIC_GOOGLE_ADS_CONFIGURED: "Google Ads CRM integration flag",
-  NEXT_PUBLIC_FRAPPE_URL: "Frappe ERP CRM integration URL",
+  FACEBOOK_APP_SECRET: "Meta webhook signature secret — required for leadgen webhooks",
+  FACEBOOK_WEBHOOK_VERIFY_TOKEN: "Meta webhook hub.verify_token handshake",
+  FACEBOOK_PAGE_ACCESS_TOKEN: "Meta Page access token (dat) for leadgen Graph API fetch (appsecret_proof enforced)",
 };
 
 // ─── Validation ──────────────────────────────────────────────────────────────
@@ -115,6 +118,11 @@ export const env = {
   WATI_API_TOKEN: process.env.WATI_API_TOKEN,
   RESEND_API_KEY: process.env.RESEND_API_KEY,
   RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL ?? "noreply@airborneacademy.in",
+
+  // Optional — Meta/Facebook lead-Gen CRM integration
+  FACEBOOK_APP_SECRET: process.env.FACEBOOK_APP_SECRET,
+  FACEBOOK_WEBHOOK_VERIFY_TOKEN: process.env.FACEBOOK_WEBHOOK_VERIFY_TOKEN,
+  FACEBOOK_PAGE_ACCESS_TOKEN: process.env.FACEBOOK_PAGE_ACCESS_TOKEN,
 
   WHATSAPP_PROVIDER: process.env.WHATSAPP_PROVIDER,
   INTERAKT_API_KEY: process.env.INTERAKT_API_KEY,

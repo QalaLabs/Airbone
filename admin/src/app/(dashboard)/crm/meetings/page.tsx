@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Calendar, Clock, Video, Plus } from "lucide-react";
-import { getMeetings, scheduleMeeting } from "@/lib/crm/meetings";
+import { getMeetings, scheduleMeeting, cancelMeeting } from "@/lib/crm/meetings";
 import type { Meeting } from "@/lib/crm/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -53,6 +53,7 @@ export default function CRMMeetingsPage() {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [showSchedule, setShowSchedule] = React.useState(false);
+  const [cancelling, setCancelling] = React.useState<string | null>(null);
 
   const load = React.useCallback(() => {
     Promise.all([getMeetings("upcoming"), getMeetings("past")])
@@ -69,6 +70,20 @@ export default function CRMMeetingsPage() {
 
   React.useEffect(() => {
     load();
+  }, [load]);
+
+  const handleCancel = React.useCallback((id: string) => {
+    if (!window.confirm("Cancel this meeting? This keeps the record for audit.")) return;
+    setCancelling(id);
+    cancelMeeting(id)
+      .then(() => {
+        toast({ title: "Meeting cancelled" });
+        load();
+      })
+      .catch((err: unknown) =>
+        toast({ title: "Failed to cancel meeting", description: err instanceof Error ? err.message : String(err), variant: "destructive" }),
+      )
+      .finally(() => setCancelling(null));
   }, [load]);
 
   if (loading) {
@@ -218,6 +233,15 @@ export default function CRMMeetingsPage() {
                       <p className="text-[11px] text-muted-foreground mt-1.5">{meeting.notes}</p>
                     )}
                   </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 shrink-0 text-[10px] border-white/10 text-muted-foreground hover:text-red-400"
+                    disabled={cancelling === meeting.id}
+                    onClick={() => handleCancel(meeting.id)}
+                  >
+                    {cancelling === meeting.id ? "Cancelling..." : "Cancel"}
+                  </Button>
                 </div>
               ))}
             </div>

@@ -415,7 +415,6 @@ export default function MediaPage() {
                 >
                   <div className="aspect-video w-full flex items-center justify-center bg-slate-950 relative overflow-hidden">
                     {asset.mimeType.startsWith("image/") ? (
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={asset.fileUrl}
                         alt={asset.name}
@@ -515,7 +514,6 @@ export default function MediaPage() {
           {selectedAsset && (
             <div className="p-6 flex flex-col items-center justify-center bg-slate-950 min-h-[360px]">
               {selectedAsset.mimeType.startsWith("image/") ? (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img src={selectedAsset.fileUrl} alt={selectedAsset.name} className="w-full rounded-xl object-contain max-h-[500px] border border-white/10 shadow-2xl" />
               ) : selectedAsset.mimeType.startsWith("video/") ? (
                 <video src={selectedAsset.fileUrl} controls className="w-full rounded-xl max-h-[500px] border border-white/10 shadow-2xl" />

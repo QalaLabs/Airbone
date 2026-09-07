@@ -1,99 +1,50 @@
-import { prisma } from "@/lib/db/client";
+import { DealRepository } from "@/lib/repositories/deal.repository";
 import { guard } from "@/lib/middleware/permissions";
 import { getRequestContext } from "@/lib/middleware/context";
 import { ok, handleError } from "@/lib/utils/response";
 
-const TERMINAL_STAGES = ["ENROLLED", "DROPPED", "CANCELLED"] as const;export async function GET() {
+export async function GET() {
   try {
     const ctx = await getRequestContext();
-    guard(ctx.user, "read", "leads");
+    guard(ctx.user, "read", "deals");
 
     const orgId = ctx.orgId;
 
-    const [
-      stageCounts,
-      revenueAgg,
-      pipelineAgg,
-      pipelineCount,
-      convertedLeads,
-      recentAdmissions,
-      convertedLeadsDetail,
-    ] = await Promise.all([
-      prisma.admission.groupBy({
-        by: ["stage"],
-        where: { orgId },
-        _count: { _all: true },
+    const [pipeline, recentDeals, recentWonDeals] = await Promise.all([
+      DealRepository.getPipelineSummary(orgId),
+      DealRepository.findMany(orgId, {
+        page: 1,
+        limit: 10,
+        sortBy: "updatedAt",
+        sortDir: "desc",
       }),
-      prisma.admission.aggregate({
-        where: { orgId, stage: "ENROLLED" },
-        _sum: { feeFinal: true },
-      }),
-      prisma.admission.aggregate({
-        where: {
-          orgId,
-          stage: { notIn: [...TERMINAL_STAGES] },
-          feeFinal: { not: null },
-        },
-        _sum: { feeFinal: true },
-      }),
-      prisma.admission.count({
-        where: {
-          orgId,
-          stage: { notIn: [...TERMINAL_STAGES] },
-          feeFinal: { not: null },
-        },
-      }),
-      prisma.lead.count({
-        where: { orgId, deletedAt: null, status: "CONVERTED" },
-      }),
-      prisma.admission.findMany({
-        where: { orgId },
-        orderBy: { createdAt: "desc" },
-        take: 10,
-        select: {
-          id: true,
-          applicationNo: true,
-          stage: true,
-          feeFinal: true,
-          createdAt: true,
-          lead: { select: { id: true, name: true } },
-          counselor: { select: { id: true, name: true } },
-        },
-      }),
-      prisma.lead.findMany({
-        where: { orgId, deletedAt: null, status: "CONVERTED" },
-        select: { id: true, name: true, updatedAt: true },
-        take: 10,
+      DealRepository.findMany(orgId, {
+        page: 1,
+        limit: 10,
+        sortBy: "wonAt",
+        sortDir: "desc",
+        status: "won",
       }),
     ]);
 
-    const byStage = Object.fromEntries(
-      stageCounts.map((s) => [s.stage, s._count._all]),
-    );
-    const totalAdmissions = stageCounts.reduce((s, c) => s + c._count._all, 0);
-    const wonValue = revenueAgg._sum?.feeFinal ? Number(revenueAgg._sum.feeFinal) : 0;
-    const pipelineValue = pipelineAgg._sum?.feeFinal ? Number(pipelineAgg._sum.feeFinal) : 0;
-
     return ok({
       capability: {
-        deals: false,
-        status: "not_implemented",
+        deals: true,
+        status: "implemented",
         reason:
-          "No dedicated Deal/Opportunity model exists in the schema. The native equivalent is the admission funnel (ENQUIRY → DOCUMENT_COLLECTION → VERIFICATION → OFFER_LETTER → FEE_PAYMENT → ENROLLED). Building a dedicated deals module requires a new Opportunity model and migration.",
+          "Deal/Opportunity is now a first-class persisted entity (model Deal). The native funnel reuses the admission stages (ENQUIRY → DOCUMENT_COLLECTION → VERIFICATION → OFFER_LETTER → FEE_PAYMENT → ENROLLED); WON ⇔ ENROLLED, LOST ⇔ DROPPED/CANCELLED.",
       },
-      derived: {
-        funnelName: "Admission funnel (real persisted records)",
-        byStage,
-        totalAdmissions,
-        won: byStage.ENROLLED ?? 0,
-        wonValue,
-        pipeline: pipelineCount,
-        pipelineValue,
-        convertedLeads,
-        avgDaysToConvert: null,
+      pipeline: {
+        byStage: pipeline.byStage,
+        won: pipeline.wonCount,
+        wonValue: pipeline.wonValue,
+        lost: pipeline.lostCount,
+        lostValue: pipeline.lostValue,
+        open: pipeline.openCount,
+        openValue: pipeline.openValue,
       },
-      recentAdmissions,
-      recentConvertedLeads: convertedLeadsDetail,
+      recentDeals: recentDeals.data,
+      recentWonDeals: recentWonDeals.data,
     });
   } catch (err) {
     return handleError(err);

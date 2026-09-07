@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { decodeCorrelation, type CorrelationPayload } from "./correlation";
 import { normalizePhone } from "../../phone";
+import { safeEqualString } from "../../../utils/crypto";
 
 // Official Interakt webhook types (https://www.interakt.shop/resource-center/interakts-webhooks/)
 export const INTERAKT_STATUS_TYPES = [
@@ -83,31 +84,161 @@ function str(value: unknown): string | undefined {
 }
 
 /**
- * HMAC-SHA256 of the raw body, header form `sha256=<hex>`.
- * Docs: Interakt-Signature header, secret configured in Developer Settings.
+ * Interakt Developer Settings HMAC key.
+ * Secret Manager / console pastes often include a trailing newline or UTF-8 BOM;
+ * those extra bytes are not part of the key Interakt uses to sign requests.
  */
-export function verifyInteraktSignature(rawBody: string, header: string | null, secret: string): boolean {
-  if (!header || !secret) return false;
-  const provided = header.trim();
-  const expectedHex = createHmac("sha256", secret).update(rawBody, "utf8").digest("hex");
-  const expectedPrefixed = `sha256=${expectedHex}`;
+type WebhookSecretEnv = {
+  INTERAKT_WEBHOOK_SECRET?: string;
+  WHATSAPP_WEBHOOK_SECRET?: string;
+};
 
-  const candidates = [expectedPrefixed, expectedHex];
-  for (const expected of candidates) {
-    try {
-      const a = Buffer.from(provided);
-      const b = Buffer.from(expected);
-      if (a.length === b.length && timingSafeEqual(a, b)) return true;
-    } catch {
-      // length mismatch / invalid encoding
-    }
-  }
-  return false;
+export function loadInteraktWebhookSecret(source?: WebhookSecretEnv): string | undefined {
+  const raw = (source ?? (process.env as WebhookSecretEnv)).INTERAKT_WEBHOOK_SECRET;
+  if (raw == null) return undefined;
+  const normalized = raw.replace(/^\uFEFF/, "").trim();
+  return normalized || undefined;
 }
 
-export function signInteraktPayload(rawBody: string, secret: string): string {
-  const hex = createHmac("sha256", secret).update(rawBody, "utf8").digest("hex");
-  return `sha256=${hex}`;
+export function loadLegacyWhatsAppWebhookSecret(source?: WebhookSecretEnv): string | undefined {
+  const raw = (source ?? (process.env as WebhookSecretEnv)).WHATSAPP_WEBHOOK_SECRET;
+  if (raw == null) return undefined;
+  const normalized = raw.replace(/^\uFEFF/, "").trim();
+  return normalized || undefined;
+}
+
+export type InteraktSignaturePrefix = "sha256=" | "none" | "other";
+
+export interface InteraktSignatureDiagnostics {
+  secretConfigured: boolean;
+  secretLength: number;
+  receivedPrefix: InteraktSignaturePrefix;
+  receivedSignatureLength: number;
+  computedSignatureLength: number;
+  rawBodyBytes: number;
+  comparisonFailed: true;
+  headerParseFailed: boolean;
+}
+
+function rawBodyBuffer(rawBody: string | Buffer): Buffer {
+  return Buffer.isBuffer(rawBody) ? rawBody : Buffer.from(rawBody, "utf8");
+}
+
+/** Hex HMAC-SHA256 of the exact raw body bytes. Official Interakt form is `sha256=` + this. */
+export function computeInteraktSignatureHex(rawBody: string | Buffer, secret: string): string {
+  const body = rawBodyBuffer(rawBody);
+  return createHmac("sha256", Buffer.from(secret, "utf8")).update(body).digest("hex");
+}
+
+export function signInteraktPayload(rawBody: string | Buffer, secret: string): string {
+  return `sha256=${computeInteraktSignatureHex(rawBody, secret)}`;
+}
+
+export function describeInteraktSignaturePrefix(header: string | null | undefined): InteraktSignaturePrefix {
+  if (!header) return "none";
+  const trimmed = header.trim();
+  if (/^sha256\s*=/i.test(trimmed)) return "sha256=";
+  if (/^[0-9a-fA-F]+$/.test(trimmed)) return "none";
+  return "other";
+}
+
+function parseProvidedDigest(header: string): Buffer | null {
+  const trimmed = header.trim().replace(/^["']|["']$/g, "").trim();
+  const prefixed = /^sha256\s*=\s*([0-9a-fA-F]+)$/i.exec(trimmed);
+  const hex = prefixed?.[1] ?? (/^[0-9a-fA-F]{64}$/.test(trimmed) ? trimmed : undefined);
+  if (!hex || hex.length !== 64) return null;
+  return Buffer.from(hex, "hex");
+}
+
+function signatureDiagnostics(
+  body: Buffer,
+  header: string | null,
+  secret: string | undefined,
+  extra?: { headerParseFailed?: boolean },
+): InteraktSignatureDiagnostics {
+  const computedHex = secret ? computeInteraktSignatureHex(body, secret) : "";
+  return {
+    secretConfigured: Boolean(secret),
+    secretLength: secret ? secret.length : 0,
+    receivedPrefix: describeInteraktSignaturePrefix(header),
+    receivedSignatureLength: header ? header.trim().length : 0,
+    computedSignatureLength: secret ? `sha256=${computedHex}`.length : 0,
+    rawBodyBytes: body.length,
+    comparisonFailed: true,
+    headerParseFailed: extra?.headerParseFailed ?? false,
+  };
+}
+
+/**
+ * HMAC-SHA256 of the exact raw HTTP body, header form `sha256=<hex>`.
+ * Docs: https://www.interakt.shop/resource-center/interakts-webhooks/
+ * Compare digests (not re-stringified JSON). timingSafeEqual requires equal lengths.
+ */
+export function inspectInteraktSignature(
+  rawBody: string | Buffer,
+  header: string | null,
+  secret: string,
+): { ok: true } | { ok: false; diagnostics: InteraktSignatureDiagnostics } {
+  const body = rawBodyBuffer(rawBody);
+  if (!header || !secret) {
+    return { ok: false, diagnostics: signatureDiagnostics(body, header, secret || undefined, { headerParseFailed: !header }) };
+  }
+
+  const providedDigest = parseProvidedDigest(header);
+  if (!providedDigest) {
+    return { ok: false, diagnostics: signatureDiagnostics(body, header, secret, { headerParseFailed: true }) };
+  }
+
+  const expectedDigest = Buffer.from(computeInteraktSignatureHex(body, secret), "hex");
+  if (providedDigest.length !== expectedDigest.length) {
+    return { ok: false, diagnostics: signatureDiagnostics(body, header, secret, { headerParseFailed: true }) };
+  }
+  if (timingSafeEqual(providedDigest, expectedDigest)) return { ok: true };
+  return { ok: false, diagnostics: signatureDiagnostics(body, header, secret) };
+}
+
+export function verifyInteraktSignature(
+  rawBody: string | Buffer,
+  header: string | null,
+  secret: string,
+): boolean {
+  return inspectInteraktSignature(rawBody, header, secret).ok;
+}
+
+export type WhatsAppWebhookAuthFailure = "not_configured" | "invalid_signature" | "invalid_secret";
+
+export function authorizeWhatsAppWebhookPost(input: {
+  rawBody: string | Buffer;
+  interaktSignature: string | null;
+  sharedSecretHeader: string | null;
+  querySecret: string | null;
+  interaktWebhookSecret: string | undefined;
+  legacyWebhookSecret: string | undefined;
+}):
+  | { ok: true; method: "interakt-signature" | "shared-secret" }
+  | { ok: false; error: WhatsAppWebhookAuthFailure; diagnostics?: InteraktSignatureDiagnostics } {
+  const { interaktSignature, interaktWebhookSecret, legacyWebhookSecret } = input;
+
+  if (interaktSignature) {
+    if (!interaktWebhookSecret) {
+      return {
+        ok: false,
+        error: "not_configured",
+        diagnostics: signatureDiagnostics(rawBodyBuffer(input.rawBody), interaktSignature, undefined, {
+          headerParseFailed: false,
+        }),
+      };
+    }
+    const result = inspectInteraktSignature(input.rawBody, interaktSignature, interaktWebhookSecret);
+    if (!result.ok) return { ok: false, error: "invalid_signature", diagnostics: result.diagnostics };
+    return { ok: true, method: "interakt-signature" };
+  }
+
+  const shared = interaktWebhookSecret || legacyWebhookSecret;
+  if (!shared) return { ok: false, error: "not_configured" };
+  const provided = input.sharedSecretHeader ?? input.querySecret;
+  if (!safeEqualString(provided, shared)) return { ok: false, error: "invalid_secret" };
+  return { ok: true, method: "shared-secret" };
 }
 
 function callbackFromMessage(message: Record<string, unknown>): CorrelationPayload | null {

@@ -6,12 +6,13 @@ import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft, Mail, Phone, Calendar, User, MessageSquare,
   PhoneCall, Clock, FileText, Sparkles, Plus, CheckCircle2,
-  UserPlus, GraduationCap, Send, Workflow,
+  UserPlus, GraduationCap, Send, Workflow, ChevronLeft, ChevronRight, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch } from "@/lib/api";
+import { updateDeal, revertDealToProspect, convertDealToAdmission } from "@/lib/crm/deals";
 import { formatDate, formatDateTime } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -35,6 +36,23 @@ interface LeadAdmission {
   feeFinal?: string | number | null;
 }
 
+interface LeadDeal {
+  id: string;
+  title: string;
+  stage: string;
+  value?: string | number | null;
+  currency?: string;
+  assignedTo?: string | null;
+  lostReason?: string | null;
+  wonAt?: string | null;
+  lostAt?: string | null;
+  convertedAt?: string | null;
+  revertedAt?: string | null;
+  isActive: boolean;
+  admissionId?: string | null;
+  admission?: { id: string; applicationNo: string; stage: string } | null;
+}
+
 interface Lead {
   id: string;
   name: string;
@@ -56,6 +74,7 @@ interface Lead {
   assignedTo?: string | null;
   counselor?: { id: string; name: string; email?: string | null } | null;
   admissions?: LeadAdmission[];
+  deals?: LeadDeal[];
   scoreHistory?: { id: string; score: number; reason?: string | null; createdAt: string }[];
   createdAt: string;
   updatedAt: string;
@@ -118,6 +137,9 @@ const STATUS_GROUPS = [
       "NOT_ELIGIBLE",
       "INVALID_NUMBER",
       "TEST_LEAD",
+      "NOT_INTERESTED",
+      "REASON_NOT_SHARED",
+      "JOB_SEEKER",
     ],
   },
 ] as const;
@@ -135,7 +157,21 @@ const LOST_STATUSES = new Set<string>([
   "NOT_ELIGIBLE",
   "INVALID_NUMBER",
   "TEST_LEAD",
+  "NOT_INTERESTED",
+  "REASON_NOT_SHARED",
+  "JOB_SEEKER",
 ]);
+
+const DEAL_STAGE_ORDER = [
+  "ENQUIRY",
+  "DOCUMENT_COLLECTION",
+  "VERIFICATION",
+  "OFFER_LETTER",
+  "FEE_PAYMENT",
+  "ENROLLED",
+  "DROPPED",
+  "CANCELLED",
+];
 
 const ACTIVITY_TYPES = [
   "NOTE",
@@ -178,6 +214,30 @@ function priorityFromScore(score: number) {
   return "LOW";
 }
 
+/** IST offset in minutes; the CRM schedules follow-ups in Indian Standard Time. */
+const IST_OFFSET_MIN = 330;
+
+/** Convert a UTC ISO instant to an IST wall-clock "YYYY-MM-DDTHH:mm" string for datetime-local inputs. */
+function toISTInput(date: string | null | undefined): string {
+  if (!date) return "";
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return "";
+  return new Date(d.getTime() + IST_OFFSET_MIN * 60_000).toISOString().slice(0, 16);
+}
+
+/** Parse an IST wall-clock datetime-local string back into a UTC ISO instant. */
+function fromISTInput(value: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(value);
+  if (!match) return new Date(value).toISOString();
+  const y = Number(match[1]);
+  const mo = Number(match[2]);
+  const da = Number(match[3]);
+  const h = Number(match[4]);
+  const mi = Number(match[5]);
+  const utcMs = Date.UTC(y, mo - 1, da, h, mi) - IST_OFFSET_MIN * 60_000;
+  return new Date(utcMs).toISOString();
+}
+
 export default function LeadDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -190,6 +250,8 @@ export default function LeadDetailPage() {
   const [followUp, setFollowUp] = React.useState("");
   const [lostReason, setLostReason] = React.useState("");
   const [editingStatus, setEditingStatus] = React.useState(false);
+  const [pendingStatus, setPendingStatus] = React.useState<string | null>(null);
+  const [followUpNote, setFollowUpNote] = React.useState("");
 
   const { data: lead, isLoading } = useQuery({
     queryKey: ["lead", id],
@@ -220,9 +282,30 @@ export default function LeadDetailPage() {
     },
   });
 
+  const { data: neighborLeads } = useQuery({
+    queryKey: ["leads", "neighbors"],
+    queryFn: async () => {
+      try {
+        const res = await apiFetch<{ id: string; name: string }[]>(
+          "/leads?limit=100&sortBy=updatedAt&sortDir=desc&fields=id,name",
+        );
+        return Array.isArray(res) ? res : [];
+      } catch {
+        return [] as { id: string; name: string }[];
+      }
+    },
+  });
+
+  const leadIndex = (neighborLeads ?? []).findIndex((l) => l.id === id);
+  const prevLead = leadIndex > 0 ? (neighborLeads ?? [])[leadIndex - 1] : undefined;
+  const nextLead =
+    leadIndex >= 0 && leadIndex < (neighborLeads?.length ?? 0) - 1
+      ? (neighborLeads ?? [])[leadIndex + 1]
+      : undefined;
+
   React.useEffect(() => {
     if (lead?.nextFollowUp) {
-      setFollowUp(lead.nextFollowUp.slice(0, 16));
+      setFollowUp(toISTInput(lead.nextFollowUp));
     }
   }, [lead?.nextFollowUp]);
 
@@ -356,10 +439,44 @@ export default function LeadDetailPage() {
   const comms = activityList.filter((a) =>
     ["CALL", "EMAIL", "WHATSAPP", "SMS", "MEETING"].includes(a.activityType),
   );
-  const pipeline = ["NEW", "CONTACTED", "COUNSELED", "APPLICATION_SUBMITTED", "CONVERTED"];
-  const statusIndex = pipeline.indexOf(lead?.status ?? "NEW");
+  const canonicalPipeline = ["NEW", "CONNECTED", "INTERESTED", "PROSPECT", "WON"];
+  const statusIndex = canonicalPipeline.indexOf(lead?.status ?? "NEW");
   const primaryAdmission = lead?.admissions?.[0];
+  const activeDeal = lead?.deals?.find((d) => d.isActive);
+  const closedDeal = lead?.deals?.find((d) => !d.isActive);
   const counselorOptions = Array.isArray(counselors) ? counselors : [];
+
+  const dealStageMutation = useMutation({
+    mutationFn: ({ dealId, stage }: { dealId: string; stage: string }) =>
+      updateDeal(dealId, { stage: stage as never }),
+    onSuccess: () => {
+      invalidate();
+      toast({ title: "Deal stage updated" });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const convertDealMutation = useMutation({
+    mutationFn: (dealId: string) => convertDealToAdmission(dealId, {}),
+    onSuccess: (res) => {
+      invalidate();
+      toast({
+        title: res.created ? "Admission created" : "Admission already exists",
+        description: res.admission.applicationNo,
+      });
+      router.push(`/admissions?id=${res.admission.id}`);
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const revertDealMutation = useMutation({
+    mutationFn: (dealId: string) => revertDealToProspect(dealId, "Reverted to prospect from lead detail"),
+    onSuccess: () => {
+      invalidate();
+      toast({ title: "Deal reverted to Prospect" });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
 
   if (isLoading) {
     return (
@@ -392,10 +509,33 @@ export default function LeadDetailPage() {
   return (
     <div className="space-y-6 pb-12">
       <div className="glass-card rounded-2xl p-6 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-slate-900/80 backdrop-blur-xl">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={() => router.push("/leads")} className="h-10 w-10">
             <ArrowLeft className="h-5 w-5" />
           </Button>
+          {prevLead ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              title={`Previous: ${prevLead.name}`}
+              onClick={() => router.push(`/leads/${prevLead.id}`)}
+              className="h-10 w-10"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+          ) : null}
+          {nextLead ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              title={`Next: ${nextLead.name}`}
+              onClick={() => router.push(`/leads/${nextLead.id}`)}
+              className="h-10 w-10"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </Button>
+          ) : null}
+        </div>
           <div>
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-2xl font-bold text-white tracking-tight">{lead.name}</h1>
@@ -410,8 +550,19 @@ export default function LeadDetailPage() {
               Created {formatDate(lead.createdAt)} · Source: {(lead.source ?? "").replace(/_/g, " ")}
               {lead.nextFollowUp ? ` · Follow-up ${formatDateTime(lead.nextFollowUp)}` : ""}
             </p>
+            <div className="flex flex-wrap items-center gap-3 mt-1.5 text-xs font-bold text-white">
+              {lead.phone ? (
+                <span className="flex items-center gap-1.5">
+                  <Phone className="h-3 w-3 text-primary" /> {lead.phone}
+                </span>
+              ) : null}
+              {lead.email ? (
+                <span className="flex items-center gap-1.5 text-muted-foreground">
+                  <Mail className="h-3 w-3 text-primary" /> {lead.email}
+                </span>
+              ) : null}
+            </div>
           </div>
-        </div>
 
         <div className="flex flex-wrap items-end gap-3">
           <div className="flex flex-col gap-1 text-xs text-muted-foreground font-semibold">
@@ -475,14 +626,26 @@ export default function LeadDetailPage() {
                           value={s}
                           checked={selected}
                           onChange={() => {
-                            if (LOST_STATUSES.has(s) && !lostReason.trim()) {
-                              toast({ title: "Lost reason required", description: "Add a lost reason below before saving.", variant: "destructive" });
+                            if (LOST_STATUSES.has(s)) {
+                              // I4: lost statuses do not open a note dialog — they
+                              // apply immediately with the (required) lost reason.
+                              if (!lostReason.trim()) {
+                                toast({ title: "Lost reason required", description: "Add a lost reason below before saving.", variant: "destructive" });
+                                return;
+                              }
+                              setPendingStatus(null);
+                              updateStatusMutation.mutate({
+                                status: s,
+                                lostReason: LOST_STATUSES.has(s) ? lostReason : undefined,
+                              });
+                              setEditingStatus(false);
                               return;
                             }
-                            updateStatusMutation.mutate({
-                              status: s,
-                              lostReason: LOST_STATUSES.has(s) ? lostReason : undefined,
-                            });
+                            // I3/I8: Connected / Not Connected (and other live
+                            // statuses) open the status dialog to schedule a
+                            // follow-up and/or log a note before applying.
+                            setPendingStatus(s);
+                            setFollowUpNote("");
                           }}
                           disabled={updateStatusMutation.isPending}
                           className="accent-primary h-3.5 w-3.5 cursor-pointer"
@@ -512,8 +675,6 @@ export default function LeadDetailPage() {
       <div className="flex border-b border-white/10 gap-2 overflow-x-auto pb-1">
         {[
           { id: "timeline" as const, label: "Timeline", icon: Clock },
-          { id: "tasks" as const, label: `Tasks (${openTasks.length})`, icon: CheckCircle2 },
-          { id: "comms" as const, label: "Calls / Email / WhatsApp", icon: PhoneCall },
           { id: "scoring" as const, label: "Scoring", icon: Sparkles },
         ].map((tab) => {
           const Icon = tab.icon;
@@ -530,6 +691,36 @@ export default function LeadDetailPage() {
               }`}
             >
               <Icon className="h-4 w-4" />
+              {tab.label}
+            </button>
+          );
+        })}
+        <Button
+          size="sm"
+          className="bg-primary text-white text-xs font-bold h-[38px]"
+          onClick={() => openLog("NOTE")}
+        >
+          <Plus className="h-3.5 w-3.5 mr-1" /> Manual Addition
+        </Button>
+        <div className="flex-1" />
+        {[
+          { id: "tasks" as const, label: `Tasks (${openTasks.length})`, icon: CheckCircle2 },
+          { id: "comms" as const, label: "Calls / Email / WhatsApp", icon: PhoneCall },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-[11px] font-bold transition-all whitespace-nowrap border ${
+                isActive
+                  ? "bg-secondary/30 text-white border-primary/20"
+                  : "text-muted-foreground hover:bg-white/5 border-transparent"
+              }`}
+            >
+              <Icon className="h-3.5 w-3.5" />
               {tab.label}
             </button>
           );
@@ -589,7 +780,7 @@ export default function LeadDetailPage() {
             <div className="space-y-3 pt-2 border-t border-white/10">
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Pipeline</h3>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                {pipeline.map((st, idx) => {
+                {canonicalPipeline.map((st, idx) => {
                   const isDone = statusIndex >= 0 && idx <= statusIndex;
                   return (
                     <div
@@ -681,7 +872,7 @@ export default function LeadDetailPage() {
                 size="sm"
                 className="text-xs font-bold flex-1"
                 onClick={() =>
-                  followUpMutation.mutate(followUp ? new Date(followUp).toISOString() : null)
+                  followUpMutation.mutate(followUp ? fromISTInput(followUp) : null)
                 }
                 disabled={followUpMutation.isPending}
               >
@@ -703,6 +894,93 @@ export default function LeadDetailPage() {
               <Plus className="h-3.5 w-3.5 mr-1" /> Schedule task
             </Button>
           </div>
+
+          {activeDeal || closedDeal ? (
+            <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-4">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-white border-b border-white/10 pb-3">
+                Deal {activeDeal ? "" : "(archived)"}
+              </h3>
+              <div>
+                <span className="text-xs text-muted-foreground font-semibold">Opportunity</span>
+                <p className="text-sm font-bold text-white mt-0.5 truncate">{activeDeal?.title ?? closedDeal?.title}</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusBadge status={activeDeal?.stage ?? closedDeal?.stage ?? "ENQUIRY"} domain="admission" />
+                {activeDeal?.wonAt ? <StatusBadge status="WON" domain="lead" /> : null}
+                {activeDeal?.lostAt ? <StatusBadge status="LOST" domain="lead" /> : null}
+              </div>
+              {activeDeal && activeDeal.value != null && Number(activeDeal.value) > 0 && (
+                <p className="text-sm font-bold text-white">₹{Number(activeDeal.value).toLocaleString("en-IN")}</p>
+              )}
+              {activeDeal?.admission ? (
+                <p className="text-xs text-emerald-400 font-semibold">
+                  Converted to {activeDeal.admission.applicationNo}
+                </p>
+              ) : null}
+              {activeDeal && !activeDeal.wonAt && !activeDeal.lostAt && (
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {[
+                    "DOCUMENT_COLLECTION",
+                    "VERIFICATION",
+                    "OFFER_LETTER",
+                    "FEE_PAYMENT",
+                    "ENROLLED",
+                  ]
+                    .filter(
+                      (s) =>
+                        DEAL_STAGE_ORDER.indexOf(s) >
+                        DEAL_STAGE_ORDER.indexOf(activeDeal.stage),
+                    )
+                    .map((nextStage) => (
+                      <Button
+                        key={nextStage}
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-[10px] font-bold border-white/10"
+                        disabled={dealStageMutation.isPending || convertDealMutation.isPending}
+                        onClick={() =>
+                          nextStage === "ENROLLED"
+                            ? convertDealMutation.mutate(activeDeal.id)
+                            : dealStageMutation.mutate({ dealId: activeDeal.id, stage: nextStage })
+                        }
+                      >
+                        {nextStage.replace(/_/g, " ")}
+                      </Button>
+                    ))}
+                  {["DROPPED", "CANCELLED"].map((lostStage) => (
+                    <Button
+                      key={lostStage}
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-[10px] font-bold border-rose-500/40 text-rose-300 hover:bg-rose-500/10"
+                      disabled={dealStageMutation.isPending}
+                      onClick={() => dealStageMutation.mutate({ dealId: activeDeal.id, stage: lostStage })}
+                    >
+                      {lostStage.replace(/_/g, " ")}
+                    </Button>
+                  ))}
+                </div>
+              )}
+              {activeDeal?.wonAt ? (
+                <Button
+                  variant="outline"
+                  className="w-full border-white/10 text-xs font-bold"
+                  size="sm"
+                  disabled={revertDealMutation.isPending}
+                  onClick={() => revertDealMutation.mutate(activeDeal.id)}
+                >
+                  Move back to Prospect
+                </Button>
+              ) : null}
+            </div>
+          ) : (
+            <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-3">
+              <h3 className="text-sm font-bold text-white">No deal yet</h3>
+              <p className="text-xs text-muted-foreground">
+                Set this lead&apos;s status to Prospect to open a pipeline deal, or convert directly to an admission.
+              </p>
+            </div>
+          )}
 
           {primaryAdmission ? (
             <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-4">
@@ -820,6 +1098,73 @@ export default function LeadDetailPage() {
               onClick={() => assignMutation.mutate(counselorId)}
             >
               Assign
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!pendingStatus} onOpenChange={(o) => !o && setPendingStatus(null)}>
+        <DialogContent className="max-w-sm glass-panel border-white/10 bg-slate-900/95">
+          <DialogHeader>
+            <DialogTitle className="text-white font-bold flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" /> Status: {(pendingStatus ?? "").replace(/_/g, " ")}
+            </DialogTitle>
+            <p className="text-xs text-muted-foreground pt-1.5">
+              Schedule the next follow-up and/or note the outcome before applying.
+            </p>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold text-muted-foreground">Next follow-up (calendar)</Label>
+              <Input
+                type="datetime-local"
+                value={followUp}
+                onChange={(e) => setFollowUp(e.target.value)}
+                className="bg-secondary/40 border-white/10 text-xs"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold text-muted-foreground">Note (optional)</Label>
+              <Textarea
+                rows={3}
+                value={followUpNote}
+                onChange={(e) => setFollowUpNote(e.target.value)}
+                placeholder="What happened on this call / contact?"
+                className="bg-secondary/40 border-white/10 text-xs"
+              />
+            </div>
+          </div>
+          <DialogFooter className="pt-4 border-t border-white/10">
+            <Button
+              type="button"
+              variant="outline"
+              className="border-white/10 text-xs font-bold"
+              onClick={() => setPendingStatus(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              className="text-xs font-bold"
+              disabled={!pendingStatus || updateStatusMutation.isPending}
+              onClick={() => {
+                if (!pendingStatus) return;
+                updateStatusMutation.mutate({ status: pendingStatus });
+                if (followUp) {
+                  followUpMutation.mutate(fromISTInput(followUp));
+                }
+                if (followUpNote.trim().length >= 2) {
+                  addActivityMutation.mutate({
+                    activityType: "NOTE",
+                    notes: followUpNote.trim(),
+                  });
+                }
+                setPendingStatus(null);
+                setFollowUpNote("");
+                setEditingStatus(false);
+              }}
+            >
+              {updateStatusMutation.isPending ? "Saving..." : "Apply & Close"}
             </Button>
           </DialogFooter>
         </DialogContent>

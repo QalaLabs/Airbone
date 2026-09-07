@@ -83,9 +83,10 @@ export default auth((req: NextRequest & { auth?: { user?: { orgId?: string; id?:
 export const config = {
   matcher: [
     /*
-     * Session middleware runs on all routes except static assets and the cron
-     * automation endpoint (authenticated via CRON_SECRET in the route handler).
+     * Session middleware runs on all routes except static assets, cron
+     * (CRON_SECRET in the route handler), and inbound webhooks. Webhooks are
+     * excluded so NextAuth does not clone/buffer the raw body used for HMAC.
      */
-    "/((?!_next/static|_next/image|favicon.ico|api/cron/automation).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api/cron/automation|api/webhooks).*)",
   ],
 };

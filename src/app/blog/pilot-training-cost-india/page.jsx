@@ -4,22 +4,29 @@ import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
 import JsonLd from '@/components/JsonLd'
 import { buildArticlePageGraph } from '@/lib/schema'
+import { fetchPublic } from '@/lib/adminApi'
 
-export const metadata = {
-  title: 'Pilot Training Cost in India 2026 - Complete CPL Fee Breakdown',
-  description: 'Complete breakdown of pilot training cost in India for 2026 - CPL ground school, flying hours, DGCA exam fees, medical, and total investment compared to training abroad.',
-  alternates: { canonical: '/blog/pilot-training-cost-india' },
-  openGraph: {
-    title: 'Pilot Training Cost in India 2026 - Complete CPL Fee Breakdown',
-    description: 'Full cost breakdown for becoming a commercial pilot in India - ground school, flying hours, exam fees, and total investment.',
-    url: 'https://www.airborneaviation.in/blog/pilot-training-cost-india',
-    type: 'article',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Pilot Training Cost in India 2026 - Complete CPL Fee Breakdown',
-    description: 'Full cost breakdown for becoming a commercial pilot in India - ground school, flying hours, exam fees, and total investment.',
-  },
+export const revalidate = 60
+
+export async function generateMetadata() {
+  // Canonical: Admin Resource (PUBLISHED) SEO fields; static fallback when Admin offline.
+  const blog = await fetchPublic('/blogs', { slug: 'pilot-training-cost-india' })
+  return {
+    title: blog?.seoTitle ?? 'Pilot Training Cost in India 2026 - Complete CPL Fee Breakdown',
+    description: blog?.seoDesc ?? blog?.description ?? 'Complete breakdown of pilot training cost in India for 2026 - CPL ground school, flying hours, DGCA exam fees, medical, and total investment compared to training abroad.',
+    alternates: { canonical: '/blog/pilot-training-cost-india' },
+    openGraph: {
+      title: blog?.seoTitle ?? 'Pilot Training Cost in India 2026 - Complete CPL Fee Breakdown',
+      description: blog?.description ?? 'Full cost breakdown for becoming a commercial pilot in India - ground school, flying hours, exam fees, and total investment.',
+      url: 'https://www.airborneaviation.in/blog/pilot-training-cost-india',
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: blog?.seoTitle ?? 'Pilot Training Cost in India 2026 - Complete CPL Fee Breakdown',
+      description: blog?.description ?? 'Full cost breakdown for becoming a commercial pilot in India - ground school, flying hours, exam fees, and total investment.',
+    },
+  }
 }
 
 const FAQS = [
@@ -61,7 +68,7 @@ const COST_TABLE = [
   { component: 'Student Pilot License (SPL)', cost: '₹15,000 – ₹25,000', note: 'Required to begin flying hours' },
   { component: 'Cadet Pilot Preparation', cost: '₹50,000', note: 'Airline cadet program preparation' },
   { component: 'GD & PI Preparation', cost: '₹30,000', note: 'Airline interview preparation' },
-  { component: 'Airbus A320 SIM FBS', cost: '₹12,000', note: 'In-house Airbus A320 Simulator FBS' },
+  { component: 'Airbus A320 SIM FBS', cost: '₹10,000', note: 'In-house Airbus A320 Simulator FBS' },
 ]
 
 const INDIA_VS_ABROAD = [

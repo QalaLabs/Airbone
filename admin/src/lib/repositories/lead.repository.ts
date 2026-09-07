@@ -1,6 +1,14 @@
 import { prisma } from "@/lib/db/client";
 import type { LeadFilters, CreateLeadInput, UpdateLeadInput } from "@/lib/validations/lead.schema";
+import { LEAD_PRIORITY_SCORE } from "@/lib/validations/lead.schema";
 import type { Prisma } from "@prisma/client";
+
+export function scoreRangeForPriority(priority: keyof typeof LEAD_PRIORITY_SCORE): { gte?: number; lt?: number } {
+  const threshold = LEAD_PRIORITY_SCORE[priority];
+  if (priority === "HIGH") return { gte: threshold };
+  if (priority === "MEDIUM") return { gte: threshold, lt: LEAD_PRIORITY_SCORE.HIGH };
+  return { lt: LEAD_PRIORITY_SCORE.MEDIUM };
+}
 
 const LEAD_SELECT = {
   id: true,
@@ -61,6 +69,29 @@ const LEAD_SELECT = {
     orderBy: { createdAt: "desc" },
     take: 10,
   },
+  deals: {
+    select: {
+      id: true,
+      title: true,
+      stage: true,
+      value: true,
+      currency: true,
+      expectedCloseAt: true,
+      source: true,
+      assignedTo: true,
+      lostReason: true,
+      wonAt: true,
+      lostAt: true,
+      convertedAt: true,
+      revertedAt: true,
+      isActive: true,
+      createdAt: true,
+      admissionId: true,
+      admission: { select: { id: true, applicationNo: true, stage: true } },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 5,
+  },
 } satisfies Prisma.LeadSelect;
 
 export class LeadRepository {
@@ -95,6 +126,10 @@ export class LeadRepository {
       if (!filters.status) {
         where.status = { notIn: ["CONVERTED", "LOST"] };
       }
+    }
+    if (filters.priority) {
+      const range = scoreRangeForPriority(filters.priority);
+      where.score = range;
     }
 
     const skip = (filters.page - 1) * filters.limit;

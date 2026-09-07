@@ -37,11 +37,11 @@ const LOWERCASE_TYPE: Record<TimelineQuery["entityType"], string> = {
   STUDENT: "student",
 };
 
-// Per-source fetch window. Merged + sliced for pagination; bounded so a very
-// chatty entity cannot blow up the query.
-function windowSize(query: TimelineQuery): number {
-  return Math.min(query.page * query.limit, 300);
-}
+// Per-source fetch window. Clamped to the true per-source count so late pages
+// never silently lose entries (Section 5 fix: `total` and the merged items must
+// agree — the old implementation capped sources at 300 while reporting unbounded
+// totals, which produced missing/out-of-order entries on deep pages).
+const MAX_WINDOW = 1000;
 
 export class TimelineService {
   static async getTimeline(orgId: string, query: TimelineQuery): Promise<{
@@ -49,64 +49,74 @@ export class TimelineService {
     total: number;
   }> {
     const lower = LOWERCASE_TYPE[query.entityType];
-    const take = windowSize(query);
+    const pageOffset = (query.page - 1) * query.limit;
 
     // LeadActivity rows are lead-scoped; other entity types have none.
     const activityWhere = query.entityType === "LEAD"
       ? { orgId, leadId: query.entityId }
       : { orgId, id: "00000000-0000-0000-0000-000000000000" };
 
-    const [activities, notifications, runs, activityCount, notificationCount, runCount] =
-      await Promise.all([
-        prisma.leadActivity.findMany({
-          where: activityWhere,
-          orderBy: { createdAt: "desc" },
-          take,
-          select: {
-            id: true,
-            activityType: true,
-            title: true,
-            notes: true,
-            outcome: true,
-            dueAt: true,
-            completedAt: true,
-            createdAt: true,
-            performer: { select: { name: true } },
-          },        }),
-        prisma.notificationLog.findMany({
-          where: { orgId, entityType: lower, entityId: query.entityId },
-          orderBy: { createdAt: "desc" },
-          take,
-          select: {
-            id: true,
-            event: true,
-            channel: true,
-            subject: true,
-            body: true,
-            status: true,
-            errorMsg: true,
-            recipient: true,
-            createdAt: true,
-          },
-        }),
-        prisma.workflowRun.findMany({
-          where: { orgId, entityType: query.entityType, entityId: query.entityId },
-          orderBy: { startedAt: "desc" },
-          take,
-          select: {
-            id: true,
-            status: true,
-            error: true,
-            stoppedReason: true,
-            startedAt: true,
-            workflow: { select: { name: true } },
-            triggerer: { select: { name: true } },
-          },
-        }),
-        prisma.leadActivity.count({ where: activityWhere }),
-        prisma.notificationLog.count({ where: { orgId, entityType: lower, entityId: query.entityId } }),
-        prisma.workflowRun.count({ where: { orgId, entityType: query.entityType, entityId: query.entityId } }),
-      ]);
+    // Counts first — the merged stream may never exceed what we actually fetch.
+    const [activityCount, notificationCount, runCount] = await Promise.all([
+      prisma.leadActivity.count({ where: activityWhere }),
+      prisma.notificationLog.count({ where: { orgId, entityType: lower, entityId: query.entityId } }),
+      prisma.workflowRun.count({ where: { orgId, entityType: query.entityType, entityId: query.entityId } }),
+    ]);
+
+    const cap = (count: number) => Math.min(count, MAX_WINDOW);
+    const available = pageOffset + query.limit;
+    const takeActivity = Math.min(cap(activityCount), available);
+    const takeNotification = Math.min(cap(notificationCount), available);
+    const takeRun = Math.min(cap(runCount), available);
+
+    const [activities, notifications, runs] = await Promise.all([
+      prisma.leadActivity.findMany({
+        where: activityWhere,
+        orderBy: { createdAt: "desc" },
+        take: takeActivity,
+        select: {
+          id: true,
+          activityType: true,
+          title: true,
+          notes: true,
+          outcome: true,
+          dueAt: true,
+          completedAt: true,
+          createdAt: true,
+          performer: { select: { name: true } },
+        },
+      }),
+      prisma.notificationLog.findMany({
+        where: { orgId, entityType: lower, entityId: query.entityId },
+        orderBy: { createdAt: "desc" },
+        take: takeNotification,
+        select: {
+          id: true,
+          event: true,
+          channel: true,
+          subject: true,
+          body: true,
+          status: true,
+          errorMsg: true,
+          recipient: true,
+          createdAt: true,
+        },
+      }),
+      prisma.workflowRun.findMany({
+        where: { orgId, entityType: query.entityType, entityId: query.entityId },
+        orderBy: { startedAt: "desc" },
+        take: takeRun,
+        select: {
+          id: true,
+          status: true,
+          error: true,
+          stoppedReason: true,
+          startedAt: true,
+          workflow: { select: { name: true } },
+          triggerer: { select: { name: true } },
+        },
+      }),
+    ]);
 
     const entries: TimelineEntry[] = [
       ...activities.map((a): TimelineEntry => ({
@@ -142,11 +152,12 @@ export class TimelineService {
       })),
     ];
 
-    entries.sort((a, b) => (a.at < b.at ? 1 : -1));
+    // Deterministic order: newest first, ties broken by stable id so the merged
+    // stream never shuffles between requests (Section 5 fix).
+    entries.sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : a.id < b.id ? 1 : -1));
 
-    const start = (query.page - 1) * query.limit;
     return {
-      items: entries.slice(start, start + query.limit),
+      items: entries.slice(pageOffset, pageOffset + query.limit),
       total: activityCount + notificationCount + runCount,
     };
   }

@@ -10,13 +10,13 @@ const COURSES = [
   'DGCA CPL Ground Classes (₹2,70,000)',
   'Commercial Pilot License (CPL)',
   'Cadet Preparation (₹50,000)',
-  'Airline Preparation (₹1,25,000)',
+  'Airline Preparation (₹1,00,000)',
   'GD & PI Course (₹30,000)',
   'CASS Compass Adapt (₹30,000)',
   'ATPL Ground School (₹1,50,000)',
-  'Airbus A320 Simulator FBS (₹12,000)',
+  'Airbus A320 Simulator FBS (₹10,000)',
   "Securing Your Child's Future in Aviation",
-  'Cabin Crew Training (₹59,000)',
+  'Cabin Crew Training (₹54,000)',
   'Private Pilot License (PPL)',
 ]
 

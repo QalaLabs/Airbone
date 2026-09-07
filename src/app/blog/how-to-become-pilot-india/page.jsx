@@ -4,11 +4,18 @@ import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
 import JsonLd from '@/components/JsonLd'
 import { buildArticlePageGraph } from '@/lib/schema'
+import { fetchPublic } from '@/lib/adminApi'
 
-export const metadata = {
-  title: 'How to Become a Pilot in India After 12th - Step-by-Step 2026',
-  description: 'Complete guide to becoming a commercial pilot in India after 12th. CPL eligibility, DGCA exams, flying hours, costs, and airline placement tips from Airborne Aviation Academy, Dwarka.',
-  alternates: { canonical: '/blog/how-to-become-pilot-india' },
+export const revalidate = 60
+
+export async function generateMetadata() {
+  // Canonical: Admin Resource (PUBLISHED) SEO fields; static fallback when Admin offline.
+  const blog = await fetchPublic('/blogs', { slug: 'how-to-become-pilot-india' })
+  return {
+    title: blog?.seoTitle ?? 'How to Become a Pilot in India After 12th - Step-by-Step 2026',
+    description: blog?.seoDesc ?? blog?.description ?? 'Complete guide to becoming a commercial pilot in India after 12th. CPL eligibility, DGCA exams, flying hours, costs, and airline placement tips from Airborne Aviation Academy, Dwarka.',
+    alternates: { canonical: '/blog/how-to-become-pilot-india' },
+  }
 }
 
 const FAQS = [
@@ -100,7 +107,7 @@ export default function HowToBecomePilotPage() {
               How to Become a Pilot in India After 12th
             </h1>
             <p style={{ fontSize: '1.05rem', color: 'rgba(33,33,33,0.75)', lineHeight: '1.75', marginBottom: '1.5rem', fontFamily: 'var(--font-b)' }}>
-              A complete, honest roadmap - from Class 12 to the airline cockpit. Written by the faculty at Airborne Aviation Academy, Dwarka, who have guided 2,500+ students into aviation careers.
+              A complete, honest roadmap - from Class 12 to the airline cockpit. Written by the faculty at Airborne Aviation Academy, Dwarka, who have guided students into aviation careers since 2009.
             </p>
             <div style={{ display: 'flex', gap: '2rem', fontSize: '0.78rem', color: 'rgba(33,33,33,0.55)', fontFamily: 'var(--font-h)', fontWeight: 600, letterSpacing: '0.05em' }}>
               <span>By Capt. Navrang Singh</span>

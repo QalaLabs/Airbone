@@ -49,7 +49,11 @@ export const registerAssetSchema = z.object({
   originalName: z.string().min(1).max(255),
   fileKey: z.string().min(1).max(500),
   fileUrl: z.string().url(),
-  mimeType: z.string().min(1).max(100),
+  mimeType: z
+    .string()
+    .min(1)
+    .max(100)
+    .refine(isAllowedMediaType, { message: "This file type is not supported" }),
   sizeBytes: z.number().int().positive(),
   width: z.number().int().positive().optional(),
   height: z.number().int().positive().optional(),
@@ -74,7 +78,11 @@ export type UpdateAssetInput = z.infer<typeof updateAssetSchema>;
 export const replaceAssetSchema = z.object({
   fileKey: z.string().min(1).max(500),
   fileUrl: z.string().url(),
-  mimeType: z.string().min(1).max(100),
+  mimeType: z
+    .string()
+    .min(1)
+    .max(100)
+    .refine(isAllowedMediaType, { message: "This file type is not supported" }),
   sizeBytes: z.number().int().positive(),
   width: z.number().int().positive().optional(),
   height: z.number().int().positive().optional(),
@@ -84,7 +92,11 @@ export type ReplaceAssetInput = z.infer<typeof replaceAssetSchema>;
 
 export const presignMediaSchema = z.object({
   fileName: z.string().min(1).max(255),
-  contentType: z.string().min(1).max(100),
+  contentType: z
+    .string()
+    .min(1)
+    .max(100)
+    .refine(isAllowedMediaType, { message: "This file type is not supported" }),
   folderId: z.string().uuid().optional(),
 });
 export type PresignMediaInput = z.infer<typeof presignMediaSchema>;

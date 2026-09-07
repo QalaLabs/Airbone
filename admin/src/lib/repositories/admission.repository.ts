@@ -1,8 +1,11 @@
 import { prisma } from "@/lib/db/client";
 import type { Prisma } from "@prisma/client";
 import type { AdmissionFilters, CreateAdmissionInput, UpdateAdmissionInput } from "@/lib/validations/admission.schema";
+import { reconcileDerivedFields } from "@/lib/services/fee-calculation.service";
 
-const ADMISSION_SELECT = {
+type FeeLedgerDb = Pick<typeof prisma, "paymentTransaction" | "admission">;
+
+export const ADMISSION_SELECT = {
   id: true,
   orgId: true,
   campusId: true,
@@ -11,8 +14,10 @@ const ADMISSION_SELECT = {
   applicationNo: true,
   stage: true,
   courseName: true,
+  courseId: true,
   batchName: true,
   batchStartDate: true,
+  batchId: true,
   feePlanId: true,
   feeAmount: true,
   feeDiscount: true,
@@ -30,6 +35,19 @@ const ADMISSION_SELECT = {
   student: { select: { id: true, studentCode: true, firstName: true, lastName: true } },
   lead: { select: { id: true, name: true, phone: true, email: true } },
   counselor: { select: { id: true, name: true, email: true, avatarUrl: true } },
+  course: { select: { id: true, title: true, slug: true, fee: true } },
+  batch: {
+    select: {
+      id: true,
+      name: true,
+      type: true,
+      startDate: true,
+      endDate: true,
+      capacity: true,
+      course: { select: { id: true, title: true } },
+    },
+  },
+  deal: { select: { id: true, title: true, stage: true, value: true, currency: true, wonAt: true, lostAt: true, revertedAt: true } },
   feePlan: {
     select: {
       id: true,
@@ -37,7 +55,7 @@ const ADMISSION_SELECT = {
       currency: true,
       items: {
         orderBy: { sortOrder: "asc" as const },
-        select: { id: true, name: true, amount: true, dueOffsetDays: true, sortOrder: true },
+        select: { id: true, name: true, amount: true, percentOfFee: true, dueOffsetDays: true, sortOrder: true },
       },
     },
   },
@@ -80,6 +98,8 @@ const ADMISSION_DETAIL_SELECT = {
       receiptNo: true,
       feeType: true,
       referenceNo: true,
+      refundedAmount: true,
+      refundedAt: true,
       paidAt: true,
       createdAt: true,
     },
@@ -141,10 +161,18 @@ export class AdmissionRepository {
     return `APP-${year}-${seq}`;
   }
 
-  static async create(orgId: string, data: CreateAdmissionInput & { applicationNo: string }) {
-    const feeFinal = data.feeAmount != null
-      ? data.feeAmount - (data.feeDiscount ?? 0)
-      : null;
+  static async create(
+    orgId: string,
+    data: CreateAdmissionInput & { applicationNo: string; feeFinal?: number | null },
+  ) {
+    // feeFinal is always computed server-side: an explicit override (used by the
+    // service when a fee plan resolves percent items) wins over feeAmount − discount.
+    const feeFinal =
+      data.feeFinal !== undefined
+        ? data.feeFinal
+        : data.feeAmount != null
+          ? data.feeAmount - (data.feeDiscount ?? 0)
+          : null;
 
     return prisma.admission.create({
       data: {
@@ -154,8 +182,10 @@ export class AdmissionRepository {
         counselorId: data.counselorId,
         applicationNo: data.applicationNo,
         courseName: data.courseName,
+        courseId: data.courseId,
         batchName: data.batchName,
         batchStartDate: data.batchStartDate ? new Date(data.batchStartDate) : null,
+        batchId: data.batchId,
         feePlanId: data.feePlanId,
         feeAmount: data.feeAmount,
         feeDiscount: data.feeDiscount,
@@ -168,11 +198,27 @@ export class AdmissionRepository {
     });
   }
 
-  static async update(orgId: string, id: string, data: UpdateAdmissionInput) {
-    const feeFinalUpdate =
-      data.feeAmount !== undefined
-        ? data.feeAmount - (data.feeDiscount ?? 0)
-        : undefined;
+  static async update(
+    orgId: string,
+    id: string,
+    data: UpdateAdmissionInput & { feeFinal?: number | null },
+  ) {
+    const existing = await prisma.admission.findFirst({
+      where: { id, orgId },
+      select: { feeAmount: true, feeDiscount: true },
+    });
+
+    // Recompute feeFinal whenever feeAmount or feeDiscount changes (Phase G):
+    // use the incoming value when supplied, otherwise the current stored value.
+    let feeFinalUpdate: number | null | undefined;
+    if (data.feeFinal !== undefined) {
+      feeFinalUpdate = data.feeFinal;
+    } else if (data.feeAmount !== undefined || data.feeDiscount !== undefined) {
+      const amount = data.feeAmount !== undefined ? data.feeAmount : existing?.feeAmount;
+      const discount = data.feeDiscount !== undefined ? data.feeDiscount : existing?.feeDiscount ?? 0;
+      feeFinalUpdate =
+        amount != null ? Math.round((Number(amount) - Number(discount)) * 100) / 100 : null;
+    }
 
     return prisma.admission.update({
       where: { id, orgId },
@@ -181,12 +227,16 @@ export class AdmissionRepository {
         ...(data.counselorId !== undefined && { counselorId: data.counselorId }),
         ...(data.studentId !== undefined && { studentId: data.studentId }),
         ...(data.courseName !== undefined && { courseName: data.courseName }),
+        ...(data.courseId !== undefined && { courseId: data.courseId }),
         ...(data.batchName !== undefined && { batchName: data.batchName }),
         ...(data.batchStartDate !== undefined && { batchStartDate: data.batchStartDate ? new Date(data.batchStartDate) : null }),
+        ...(data.batchId !== undefined && { batchId: data.batchId }),
         ...(data.feePlanId !== undefined && { feePlanId: data.feePlanId }),
         ...(data.feeAmount !== undefined && { feeAmount: data.feeAmount }),
         ...(data.feeDiscount !== undefined && { feeDiscount: data.feeDiscount }),
-        ...(feeFinalUpdate !== undefined && { feeFinal: feeFinalUpdate, feeBalance: feeFinalUpdate }),
+        // feePaid/feeBalance are intentionally NOT touched here — they are
+        // recomputed from the payment cashflow by the caller's reconcile step.
+        ...(feeFinalUpdate !== undefined && { feeFinal: feeFinalUpdate }),
         ...(data.notes !== undefined && { notes: data.notes }),
         ...(data.metadata !== undefined && { metadata: data.metadata as Prisma.InputJsonValue }),
       },
@@ -201,6 +251,7 @@ export class AdmissionRepository {
     changedBy: string,
     notes?: string,
     studentId?: string,
+    metadataOverride?: Record<string, unknown>,
   ) {
     const [admission] = await prisma.$transaction([
       prisma.admission.update({
@@ -211,6 +262,9 @@ export class AdmissionRepository {
           stageChangedBy: changedBy,
           ...(studentId && { studentId }),
           ...(toStage === "ENROLLED" && { studentId }),
+          ...(toStage === "ENROLLED" && metadataOverride
+            ? { metadata: metadataOverride as Prisma.InputJsonValue }
+            : {}),
         },
         select: ADMISSION_SELECT,
       }),
@@ -235,20 +289,34 @@ export class AdmissionRepository {
     });
   }
 
-  static async updateFeeBalance(orgId: string, id: string) {
-    const total = await prisma.paymentTransaction.aggregate({
-      where: { admissionId: id, orgId, status: "COMPLETED" },
-      _sum: { amount: true },
-    });
-    const feePaid = Number(total._sum.amount ?? 0);
+  /**
+   * Recompute a cached (feePaid, feeBalance) from the live payment cashflow via
+   * the authoritative calculation module. feeBalance is unclamped — an
+   * overpayment shows as a credit (negative balance). Accepts a transaction
+   * client so callers can reconcile inside an atomic write.
+   */
+  static async updateFeeBalance(orgId: string, id: string, db: FeeLedgerDb = prisma) {
+    const [payments, admission] = await Promise.all([
+      db.paymentTransaction.findMany({
+        where: { admissionId: id, orgId },
+        select: { amount: true, refundedAmount: true, status: true },
+      }),
+      db.admission.findFirst({
+        where: { id, orgId },
+        select: { feeFinal: true },
+      }),
+    ]);
 
-    const admission = await prisma.admission.findFirst({
-      where: { id, orgId },
-      select: { feeFinal: true },
-    });
-    const feeBalance = Math.max(0, Number(admission?.feeFinal ?? 0) - feePaid);
+    const { feePaid, feeBalance } = reconcileDerivedFields(
+      payments.map((p) => ({
+        amount: Number(p.amount),
+        refundedAmount: Number(p.refundedAmount ?? 0),
+        status: p.status,
+      })),
+      admission?.feeFinal != null ? Number(admission.feeFinal) : null,
+    );
 
-    return prisma.admission.update({
+    return db.admission.update({
       where: { id, orgId },
       data: { feePaid, feeBalance },
       select: { id: true, feePaid: true, feeBalance: true },

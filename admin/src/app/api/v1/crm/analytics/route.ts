@@ -2,12 +2,10 @@ import { prisma } from "@/lib/db/client";
 import { guard } from "@/lib/middleware/permissions";
 import { getRequestContext } from "@/lib/middleware/context";
 import { ok, handleError } from "@/lib/utils/response";
-import type { Prisma } from "@prisma/client";
+import { buildAnalyticsScope } from "@/lib/analytics/scope";
 import {
   ACTIVE_LEAD_STATUSES,
   TODAY_FOLLOW_UP_STATUSES,
-  OPPORTUNITY_STATUS,
-  WON_STATUS,
   LOST_STATUSES,
 } from "@/lib/leads/lead-status";
 
@@ -47,11 +45,19 @@ export async function GET() {
     const ctx = await getRequestContext();
     guard(ctx.user, "read", "analytics");
 
-    // Counselors only see analytics over their own leads (ABAC parity with leads list)
-    const leadWhere: Prisma.LeadWhereInput = { orgId: ctx.orgId, deletedAt: null };
-    if (ctx.user.role === "ADMISSIONS_COUNSELOR" && ctx.user.id) {
-      leadWhere.assignedTo = ctx.user.id;
-    }
+    const {
+      isCounselor,
+      leadWhere,
+      admissionWhere,
+      paymentWhere,
+      activityWhere,
+      counselorWhere,
+      studentWhere,
+      dealWhere,
+    } = buildAnalyticsScope(
+      { id: ctx.user.id ?? "", role: ctx.user.role },
+      ctx.orgId,
+    );
 
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setDate(1);
@@ -79,40 +85,42 @@ export async function GET() {
         select: { id: true, createdAt: true },
       }),
       prisma.admission.aggregate({
-        where: { orgId: ctx.orgId },
+        where: admissionWhere,
         _avg: { feeFinal: true },
         _count: { _all: true },
       }),
-      prisma.admission.count({ where: { orgId: ctx.orgId } }),
+      prisma.admission.count({ where: admissionWhere }),
       prisma.admission.findMany({
-        where: { orgId: ctx.orgId, createdAt: { gte: sixMonthsAgo } },
+        where: { ...admissionWhere, createdAt: { gte: sixMonthsAgo } },
         select: { createdAt: true },
       }),
       prisma.paymentTransaction.aggregate({
-        where: { orgId: ctx.orgId, status: "COMPLETED" },
+        where: paymentWhere,
         _sum: { amount: true },
         _count: { _all: true },
       }),
       prisma.paymentTransaction.findMany({
-        where: { orgId: ctx.orgId, status: "COMPLETED", createdAt: { gte: sixMonthsAgo } },
+        where: { ...paymentWhere, createdAt: { gte: sixMonthsAgo } },
         select: { createdAt: true, amount: true },
       }),
       prisma.leadActivity.groupBy({
         by: ["activityType"],
-        where: { orgId: ctx.orgId },
+        where: activityWhere,
         _count: { _all: true },
       }),
       prisma.admission.groupBy({
         by: ["counselorId"],
-        where: { orgId: ctx.orgId },
+        where: admissionWhere,
         _count: { _all: true },
       }),
       prisma.user.findMany({
-        where: { orgId: ctx.orgId, role: "ADMISSIONS_COUNSELOR", isActive: true, deletedAt: null },
+        where: counselorWhere,
         select: { id: true, name: true },
         orderBy: { name: "asc" },
       }),
-      prisma.student.count({ where: { orgId: ctx.orgId, deletedAt: null } }),
+      prisma.student.count({
+        where: studentWhere,
+      }),
     ]);
 
     let totalLeads = 0;
@@ -153,7 +161,7 @@ export async function GET() {
     // fee ledger, opportunity collections, and per-counselor collections. One
     // query instead of three separate table scans.
     const admissionLedger = await prisma.admission.findMany({
-      where: { orgId: ctx.orgId },
+      where: admissionWhere,
       select: {
         id: true,
         leadId: true,
@@ -166,11 +174,6 @@ export async function GET() {
       },
     });
     const admissionLeadIds = new Set(admissionLedger.map((a) => a.leadId).filter(Boolean));
-    const opportunityAdmissionIds = new Set(
-      admissionLedger
-        .filter((a) => a.lead?.status === WON_STATUS)
-        .map((a) => a.id),
-    );
 
     const admissionLeads = admissionLeadIds.size;
     const conversionRate = pct(admissionLeads, totalLeads);
@@ -208,7 +211,7 @@ export async function GET() {
     });
     const activityPerCounselor = await prisma.leadActivity.groupBy({
       by: ["performedBy", "activityType"],
-      where: { orgId: ctx.orgId },
+      where: activityWhere,
       _count: { _all: true },
     });
     const activityByCounselor = new Map<string, Record<string, number>>();
@@ -252,28 +255,59 @@ export async function GET() {
       where: { ...leadWhere, status: { in: TODAY_FOLLOW_UP_STATUSES } },
     });
 
-    // Opportunity sales: PROSPECT-stage leads that became WON today.
-    const wonToday = await prisma.lead.findMany({
-      where: {
-        ...leadWhere,
-        status: WON_STATUS,
-        convertedAt: { gte: todayStart },
-      },
-      select: { id: true },
-    });
-    const wonTodayIds = wonToday.map((l) => l.id);
-    const opportunitySales = wonTodayIds.length;
+    // ── Section 3 — opportunity metrics from the real Deal entity ───────────
+    // opportunitySales = Deals WON today (deal.wonAt >= todayStart). Previously
+    // this counted status=WON + convertedAt which is never set together and was
+    // always 0. Counselors see their own deals; admins see the org.
+    const dealScope = dealWhere;
 
-    // Opportunity collections: collected from completed payments linked to the
-    // WON-lead admissions (see opportunityAdmissionIds derived from admissionLedger).
+    const [dealWonToday, dealStageRows, dealLinkedAdmissionIds] = await Promise.all([
+      prisma.deal.count({
+        where: { ...dealScope, wonAt: { gte: todayStart } },
+      }),
+      prisma.deal.findMany({
+        where: dealScope,
+        select: { stage: true, isActive: true, wonAt: true, lostAt: true },
+      }),
+      prisma.deal.findMany({
+        where: { ...dealScope, admissionId: { not: null } },
+        select: { admissionId: true },
+      }),
+    ]);
+    const opportunitySales = dealWonToday;
 
-    // Collections from completed payments.
+    const dealPipelineCounts = {
+      open: 0,
+      won: 0,
+      lost: 0,
+      byStage: {} as Record<string, number>,
+    };
+    for (const d of dealStageRows) {
+      dealPipelineCounts.byStage[d.stage] = (dealPipelineCounts.byStage[d.stage] ?? 0) + 1;
+      if (d.lostAt) dealPipelineCounts.lost += 1;
+      else if (d.wonAt) dealPipelineCounts.won += 1;
+      else if (d.isActive) dealPipelineCounts.open += 1;
+    }
+
+    const dealAdmissionIdSet = new Set(
+      dealLinkedAdmissionIds
+        .map((d) => d.admissionId)
+        .filter((x): x is string => Boolean(x)),
+    );
+
+    // Opportunity collections: COMPLETED payments today on admissions that are
+    // linked to a Deal (deal.admissionId) — the deal-linked collection stream.
     const paymentsCompleted = await prisma.paymentTransaction.findMany({
-      where: { orgId: ctx.orgId, status: "COMPLETED" },
+      where: paymentWhere,
       select: { amount: true, createdAt: true, admissionId: true },
     });
     const opportunityCollectionsRaw = paymentsCompleted
-      .filter((p) => p.createdAt >= todayStart && p.admissionId && opportunityAdmissionIds.has(p.admissionId))
+      .filter(
+        (p) =>
+          p.createdAt >= todayStart &&
+          p.admissionId &&
+          dealAdmissionIdSet.has(p.admissionId),
+      )
       .reduce((s, p) => s + Number(p.amount), 0);
     const totalCollections = revenue;
     const collectionsToday = paymentsCompleted
@@ -358,6 +392,12 @@ export async function GET() {
         collectionPct,
         workableLeads: workableTotal,
         workablePct: overallWorkablePct,
+
+        // Section 3 — deal pipeline from real Deal records
+        dealsOpen: dealPipelineCounts.open,
+        dealsWon: dealPipelineCounts.won,
+        dealsLost: dealPipelineCounts.lost,
+        dealPipelineByStage: dealPipelineCounts.byStage,
       },
       monthly,
       bySource: channelRows,

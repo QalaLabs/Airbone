@@ -3,6 +3,20 @@ import { ZodError } from "zod";
 import { isAppError } from "./errors";
 import type { ApiError, ApiSuccess, PaginationMeta } from "@/types";
 
+// Prisma P2023 = "Inconsistent column data" (e.g. a non-UUID passed as a
+// UUID @id). Client-supplied path params reaching the DB produce this; the
+// correct API contract is a 400, never a 500. Central fix (Section 5 API
+// input hardening) — every route that funnels errors through handleError
+// inherits it. Duck-typed so we do not couple to a Prisma runtime import.
+function prismaP2023(err: unknown): boolean {
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    "code" in err &&
+    (err as { code?: unknown }).code === "P2023"
+  );
+}
+
 export function ok<T>(data: T, meta?: PaginationMeta, status = 200): NextResponse {
   const body: ApiSuccess<T> = { success: true, data, ...(meta ? { meta } : {}) };
   return NextResponse.json(body, { status });
@@ -39,6 +53,17 @@ export function handleError(err: unknown): NextResponse {
       },
     };
     return NextResponse.json(body, { status: err.statusCode });
+  }
+
+  if (prismaP2023(err)) {
+    const body: ApiError = {
+      success: false,
+      error: {
+        code: "INVALID_IDENTIFIER",
+        message: "Invalid identifier format in the request path or body",
+      },
+    };
+    return NextResponse.json(body, { status: 400 });
   }
 
   // Unknown — log and return generic 500

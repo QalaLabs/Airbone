@@ -1,6 +1,6 @@
 import { type NextRequest } from "next/server";
 import { LeadService } from "@/lib/services/lead.service";
-import { guard } from "@/lib/middleware/permissions";
+import { guard, getCounselorCondition, guardRecord } from "@/lib/middleware/permissions";
 import { getRequestContext } from "@/lib/middleware/context";
 import { ok, created, handleError, buildPaginationMeta } from "@/lib/utils/response";
 import { createActivitySchema } from "@/lib/validations/lead.schema";
@@ -12,6 +12,10 @@ export async function GET(req: NextRequest, { params }: Params) {
     const ctx = await getRequestContext();
     const { id } = await params;
     guard(ctx.user, "read", "leads");
+
+    const lead = await LeadService.getById(ctx, id);
+    const condition = getCounselorCondition(ctx.user);
+    guardRecord(ctx.user, "read", "leads", lead as unknown as Record<string, unknown>, condition);
 
     const url = new URL(req.url);
     const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10));
@@ -34,6 +38,10 @@ export async function POST(req: NextRequest, { params }: Params) {
 
     const body = await req.json() as unknown;
     const input = createActivitySchema.parse(body);
+
+    const existing = await LeadService.getById(ctx, id);
+    const condition = getCounselorCondition(ctx.user);
+    guardRecord(ctx.user, "write", "leads", existing as unknown as Record<string, unknown>, condition);
 
     const activity = await LeadService.createActivity(ctx, id, input);
     return created(activity);

@@ -19,6 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
 import { apiFetch } from "@/lib/api";
+import { bulkAssignLeads } from "@/lib/crm/deals";
 import { formatDate } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
 import { motion } from "framer-motion";
@@ -62,7 +63,7 @@ const LEAD_STATUSES = [
   "NOT_CONNECTED", "RINGING", "NOT_REACHABLE", "SWITCHED_OFF", "VOICEMAIL",
   "LOST", "INCOMING_BARD", "OUT_OF_SERVICE", "NOT_AWARE", "NOT_CONTACTABLE",
   "LOCATION_OUT_OF_SCOPE", "LANGUAGE_BARRIER", "PRICE_HIGH", "JOINED_OTHERS",
-  "NOT_ELIGIBLE", "INVALID_NUMBER", "TEST_LEAD",
+  "NOT_ELIGIBLE", "INVALID_NUMBER", "TEST_LEAD", "NOT_INTERESTED", "REASON_NOT_SHARED", "JOB_SEEKER",
 ];
 
 export default function LeadsPage() {
@@ -95,6 +96,7 @@ export default function LeadsPage() {
         limit: String(pagination.pageSize),
         ...(debouncedSearch ? { search: debouncedSearch } : {}),
         ...(statusFilter && statusFilter !== "all" ? { status: statusFilter } : {}),
+        ...(priorityFilter && priorityFilter !== "all" ? { priority: priorityFilter } : {}),
         ...(counsellorFilter && counsellorFilter !== "all" ? { assignedTo: counsellorFilter } : {}),
         ...(overdueOnly ? { followUpOverdue: "true" } : {}),
       });
@@ -105,8 +107,7 @@ export default function LeadsPage() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json() as { data: Lead[]; meta?: { total: number; totalPages: number } };
 
-      // Priority is derived from the lead's real `score` field (no backing
-      // priority column exists) so it reflects actual data, not a placeholder.
+      // Priority is derived server-side from the lead's real `score` field.
       const items = json.data.map((item) => ({
         ...item,
         priority: item.priority || (item.score >= 80 ? "HIGH" : item.score >= 50 ? "MEDIUM" : "LOW"),
@@ -139,26 +140,12 @@ export default function LeadsPage() {
     onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
-  const assignMutation = useMutation({
-    mutationFn: ({ leadId, counselorId }: { leadId: string; counselorId: string }) =>
-      apiFetch(`/leads/${leadId}`, {
-        method: "PATCH",
-        body: JSON.stringify({ assignedTo: counselorId }),
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["leads"] });
-    },
-  });
-
   const handleBulkAssign = async (counselorId: string, counselorName: string) => {
     try {
-      await Promise.all(
-        selectedLeadIds.map(leadId =>
-          assignMutation.mutateAsync({ leadId, counselorId })
-        )
-      );
+      await bulkAssignLeads(selectedLeadIds, counselorId, `Bulk assigned ${selectedLeadIds.length} leads to ${counselorName}`);
       toast({ title: "Bulk Assignment Successful", description: `${selectedLeadIds.length} leads assigned to ${counselorName}.` });
       setSelectedLeadIds([]);
+      queryClient.invalidateQueries({ queryKey: ["leads"] });
     } catch (err: unknown) {
       toast({ title: "Assignment Failed", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
     }
@@ -448,12 +435,7 @@ export default function LeadsPage() {
         <div className="glass-card rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
           <DataTable
             columns={columns}
-            data={
-              (data?.items ?? []).filter((item) => {
-                if (priorityFilter && priorityFilter !== "all" && item.priority !== priorityFilter) return false;
-                return true;
-              })
-            }
+            data={data?.items ?? []}
             loading={isLoading}
             pageCount={data?.totalPages ?? 0}
             pagination={pagination}

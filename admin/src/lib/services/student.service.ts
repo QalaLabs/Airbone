@@ -1,10 +1,20 @@
 import { StudentRepository } from "@/lib/repositories/student.repository";
 import { AuditService } from "@/lib/services/audit.service";
 import { ActivityFeedService } from "@/lib/services/activity.service";
-import { NotFoundError, ConflictError } from "@/lib/utils/errors";
+import { NotFoundError, ConflictError, ValidationError } from "@/lib/utils/errors";
 import { prisma } from "@/lib/db/client";
+import type { Prisma, StudentStatus } from "@prisma/client";
 import type { CreateStudentInput, UpdateStudentInput, StudentFilters } from "@/lib/validations/student.schema";
 import type { RequestContext } from "@/types";
+
+// Phase O — canonical lifecycle. Terminal statuses are never re-entered.
+export const STUDENT_STATUS_TRANSITIONS: Record<StudentStatus, StudentStatus[]> = {
+  ACTIVE: ["GRADUATED", "DROPPED", "SUSPENDED", "ON_HOLD"],
+  ON_HOLD: ["ACTIVE", "DROPPED"],
+  SUSPENDED: ["ACTIVE", "DROPPED"],
+  GRADUATED: [],
+  DROPPED: [],
+};
 
 export class StudentService {
   static async list(ctx: RequestContext, filters: StudentFilters) {
@@ -77,7 +87,36 @@ export class StudentService {
       if (conflict) throw new ConflictError(`Student with email ${input.email} already exists`);
     }
 
-    const updated = await StudentRepository.update(ctx.orgId, id, input);
+    // Phase O — status transitions are enforced, and lifecycle timestamps are
+    // derived server-side (callers cannot set graduatedAt/droppedAt directly).
+    let resolvedInput = input;
+    if (input.status && input.status !== existing.status) {
+      const allowed = STUDENT_STATUS_TRANSITIONS[existing.status] ?? [];
+      if (!allowed.includes(input.status)) {
+        throw new ValidationError([
+          {
+            message: `Cannot transition student from ${existing.status} to ${input.status}. Allowed: ${allowed.join(", ")}`,
+          },
+        ]);
+      }
+      const timestamp: Record<string, unknown> = {};
+      if (input.status === "ACTIVE") timestamp.enrolledAt = existing.enrolledAt ?? new Date();
+      if (input.status === "GRADUATED") timestamp.graduatedAt = new Date();
+      if (input.status === "DROPPED") timestamp.droppedAt = new Date();
+
+      const { graduatedAt, droppedAt, enrolledAt, ...rest } = input;
+      resolvedInput = { ...rest, status: input.status, ...timestamp };
+    }
+
+    const updated = await StudentRepository.update(ctx.orgId, id, resolvedInput);
+
+    // Dropping a student suspends their open LMS enrollments (history kept).
+    if (resolvedInput.status === "DROPPED") {
+      await prisma.lmsEnrollment.updateMany({
+        where: { orgId: ctx.orgId, studentId: id, status: "ACTIVE" },
+        data: { status: "DROPPED" as never },
+      });
+    }
 
     await AuditService.write({
       orgId: ctx.orgId,
@@ -87,8 +126,18 @@ export class StudentService {
       action: "student.updated",
       entityType: "student",
       entityId: id,
-      oldValue: existing as unknown as Record<string, unknown>,
-      newValue: updated as unknown as Record<string, unknown>,
+      oldValue: {
+        firstName: existing.firstName,
+        lastName: existing.lastName,
+        email: existing.email,
+        status: existing.status,
+      },
+      newValue: {
+        firstName: resolvedInput.firstName ?? existing.firstName,
+        lastName: resolvedInput.lastName ?? existing.lastName,
+        email: resolvedInput.email ?? existing.email,
+        status: resolvedInput.status ?? existing.status,
+      },
     });
 
     return updated;

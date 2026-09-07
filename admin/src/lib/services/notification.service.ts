@@ -3,6 +3,7 @@ import type { NotificationChannel, NotificationEvent } from "@prisma/client";
 import { getProvider } from "@/lib/messaging";
 import { WhatsAppService } from "@/lib/services/whatsapp.service";
 import { validUuid } from "@/lib/events/actor";
+import { getInteraktDefaultTemplate } from "@/lib/messaging/providers/interakt/config";
 
 export { DEFAULT_FROM_EMAIL } from "@/lib/messaging/constants";
 
@@ -58,6 +59,17 @@ export class NotificationService {
       });
       if (!template) return null;
 
+      // Provider template identity. `template.name` is a CRM display label and
+      // is NEVER a valid provider template slug. Real identity comes from the
+      // caller's explicit templateName (workflow override) or the provider's
+      // configured default (INTERAKT_DEFAULT_TEMPLATE). Passing the display name
+      // to Interakt produces a confusing "No approved template found" 400 — the
+      // indexed history must say what was actually dispatched.
+      const providerTemplateName =
+        params.channel === "WHATSAPP"
+          ? params.templateName ?? getInteraktDefaultTemplate()
+          : params.templateName ?? template.name;
+
       const variables = params.variables ?? {};
       const subject = template.subject ? interpolate(template.subject, variables) : null;
       const body = interpolate(template.body, variables);
@@ -67,7 +79,7 @@ export class NotificationService {
           orgId: params.orgId,
           phone: params.recipient,
           body,
-          templateName: params.templateName ?? template.name,
+          templateName: providerTemplateName,
           leadId: validUuid(
             params.entityType === "lead" ? params.entityId : params.metadata?.leadId,
           ),
@@ -101,7 +113,7 @@ export class NotificationService {
           recipient: params.recipient,
           subject,
           body,
-          templateName: params.templateName ?? template.name,
+          templateName: providerTemplateName,
           metadata: {
             ...(params.metadata ?? {}),
             ...(params.entityId ? { leadId: params.entityId } : {}),
@@ -155,7 +167,7 @@ export class NotificationService {
         recipient: params.recipient,
         subject,
         body,
-        templateName: params.templateName ?? template.name,
+        templateName: providerTemplateName,
         metadata: {
           ...(params.metadata ?? {}),
           ...(params.entityId ? { leadId: params.entityId } : {}),
@@ -173,7 +185,7 @@ export class NotificationService {
           status: waStatus,
           externalId: result.externalId,
           errorMsg: result.errorMsg,
-          templateName: params.templateName ?? template.name,
+          templateName: providerTemplateName,
           leadId: validUuid(
             params.entityType === "lead" ? params.entityId : params.metadata?.leadId,
           ),

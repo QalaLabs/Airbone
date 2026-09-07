@@ -9,7 +9,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:otp": "node --test src/utils/otp-store.test.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

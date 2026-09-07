@@ -8,10 +8,26 @@ import {
   outreachTemplateSchema,
   toggleTemplateSchema,
 } from "@/lib/validations/outreach.schema";
+import { getProvider } from "@/lib/messaging";
 import { isAutomationEngineEnabled } from "@/lib/events/dispatch";
 
-function configured(key?: string): boolean {
-  return Boolean(key && key.trim().length > 0);
+// Provider status reflects the actual messaging registry (Section 5 — no fake
+// configuration). `configured` = a transport exists and reports credentials;
+// `verified` = a live provider round-trip succeeded (only Interakt exposes a
+// live test today). A key in env is NOT enough to claim "connected".
+function providerState(key: "email" | "sms" | "whatsapp") {
+  const p = getProvider(key === "email" ? "EMAIL" : key === "sms" ? "SMS" : "WHATSAPP");
+  const isConfigured = p.isConfigured();
+  const configuredNow = isConfigured && p.name !== "noop";
+  return {
+    provider: p.name,
+    configured: configuredNow,
+    verified: false,
+    status: configuredNow ? "configured_not_verified" : "not_configured",
+    note: configuredNow
+      ? "Transport has credentials. Live round-trip verification is available on the WhatsApp settings page for WhatsApp."
+      : `${key} transport is not configured for this environment.`,
+  };
 }
 
 export async function GET() {
@@ -19,7 +35,7 @@ export async function GET() {
     const ctx = await getRequestContext();
     guard(ctx.user, "read", "notifications");
 
-    const [templates, logs, statusCounts] = await Promise.all([
+    const [templates, logs, statusCounts, whatsappReplies] = await Promise.all([
       prisma.notificationTemplate.findMany({
         where: { orgId: ctx.orgId },
         select: {
@@ -61,6 +77,16 @@ export async function GET() {
         where: { orgId: ctx.orgId },
         _count: { _all: true },
       }),
+      // Real reply tracking: WhatsApp inbound replies persisted as WHATSAPP
+      // activities by ingestInboundMessage. Emails have no read/reply tracking
+      // yet — those rates are reported as null (never fake zeros).
+      prisma.leadActivity.count({
+        where: {
+          orgId: ctx.orgId,
+          activityType: "WHATSAPP",
+          title: { startsWith: "WhatsApp reply" },
+        },
+      }),
     ]);
 
     const statusBreakdown: Record<string, number> = {};
@@ -68,33 +94,28 @@ export async function GET() {
       statusBreakdown[String(row.status).toUpperCase()] = row._count._all;
     }
 
+    const sent = statusBreakdown.SENT ?? 0;
+    const replyRate = sent > 0 && whatsappReplies > 0 ? whatsappReplies / sent : null;
+
     return ok({
       templates,
       logs,
       statusBreakdown,
       delivery: {
         total: logs.length,
-        sent: statusBreakdown.SENT ?? 0,
+        sent,
         failed: statusBreakdown.FAILED ?? 0,
         pending: statusBreakdown.PENDING ?? 0,
+        whatsappReplies,
+        // Honest rates: null means "not measurable with persisted data" —
+        // never a fabricated 0.
+        emailOpenRate: null,
+        replyRate,
       },
       providers: {
-        email: {
-          configured: configured(process.env.RESEND_API_KEY),
-          provider: "Resend",
-        },
-        sms: {
-          configured:
-            configured(process.env.TWILIO_ACCOUNT_SID) &&
-            configured(process.env.TWILIO_AUTH_TOKEN) &&
-            configured(process.env.TWILIO_PHONE_NUMBER),
-          provider: "Twilio",
-        },
-        whatsapp: {
-          configured:
-            configured(process.env.WATI_API_URL) && configured(process.env.WATI_API_TOKEN),
-          provider: "WATI",
-        },
+        email: providerState("email"),
+        sms: providerState("sms"),
+        whatsapp: providerState("whatsapp"),
       },
       dispatchEngine: {
         automationEnabled: isAutomationEngineEnabled(),

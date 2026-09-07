@@ -1,5 +1,6 @@
 import { type NextRequest } from "next/server";
 import { prisma } from "@/lib/db/client";
+import type { Prisma } from "@prisma/client";
 import { LeadService } from "@/lib/services/lead.service";
 import { guard, guardRecord, getCounselorCondition } from "@/lib/middleware/permissions";
 import { getRequestContext } from "@/lib/middleware/context";
@@ -42,17 +43,29 @@ export async function GET(req: NextRequest) {
 
     const url = new URL(req.url);
     const scope = url.searchParams.get("scope") ?? "upcoming";
+    const q = url.searchParams.get("q")?.trim();
     const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get("limit") ?? "50", 10)));
     const now = new Date();
 
-    const where: Record<string, unknown> = {
+    // Build the lead-relation filter (counselor ownership AND optional search)
+    // as a relational AND so pagination stays correct in the DB query.
+    const leadConditions: Prisma.LeadWhereInput = {};
+    if (ctx.user.role === "ADMISSIONS_COUNSELOR") {
+      leadConditions.assignedTo = ctx.user.id;
+    }
+    if (q) {
+      leadConditions.OR = [
+        { name: { contains: q, mode: "insensitive" } },
+        { phone: { contains: q } },
+        { email: { contains: q, mode: "insensitive" } },
+      ];
+    }
+
+    const where: Prisma.LeadActivityWhereInput = {
       orgId: ctx.orgId,
       activityType: "MEETING",
+      ...(Object.keys(leadConditions).length > 0 ? { lead: { is: leadConditions } } : {}),
     };
-
-    if (ctx.user.role === "ADMISSIONS_COUNSELOR") {
-      where.lead = { is: { assignedTo: ctx.user.id } };
-    }
 
     if (scope === "upcoming") {
       where.completedAt = null;

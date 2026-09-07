@@ -1,6 +1,7 @@
 import { FeePlanRepository } from "@/lib/repositories/fee-plan.repository";
 import { AuditService } from "@/lib/services/audit.service";
 import { NotFoundError } from "@/lib/utils/errors";
+import { computePlanTotal, type PlanComputation, type PlanItemInput } from "@/lib/services/fee-calculation.service";
 import type { CreateFeePlanInput, UpdateFeePlanInput, FeePlanFilters } from "@/lib/validations/fee-plan.schema";
 import type { RequestContext } from "@/types";
 
@@ -51,8 +52,19 @@ export class FeePlanService {
     return plan;
   }
 
-  /** Sum plan installment amounts for admission fee fields. */
-  static totalAmount(items: { amount: unknown }[]): number {
-    return items.reduce((sum, item) => sum + Number(item.amount), 0);
+  /**
+   * Total rupee amount of a plan given the base course fee. A plan with percent
+   * items is unresolved (needsBaseFee) until a base fee is supplied.
+   */
+  static planComputation(
+    items: PlanItemInput[],
+    baseFee?: number | string | null,
+  ): PlanComputation {
+    return computePlanTotal(items, baseFee);
+  }
+
+  /** Whether a plan contains at least one percent-of-fee item. */
+  static hasPercentItems(items: PlanItemInput[]): boolean {
+    return items.some((i) => i.percentOfFee !== null && i.percentOfFee !== undefined);
   }
 }

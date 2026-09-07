@@ -5,85 +5,38 @@ import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
 import CoursePageFooter from '@/components/CoursePageFooter'
 import { fetchPublic, fetchPublicWithStatus } from '@/lib/adminApi'
-import { displayCourseFee, COURSE_FEE_NUMERIC } from '@/lib/courseFees'
+import { displayCourseFee, courseFeeNumeric } from '@/lib/courseFees'
 import JsonLd from '@/components/JsonLd'
 import { buildCoursePageGraph } from '@/lib/schema'
 
 export const revalidate = 60
 
-const COURSE_SEO = {
-  'commercial-pilot-license-cpl': {
-    title: 'CPL Course Delhi Commercial Pilot License | Airborne Aviation',
-    description: "Enrol in Airborne's DGCA Complied CPL course in Dwarka, Delhi - 2,500+ students trained. 200 flying hours, 6 DGCA exams, airline placement support. Fees ₹55–65L."
-  },
-  'cpl-ground-classes': {
-    title: 'CPL Course Delhi Commercial Pilot License | Airborne Aviation',
-    description: "Enrol in Airborne's DGCA Complied CPL course in Dwarka, Delhi - 2,500+ students trained. 200 flying hours, 6 DGCA exams, airline placement support. Fees ₹55–65L."
-  },
-  'atpl': {
-    title: 'ATPL Ground School India | All Subjects | Airborne Aviation',
-    description: 'ATPL ground school in Delhi by Airborne Aviation Academy. Complete airline transport pilot license exam prep - all subjects, DGCA-aligned. Enrol now.'
-  },
-  'cadet-preparation': {
-    title: 'Cadet Pilot Program Prep IndiGo, Air India, Akasa | Airborne',
-    description: 'Prepare for IndiGo, Air India & Akasa cadet pilot programs at Airborne, Dwarka - 2,500+ students trained. Aptitude tests, GD-PI, simulator prep join now.'
-  },
-  'a320-simulator': {
-    title: 'Airbus A320 Simulator Training Delhi | Airborne Aviation',
-    description: 'A320 simulator at Airborne Aviation Academy, Dwarka - 2,500+ students trained. Airline interview prep, type rating familiarisation, cadet selection practice. Book a session today.'
-  },
-  'cas-compass-adapt': {
-    title: 'CASS Compass & ADAPT Test Preparation | Pilot Aptitude | Airborne',
-    description: 'Prepare for DGCA CASS Compass and ADAPT pilot aptitude screening tests at Airborne Aviation Academy, Dwarka. Structured preparation for cadet pilot selection.'
-  },
-  'airline-preparation': {
-    title: 'Airline Interview Prep Delhi | GD/PI & Personality | Airborne',
-    description: 'Structured airline interview prep at Airborne, Dwarka. GD/PI coaching and personality development by retired Air India AGM with 37+ years experience. Book now.'
-  },
-  'flying-training-india-abroad': {
-    title: 'Flying Training India vs Abroad | Cost & DGCA Guide | Airborne',
-    description: 'Compare flying training in India vs abroad. DGCA requirements, cost comparison, license conversion guide, and which countries are recognised. Free counselling.'
-  },
-  'flying-training': {
-    title: 'Flying Training India vs Abroad | Cost & DGCA Guide | Airborne',
-    description: 'Compare flying training in India vs abroad. DGCA requirements, cost comparison, license conversion guide, and which countries are recognised. Free counselling.'
-  },
-  'cabin-crew': {
-    title: 'Cabin Crew Training Delhi Airline Veterans | Airborne Aviation',
-    description: 'Cabin crew training in Dwarka, Delhi by ex-Alliance Air & Air India AGM trainers - 2,500+ students trained. 3 structured pathways. ₹30K–₹54K. Small batches. Book free counselling.'
-  },
-  'ground-school': {
-    title: 'DGCA Ground School Delhi CPL & ATPL Classes | Airborne',
-    description: "Pass your DGCA CPL & ATPL exams with Airborne's expert-led ground school in Dwarka, Delhi - 2,500+ students trained. All subjects. Taught by airline pilots. Enrol now."
-  }
+// Map marketing URL slug → canonical Admin slug (BD-1 / Section 6 conventions)
+function marketingToApiSlug(slug) {
+  return slug === 'commercial-pilot-license-cpl'
+    ? 'cpl-ground-classes'
+    : slug === 'flying-training-india-abroad'
+      ? 'flying-training'
+      : slug
 }
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
-  const apiSlug = slug === 'commercial-pilot-license-cpl' ? 'cpl-ground-classes' : (slug === 'flying-training-india-abroad' ? 'flying-training' : slug)
-  
+  const apiSlug = marketingToApiSlug(slug)
+
   const course = await fetchPublic('/courses', { slug: apiSlug })
   if (!course) return {}
-  
-  const custom = COURSE_SEO[slug] || COURSE_SEO[apiSlug]
-  if (custom) {
-    return {
-      title: custom.title,
-      description: custom.description,
-      alternates: { canonical: `/courses/${slug}` },
-    }
-  }
 
   return {
-    title: `${course.title} | Airborne Aviation Academy`,
-    description: course.subtitle ?? `${course.title} - details, syllabus, and batch information.`,
+    title: course.seoTitle ?? `${course.title} | Airborne Aviation Academy`,
+    description: course.seoDesc ?? (course.subtitle ?? `${course.title} - details, syllabus, and batch information.`),
     alternates: { canonical: `/courses/${slug}` },
   }
 }
 
 export default async function CourseDetailPage({ params }) {
   const { slug } = await params
-  const apiSlug = slug === 'commercial-pilot-license-cpl' ? 'cpl-ground-classes' : (slug === 'flying-training-india-abroad' ? 'flying-training' : slug)
+  const apiSlug = marketingToApiSlug(slug)
   const { data: course, status } = await fetchPublicWithStatus('/courses', { slug: apiSlug })
 
   // status 0 = network error, 5xx = admin down — show service error, not 404
@@ -120,13 +73,10 @@ export default async function CourseDetailPage({ params }) {
     ? course.curriculum.map((m) => m.module)
     : meta('subjects', [])
 
+  // Admin DB fee is authoritative (BD-1). Exceptions apply only for
+  // courses with no Admin record or no single price (e.g. flying-training band).
   const feeLabel = displayCourseFee(course.slug, course.fee) ?? 'Contact us'
-  // Offer price only when a verified single list price exists — never digit-strip display bands
-  const schemaPrice =
-    COURSE_FEE_NUMERIC[course.slug] ??
-    COURSE_FEE_NUMERIC[apiSlug] ??
-    COURSE_FEE_NUMERIC[slug] ??
-    null
+  const schemaPrice = courseFeeNumeric(course.slug, course.fee)
   const courseSchema = buildCoursePageGraph({
     slug: course.slug,
     name: course.title,

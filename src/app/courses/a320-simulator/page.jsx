@@ -8,24 +8,27 @@ import CourseReviews from '@/components/CourseReviews'
 import JsonLd from '@/components/JsonLd'
 import { buildCoursePageGraph } from '@/lib/schema'
 import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
+import { fetchPublic } from '@/lib/adminApi'
+import { displayCourseFee, courseFeeNumeric } from '@/lib/courseFees'
+
+// BD-1: Admin DB fee (canonical ₹10,000) overrides stale ₹12,000.
+const CANONICAL_SLUG = 'a320-simulator'
+const OFFLINE_FEE_FALLBACK = '₹10,000' // matches canonical Admin seed; resilience only
+
+export const revalidate = 60
 
 export const metadata = {
   title: 'Airbus A320 Simulator Training Delhi | Airborne Aviation',
-  description: 'A320 simulator at Airborne Aviation Academy, Dwarka - 2,500+ students trained. Airline interview prep, type rating familiarisation, cadet selection practice. Book a session today.',
+  description: 'A320 simulator at Airborne Aviation Academy, Dwarka - structured aviation training since 2009. Airline interview prep, type rating familiarisation, cadet selection practice. Book a session today.',
   alternates: { canonical: '/courses/a320-simulator' },
 }
 
-const coursePageGraph = buildCoursePageGraph({
-  ...COURSE_SCHEMA['a320-simulator'],
-  imagePath: '/campus/simulator_real.jpg',
-  price: '12000',
-  faqs: [
-    {
-      q: 'Is the A320 simulator at Airborne DGCA-approved for Type Rating completion?',
-      a: "The simulator is used for familiarisation and preparation - not as a DGCA-approved Full Flight Simulator (FFS) for Type Rating completion. Type Rating completion requires a Level D FFS at a DGCA-approved Type Rating Organisation (TRO). Airborne's simulator is ideal for pre-type rating preparation and cadet selection readiness.",
-    },
-  ],
-})
+const A320_FAQS = [
+  {
+    q: 'Is the A320 simulator at Airborne DGCA-approved for Type Rating completion?',
+    a: "The simulator is used for familiarisation and preparation - not as a DGCA-approved Full Flight Simulator (FFS) for Type Rating completion. Type Rating completion requires a Level D FFS at a DGCA-approved Type Rating Organisation (TRO). Airborne's simulator is ideal for pre-type rating preparation and cadet selection readiness.",
+  },
+]
 
 const USE_CASES = [
   { use: 'Type Rating Familiarisation', who: 'CPL holders preparing for A320 Type Rating', outcome: 'Cockpit familiarisation before SIM assessment' },
@@ -34,7 +37,19 @@ const USE_CASES = [
   { use: 'Airline Interview SIM Check', who: 'Candidates at final stage of airline selection', outcome: 'Structured SIM debrief and performance feedback' },
 ]
 
-export default function A320SimulatorPage() {
+export default async function A320SimulatorPage() {
+  const course = await fetchPublic('/courses', { slug: 'a320-simulator', limit: 1 })
+  const dbFee = course?.[0]?.fee ?? null
+  const feeLabel = displayCourseFee(CANONICAL_SLUG, dbFee) || OFFLINE_FEE_FALLBACK
+  const priceNumeric = courseFeeNumeric(CANONICAL_SLUG, dbFee)
+
+  const coursePageGraph = buildCoursePageGraph({
+    ...COURSE_SCHEMA['a320-simulator'],
+    imagePath: '/campus/simulator_real.jpg',
+    price: priceNumeric != null ? String(priceNumeric) : undefined,
+    faqs: A320_FAQS,
+  })
+
   return (
     <>
       <JsonLd data={coursePageGraph} />
@@ -61,7 +76,7 @@ export default function A320SimulatorPage() {
 
             <div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
-                📍 Dwarka, Delhi · ₹12,000 (in-house SIM FBS) · CPL Eligible
+                📍 Dwarka, Delhi · {feeLabel} (in-house SIM FBS) · CPL Eligible
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
                 Airbus A320 Simulator FBS Training in Dwarka, Delhi
@@ -114,13 +129,13 @@ export default function A320SimulatorPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               <div className="course-sidebar-card">
                 <span className="course-sidebar-label">Session Rate</span>
-                <div className="course-sidebar-price">₹12,000</div>
+                <div className="course-sidebar-price">{feeLabel}</div>
                 <span className="course-sidebar-note">In-house A320 Simulator FBS · Dwarka campus</span>
                 <div style={{ margin: '1.5rem 0', borderTop: '1px solid rgba(0, 39, 76, 0.08)' }} />
                 <span className="course-sidebar-label">Who it is for</span>
                 <div style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', fontWeight: 800, color: 'var(--navy)' }}>CPL</div>
               </div>
-              <LeadForm courseName="Airbus A320 Simulator FBS (₹12,000)" source="Course Detail: a320-simulator" />
+              <LeadForm courseName={`Airbus A320 Simulator FBS (${feeLabel})`} source="Course Detail: a320-simulator" />
             </div>
           </div>
 

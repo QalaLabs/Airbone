@@ -5,11 +5,11 @@ import { prisma } from "@/lib/db/client";
 import { AuditService } from "@/lib/services/audit.service";
 import { ActivityFeedService } from "@/lib/services/activity.service";
 import type { Prisma } from "@prisma/client";
-import { ConflictError, NotFoundError } from "@/lib/utils/errors";
+import { ConflictError, NotFoundError, ValidationError } from "@/lib/utils/errors";
 import type { CreateLeadInput, UpdateLeadInput, LeadFilters, CreateActivityInput } from "@/lib/validations/lead.schema";
 import type { RequestContext } from "@/types";
 import type { LeadStatus, LeadSource } from "@prisma/client";
-import { isLostStatus } from "@/lib/leads/lead-status";
+import { isLostStatus, canTransitionLeadStatus, LOSS_REASON_DEFAULT_TEXT, LOCKED_LEAD_STATUSES } from "@/lib/leads/lead-status";
 
 export class LeadService {
   static resolveSource(raw: string = ""): LeadSource {
@@ -331,6 +331,40 @@ export class LeadService {
     // Detect status change for targeted event
     const statusChanged = input.status && input.status !== existing.status;
 
+    if (statusChanged) {
+      // Canonical validated transitions (Phase B/N): WON/CONVERTED are
+      // system-only; lost moves persist a reason; PROSPECT ensures a deal.
+      if (!canTransitionLeadStatus(existing.status as LeadStatus, input.status as LeadStatus)) {
+        throw new ValidationError([
+          {
+            message: `Cannot transition lead from ${existing.status} to ${input.status}`,
+          },
+        ]);
+      }
+
+      // Entering PROSPECT → ensure a Deal exists (idempotent, concurrency-safe).
+      if (input.status === "PROSPECT") {
+        const { DealService } = await import("@/lib/services/deal.service");
+        const title =
+          existing.name.length > 255 - (existing.courseInterest?.length ?? 0) - 2
+            ? existing.name.slice(0, 240) + ` — ${(existing.courseInterest ?? "Prospect").slice(0, 12)}`
+            : existing.courseInterest
+              ? `${existing.name} — ${existing.courseInterest}`
+              : `${existing.name} — Prospect`;
+        await DealService.ensureDealForLead(ctx, id, {
+          title,
+          source: existing.source ?? undefined,
+          assignedTo: existing.assignedTo ?? undefined,
+        });
+      }
+
+      // Persist a loss reason when entering a lost status without one.
+      if (isLostStatus(input.status as LeadStatus)) {
+        input.lostReason =
+          input.lostReason ?? LOSS_REASON_DEFAULT_TEXT[input.status as LeadStatus] ?? `Marked ${input.status}`;
+      }
+    }
+
     const updated = await LeadRepository.update(ctx.orgId, id, input);
 
     if (statusChanged) {
@@ -471,6 +505,95 @@ export class LeadService {
     await this.recalculateScore(ctx, id, "assigned");
 
     return { ok: true };
+  }
+
+  /**
+   * Canonical bulk assignment. Every lead gets the same ASSIGNMENT activity,
+   * audit entry, feed item and event as the single-assign path — bulk must not
+   * bypass the canonical assignment pipeline (Phase G — legacy PATCH bypass).
+   */
+  static async assignMany(
+    ctx: RequestContext,
+    leadIds: string[],
+    counselorId: string,
+    note?: string,
+  ) {
+    const counselor = await prisma.user.findFirst({
+      where: { id: counselorId, orgId: ctx.orgId, isActive: true },
+      select: { id: true, name: true },
+    });
+    if (!counselor) throw new NotFoundError("Counselor", counselorId);
+
+    const existing = await prisma.lead.findMany({
+      where: { id: { in: leadIds }, orgId: ctx.orgId, deletedAt: null },
+      select: { id: true },
+    });
+    const foundIds = new Set(existing.map((l) => l.id));
+    const missing = leadIds.filter((id) => !foundIds.has(id));
+    if (missing.length > 0) {
+      throw new NotFoundError("Lead", missing[0]);
+    }
+
+    const noteText = note ?? `Bulk assignment to ${counselor.name}`;
+
+    for (const leadId of leadIds) {
+      await prisma.$transaction([
+        prisma.lead.update({ where: { id: leadId }, data: { assignedTo: counselorId } }),
+        prisma.leadActivity.create({
+          data: {
+            leadId,
+            orgId: ctx.orgId,
+            performedBy: ctx.user.id,
+            activityType: "ASSIGNMENT",
+            title: `Assigned to ${counselor.name}`,
+            notes: noteText === `Bulk assignment to ${counselor.name}` ? `${noteText} (${leadId})` : noteText,
+            completedAt: new Date(),
+            metadata: { counselorId, bulk: true },
+          },
+        }),
+      ]);
+    }
+
+    await AuditService.write({
+      orgId: ctx.orgId,
+      userId: ctx.user.id,
+      requestId: ctx.requestId,
+      action: "lead.bulk_assigned",
+      entityType: "lead",
+      entityId: leadIds.length === 1 ? leadIds[0] : undefined,
+      newValue: { leadIds, count: leadIds.length, counselorId, counselorName: counselor.name },
+    });
+
+    await ActivityFeedService.write({
+      orgId: ctx.orgId,
+      actorId: ctx.user.id,
+      verb: "bulk_assigned",
+      objectType: "lead",
+      objectId: leadIds[0] ?? "",
+      objectSnapshot: {},
+      context: { count: leadIds.length, counselorId, counselorName: counselor.name, actorName: ctx.user.name },
+    });
+
+    await emitEvent({
+      name: "lead/bulk.assigned",
+      orgId: ctx.orgId,
+      actorId: ctx.user.id,
+      actorName: ctx.user.name,
+      requestId: ctx.requestId,
+      timestamp: new Date().toISOString(),
+      data: {
+        leadIds,
+        count: leadIds.length,
+        counselorId,
+        counselorName: counselor.name,
+      },
+    });
+
+    for (const leadId of leadIds) {
+      await this.recalculateScore(ctx, leadId, "bulk_assigned").catch(() => undefined);
+    }
+
+    return { ok: true, count: leadIds.length };
   }
 
   static async delete(ctx: RequestContext, id: string) {
@@ -703,6 +826,111 @@ export class LeadService {
     return activity;
   }
 
+  /** Update (reschedule / edit) a persisted MEETING activity. */
+  static async updateMeeting(
+    ctx: RequestContext,
+    leadId: string,
+    meetingId: string,
+    input: {
+      title?: string;
+      dueAt?: string;
+      durationMins?: number;
+      notes?: string;
+      outcome?: string;
+      metadata?: Record<string, unknown>;
+    },
+  ) {
+    await this.getById(ctx, leadId);
+    const existing = await prisma.leadActivity.findFirst({
+      where: { id: meetingId, leadId, orgId: ctx.orgId, activityType: "MEETING" },
+    });
+    if (!existing) throw new NotFoundError("Meeting", meetingId);
+
+    const dueAt = input.dueAt ? new Date(input.dueAt) : undefined;
+    if (dueAt && Number.isNaN(dueAt.getTime())) {
+      const { ValidationError } = await import("@/lib/utils/errors");
+      throw new ValidationError([{ message: "dueAt must be a valid datetime" }]);
+    }
+
+    const activity = await prisma.leadActivity.update({
+      where: { id: meetingId },
+      data: {
+        ...(input.title !== undefined ? { title: input.title } : {}),
+        ...(dueAt ? { dueAt } : {}),
+        ...(input.durationMins !== undefined ? { durationMins: input.durationMins } : {}),
+        ...(input.notes !== undefined ? { notes: input.notes } : {}),
+        ...(input.outcome !== undefined ? { outcome: input.outcome } : {}),
+        ...(input.metadata !== undefined ? { metadata: input.metadata as Prisma.InputJsonValue } : {}),
+      },
+      include: {
+        performer: { select: { id: true, name: true, avatarUrl: true } },
+      },
+    });
+
+    if (dueAt) {
+      await prisma.lead.update({
+        where: { id: leadId },
+        data: { lastActivityAt: new Date(), nextFollowUp: dueAt },
+      });
+    } else {
+      await prisma.lead.update({ where: { id: leadId }, data: { lastActivityAt: new Date() } });
+    }
+
+    await AuditService.write({
+      orgId: ctx.orgId,
+      userId: ctx.user.id,
+      requestId: ctx.requestId,
+      action: "lead_activity.updated",
+      entityType: "lead_activity",
+      entityId: meetingId,
+      newValue: { leadId, type: "MEETING" },
+    });
+
+    return activity;
+  }
+
+  /** Cancel a scheduled MEETING: marks it done with a CANCELLED outcome (kept for audit). */
+  static async cancelMeeting(ctx: RequestContext, leadId: string, meetingId: string) {
+    await this.getById(ctx, leadId);
+    const existing = await prisma.leadActivity.findFirst({
+      where: { id: meetingId, leadId, orgId: ctx.orgId, activityType: "MEETING" },
+    });
+    if (!existing) throw new NotFoundError("Meeting", meetingId);
+
+    const activity = await prisma.leadActivity.update({
+      where: { id: meetingId },
+      data: {
+        completedAt: new Date(),
+        outcome: "CANCELLED",
+        metadata: {
+          ...(existing.metadata as Record<string, unknown>),
+          cancelledAt: new Date().toISOString(),
+          cancelledBy: ctx.user.id,
+        } as Prisma.InputJsonValue,
+      },
+      include: {
+        performer: { select: { id: true, name: true, avatarUrl: true } },
+      },
+    });
+
+    await prisma.lead.update({
+      where: { id: leadId },
+      data: { lastActivityAt: new Date() },
+    });
+
+    await AuditService.write({
+      orgId: ctx.orgId,
+      userId: ctx.user.id,
+      requestId: ctx.requestId,
+      action: "lead_activity.cancelled",
+      entityType: "lead_activity",
+      entityId: meetingId,
+      newValue: { leadId, type: "MEETING", outcome: "CANCELLED" },
+    });
+
+    return activity;
+  }
+
   /** Simple deterministic score: base + status + activity counts. Caps at 100. */
   static async recalculateScore(ctx: RequestContext, leadId: string, reason?: string) {
     const lead = await this.getById(ctx, leadId);
@@ -788,10 +1016,25 @@ export class LeadService {
   ) {
     const lead = await this.getById(ctx, leadId);
     const { AdmissionService } = await import("@/lib/services/admission.service");
-    const { ValidationError } = await import("@/lib/utils/errors");
-    if (isLostStatus(lead.status)) {
+    if (isLostStatus(lead.status as LeadStatus)) {
       throw new ValidationError([{ message: "Cannot convert a lost lead" }]);
     }
+    if (LOCKED_LEAD_STATUSES.includes(lead.status as LeadStatus)) {
+      throw new ValidationError([
+        { message: "Lead is already converted/enrolled — nothing to convert." },
+      ]);
+    }
+
+    // The lead must be a Prospect with an open Deal to convert; this is the
+    // canonical path (PROSPECT → Deal → Admission). If the lead was never
+    // marked PROSPECT, ensure the deal so the funnel stays consistent.
+    const { DealService } = await import("@/lib/services/deal.service");
+    const ensured = await DealService.ensureDealForLead(ctx, leadId, {
+      title: lead.courseInterest ? `${lead.name} — ${lead.courseInterest}` : `${lead.name} — Prospect`,
+      source: lead.source,
+      assignedTo: lead.assignedTo ?? undefined,
+    });
+    const deal = ensured.deal;
 
     const existingAdmission = await prisma.admission.findFirst({
       where: { leadId, orgId: ctx.orgId },
@@ -799,6 +1042,15 @@ export class LeadService {
     });
     if (existingAdmission && existingAdmission.stage !== "CANCELLED" && existingAdmission.stage !== "DROPPED") {
       return { admission: existingAdmission, created: false };
+    }
+
+    // Race guard: a concurrent conversion wins via the unique(orgId, leadId)
+    // deal — read the winner's linked admission before creating another.
+    const linked = deal.admissionId
+      ? await prisma.admission.findUnique({ where: { id: deal.admissionId } })
+      : null;
+    if (linked && linked.stage !== "CANCELLED" && linked.stage !== "DROPPED") {
+      return { admission: linked, created: false };
     }
 
     const admission = await AdmissionService.create(ctx, {
@@ -811,12 +1063,46 @@ export class LeadService {
       notes: input.notes,
     });
 
+    // Link the admission to the deal. If a concurrent conversion already linked
+    // a different admission, clean up our orphan admission (P2002 on the unique
+    // admissionId) and converge on the winner.
+    try {
+      await prisma.deal.update({
+        where: { id: deal.id, orgId: ctx.orgId },
+        data: { admissionId: admission.id, convertedAt: new Date() },
+      });
+    } catch (err) {
+      const isP2002 =
+        typeof err === "object" &&
+        err !== null &&
+        "code" in err &&
+        (err as { code?: string }).code === "P2002";
+      if (isP2002) {
+        const winner = await prisma.admission.findFirst({
+          where: { leadId, orgId: ctx.orgId },
+          orderBy: { createdAt: "desc" },
+        });
+        if (winner && winner.id !== admission.id) {
+          // M-08: soft-archive the orphan (CANCELLED) instead of hard-deleting,
+          // preserving its snapshot/audit and avoiding FK Restrict once any
+          // payment references it. CANCELLED is treated as inactive elsewhere.
+          await prisma.admission
+            .update({
+              where: { id: admission.id, orgId: ctx.orgId },
+              data: { stage: "CANCELLED", notes: "Orphaned by concurrent conversion; archived." },
+            })
+            .catch(() => undefined);
+          return { admission: winner, created: false };
+        }
+      }
+      throw err;
+    }
+
+    // PROSPECT is the canonical conversion status — conversion opens the
+    // admission funnel without fabricating a legacy APPLICATION_SUBMITTED state.
     await prisma.lead.update({
       where: { id: leadId },
-      data: {
-        status: "APPLICATION_SUBMITTED",
-        lastActivityAt: new Date(),
-      },
+      data: { status: "PROSPECT", lastActivityAt: new Date() },
     });
 
     await prisma.leadActivity.create({
@@ -828,7 +1114,7 @@ export class LeadService {
         title: "Converted to admission",
         notes: `Application ${admission.applicationNo} created`,
         completedAt: new Date(),
-        metadata: { admissionId: admission.id },
+        metadata: { admissionId: admission.id, dealId: deal.id },
       },
     });
 

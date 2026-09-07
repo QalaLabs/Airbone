@@ -362,8 +362,8 @@ export function SuccessOverlay({ visible }) {
     'Ruzal Dhral · IndiGo Cadet',
     'Capt. Nipun Singh · Air India',
     'Capt. Himanish Sagwal · Emirates',
-    'Batch 2023 · 100% Pass Rate',
-    'Batch 2024 · 100% Pass Rate',
+    'Batch 2023 · Strong Pass Rate',
+    'Batch 2024 · Strong Pass Rate',
     'Max 25 Students Per Batch',
     'DGCA CPL Ground School',
     'Dwarka, New Delhi',
@@ -375,7 +375,7 @@ export function SuccessOverlay({ visible }) {
         <h2 className="clouds-title" style={{ textAlign: 'center' }}>Where Careers Take Flight</h2>
         <div style={{ display: 'flex', gap: '2rem', marginTop: '2rem' }}>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '3rem', fontWeight: 'bold', color: 'var(--gold)' }}>2,100+</div>
+            <div style={{ fontSize: '3rem', fontWeight: 'bold', color: 'var(--gold)' }}>DGCA</div>
             <div>Alumni Placed</div>
           </div>
           <div style={{ textAlign: 'center' }}>

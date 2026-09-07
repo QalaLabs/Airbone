@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/client";
+import { buildPublicOrgPayload } from "@/lib/services/org.public";
 
 export async function GET() {
   try {
@@ -21,11 +22,10 @@ export async function GET() {
       where: { orgId: org.id },
     });
 
+    // Public surface only — org.settings is an allow-listed projection
+    // (applicationIntake, maintenanceMode). Never the raw settings blob.
     return NextResponse.json({
-      data: {
-        ...org,
-        navMenus,
-      },
+      data: buildPublicOrgPayload(org, navMenus),
     });
   } catch (err) {
     console.error("[Public Settings API Error]:", err);

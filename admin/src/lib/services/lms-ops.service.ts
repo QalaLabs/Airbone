@@ -80,6 +80,17 @@ export class LmsOpsService {
   static async updateBatch(ctx: RequestContext, batchId: string, input: UpdateBatchInput) {
     const batch = await prisma.lmsBatch.findFirst({ where: { id: batchId, orgId: ctx.orgId } });
     if (!batch) throw new NotFoundError("LmsBatch", batchId);
+
+    // Phase I — a capacity can never be lowered below the current roster size.
+    if (input.capacity !== undefined && input.capacity !== null) {
+      const memberCount = await prisma.lmsBatchStudent.count({ where: { batchId } });
+      if (memberCount > input.capacity) {
+        throw new ValidationError([
+          { message: `Capacity cannot be set below the current roster size (${memberCount} members)` },
+        ]);
+      }
+    }
+
     return prisma.lmsBatch.update({
       where: { id: batchId },
       data: {
@@ -132,7 +143,26 @@ export class LmsOpsService {
     let newlyEnrolled: string[] = [];
 
     await prisma.$transaction(async (tx) => {
+      // Phase I — lock the batch row so capacity checks serialize against
+      // concurrent enrollments (the admission enrollment path takes the same
+      // lock). The final roster is validated once, atomically.
+      const lock = await tx.$queryRaw<{ id: string }[]>`
+        SELECT "id" FROM "lms_batches" WHERE "id" = ${batchId}::uuid FOR UPDATE`;
+      if (lock.length === 0) throw new NotFoundError("LmsBatch", batchId);
+      const fresh = await tx.lmsBatch.findUnique({
+        where: { id: batchId },
+        select: { capacity: true },
+      });
+      if (!fresh) throw new NotFoundError("LmsBatch", batchId);
+
       if (data.studentIds) {
+        if (fresh.capacity != null && data.studentIds.length > fresh.capacity) {
+          throw new ValidationError([
+            {
+              message: `Batch capacity is ${fresh.capacity} — cannot add ${data.studentIds.length} students`,
+            },
+          ]);
+        }
         // Track who is being removed so course enrollment stays in sync.
         const removed = await tx.lmsBatchStudent.findMany({
           where: { batchId, studentId: { notIn: data.studentIds } },

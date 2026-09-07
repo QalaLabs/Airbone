@@ -18,6 +18,12 @@ const nextConfig = {
   },
   images: {
     remotePatterns: [
+      // M-10 (decision, documented): only Unsplash is allow-listed today because
+      // the public site renders no CMS/supabase images via next/image — CMS media
+      // (resources `fileUrl`, portal) is served through signed-download anchors.
+      // If a future change renders CMS images with <Image>, add the exact
+      // Supabase/R2 storage hostname here BEFORE doing so; do not add a broad or
+      // wildcard hostname pattern (image-optimization SSRF surface).
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',

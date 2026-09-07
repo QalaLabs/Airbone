@@ -8,10 +8,11 @@ type PermissionMatrix = Record<UserRole, Record<string, string[]>>;
 
 export const PERMISSION_MATRIX: PermissionMatrix = {
   SUPER_ADMIN: {
-    "*": ["read", "write", "delete", "export", "publish", "admin"],
+    "*": ["read", "write", "delete", "export", "publish", "assign", "admin"],
   },
   ADMIN: {
     leads: ["read", "write", "delete", "export", "assign"],
+    deals: ["read", "write", "delete", "assign", "export"],
     users: ["read", "write", "delete"],
     students: ["read", "write", "delete", "export"],
     admissions: ["read", "write", "delete"],
@@ -29,7 +30,6 @@ export const PERMISSION_MATRIX: PermissionMatrix = {
     blocks: ["read", "write", "delete", "publish"],
     pages: ["read", "write", "delete", "publish"],
     nav: ["read", "write", "delete"],
-    seo: ["read", "write"],
     notifications: ["read", "write"],
     analytics: ["read"],
     audit: ["read"],
@@ -54,10 +54,8 @@ export const PERMISSION_MATRIX: PermissionMatrix = {
     blocks: ["read"],
     pages: ["read"],
     nav: ["read"],
-    seo: ["read", "write"],
     analytics: ["read"],
     testimonials: ["read", "approve"],
-    campaigns: ["read", "write"],
   },
   CONTENT_MANAGER: {
     courses: ["read", "write", "delete", "publish"],
@@ -66,17 +64,15 @@ export const PERMISSION_MATRIX: PermissionMatrix = {
     blocks: ["read", "write", "delete", "publish"],
     pages: ["read", "write", "delete", "publish"],
     nav: ["read", "write"],
-    seo: ["read", "write"],
     testimonials: ["read", "approve"],
-    cms: ["read", "write", "publish"],
   },
   ADMISSIONS_COUNSELOR: {
-    leads: ["read", "write", "assign"],
+    leads: ["read", "write"],
+    deals: ["read", "write"],
     students: ["read", "write"],
     admissions: ["read", "write"],
     documents: ["read", "write"],
     payments: ["read"],
-    enquiries: ["read", "write"],
     analytics: ["read"],
   },
   PLACEMENT_MANAGER: {
@@ -96,7 +92,6 @@ export const PERMISSION_MATRIX: PermissionMatrix = {
     students: ["read"],
     admissions: ["read"],
     documents: ["read"],
-    enquiries: ["read", "write"],
   },
   // SMS portal roles — scoped LMS resources only; no CRM/CMS write
   TEACHER: {

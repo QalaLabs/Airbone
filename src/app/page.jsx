@@ -474,7 +474,7 @@ function FounderSection() {
           <div style={{ marginTop: '2.5rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'rgba(0,39,76,0.08)', maxWidth: '28rem', width: '100%' }}>
             {[
               ['15+', 'Years teaching'],
-              ['2,500+', 'Students mentored'],
+              ['Since 2009', 'Students mentored'],
               ['5/5', 'Papers, first attempt'],
               ['36', 'Oldest restart, Air India'],
             ].map(([k, v]) => (
