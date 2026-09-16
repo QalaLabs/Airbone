@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { formatDate, getInitials } from "@/lib/utils";
+import { formatDate, getInitials, cn } from "@/lib/utils";
+import Link from "next/link";
 
 interface Student {
   id: string;
@@ -27,6 +28,7 @@ interface Student {
   createdAt: string;
   course?: { title: string };
   campus?: { name: string };
+  admissions?: { feePaid?: string | number | null; feeBalance?: string | number | null }[];
 }
 
 const STUDENT_STATUSES = ["all", "ACTIVE", "GRADUATED", "DROPPED", "SUSPENDED", "ON_HOLD"];
@@ -37,7 +39,6 @@ export default function StudentsPage() {
   const [search, setSearch] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState("all");
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
-  const [selectedStudent, setSelectedStudent] = React.useState<Student | null>(null);
 
   React.useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 400);
@@ -86,9 +87,9 @@ export default function StudentsPage() {
               <AvatarFallback className="text-xs bg-primary/20 text-primary font-bold">{getInitials(name)}</AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <button onClick={() => setSelectedStudent(row.original)} className="text-sm font-bold text-white hover:text-primary transition-colors truncate block text-left">
-                {name}
-              </button>
+                <Link href={`/students/${row.original.id}`} className="text-sm font-bold text-white hover:text-primary transition-colors truncate block text-left">
+                  {name}
+                </Link>
               <span className="text-[10px] font-mono font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20">{row.original.studentCode}</span>
             </div>
           </div>
@@ -104,6 +105,30 @@ export default function StudentsPage() {
       accessorKey: "campus",
       header: "Campus",
       cell: ({ row }) => <span className="text-xs font-semibold text-muted-foreground">{row.original.campus?.name ?? "-"}</span>,
+    },
+    {
+      accessorKey: "feePaid",
+      header: "Total Paid",
+      cell: ({ row }) => {
+        const paid = Number(row.original.admissions?.[0]?.feePaid ?? 0);
+        return (
+          <span className="text-xs font-bold text-emerald-400">
+            ₹{paid.toLocaleString("en-IN")}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: "feeBalance",
+      header: "Remaining Balance",
+      cell: ({ row }) => {
+        const bal = Number(row.original.admissions?.[0]?.feeBalance ?? 0);
+        return (
+          <span className={bal > 0 ? "text-xs font-bold text-amber-400" : "text-xs font-bold text-emerald-400"}>
+            ₹{bal.toLocaleString("en-IN")}
+          </span>
+        );
+      },
     },
     {
       accessorKey: "status",
@@ -140,9 +165,11 @@ export default function StudentsPage() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="glass-panel border-white/10 w-44">
-            <DropdownMenuItem onClick={() => setSelectedStudent(row.original)} className="cursor-pointer hover:bg-white/5">
-              <Eye className="mr-2 h-4 w-4 text-primary" />
-              View Details
+            <DropdownMenuItem asChild className="cursor-pointer hover:bg-white/5">
+              <Link href={`/students/${row.original.id}`}>
+                <Eye className="mr-2 h-4 w-4 text-primary" />
+                View Details
+              </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -211,61 +238,6 @@ export default function StudentsPage() {
         </div>
       )}
 
-      {/* Student Detail Modal */}
-      <Dialog open={!!selectedStudent} onOpenChange={(o) => !o && setSelectedStudent(null)}>
-        <DialogContent className="max-w-lg glass-panel border-white/10 bg-slate-900/95 p-0 overflow-hidden">
-          <DialogHeader className="p-6 border-b border-white/10 bg-slate-900/80">
-            <div className="flex items-center gap-4">
-              <Avatar className="h-14 w-14 border-2 border-primary/40 shadow-xl">
-                {selectedStudent?.avatarUrl && <AvatarImage src={selectedStudent.avatarUrl} />}
-                <AvatarFallback className="text-lg bg-primary/20 text-primary font-bold">
-                  {selectedStudent ? getInitials(`${selectedStudent.firstName} ${selectedStudent.lastName}`) : "S"}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <DialogTitle className="text-xl font-bold text-white tracking-tight">
-                  {selectedStudent?.firstName} {selectedStudent?.lastName}
-                </DialogTitle>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Student Code: <span className="font-mono text-primary font-bold">{selectedStudent?.studentCode}</span>
-                </p>
-              </div>
-            </div>
-          </DialogHeader>
-
-          {selectedStudent && (
-            <div className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-xs">
-                <div>
-                  <span className="text-muted-foreground font-semibold block">Email</span>
-                  <span className="text-white font-medium">{selectedStudent.email}</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground font-semibold block">Phone</span>
-                  <span className="text-white font-medium">{selectedStudent.phone}</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground font-semibold block">Course</span>
-                  <span className="text-white font-medium">{selectedStudent.course?.title ?? "-"}</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground font-semibold block">Campus</span>
-                  <span className="text-white font-medium">{selectedStudent.campus?.name ?? "-"}</span>
-                </div>
-              </div>
-              <p className="text-[11px] text-muted-foreground pt-2 border-t border-white/10">
-                Attendance, flying hours, exam clearances, and fee ledgers are not yet tracked in this system.
-              </p>
-            </div>
-          )}
-
-          <DialogFooter className="p-6 border-t border-white/10 bg-slate-900/80">
-            <Button variant="outline" onClick={() => setSelectedStudent(null)} className="border-white/10 hover:bg-white/5 text-xs font-bold">
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

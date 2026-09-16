@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/client";
 import type { LeadFilters, CreateLeadInput, UpdateLeadInput } from "@/lib/validations/lead.schema";
 import { LEAD_PRIORITY_SCORE } from "@/lib/validations/lead.schema";
+import { ACTIVE_LEAD_STATUSES } from "@/lib/leads/lead-status";
 import type { Prisma } from "@prisma/client";
 
 export function scoreRangeForPriority(priority: keyof typeof LEAD_PRIORITY_SCORE): { gte?: number; lt?: number } {
@@ -94,6 +95,45 @@ const LEAD_SELECT = {
   },
 } satisfies Prisma.LeadSelect;
 
+const LEAD_LIST_SELECT = {
+  id: true,
+  orgId: true,
+  campusId: true,
+  name: true,
+  email: true,
+  phone: true,
+  city: true,
+  state: true,
+  pincode: true,
+  googleId: true,
+  manualAmount: true,
+  courseInterest: true,
+  source: true,
+  status: true,
+  score: true,
+  tags: true,
+  assignedTo: true,
+  createdBy: true,
+  utmSource: true,
+  utmMedium: true,
+  utmCampaign: true,
+  utmTerm: true,
+  utmContent: true,
+  referrerUrl: true,
+  landingPage: true,
+  isDuplicate: true,
+  nextFollowUp: true,
+  lastActivityAt: true,
+  convertedAt: true,
+  lostReason: true,
+  customFields: true,
+  metadata: true,
+  createdAt: true,
+  updatedAt: true,
+  counselor: { select: { id: true, name: true, avatarUrl: true, email: true } },
+  campus: { select: { id: true, name: true, city: true } },
+} satisfies Prisma.LeadSelect;
+
 export class LeadRepository {
   static async findMany(orgId: string, filters: LeadFilters) {
     const where: Prisma.LeadWhereInput = {
@@ -101,7 +141,12 @@ export class LeadRepository {
       deletedAt: null,
     };
 
-    if (filters.status) where.status = filters.status;
+    if (filters.isActive) {
+      where.status = { in: ACTIVE_LEAD_STATUSES };
+    } else if (filters.status) {
+      where.status = filters.status;
+    }
+    
     if (filters.source) where.source = filters.source;
     if (filters.assignedTo) where.assignedTo = filters.assignedTo;
     if (filters.campusId) where.campusId = filters.campusId;
@@ -115,6 +160,9 @@ export class LeadRepository {
         { phone: { contains: filters.search } },
       ];
     }
+    if (filters.lostReason) {
+      where.lostReason = { contains: filters.lostReason, mode: "insensitive" };
+    }
     if (filters.dateFrom || filters.dateTo) {
       where.createdAt = {
         ...(filters.dateFrom ? { gte: new Date(filters.dateFrom) } : {}),
@@ -123,7 +171,7 @@ export class LeadRepository {
     }
     if (filters.followUpOverdue) {
       where.nextFollowUp = { lt: new Date() };
-      if (!filters.status) {
+      if (!filters.status && !filters.isActive) {
         where.status = { notIn: ["CONVERTED", "LOST"] };
       }
     }
@@ -137,7 +185,7 @@ export class LeadRepository {
     const [data, total] = await Promise.all([
       prisma.lead.findMany({
         where,
-        select: LEAD_SELECT,
+        select: LEAD_LIST_SELECT,
         orderBy: { [filters.sortBy]: filters.sortDir },
         skip,
         take: filters.limit,

@@ -44,7 +44,15 @@ export class DealService {
   static async ensureDealForLead(
     ctx: RequestContext,
     leadId: string,
-    input: { title: string; source?: LeadSource; assignedTo?: string },
+    input: { 
+      title: string; 
+      source?: LeadSource; 
+      assignedTo?: string;
+      courseId?: string | null;
+      batchId?: string | null;
+      feePlanId?: string | null;
+      value?: number | null;
+    },
   ) {
     const existing = await DealRepository.findActiveByLeadId(ctx.orgId, leadId);
     if (existing) return { deal: existing, created: false };
@@ -67,6 +75,10 @@ export class DealService {
       title: input.title,
       source: input.source,
       assignedTo: input.assignedTo,
+      courseId: input.courseId,
+      batchId: input.batchId,
+      feePlanId: input.feePlanId,
+      value: input.value != null ? input.value : undefined,
       stage: "ENQUIRY",
       currency: "INR",
     });
@@ -337,21 +349,16 @@ export class DealService {
         isActive: false,
         revertedAt: new Date(),
         notes: input?.notes ?? deal.notes,
-        // M-08 Part B (per product decision): revert clears the deal↔admission
-        // link and convertedAt so the archived deal is no longer "dangling" and
-        // the lead can be re-converted/re-PROSPECTed later. The Admission itself
-        // is kept — it remains the source of truth and can be cancelled
-        // independently by staff.
         admissionId: null,
         convertedAt: null,
       },
     });
 
-    // Restore lead to PROSPECT if it was WON/CONVERTED
+    // Restore lead to INTERESTED
     if (LOCKED_LEAD_STATUSES.includes(deal.lead.status as LeadStatus)) {
       await prisma.lead.update({
         where: { id: deal.leadId, orgId: ctx.orgId },
-        data: { status: "PROSPECT" as LeadStatus },
+        data: { status: "INTERESTED" as LeadStatus },
       });
     }
 
@@ -393,12 +400,16 @@ export class DealService {
   static async markWon(
     ctx: RequestContext,
     updated: { id: string; stage: AdmissionStage },
-    existing: { id: string; stage: AdmissionStage; wonAt: Date | null; lostAt: Date | null },
+    existing: { id: string; leadId: string; stage: AdmissionStage; wonAt: Date | null; lostAt: Date | null },
   ) {
     if (existing.wonAt) return; // idempotent
     await prisma.deal.update({
       where: { id: updated.id, orgId: ctx.orgId },
       data: { wonAt: new Date() },
+    });
+    await prisma.lead.update({
+      where: { id: existing.leadId, orgId: ctx.orgId },
+      data: { status: "WON" as LeadStatus },
     });
   }
 

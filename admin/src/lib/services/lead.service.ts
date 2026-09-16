@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db/client";
 import { AuditService } from "@/lib/services/audit.service";
 import { ActivityFeedService } from "@/lib/services/activity.service";
 import type { Prisma } from "@prisma/client";
-import { ConflictError, NotFoundError, ValidationError } from "@/lib/utils/errors";
+import { ConflictError, NotFoundError, ValidationError, ForbiddenError } from "@/lib/utils/errors";
 import type { CreateLeadInput, UpdateLeadInput, LeadFilters, CreateActivityInput } from "@/lib/validations/lead.schema";
 import type { RequestContext } from "@/types";
 import type { LeadStatus, LeadSource } from "@prisma/client";
@@ -235,11 +235,6 @@ export class LeadService {
   }
 
   static async list(ctx: RequestContext, filters: LeadFilters) {
-    try {
-      await this.syncFallbackLeads(ctx);
-    } catch (err) {
-      console.error("[Lead Sync Error] Failed to sync fallback leads:", err);
-    }
     return LeadRepository.findMany(ctx.orgId, filters);
   }
 
@@ -328,6 +323,13 @@ export class LeadService {
   static async update(ctx: RequestContext, id: string, input: UpdateLeadInput) {
     const existing = await this.getById(ctx, id);
 
+    // E5 Assignment permission: Only Admin, SuperAdmin, Manager may assign/reassign leads.
+    if (input.assignedTo !== undefined && input.assignedTo !== existing.assignedTo) {
+      if (ctx.user.role === "ADMISSIONS_COUNSELOR") {
+        throw new ForbiddenError("Sales Agents cannot assign or reassign leads.");
+      }
+    }
+
     // Detect status change for targeted event
     const statusChanged = input.status && input.status !== existing.status;
 
@@ -347,14 +349,15 @@ export class LeadService {
         const { DealService } = await import("@/lib/services/deal.service");
         const title =
           existing.name.length > 255 - (existing.courseInterest?.length ?? 0) - 2
-            ? existing.name.slice(0, 240) + ` — ${(existing.courseInterest ?? "Prospect").slice(0, 12)}`
+            ? existing.name.slice(0, 240) + ` - ${(existing.courseInterest ?? "Prospect").slice(0, 12)}`
             : existing.courseInterest
-              ? `${existing.name} — ${existing.courseInterest}`
-              : `${existing.name} — Prospect`;
+              ? `${existing.name} - ${existing.courseInterest}`
+              : `${existing.name} - Prospect`;
         await DealService.ensureDealForLead(ctx, id, {
           title,
           source: existing.source ?? undefined,
           assignedTo: existing.assignedTo ?? undefined,
+          ...((input as any).dealData || {}),
         });
       }
 
@@ -1019,9 +1022,19 @@ export class LeadService {
     if (isLostStatus(lead.status as LeadStatus)) {
       throw new ValidationError([{ message: "Cannot convert a lost lead" }]);
     }
+
+    // Check if there is an existing valid admission to route to, even if the lead is already WON.
+    const earlyExisting = await prisma.admission.findFirst({
+      where: { leadId, orgId: ctx.orgId },
+      orderBy: { createdAt: "desc" },
+    });
+    if (earlyExisting && earlyExisting.stage !== "CANCELLED" && earlyExisting.stage !== "DROPPED") {
+      return { admission: earlyExisting, created: false };
+    }
+
     if (LOCKED_LEAD_STATUSES.includes(lead.status as LeadStatus)) {
       throw new ValidationError([
-        { message: "Lead is already converted/enrolled — nothing to convert." },
+        { message: "Lead is already converted/enrolled but no active admission was found." },
       ]);
     }
 
@@ -1098,11 +1111,11 @@ export class LeadService {
       throw err;
     }
 
-    // PROSPECT is the canonical conversion status — conversion opens the
-    // admission funnel without fabricating a legacy APPLICATION_SUBMITTED state.
+    // WON is the canonical conversion status — conversion opens the
+    // admission funnel and marks the lead lifecycle as won.
     await prisma.lead.update({
       where: { id: leadId },
-      data: { status: "PROSPECT", lastActivityAt: new Date() },
+      data: { status: "WON", lastActivityAt: new Date() },
     });
 
     await prisma.leadActivity.create({

@@ -51,6 +51,7 @@ export const updateStudentSchema = createStudentSchema
   .omit({ leadId: true })
   .partial()
   .extend({
+    phone: z.string().min(7).max(20).optional().or(z.literal("")),
     status: z.nativeEnum(StudentStatus).optional(),
     enrolledAt: z.string().datetime().optional(),
     graduatedAt: z.string().datetime().optional(),

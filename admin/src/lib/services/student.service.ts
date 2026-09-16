@@ -82,7 +82,10 @@ export class StudentService {
     const existing = await this.getById(ctx, id);
 
     // Email uniqueness if changing email
-    if (input.email && input.email.toLowerCase() !== existing.email) {
+    if (input.email && existing.email && input.email.toLowerCase() !== existing.email.toLowerCase()) {
+      const conflict = await StudentRepository.findByEmail(ctx.orgId, input.email, id);
+      if (conflict) throw new ConflictError(`Student with email ${input.email} already exists`);
+    } else if (input.email && !existing.email) {
       const conflict = await StudentRepository.findByEmail(ctx.orgId, input.email, id);
       if (conflict) throw new ConflictError(`Student with email ${input.email} already exists`);
     }

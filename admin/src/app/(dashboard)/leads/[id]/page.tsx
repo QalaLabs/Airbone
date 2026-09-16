@@ -252,6 +252,19 @@ export default function LeadDetailPage() {
   const [editingStatus, setEditingStatus] = React.useState(false);
   const [pendingStatus, setPendingStatus] = React.useState<string | null>(null);
   const [followUpNote, setFollowUpNote] = React.useState("");
+  const [courseId, setCourseId] = React.useState<string>("unselected");
+  const [batchId, setBatchId] = React.useState<string>("unselected");
+  const [feeDecided, setFeeDecided] = React.useState<string>("");
+
+  const { data: courses = [] } = useQuery({
+    queryKey: ["courses"],
+    queryFn: () => apiFetch<{ id: string; title: string }[]>("/courses"),
+  });
+
+  const { data: batches = [] } = useQuery({
+    queryKey: ["lms-batches"],
+    queryFn: () => apiFetch<{ id: string; name: string }[]>("/lms/batches"),
+  });
 
   const { data: lead, isLoading } = useQuery({
     queryKey: ["lead", id],
@@ -286,9 +299,12 @@ export default function LeadDetailPage() {
     queryKey: ["leads", "neighbors"],
     queryFn: async () => {
       try {
-        const res = await apiFetch<{ id: string; name: string }[]>(
-          "/leads?limit=100&sortBy=updatedAt&sortDir=desc&fields=id,name",
-        );
+        const storedFilters = typeof window !== "undefined" ? sessionStorage.getItem("lastLeadFilters") : null;
+        const queryParams = storedFilters || "limit=100&sortBy=updatedAt&sortDir=desc";
+        // append fields=id,name to ensure minimal payload
+        const url = `/leads?${queryParams}&fields=id,name`;
+        
+        const res = await apiFetch<{ id: string; name: string }[]>(url);
         return Array.isArray(res) ? res : [];
       } catch {
         return [] as { id: string; name: string }[];
@@ -317,11 +333,22 @@ export default function LeadDetailPage() {
   };
 
   const updateStatusMutation = useMutation({
-    mutationFn: (payload: { status: string; lostReason?: string }) =>
+    mutationFn: (payload: { status: string; lostReason?: string; nextFollowUp?: string | null; dealData?: any }) =>
       apiFetch(`/leads/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
     onSuccess: () => {
       invalidate();
       toast({ title: "Status updated" });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const convertLeadMutation = useMutation({
+    mutationFn: (payload: { dealData?: any; notes?: string }) =>
+      apiFetch(`/leads/${id}/convert`, { method: "POST", body: JSON.stringify(payload) }),
+    onSuccess: (res: any) => {
+      invalidate();
+      toast({ title: "Converted to Admission", description: `Dossier ${res.admission?.applicationNo} created.` });
+      router.push(`/admissions?dossier=${res.admission?.id}`);
     },
     onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
@@ -357,7 +384,7 @@ export default function LeadDetailPage() {
         durationMins: body.durationMins || undefined,
       };
       if (body.dueAt) {
-        payload.dueAt = new Date(body.dueAt).toISOString();
+        payload.dueAt = fromISTInput(body.dueAt);
       }
       return apiFetch(`/leads/${id}/activities`, {
         method: "POST",
@@ -556,11 +583,12 @@ export default function LeadDetailPage() {
                   <Phone className="h-3 w-3 text-primary" /> {lead.phone}
                 </span>
               ) : null}
-              {lead.email ? (
-                <span className="flex items-center gap-1.5 text-muted-foreground">
-                  <Mail className="h-3 w-3 text-primary" /> {lead.email}
-                </span>
-              ) : null}
+                {lead.email ? (
+                  <span className="flex items-center gap-1.5 text-muted-foreground max-w-full">
+                    <Mail className="h-3 w-3 shrink-0 text-primary" /> 
+                    <span className="break-all">{lead.email}</span>
+                  </span>
+                ) : null}
             </div>
           </div>
 
@@ -695,6 +723,7 @@ export default function LeadDetailPage() {
             </button>
           );
         })}
+        <div className="flex-1" />
         <Button
           size="sm"
           className="bg-primary text-white text-xs font-bold h-[38px]"
@@ -702,57 +731,10 @@ export default function LeadDetailPage() {
         >
           <Plus className="h-3.5 w-3.5 mr-1" /> Manual Addition
         </Button>
-        <div className="flex-1" />
-        {[
-          { id: "tasks" as const, label: `Tasks (${openTasks.length})`, icon: CheckCircle2 },
-          { id: "comms" as const, label: "Calls / Email / WhatsApp", icon: PhoneCall },
-        ].map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-[11px] font-bold transition-all whitespace-nowrap border ${
-                isActive
-                  ? "bg-secondary/30 text-white border-primary/20"
-                  : "text-muted-foreground hover:bg-white/5 border-transparent"
-              }`}
-            >
-              <Icon className="h-3.5 w-3.5" />
-              {tab.label}
-            </button>
-          );
-        })}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-4">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <h2 className="text-sm font-bold text-white flex items-center gap-2">
-                <PhoneCall className="h-4 w-4 text-primary" /> Log communication
-              </h2>
-              <span className="text-[10px] text-muted-foreground font-semibold">Opens the activity logger prefilled</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {(["CALL", "EMAIL", "WHATSAPP", "SMS", "MEETING"] as const).map((t) => {
-                const Icon = ACTIVITY_ICONS[t] ?? PhoneCall;
-                return (
-                  <Button
-                    key={t}
-                    size="sm"
-                    variant="outline"
-                    className="border-white/10 text-xs font-bold"
-                    onClick={() => openLog(t)}
-                  >
-                    <Icon className="h-3.5 w-3.5 mr-1" /> {t.replace(/_/g, " ")}
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
           <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-6">
             <h2 className="text-base font-bold text-white flex items-center gap-2 border-b border-white/10 pb-3">
               <User className="h-4 w-4 text-primary" /> Profile
@@ -806,31 +788,6 @@ export default function LeadDetailPage() {
               onAdd={() => openLog("NOTE")}
               quickActions
               onQuick={(t) => openLog(t)}
-            />
-          )}
-
-          {activeTab === "tasks" && (
-            <TimelineCard
-              title="Tasks"
-              loading={activitiesLoading}
-              items={tasks}
-              onAdd={() => openLog("TASK")}
-              onComplete={(aid) => completeTaskMutation.mutate(aid)}
-              empty="No tasks yet."
-            />
-          )}
-
-          {activeTab === "comms" && (
-            <TimelineCard
-              title="Communication log"
-              loading={activitiesLoading}
-              items={comms}
-              onAdd={() => openLog("CALL")}
-              onComplete={(aid) => completeTaskMutation.mutate(aid)}
-              empty="No calls, emails, or WhatsApp logs yet."
-              quickActions
-              onQuick={(t) => openLog(t)}
-              quickTypes={["CALL", "EMAIL", "WHATSAPP", "SMS", "MEETING"]}
             />
           )}
 
@@ -1113,7 +1070,7 @@ export default function LeadDetailPage() {
               Schedule the next follow-up and/or note the outcome before applying.
             </p>
           </DialogHeader>
-          <div className="space-y-4 pt-2">
+          <div className="space-y-4 pt-2 max-h-[60vh] overflow-y-auto pr-2">
             <div className="space-y-1.5">
               <Label className="text-xs font-bold text-muted-foreground">Next follow-up (calendar)</Label>
               <Input
@@ -1123,6 +1080,50 @@ export default function LeadDetailPage() {
                 className="bg-secondary/40 border-white/10 text-xs"
               />
             </div>
+            
+            {pendingStatus === "PROSPECT" && (
+              <>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-muted-foreground">Course Decided</Label>
+                  <Select value={courseId} onValueChange={setCourseId}>
+                    <SelectTrigger className="bg-secondary/40 border-white/10 text-xs">
+                      <SelectValue placeholder="Select course" />
+                    </SelectTrigger>
+                    <SelectContent className="glass-panel border-white/10 text-xs">
+                      <SelectItem value="unselected">-- Not Selected --</SelectItem>
+                      {courses.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-muted-foreground">Batch Decided</Label>
+                  <Select value={batchId} onValueChange={setBatchId}>
+                    <SelectTrigger className="bg-secondary/40 border-white/10 text-xs">
+                      <SelectValue placeholder="Select batch" />
+                    </SelectTrigger>
+                    <SelectContent className="glass-panel border-white/10 text-xs">
+                      <SelectItem value="unselected">-- Not Selected --</SelectItem>
+                      {batches.map((b) => (
+                        <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-muted-foreground">Fee Decided (₹)</Label>
+                  <Input
+                    type="number"
+                    value={feeDecided}
+                    onChange={(e) => setFeeDecided(e.target.value)}
+                    placeholder="e.g. 50000"
+                    className="bg-secondary/40 border-white/10 text-xs"
+                  />
+                </div>
+              </>
+            )}
+
             <div className="space-y-1.5">
               <Label className="text-xs font-bold text-muted-foreground">Note (optional)</Label>
               <Textarea
@@ -1146,25 +1147,48 @@ export default function LeadDetailPage() {
             <Button
               type="button"
               className="text-xs font-bold"
-              disabled={!pendingStatus || updateStatusMutation.isPending}
-              onClick={() => {
+              disabled={!pendingStatus || updateStatusMutation.isPending || convertLeadMutation.isPending || addActivityMutation.isPending}
+              onClick={async () => {
                 if (!pendingStatus) return;
-                updateStatusMutation.mutate({ status: pendingStatus });
-                if (followUp) {
-                  followUpMutation.mutate(fromISTInput(followUp));
+
+                const dealData = pendingStatus === "PROSPECT" || pendingStatus === "WON" ? {
+                  ...(courseId !== "unselected" && { courseId }),
+                  ...(batchId !== "unselected" && { batchId }),
+                  ...(feeDecided && { value: Number(feeDecided) }),
+                } : undefined;
+
+                const noteText = followUpNote.trim();
+
+                try {
+                  if (pendingStatus === "WON") {
+                    await convertLeadMutation.mutateAsync({
+                      dealData,
+                      notes: noteText.length >= 2 ? noteText : undefined,
+                    });
+                  } else {
+                    await updateStatusMutation.mutateAsync({
+                      status: pendingStatus,
+                      nextFollowUp: followUp ? fromISTInput(followUp) : undefined,
+                      dealData
+                    });
+
+                    if (noteText.length >= 2) {
+                      await addActivityMutation.mutateAsync({
+                        activityType: "NOTE",
+                        notes: noteText,
+                      });
+                    }
+                  }
+                  
+                  setPendingStatus(null);
+                  setFollowUpNote("");
+                  setEditingStatus(false);
+                } catch (e) {
+                  // error handled by mutation onError
                 }
-                if (followUpNote.trim().length >= 2) {
-                  addActivityMutation.mutate({
-                    activityType: "NOTE",
-                    notes: followUpNote.trim(),
-                  });
-                }
-                setPendingStatus(null);
-                setFollowUpNote("");
-                setEditingStatus(false);
               }}
             >
-              {updateStatusMutation.isPending ? "Saving..." : "Apply & Close"}
+              {(updateStatusMutation.isPending || convertLeadMutation.isPending || addActivityMutation.isPending) ? "Saving..." : "Apply & Close"}
             </Button>
           </DialogFooter>
         </DialogContent>

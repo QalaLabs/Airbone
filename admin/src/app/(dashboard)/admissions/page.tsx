@@ -493,7 +493,7 @@ function PaymentsPanel({
         {summary && (
           <div className="mt-2 space-y-1">
             <p className="text-xs text-muted-foreground">
-              Course {money(summary.feeAmount)} · Discount {money(summary.feeDiscount)} · Final {money(summary.feeFinal)} · Paid{" "}
+              Course {money(summary.feeAmount)} · Discount {money(summary.feeDiscount)} · Final {money(summary.feeFinal)} · Total Paid{" "}
               {money(summary.feePaid)}
             </p>
             <p className="text-xs">
@@ -586,7 +586,26 @@ function PaymentsPanel({
       >
         <div className="space-y-1">
           <Label className="text-[10px] font-bold text-muted-foreground">Amount</Label>
-          <Input type="number" min="1" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} className="h-8 text-xs bg-secondary/40 border-white/10" required />
+          <div className="flex flex-col gap-1.5">
+            <Input type="number" min="1" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} className="h-8 text-xs bg-secondary/40 border-white/10" required />
+            <div className="flex gap-1">
+              {[25, 50, 75, 100].map((pct) => (
+                <button
+                  key={pct}
+                  type="button"
+                  onClick={() => {
+                    const finalFee = Number(summary?.feeFinal ?? feeAmount ?? 0);
+                    if (finalFee > 0) {
+                      setAmount(String((finalFee * (pct / 100)).toFixed(2)));
+                    }
+                  }}
+                  className="px-1.5 py-0.5 text-[9px] font-bold rounded border border-white/10 bg-white/5 hover:bg-primary/20 hover:text-primary transition-colors text-muted-foreground"
+                >
+                  {pct}%
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
         <div className="space-y-1">
           <Label className="text-[10px] font-bold text-muted-foreground">Method</Label>
