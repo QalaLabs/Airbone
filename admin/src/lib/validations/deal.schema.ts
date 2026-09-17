@@ -7,6 +7,9 @@ export const createDealInputSchema = z.object({
   stage: z.nativeEnum(AdmissionStage).default("ENQUIRY"),
   value: z.number().nonnegative().optional(),
   currency: z.string().length(3).toUpperCase().default("INR"),
+  courseId: z.string().uuid().optional().nullable(),
+  batchId: z.string().uuid().optional().nullable(),
+  feePlanId: z.string().uuid().optional().nullable(),
   expectedCloseAt: z.string().datetime().optional(),
   source: z.nativeEnum(LeadSource).optional(),
   assignedTo: z.string().uuid().optional(),
@@ -19,6 +22,9 @@ export const updateDealSchema = z.object({
   stage: z.nativeEnum(AdmissionStage).optional(),
   value: z.number().nonnegative().optional(),
   currency: z.string().length(3).toUpperCase().optional(),
+  courseId: z.string().uuid().optional().nullable(),
+  batchId: z.string().uuid().optional().nullable(),
+  feePlanId: z.string().uuid().optional().nullable(),
   expectedCloseAt: z.string().datetime().nullable().optional(),
   source: z.nativeEnum(LeadSource).optional(),
   assignedTo: z.string().uuid().nullable().optional(),
@@ -61,13 +67,14 @@ export const dealFiltersSchema = z.object({
   isActive: z.enum(["true", "false"]).optional().transform((v) => (v === undefined ? undefined : v === "true")),
   status: z.enum(["open", "won", "lost"]).optional(),
   assignedTo: z.string().uuid().optional(),
+  lostReason: z.string().optional(),
   search: z.string().max(255).optional(),
   dateFrom: z.string().datetime().optional(),
   dateTo: z.string().datetime().optional(),
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(100).default(20),
   sortBy: z
-    .enum(["createdAt", "updatedAt", "stage", "value", "expectedCloseAt", "title", "wonAt", "lostAt"])
+    .enum(["createdAt", "updatedAt", "stage", "value", "expectedCloseAt", "title", "wonAt", "lostAt", "lostReason"])
     .default("updatedAt"),
   sortDir: z.enum(["asc", "desc"]).default("desc"),
 });

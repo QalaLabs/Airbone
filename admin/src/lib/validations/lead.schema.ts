@@ -30,6 +30,7 @@ export const createLeadSchema = z.object({
 export const updateLeadSchema = createLeadSchema.partial().extend({
   status: z.nativeEnum(LeadStatus).optional(),
   lostReason: z.string().max(1000).optional(),
+  dealData: z.record(z.unknown()).optional(),
 });
 
 export const updateLeadStatusSchema = z.object({
@@ -63,16 +64,18 @@ export const leadFiltersSchema = z.object({
   campusId: z.string().uuid().optional(),
   courseInterest: z.string().optional(),
   priority: z.enum(["HIGH", "MEDIUM", "LOW"]).optional(),
+  lostReason: z.string().optional(),
   search: z.string().max(255).optional(),
   dateFrom: z.string().datetime().optional(),
   dateTo: z.string().datetime().optional(),
+  isActive: z.preprocess((v) => v === "true", z.boolean()).optional(),
   followUpOverdue: z
     .enum(["true", "false"])
     .optional()
     .transform((v) => (v === undefined ? undefined : v === "true")),
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(100).default(20),
-  sortBy: z.enum(["createdAt", "updatedAt", "score", "name", "status", "nextFollowUp"]).default("createdAt"),
+  sortBy: z.enum(["createdAt", "updatedAt", "score", "name", "status", "nextFollowUp", "lostReason"]).default("createdAt"),
   sortDir: z.enum(["asc", "desc"]).default("desc"),
 });
 
