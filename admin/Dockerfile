@@ -37,6 +37,9 @@ COPY . .
 # `prisma migrate deploy`, which needs DATABASE_URL/DIRECT_URL at build time).
 # Use next build directly — schema migrations run in the CMD at container start
 # where a runtime DATABASE_URL with DDL rights is the only requirement.
+ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres"
+ENV AUTH_SECRET="dummy-secret"
+ENV AUTH_URL="http://localhost:3000"
 RUN npx prisma generate && npx next build
 
 # ├── runner ────────────────────────────────────────────────────────────
