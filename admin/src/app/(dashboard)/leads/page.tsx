@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { type ColumnDef, type PaginationState } from "@tanstack/react-table";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
+import { type ColumnDef, type PaginationState, type SortingState } from "@tanstack/react-table";
 import { Plus, Search, Filter, MoreHorizontal, Eye, CheckSquare, UserCheck, Sparkles, SlidersHorizontal, ChevronDown, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
@@ -40,6 +40,7 @@ interface Lead {
   assignedTo?: { name: string };
   counselor?: { id: string; name: string };
   nextFollowUp?: string | null;
+  admissions?: { id: string }[];
   createdAt: string;
   lastActivityAt?: string;
 }
@@ -69,6 +70,7 @@ const LEAD_STATUSES = [
 export default function LeadsPage() {
   const queryClient = useQueryClient();
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 20 });
+  const [sorting, setSorting] = React.useState<SortingState>([{ id: "createdAt", desc: true }]);
   const [search, setSearch] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState("all");
   const [priorityFilter, setPriorityFilter] = React.useState("all");
@@ -89,17 +91,23 @@ export default function LeadsPage() {
   });
 
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["leads", pagination.pageIndex, pagination.pageSize, debouncedSearch, statusFilter, priorityFilter, counsellorFilter, overdueOnly],
+    queryKey: ["leads", pagination.pageIndex, pagination.pageSize, sorting, debouncedSearch, statusFilter, priorityFilter, counsellorFilter, overdueOnly],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: String(pagination.pageIndex + 1),
         limit: String(pagination.pageSize),
+        ...(sorting.length > 0 && sorting[0] ? { sortBy: sorting[0].id, sortDir: sorting[0].desc ? "desc" : "asc" } : {}),
         ...(debouncedSearch ? { search: debouncedSearch } : {}),
         ...(statusFilter && statusFilter !== "all" ? { status: statusFilter } : {}),
         ...(priorityFilter && priorityFilter !== "all" ? { priority: priorityFilter } : {}),
         ...(counsellorFilter && counsellorFilter !== "all" ? { assignedTo: counsellorFilter } : {}),
         ...(overdueOnly ? { followUpOverdue: "true" } : {}),
       });
+      // Save filters for Previous/Next navigation in the lead detail view
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("lastLeadFilters", params.toString());
+      }
+      
       // The API responds with { success, data: Lead[], meta: {total,page,limit,totalPages} }.
       // apiFetch() only unwraps `.data` (dropping `.meta`), so pagination totals are
       // fetched directly here rather than assuming a nested { items, total } shape.
@@ -184,7 +192,7 @@ export default function LeadsPage() {
       header: "Lead Contact",
       cell: ({ row }) => (
         <div>
-          <Link href={`/leads/${row.original.id}`} className="font-semibold text-white hover:text-primary transition-colors flex items-center gap-2">
+          <Link href={row.original.status === "WON" && row.original.admissions?.[0]?.id ? `/admissions/${row.original.admissions[0].id}` : `/leads/${row.original.id}`} className="font-semibold text-white hover:text-primary transition-colors flex items-center gap-2">
             {row.original.name}
             {row.original.score > 80 && (
               <span className="text-[9px] font-extrabold bg-amber-500/20 text-amber-400 border border-amber-500/30 px-1 py-0.5 rounded flex items-center gap-0.5">
@@ -284,15 +292,16 @@ export default function LeadsPage() {
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-secondary">
+            <Button variant="ghost" className="h-8 w-8 p-0 text-muted-foreground hover:text-white">
+              <span className="sr-only">Open menu</span>
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="glass-panel border-white/10 w-44">
             <DropdownMenuItem asChild className="cursor-pointer hover:bg-white/5">
-              <Link href={`/leads/${row.original.id}`}>
+              <Link href={row.original.status === "WON" && row.original.admissions?.[0]?.id ? `/admissions/${row.original.admissions[0].id}` : `/leads/${row.original.id}`}>
                 <Eye className="mr-2 h-4 w-4 text-primary" />
-                View Full Profile
+                {row.original.status === "WON" && row.original.admissions?.[0]?.id ? "View Admission" : "View Full Profile"}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild className="cursor-pointer hover:bg-white/5">
@@ -440,6 +449,8 @@ export default function LeadsPage() {
             pageCount={data?.totalPages ?? 0}
             pagination={pagination}
             onPaginationChange={setPagination}
+            sorting={sorting}
+            onSortingChange={setSorting}
             emptyTitle="No leads found in CRM queue"
             emptyDescription="Try clearing your filters or add a new lead to get started."
           />
