@@ -102,7 +102,7 @@ export const LEGACY_COURSE_ITEMS = [
     tag: 'Airline Prep',
     duration: '3 Months',
     desc: 'Structured airline interview preparation - GD, PI, and soft skills for IndiGo, Air India, Akasa and more. Duration: 3 months.',
-    price: '₹1,00,000',
+    price: '₹1,25,000',
     href: '/courses/airline-preparation',
     accent: 'var(--red)',
     marketingSlug: 'airline-preparation',
@@ -197,5 +197,34 @@ export function resolveCatalogItems(apiCourses) {
     (Array.isArray(apiCourses) ? apiCourses : []).map((c) => apiToMarketingSlug(c.slug)),
   )
   const legacy = LEGACY_COURSE_ITEMS.filter((l) => !presentMarketingSlugs.has(l.marketingSlug))
-  return [...items, ...legacy]
+  
+  const combined = [...items, ...legacy]
+  
+  const REQUIRED_ORDER = [
+    'commercial-pilot-license-cpl', // Maps to DGCA CPL Ground
+    'flying-training-india-abroad', // Maps to CPL
+    'cadet-preparation',
+    'airline-preparation',
+    'gd-pi',
+    'cas-compass-adapt',
+    'atpl',
+    'a320-simulator',
+    'cabin-crew-training'
+  ];
+  
+  combined.sort((a, b) => {
+    // Extract the slug from href
+    const slugA = a.href.replace('/courses/', '');
+    const slugB = b.href.replace('/courses/', '');
+    
+    let idxA = REQUIRED_ORDER.indexOf(slugA);
+    let idxB = REQUIRED_ORDER.indexOf(slugB);
+    
+    if (idxA === -1) idxA = 999;
+    if (idxB === -1) idxB = 999;
+    
+    return idxA - idxB;
+  });
+  
+  return combined
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useSession } from "next-auth/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -239,6 +240,7 @@ function fromISTInput(value: string): string {
 }
 
 export default function LeadDetailPage() {
+  const { data: session } = useSession();
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -608,9 +610,11 @@ export default function LeadDetailPage() {
               </Button>
             </div>
           </div>
-          <Button size="sm" variant="outline" className="border-white/10 text-xs font-bold" onClick={() => setAssignOpen(true)}>
-            <UserPlus className="h-3.5 w-3.5 mr-1" /> Assign
-          </Button>
+            {(session?.user?.role === "ADMIN" || session?.user?.role === "SUPER_ADMIN" || session?.user?.role === "MARKETING_MANAGER") && (
+              <Button size="sm" variant="outline" className="border-white/10 text-xs font-bold" onClick={() => setAssignOpen(true)}>
+                <UserPlus className="h-3.5 w-3.5 mr-1" /> Assign
+              </Button>
+            )}
           <Button
             size="sm"
             className="bg-primary text-white text-xs font-bold"
@@ -657,14 +661,14 @@ export default function LeadDetailPage() {
                             if (LOST_STATUSES.has(s)) {
                               // I4: lost statuses do not open a note dialog — they
                               // apply immediately with the (required) lost reason.
-                              if (!lostReason.trim()) {
+                              if (s === "LOST" && !lostReason.trim()) {
                                 toast({ title: "Lost reason required", description: "Add a lost reason below before saving.", variant: "destructive" });
                                 return;
                               }
                               setPendingStatus(null);
                               updateStatusMutation.mutate({
                                 status: s,
-                                lostReason: LOST_STATUSES.has(s) ? lostReason : undefined,
+                                lostReason: lostReason.trim() ? lostReason : undefined,
                               });
                               setEditingStatus(false);
                               return;

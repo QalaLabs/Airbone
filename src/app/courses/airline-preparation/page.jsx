@@ -10,15 +10,15 @@ import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 import { fetchPublic } from '@/lib/adminApi'
 import { displayCourseFee, courseFeeNumeric } from '@/lib/courseFees'
 
-// BD-1: Admin DB fee (canonical ₹1,00,000) overrides stale ₹1,25,000.
+// BD-1: Admin DB fee (canonical ₹1,25,000) overrides stale ₹1,25,000.
 const CANONICAL_SLUG = 'airline-preparation'
-const OFFLINE_FEE_FALLBACK = '₹1,00,000' // matches canonical Admin seed; resilience only
+const OFFLINE_FEE_FALLBACK = '₹1,25,000' // matches canonical Admin seed; resilience only
 
 export const revalidate = 60
 
 export const metadata = {
   title: 'Comprehensive Airline Preparation Program | DGCA + A320 + ADAPT + GD/PI | Airborne Delhi',
-  description: 'CPL to First Officer in 2.5 months. DGCA Ground Refresher, ADAPT Screening, A320 Systems & Sim Prep, and GD/PI - all in one program. 4 hrs/day. ₹1,00,000. Airborne Aviation Academy, Dwarka Delhi.',
+  description: 'CPL to First Officer in 2.5 months. DGCA Ground Refresher, ADAPT Screening, A320 Systems & Sim Prep, and GD/PI - all in one program. 4 hrs/day. ₹1,25,000. Airborne Aviation Academy, Dwarka Delhi.',
   alternates: { canonical: '/courses/airline-preparation' },
 }
 

@@ -1433,27 +1433,35 @@ function AirborneAdvantage() {
 
           .advantage-carousel {
             display: flex;
-            overflow-x: auto;
-            overflow-y: hidden;
-            scroll-snap-type: x mandatory;
+            flex-direction: column;
+            overflow-x: hidden;
+            overflow-y: auto;
+            max-height: 80vh;
+            gap: 1.25rem;
+            padding-bottom: 2rem;
             -webkit-overflow-scrolling: touch;
-            touch-action: pan-x pan-y;
-            overscroll-behavior-x: contain;
-            scroll-behavior: smooth;
-            gap: 0;
-            padding: 1.5rem 0 2rem;
-            margin-bottom: 0.5rem;
+            padding-right: 1rem;
           }
 
           .advantage-carousel::-webkit-scrollbar {
-            display: none;
+            width: 4px;
+          }
+
+          .advantage-carousel::-webkit-scrollbar-track {
+            background: rgba(0,39,76,0.05);
+            border-radius: 4px;
+          }
+
+          .advantage-carousel::-webkit-scrollbar-thumb {
+            background: rgba(0,39,76,0.2);
+            border-radius: 4px;
           }
 
           /* One full screen per swipe */
           .advantage-card-mobile {
-            flex: 0 0 100%;
-            scroll-snap-align: start;
-            background: #ffffff;
+            flex: 0 0 auto;
+            width: 100%;
+            background: #fff;
             border: 1px solid rgba(0, 39, 76, 0.08);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
