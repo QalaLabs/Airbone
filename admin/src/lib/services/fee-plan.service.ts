@@ -1,6 +1,7 @@
+import { prisma } from "@/lib/db/client";
 import { FeePlanRepository } from "@/lib/repositories/fee-plan.repository";
 import { AuditService } from "@/lib/services/audit.service";
-import { NotFoundError } from "@/lib/utils/errors";
+import { NotFoundError, ValidationError } from "@/lib/utils/errors";
 import { computePlanTotal, type PlanComputation, type PlanItemInput } from "@/lib/services/fee-calculation.service";
 import type { CreateFeePlanInput, UpdateFeePlanInput, FeePlanFilters } from "@/lib/validations/fee-plan.schema";
 import type { RequestContext } from "@/types";
@@ -16,7 +17,17 @@ export class FeePlanService {
     return plan;
   }
 
+  /** A fee plan may only reference a course of the same organization. */
+  static async assertCourseInOrg(orgId: string, courseId: string | null | undefined): Promise<void> {
+    if (!courseId) return;
+    const course = await prisma.course.findFirst({ where: { id: courseId, orgId }, select: { id: true } });
+    if (!course) {
+      throw new ValidationError([{ path: ["courseId"], message: "Course not found in this organization" }]);
+    }
+  }
+
   static async create(ctx: RequestContext, input: CreateFeePlanInput) {
+    await this.assertCourseInOrg(ctx.orgId, input.courseId);
     const plan = await FeePlanRepository.create(ctx.orgId, input);
 
     await AuditService.write({
@@ -27,14 +38,19 @@ export class FeePlanService {
       action: "fee_plan.created",
       entityType: "fee_plan",
       entityId: plan.id,
-      newValue: { name: plan.name, itemCount: plan.items.length },
+      newValue: { name: plan.name, itemCount: plan.items.length, courseId: plan.courseId },
     });
 
     return plan;
   }
 
+  /**
+   * Re-mapping a plan's course only changes the plan. Admissions keep the fee
+   * snapshot captured when they were created (admission.metadata.feePlanSnapshot).
+   */
   static async update(ctx: RequestContext, id: string, input: UpdateFeePlanInput) {
-    await this.getById(ctx, id);
+    const before = await this.getById(ctx, id);
+    if (input.courseId !== undefined) await this.assertCourseInOrg(ctx.orgId, input.courseId);
     const plan = await FeePlanRepository.update(ctx.orgId, id, input);
     if (!plan) throw new NotFoundError("FeePlan", id);
 
@@ -46,7 +62,8 @@ export class FeePlanService {
       action: "fee_plan.updated",
       entityType: "fee_plan",
       entityId: id,
-      newValue: { name: plan.name, isActive: plan.isActive },
+      oldValue: { name: before.name, isActive: before.isActive, courseId: before.courseId },
+      newValue: { name: plan.name, isActive: plan.isActive, courseId: plan.courseId },
     });
 
     return plan;

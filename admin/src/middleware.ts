@@ -74,7 +74,9 @@ export default auth((req: NextRequest & { auth?: { user?: { orgId?: string; id?:
   headers.set("x-request-id", requestId);
   headers.set("x-org-id", req.auth.user.orgId ?? "");
   headers.set("x-user-id", req.auth.user.id ?? "");
-  headers.set("x-user-role", req.auth.user.role ?? "");
+  // Role is resolved from the DB per request (auth/config.ts jwt callback);
+  // never forward the edge-decoded role, which may predate a role change.
+  headers.delete("x-user-role");
   headers.set("x-forwarded-for-real", req.headers.get("x-forwarded-for") ?? req.headers.get("x-real-ip") ?? "unknown");
 
   return NextResponse.next({ request: { headers } });

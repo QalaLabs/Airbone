@@ -5,6 +5,8 @@ import type { CreateFeePlanInput, UpdateFeePlanInput, FeePlanFilters } from "@/l
 const FEE_PLAN_SELECT = {
   id: true,
   orgId: true,
+  courseId: true,
+  course: { select: { id: true, title: true, slug: true, fee: true } },
   name: true,
   description: true,
   currency: true,
@@ -31,6 +33,7 @@ export class FeePlanRepository {
   static async findMany(orgId: string, filters: FeePlanFilters) {
     const where: Prisma.FeePlanWhereInput = {
       orgId,
+      ...(filters.courseId && { courseId: filters.courseId }),
       ...(filters.isActive !== undefined && { isActive: filters.isActive }),
       ...(filters.search && {
         OR: [
@@ -65,6 +68,7 @@ export class FeePlanRepository {
     return prisma.feePlan.create({
       data: {
         orgId,
+        courseId: input.courseId ?? null,
         name: input.name,
         description: input.description,
         currency: input.currency,
@@ -109,6 +113,7 @@ export class FeePlanRepository {
         where: { id },
         data: {
           ...(input.name !== undefined && { name: input.name }),
+          ...(input.courseId !== undefined && { courseId: input.courseId }),
           ...(input.description !== undefined && { description: input.description }),
           ...(input.currency !== undefined && { currency: input.currency }),
           ...(input.isActive !== undefined && { isActive: input.isActive }),

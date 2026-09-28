@@ -4,6 +4,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/db/client";
 import { z } from "zod";
 import { authConfig } from "./auth.config";
+import { refreshTokenClaims } from "./token-refresh";
 import type { UserRole } from "@prisma/client";
 import type { SessionUser } from "@/types";
 
@@ -30,13 +31,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.avatarUrl = u.avatarUrl;
         return token;
       }
-      // On token refresh, verify the user still exists and is active
-      const active = await prisma.user.findFirst({
-        where: { id: token.id as string, isActive: true, deletedAt: null },
-        select: { id: true },
-      });
-      if (!active) return null; // Revoke session — user deactivated or deleted
-      return token;
+      // Every session read re-loads role/campus/active state from the DB, so
+      // demotions and deactivations apply to all open sessions immediately.
+      return refreshTokenClaims(token, (id) =>
+        prisma.user.findFirst({
+          where: { id, isActive: true, deletedAt: null },
+          select: { id: true, orgId: true, campusId: true, role: true, name: true, email: true, avatarUrl: true },
+        }),
+      );
     },
 
     // Copy the custom JWT fields into the session user (Node.js only)

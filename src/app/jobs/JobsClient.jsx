@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import JobApplicationForm from '@/components/JobApplicationForm'
+import { safeHttpUrl } from '@/lib/resources'
 
 function formatSalary(min, max, currency = 'INR') {
   if (!min && !max) return null
@@ -38,7 +39,7 @@ function mapJob(j) {
     salary: meta.salary ?? formatSalary(j.salaryMin, j.salaryMax, j.currency) ?? 'Competitive',
     eligibility: j.requirements ?? meta.eligibility ?? '',
     description: j.description ?? '',
-    applyUrl: meta.applyUrl ?? `/contact?reason=job-${j.id}`,
+    externalApplyUrl: safeHttpUrl(meta.applyUrl),
     isFeatured: j.isFeatured ?? false,
     closesAt: j.closesAt ?? null,
     airlineLogo: meta.airlineLogo ?? null,
@@ -57,7 +58,9 @@ export default function JobsClient() {
   const [selectedAirline, setSelectedAirline] = useState('All')
   const [selectedType, setSelectedType] = useState('All')
   const [selectedExperience, setSelectedExperience] = useState('All')
-  const [activeJob, setActiveJob] = useState(null)
+  const [activeJob, setActiveJobState] = useState(null)
+  const [applying, setApplying] = useState(false)
+  const setActiveJob = (job) => { setApplying(false); setActiveJobState(job) }
 
   useEffect(() => {
     fetch('/api/public-proxy/jobs')
@@ -692,6 +695,10 @@ export default function JobsClient() {
               {activeJob.role}
             </h2>
 
+            {applying ? (
+              <JobApplicationForm job={activeJob} onCancel={() => setApplying(false)} />
+            ) : (
+            <>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '2rem' }}>
               <div className="modal-body-dark">
                 <h4
@@ -834,19 +841,27 @@ export default function JobsClient() {
             </div>
 
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <Link
-                href={activeJob.applyUrl}
-                className="btn btn-primary"
-                style={{
-                  flex: 1,
-                  justifyContent: 'center',
-                  textDecoration: 'none',
-                  textAlign: 'center',
-                }}
-                onClick={() => setActiveJob(null)}
-              >
-                Apply Now →
-              </Link>
+              {activeJob.externalApplyUrl ? (
+                <a
+                  href={activeJob.externalApplyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-primary"
+                  style={{ flex: 1, justifyContent: 'center', textDecoration: 'none', textAlign: 'center' }}
+                >
+                  Apply on Partner Site →
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  data-testid="job-apply-button"
+                  className="btn btn-primary"
+                  style={{ flex: 1, justifyContent: 'center' }}
+                  onClick={() => setApplying(true)}
+                >
+                  Apply Now →
+                </button>
+              )}
               <button
                 onClick={() => setActiveJob(null)}
                 className="btn btn-ghost"
@@ -855,6 +870,8 @@ export default function JobsClient() {
                 Close
               </button>
             </div>
+            </>
+            )}
           </div>
         </div>
       )}

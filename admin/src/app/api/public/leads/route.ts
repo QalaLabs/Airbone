@@ -12,6 +12,7 @@ import { AuditService } from "@/lib/services/audit.service";
 import { ActivityFeedService } from "@/lib/services/activity.service";
 import { checkMaintenance } from "@/lib/middleware/maintenance";
 import { handleError } from "@/lib/utils/response";
+import { isHoneypotTripped } from "@/lib/utils/honeypot";
 
 const SOURCE_MAP: Record<string, LeadSource> = {
   homepage_cta: "HOMEPAGE_CTA",
@@ -43,6 +44,10 @@ export async function POST(req: NextRequest) {
   }
 
   const body = (await req.json()) as unknown;
+    if (isHoneypotTripped(body)) {
+      console.warn(JSON.stringify({ event: "lead_honeypot_triggered", timestamp: new Date().toISOString() }));
+      return NextResponse.json({ success: true }, { status: 200 });
+    }
     const parsed = publicLeadSchema.safeParse(body);
     if (!parsed.success) {
       const first = parsed.error.issues[0];

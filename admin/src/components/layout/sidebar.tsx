@@ -36,8 +36,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useQuery } from "@tanstack/react-query";
-import { apiFetch } from "@/lib/api";
+import { usePendingTestimonialCount } from "@/lib/queries/testimonial-pending";
 
 const NAV_GROUPS: {
   label: string;
@@ -134,11 +133,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     )
     .sort((a, b) => b.length - a.length)[0];
 
-  const { data: pendingCount } = useQuery({
-    queryKey: ["testimonials", "pending-count"],
-    queryFn: () => apiFetch<{ count: number }>("/testimonials/pending-count"),
-    refetchInterval: 60_000,
-  });
+  const { count: pendingTestimonials } = usePendingTestimonialCount();
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -177,7 +172,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 {group.items.map((item) => {
                   const isActive = item.href === activeHref;
 
-                  const showBadge = item.badge && pendingCount && pendingCount.count > 0;
+                  const showBadge = item.badge && pendingTestimonials > 0;
 
                   return collapsed ? (
                     <Tooltip key={item.href}>
@@ -194,7 +189,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                           <item.icon className="h-4 w-4 shrink-0" />
                           {showBadge && (
                             <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white">
-                              {pendingCount.count > 9 ? "9+" : pendingCount.count}
+                              {pendingTestimonials > 9 ? "9+" : pendingTestimonials}
                             </span>
                           )}
                         </Link>
@@ -216,7 +211,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                       <span className="truncate">{item.label}</span>
                       {showBadge && (
                         <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-white animate-pulse">
-                          {pendingCount.count > 9 ? "9+" : pendingCount.count}
+                          {pendingTestimonials > 9 ? "9+" : pendingTestimonials}
                         </span>
                       )}
                     </Link>

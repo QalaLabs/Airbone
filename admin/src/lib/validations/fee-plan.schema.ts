@@ -14,20 +14,35 @@ export const feePlanItemSchema = z
     message: "Each item must specify exactly one of a fixed amount or a percent of the course fee",
   });
 
-/** Percentage instalments are shares of one course fee — together they cannot exceed 100%. */
+const PERCENT_SUM_TOLERANCE = 0.01;
+
+/**
+ * Percentage instalments split one course fee, and the admission's final fee is
+ * the plan total — so when a plan uses percentages they must cover exactly 100%
+ * (fixed-amount items such as a registration fee may sit alongside them).
+ */
+export function percentSumError(items: Array<{ percentOfFee?: number | null }>): string | null {
+  const percentItems = items.filter((i) => i.percentOfFee !== undefined && i.percentOfFee !== null);
+  if (percentItems.length === 0) return null;
+  const sum = percentItems.reduce((acc, i) => acc + Number(i.percentOfFee), 0);
+  if (Math.abs(sum - 100) <= PERCENT_SUM_TOLERANCE) return null;
+  return `Percentage items must add up to exactly 100% of the course fee (currently ${Number(sum.toFixed(2))}%)`;
+}
+
 const feePlanItemsSchema = z
   .array(feePlanItemSchema)
   .min(1)
-  .refine(
-    (items) => items.reduce((sum, i) => sum + (i.percentOfFee ?? 0), 0) <= 100 + 1e-9,
-    { message: "Percentage items cannot add up to more than 100% of the course fee" },
-  );
+  .superRefine((items, ctx) => {
+    const message = percentSumError(items);
+    if (message) ctx.addIssue({ code: z.ZodIssueCode.custom, message });
+  });
 
 export const createFeePlanSchema = z.object({
   name: z.string().min(1).max(255),
   description: z.string().max(5000).optional(),
   currency: z.string().length(3).default("INR"),
   isActive: z.boolean().default(true),
+  courseId: z.string().uuid().nullable().optional(),
   items: feePlanItemsSchema,
   metadata: z.record(z.unknown()).optional(),
 });
@@ -37,12 +52,14 @@ export const updateFeePlanSchema = z.object({
   description: z.string().max(5000).optional().nullable(),
   currency: z.string().length(3).optional(),
   isActive: z.boolean().optional(),
+  courseId: z.string().uuid().nullable().optional(),
   items: feePlanItemsSchema.optional(),
   metadata: z.record(z.unknown()).optional(),
 });
 
 export const feePlanFiltersSchema = z.object({
   search: z.string().max(255).optional(),
+  courseId: z.string().uuid().optional(),
   isActive: z
     .enum(["true", "false"])
     .optional()

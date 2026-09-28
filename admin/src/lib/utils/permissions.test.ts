@@ -54,6 +54,23 @@ test("M-07: real resources still grant (guards are not over-pruned)", () => {
   assert.equal(hasPermission(user("MARKETING_MANAGER"), "read", "jobs"), true);
 });
 
+test("SUPER_ADMIN holds every action any role is granted (incl. approve)", () => {
+  for (const [role, grants] of Object.entries(PERMISSION_MATRIX)) {
+    for (const [resource, actions] of Object.entries(grants)) {
+      for (const action of actions) {
+        assert.equal(
+          hasPermission(user("SUPER_ADMIN"), action, resource),
+          true,
+          `SUPER_ADMIN lacks ${action} ${resource} (granted to ${role})`,
+        );
+      }
+    }
+  }
+  assert.equal(hasPermission(user("SUPER_ADMIN"), "approve", "testimonials"), true);
+  assert.equal(hasPermission(user("SUPER_ADMIN"), "approve", "documents"), true);
+  assert.equal(hasPermission(user("SUPPORT_STAFF"), "approve", "testimonials"), false);
+});
+
 test("I6: lead/deal assignment is restricted to Admin, SuperAdmin and Manager", () => {
   // Sales agents (ADMISSIONS_COUNSELOR) must get server-side denial.
   assert.equal(hasPermission(user("ADMISSIONS_COUNSELOR"), "assign", "leads"), false, "counselor must not assign leads");

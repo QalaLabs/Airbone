@@ -14,14 +14,15 @@ export function clientIpFromRequest(req) {
   return parts.length ? parts[parts.length - 1] : '127.0.0.1'
 }
 
-export function rateLimit(req, limit = 5, windowMs = 5 * 60 * 1000) {
+export function rateLimit(req, limit = 5, windowMs = 5 * 60 * 1000, bucket = 'lead') {
   const ip = clientIpFromRequest(req)
+  const key = `${bucket}:${ip}`
 
   const now = Date.now()
   const windowStart = now - windowMs
 
   // Clean up old entries
-  const currentEntry = rateLimitMap.get(ip) || []
+  const currentEntry = rateLimitMap.get(key) || []
   const activeRequests = currentEntry.filter(timestamp => timestamp > windowStart)
 
   if (activeRequests.length >= limit) {
@@ -29,7 +30,7 @@ export function rateLimit(req, limit = 5, windowMs = 5 * 60 * 1000) {
   }
 
   activeRequests.push(now)
-  rateLimitMap.set(ip, activeRequests)
+  rateLimitMap.set(key, activeRequests)
 
   // Periodic cleanup to prevent memory leaks in the Map
   if (rateLimitMap.size > 10000) {

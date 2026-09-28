@@ -8,7 +8,7 @@ type PermissionMatrix = Record<UserRole, Record<string, string[]>>;
 
 export const PERMISSION_MATRIX: PermissionMatrix = {
   SUPER_ADMIN: {
-    "*": ["read", "write", "delete", "export", "publish", "assign", "admin"],
+    "*": ["read", "write", "delete", "export", "publish", "assign", "approve", "admin"],
   },
   ADMIN: {
     leads: ["read", "write", "delete", "export", "assign"],

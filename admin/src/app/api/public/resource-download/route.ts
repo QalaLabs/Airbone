@@ -6,6 +6,7 @@ import { consumeRateLimit, rateLimitHeaders } from "@/lib/utils/rate-limit";
 import { resolveClientIp } from "@/lib/utils/client-ip";
 import { checkMaintenance } from "@/lib/middleware/maintenance";
 import { handleError } from "@/lib/utils/response";
+import { resolveGatedDownloadUrl } from "@/lib/services/public-resource";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -61,7 +62,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Resource not found" }, { status: 404 });
   }
 
-  const downloadUrl = resource.fileUrl ?? resource.externalUrl;
+  const downloadUrl = resolveGatedDownloadUrl(resource);
   if (!downloadUrl) {
     return NextResponse.json({ error: "Resource has no downloadable file" }, { status: 404 });
   }

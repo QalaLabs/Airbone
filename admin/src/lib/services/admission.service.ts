@@ -90,7 +90,7 @@ function toPlanItems(items: { amount: unknown; percentOfFee?: unknown; dueOffset
  * dossier always reproduces the exact historical financial terms, even if the
  * master plan is later edited or re-priced.
  */
-function buildFeePlanSnapshot(
+export function buildFeePlanSnapshot(
   plan: FeePlan & { items: { name: string; amount: unknown; percentOfFee?: unknown; dueOffsetDays: number; sortOrder: number }[] },
   baseFee: number | null,
   appliedBy: string,
@@ -117,6 +117,7 @@ function buildFeePlanSnapshot(
   return {
     planId: plan.id,
     name: plan.name,
+    courseId: plan.courseId ?? null,
     currency: plan.currency ?? "INR",
     isActive: plan.isActive,
     appliedAt,

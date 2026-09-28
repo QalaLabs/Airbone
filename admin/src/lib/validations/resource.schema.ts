@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isHttpUrl } from "@/lib/utils/safe-url";
 
 export const resourceTypeValues = [
   "PDF", "VIDEO", "LINK", "IMAGE", "DOCUMENT", "AUDIO", "OTHER",
@@ -11,8 +12,8 @@ export const createResourceSchema = z.object({
   slug: z.string().max(255).regex(/^[a-z0-9-]+$/, "slug must be lowercase alphanumeric with hyphens").optional(),
   description: z.string().max(5000).optional(),
   type: z.enum(resourceTypeValues),
-  fileUrl: z.string().url().max(2000).optional(),
-  externalUrl: z.string().url().max(2000).optional(),
+  fileUrl: z.string().url().max(2000).refine(isHttpUrl, "fileUrl must be an http(s) URL").optional(),
+  externalUrl: z.string().url().max(2000).refine(isHttpUrl, "externalUrl must be an http(s) URL").optional(),
   thumbnailId: z.string().uuid().optional(),
   tags: z.array(z.string().max(50)).default([]),
   category: z.string().max(100).optional(),

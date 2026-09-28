@@ -14,6 +14,7 @@ const QUICK_LINKS = [
   { label: 'Blog', href: '/blog' },
   { label: 'Step-by-step guide to becoming a pilot after Class 12', href: '/blog/how-to-become-pilot-india' },
   { label: 'Contact Us', href: '/contact' },
+  { label: 'Share Your Story', href: '/share-your-story' },
   { label: 'Privacy Policy', href: '/privacy' },
   { label: 'Refund Policy', href: '/refund-policy' },
   { label: 'Terms & Conditions', href: '/terms' },

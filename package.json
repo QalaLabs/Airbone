@@ -10,7 +10,10 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test:otp": "node --test src/utils/otp-store.test.mjs"
+    "test:otp": "node --test src/utils/otp-store.test.mjs",
+    "test": "node --test \"src/**/*.test.mjs\"",
+    "e2e": "playwright test",
+    "e2e:admin": "playwright test -c playwright.admin.config.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
@@ -35,6 +38,7 @@
     "typescript": "^6.0.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@types/pg": "^8.21.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

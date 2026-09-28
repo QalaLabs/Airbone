@@ -7,6 +7,8 @@ import { validateName, validatePhone, validateEmailRequired, validatePincode, va
 import FormField from '@/components/FormField'
 import SubmitButton from '@/components/SubmitButton'
 import LeadEligibilityPrompt from '@/components/LeadEligibilityPrompt'
+import Honeypot from '@/components/Honeypot'
+import { HONEYPOT_FIELD, readHoneypot } from '@/utils/honeypot'
 
 const validators = { name: validateName, phone: validatePhone, email: validateEmailRequired, pincode: validatePincode, course: validateRequired }
 
@@ -34,6 +36,7 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault()
     if (status === 'loading') return // prevent duplicate submission
+    const hp = readHoneypot(e.currentTarget)
     if (!validate()) return
     setStatus('loading')
     const urlParams = new URLSearchParams(window.location.search)
@@ -49,7 +52,7 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
       const res = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...values, source, utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page })
+        body: JSON.stringify({ ...values, [HONEYPOT_FIELD]: hp, source, utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page })
       })
       if (res.ok || res.status === 409) {
         // 409 = this phone already has an enquiry on file — not a failure for
@@ -93,6 +96,7 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
 
   return (
     <form className="modal-form" onSubmit={handleSubmit} noValidate style={{ background: '#00162e', border: '1px solid var(--gold)', borderTop: '4px solid #DB241E', padding: 'clamp(1.25rem, 5vw, 2.5rem)', borderRadius: '1px', boxShadow: '0 10px 40px rgba(0,0,0,0.65), 0 0 15px rgba(216,160,39,0.15)', backdropFilter: 'blur(12px)' }}>
+      <Honeypot />
       <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', fontWeight: 800, color: '#FFFFFF', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
         Reserve Seat / Ask Syllabus
       </h3>

@@ -1,12 +1,14 @@
 'use client'
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useRef } from 'react'
 import { triggerToast } from '@/components/Toast'
 import useFormValidation from '@/hooks/useFormValidation'
 import { validateName, validatePhone, validateEmailRequired, validatePincode, validateRequired } from '@/utils/validation'
 import FormField from '@/components/FormField'
 import SubmitButton from '@/components/SubmitButton'
 import LeadEligibilityPrompt from '@/components/LeadEligibilityPrompt'
+import Honeypot from '@/components/Honeypot'
+import { HONEYPOT_FIELD } from '@/utils/honeypot'
 
 const validators = { name: validateName, phone: validatePhone, email: validateEmailRequired, pincode: validatePincode, course: validateRequired }
 
@@ -129,6 +131,7 @@ export default function MultiStepLeadForm({ courseName = '', source = 'Multi-Ste
   const [verifyToken, setVerifyToken] = useState('')
   const [screening, setScreening] = useState({})
   const leadUuid = useMemo(() => genUuid(), [])
+  const honeypotRef = useRef(null)
 
   const { values, errors, touched, handleChange, handleBlur, validate } = useFormValidation(
     { name: '', phone: '', email: '', pincode: '', course: courseName },
@@ -209,6 +212,7 @@ export default function MultiStepLeadForm({ courseName = '', source = 'Multi-Ste
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...values,
+          [HONEYPOT_FIELD]: honeypotRef.current?.value ?? '',
           source,
           screening,
           verify_token: verifyToken,
@@ -258,6 +262,7 @@ export default function MultiStepLeadForm({ courseName = '', source = 'Multi-Ste
 
   return (
     <div style={cardStyle}>
+      <Honeypot inputRef={honeypotRef} />
       <ProgressIndicator step={step} total={STEP_LABELS.length} />
       <h3 style={{ fontFamily: 'var(--font-h)', fontSize: '0.85rem', fontWeight: 800, color: '#D8A027', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
         Step {step + 1} of {STEP_LABELS.length} - {STEP_LABELS[step]}

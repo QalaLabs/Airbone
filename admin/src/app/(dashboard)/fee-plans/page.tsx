@@ -24,6 +24,12 @@ interface PlanItem {
   sortOrder?: number;
 }
 
+interface CourseOption {
+  id: string;
+  title: string;
+  fee?: number | string | null;
+}
+
 interface FeePlan {
   id: string;
   name: string;
@@ -31,8 +37,19 @@ interface FeePlan {
   currency?: string;
   isActive: boolean;
   createdAt: string;
+  courseId?: string | null;
+  course?: CourseOption | null;
   items?: PlanItem[];
   _count?: { admissions?: number };
+}
+
+function courseFee(course?: CourseOption | null): number | undefined {
+  const n = Number(course?.fee);
+  return course?.fee != null && Number.isFinite(n) && n > 0 ? n : undefined;
+}
+
+function percentSum(items: ItemDraft[]): number {
+  return items.filter((i) => i.mode === "percent" && i.value !== "").reduce((acc, i) => acc + (Number(i.value) || 0), 0);
 }
 
 interface ItemDraft {
@@ -93,10 +110,17 @@ export default function FeePlansPage() {
   const queryClient = useQueryClient();
   const [creating, setCreating] = React.useState(false);
   const [editingId, setEditingId] = React.useState<string | null>(null);
+  const [courseFilter, setCourseFilter] = React.useState("");
 
   const { data: plans, isLoading, isError, error } = useQuery({
-    queryKey: ["fee-plans", "all"],
-    queryFn: () => apiFetch<FeePlan[]>(`/fee-plans?limit=100`),
+    queryKey: ["fee-plans", "all", courseFilter],
+    queryFn: () =>
+      apiFetch<FeePlan[]>(`/fee-plans?limit=100${courseFilter ? `&courseId=${encodeURIComponent(courseFilter)}` : ""}`),
+  });
+
+  const { data: courses } = useQuery({
+    queryKey: ["fee-plans", "course-options"],
+    queryFn: () => apiFetch<CourseOption[]>("/courses?limit=100"),
   });
 
   const toggleActive = async (plan: FeePlan) => {
@@ -127,8 +151,25 @@ export default function FeePlansPage() {
         }
       />
 
+      <div className="flex items-center gap-2">
+        <Label htmlFor="fee-plan-course-filter" className="text-[10px] font-bold text-muted-foreground">Course</Label>
+        <select
+          id="fee-plan-course-filter"
+          data-testid="fee-plan-course-filter"
+          value={courseFilter}
+          onChange={(e) => setCourseFilter(e.target.value)}
+          className="flex h-8 rounded-lg border border-white/10 bg-secondary/60 px-2 text-xs font-bold"
+        >
+          <option value="">All courses</option>
+          {(courses ?? []).map((c) => (
+            <option key={c.id} value={c.id}>{c.title}</option>
+          ))}
+        </select>
+      </div>
+
       {creating && (
         <PlanEditor
+          courses={courses ?? []}
           onDone={() => {
             setCreating(false);
             queryClient.invalidateQueries({ queryKey: ["fee-plans", "all"] });
@@ -139,6 +180,7 @@ export default function FeePlansPage() {
       {editingId && plans?.some((p) => p.id === editingId) && (
         <PlanEditor
           key={editingId}
+          courses={courses ?? []}
           initial={plans?.find((p) => p.id === editingId)}
           onDone={() => {
             setEditingId(null);
@@ -158,12 +200,16 @@ export default function FeePlansPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {plans.map((plan) => {
-            const { total, hasPercent } = computeTotal(fromPlanItems(plan.items), 54000);
+            const planCourseFee = courseFee(plan.course);
+            const { total, hasPercent } = computeTotal(fromPlanItems(plan.items), planCourseFee);
             return (
-              <div key={plan.id} className={cn("rounded-xl border p-4 space-y-3 bg-slate-900/60", plan.isActive ? "border-primary/30" : "border-white/10 opacity-80")}>
+              <div key={plan.id} data-testid={`fee-plan-card-${plan.id}`} className={cn("rounded-xl border p-4 space-y-3 bg-slate-900/60", plan.isActive ? "border-primary/30" : "border-white/10 opacity-80")}>
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="font-bold text-white truncate">{plan.name}</p>
+                    <p className="text-[10px] font-bold text-primary/80 truncate" data-testid="fee-plan-course">
+                      {plan.course ? plan.course.title : "No course linked"}
+                    </p>
                     {plan.description ? <p className="text-[11px] text-muted-foreground line-clamp-2">{plan.description}</p> : null}
                   </div>
                   <button
@@ -182,7 +228,7 @@ export default function FeePlansPage() {
 
                 <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
                   <span className="flex items-center gap-1"><Receipt className="h-3 w-3" /> {plan.items?.length ?? 0} items</span>
-                  <span className="flex items-center gap-1"><IndianRupee className="h-3 w-3" /> {hasPercent ? "Has % items" : money(total)}</span>
+                  <span className="flex items-center gap-1"><IndianRupee className="h-3 w-3" /> {hasPercent && planCourseFee == null ? "Has % items" : money(total)}</span>
                   {plan._count?.admissions ? <span>{plan._count.admissions} admissions</span> : null}
                 </div>
 
@@ -218,18 +264,32 @@ export default function FeePlansPage() {
 
 function PlanEditor({
   initial,
+  courses,
   onDone,
 }: {
   initial?: FeePlan;
+  courses: CourseOption[];
   onDone: () => void;
 }) {
   const [name, setName] = React.useState(initial?.name ?? "");
   const [description, setDescription] = React.useState(initial?.description ?? "");
+  const [courseId, setCourseId] = React.useState(initial?.courseId ?? "");
   const [items, setItems] = React.useState<ItemDraft[]>(initial?.items?.length ? fromPlanItems(initial.items) : [newItemDraft()]);
-  const [baseFee, setBaseFee] = React.useState("54000");
+  const [baseFee, setBaseFee] = React.useState(() => {
+    const fee = courseFee(initial?.course);
+    return fee != null ? String(fee) : "";
+  });
   const [saving, setSaving] = React.useState(false);
 
   const { total, hasPercent } = computeTotal(items, baseFee ? Number(baseFee) : undefined);
+  const pctSum = percentSum(items);
+  const pctInvalid = hasPercent && Math.abs(pctSum - 100) > 0.01;
+
+  const selectCourse = (id: string) => {
+    setCourseId(id);
+    const fee = courseFee(courses.find((c) => c.id === id));
+    if (fee != null) setBaseFee(String(fee));
+  };
 
   const setItem = (key: string, patch: Partial<ItemDraft>) => {
     setItems((prev) => prev.map((i) => (i.key === key ? { ...i, ...patch } : i)));
@@ -253,6 +313,10 @@ function PlanEditor({
       toast({ title: "Percent cannot exceed 100", variant: "destructive" });
       return;
     }
+    if (pctInvalid) {
+      toast({ title: `Percentage items must add up to 100% (currently ${Number(pctSum.toFixed(2))}%)`, variant: "destructive" });
+      return;
+    }
     setSaving(true);
     try {
       if (initial) {
@@ -261,6 +325,7 @@ function PlanEditor({
           body: JSON.stringify({
             name,
             description: description || null,
+            courseId: courseId || null,
             items: inputItems,
           }),
         });
@@ -268,7 +333,7 @@ function PlanEditor({
       } else {
         await apiFetch("/fee-plans", {
           method: "POST",
-          body: JSON.stringify({ name, description: description || undefined, items: inputItems }),
+          body: JSON.stringify({ name, description: description || undefined, courseId: courseId || null, items: inputItems }),
         });
         toast({ title: "Fee plan created" });
       }
@@ -293,10 +358,25 @@ function PlanEditor({
           <Input value={name} onChange={(e) => setName(e.target.value)} className="h-8 text-xs bg-secondary/40 border-white/10" placeholder="e.g. 3 Installments with down payment" />
         </div>
         <div className="space-y-1">
+          <Label htmlFor="fee-plan-course" className="text-[10px] font-bold text-muted-foreground">Linked course</Label>
+          <select
+            id="fee-plan-course"
+            data-testid="fee-plan-course-select"
+            value={courseId}
+            onChange={(e) => selectCourse(e.target.value)}
+            className="flex h-8 w-full rounded-lg border border-white/10 bg-secondary/60 px-2 text-xs font-bold"
+          >
+            <option value="">No course</option>
+            {courses.map((c) => (
+              <option key={c.id} value={c.id}>{c.title}{courseFee(c) != null ? ` · ${money(c.fee)}` : ""}</option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-1">
           <Label className="text-[10px] font-bold text-muted-foreground">
-            Course fee (for % items) · current total {money(total)}
+            Course fee for preview (% items) · current total {money(total)}
           </Label>
-          <Input type="number" min="0" step="0.01" value={baseFee} onChange={(e) => setBaseFee(e.target.value)} className="h-8 text-xs bg-secondary/40 border-white/10" />
+          <Input type="number" min="0" step="0.01" value={baseFee} onChange={(e) => setBaseFee(e.target.value)} className="h-8 text-xs bg-secondary/40 border-white/10" placeholder="Pick a course or enter a fee" />
         </div>
         <div className="space-y-1 md:col-span-2">
           <Label className="text-[10px] font-bold text-muted-foreground">Description</Label>
@@ -355,7 +435,12 @@ function PlanEditor({
           <p className="text-[11px] text-muted-foreground">
             {hasPercent ? (
               <>
-                Total at {money(baseFee)} course fee: <span className="font-bold text-white">{money(total)}</span> · needs course fee on admission
+                {baseFee ? (
+                  <>Total at {money(baseFee)} course fee: <span className="font-bold text-white">{money(total)}</span> · </>
+                ) : null}
+                <span className={cn(pctInvalid ? "text-rose-400 font-bold" : "")} data-testid="fee-plan-percent-sum">
+                  % items sum {Number(pctSum.toFixed(2))}%{pctInvalid ? " (must be 100%)" : ""}
+                </span>
               </>
             ) : (
               <>

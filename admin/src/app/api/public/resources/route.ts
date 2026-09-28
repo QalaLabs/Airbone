@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/db/client";
 import { checkMaintenance } from "@/lib/middleware/maintenance";
 import { handleError } from "@/lib/utils/response";
+import { toPublicResource } from "@/lib/services/public-resource";
 
 export async function GET(req: NextRequest) {
   try {
@@ -42,11 +43,7 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Strip fileUrl for gated resources — clients must use /api/public/resource-download
-    const sanitized = resources.map((r) => ({
-      ...r,
-      fileUrl: r.isGated ? null : r.fileUrl,
-    }));
+    const sanitized = resources.map(toPublicResource);
 
     return NextResponse.json({ data: sanitized });
   } catch (err) {

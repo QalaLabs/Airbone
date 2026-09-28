@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { apiFetch } from "@/lib/api";
+import { createSubmissionKeyManager } from "@/lib/payments/submission-key";
 import { formatDate, cn } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -449,18 +450,25 @@ function PaymentsPanel({
     queryClient.invalidateQueries({ queryKey: ["admissions"] });
   };
 
+  const [submissionKeys] = React.useState(() => createSubmissionKeyManager(() => crypto.randomUUID()));
+
   const createMutation = useMutation({
-    mutationFn: () =>
-      apiFetch(`/admissions/${admissionId}/payments`, {
+    mutationFn: () => {
+      const idempotencyKey = submissionKeys.keyFor({ admissionId, amount, method, feeType, referenceNo });
+      return apiFetch<unknown>(`/admissions/${admissionId}/payments`, {
         method: "POST",
         body: JSON.stringify({
           amount: Number(amount),
           method,
           feeType,
           referenceNo: referenceNo || undefined,
-          idempotencyKey: crypto.randomUUID(),
+          idempotencyKey,
         }),
-      }),
+      }).then((res) => {
+        submissionKeys.complete(idempotencyKey);
+        return res;
+      });
+    },
     onSuccess: () => {
       setAmount("");
       setReferenceNo("");
@@ -602,6 +610,7 @@ function PaymentsPanel({
       )}
 
       <form
+        data-testid="payment-form"
         className="grid grid-cols-2 gap-2 p-3 rounded-xl border border-white/10 bg-secondary/30"
         onSubmit={(e) => {
           e.preventDefault();
@@ -609,13 +618,14 @@ function PaymentsPanel({
             toast({ title: "Enter a valid amount", variant: "destructive" });
             return;
           }
+          if (createMutation.isPending) return;
           createMutation.mutate();
         }}
       >
         <div className="space-y-1">
           <Label className="text-[10px] font-bold text-muted-foreground">Amount</Label>
           <div className="flex flex-col gap-1.5">
-            <Input type="number" min="1" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} className="h-8 text-xs bg-secondary/40 border-white/10" required />
+            <Input data-testid="payment-amount" type="number" min="1" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} className="h-8 text-xs bg-secondary/40 border-white/10" required />
             <div className="flex gap-1">
               {[25, 50, 75, 100].map((pct) => (
                 <button

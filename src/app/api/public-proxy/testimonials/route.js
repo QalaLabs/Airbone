@@ -1,17 +1,7 @@
-import { NextResponse } from 'next/server'
+import { proxyPublicGet, clampLimit } from '@/lib/publicProxy'
 
-const ADMIN_API_URL = process.env.ADMIN_API_URL ?? 'http://localhost:4000'
-
-export async function GET() {
-  try {
-    const res = await fetch(`${ADMIN_API_URL}/api/public/testimonials?limit=6`, {
-      next: { revalidate: 60 },
-    })
-    if (!res.ok) throw new Error('Upstream failed')
-    const data = await res.json()
-    return NextResponse.json(data)
-  } catch (err) {
-    console.error('[Proxy Error /testimonials]:', err.message)
-    return NextResponse.json({ error: 'Upstream Error' }, { status: 502 })
-  }
+export async function GET(req) {
+  const url = new URL(req.url)
+  const limit = clampLimit(url.searchParams.get('limit'), 6, 20)
+  return proxyPublicGet('/testimonials', `/api/public/testimonials?limit=${limit}`)
 }

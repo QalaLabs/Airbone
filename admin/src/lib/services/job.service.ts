@@ -13,6 +13,7 @@ import type {
   UpdateJobApplicationStatusInput,
   JobApplicationFilters,
 } from "@/lib/validations/job.schema";
+import type { PublicJobApplicationInput } from "@/lib/validations/public-job-application.schema";
 import type { RequestContext } from "@/types";
 import { prisma } from "@/lib/db/client";
 
@@ -241,6 +242,91 @@ export class JobApplicationService {
       data: {
         applicationId: application.id,
         jobId: input.jobId,
+        jobTitle: job.title,
+        applicantName: input.applicantName,
+        applicantEmail: input.applicantEmail,
+      },
+    });
+
+    return application;
+  }
+
+  /**
+   * Unauthenticated application from the public job portal. The org is resolved
+   * server-side by the caller; the job must be PUBLISHED and not past closesAt.
+   * One active application per (job, email): the job row is locked so two
+   * concurrent submissions cannot both pass the duplicate check.
+   */
+  static async submitPublic(
+    orgId: string,
+    input: PublicJobApplicationInput,
+    meta: { ipAddress?: string } = {},
+  ) {
+    const job = await prisma.job.findFirst({
+      where: { id: input.jobId, orgId },
+      select: { id: true, title: true, status: true, closesAt: true },
+    });
+    if (!job) throw new NotFoundError("Job");
+    if (job.status !== "PUBLISHED") throw new ConflictError("This job is not accepting applications.");
+    if (job.closesAt && job.closesAt.getTime() < Date.now()) {
+      throw new ConflictError("Applications for this job have closed.");
+    }
+
+    const application = await prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM jobs WHERE id = ${job.id}::uuid FOR UPDATE`;
+      const duplicate = await tx.jobApplication.findFirst({
+        where: {
+          orgId,
+          jobId: job.id,
+          applicantEmail: { equals: input.applicantEmail, mode: "insensitive" },
+          status: { not: "WITHDRAWN" },
+        },
+        select: { id: true },
+      });
+      if (duplicate) throw new ConflictError("You have already applied for this job.");
+      return tx.jobApplication.create({
+        data: {
+          orgId,
+          jobId: job.id,
+          applicantName: input.applicantName,
+          applicantEmail: input.applicantEmail,
+          applicantPhone: input.applicantPhone,
+          resumeUrl: input.resumeUrl ?? null,
+          coverLetter: input.coverLetter ?? null,
+          metadata: { source: "public_portal", consentAt: new Date().toISOString() },
+        },
+        select: { id: true, jobId: true, status: true, createdAt: true },
+      });
+    });
+
+    await AuditService.write({
+      orgId,
+      ipAddress: meta.ipAddress,
+      action: "job_application.submitted",
+      entityType: "job_application",
+      entityId: application.id,
+      newValue: { jobId: job.id, applicantEmail: input.applicantEmail, source: "public_portal" },
+    });
+
+    await ActivityFeedService.write({
+      orgId,
+      verb: "submitted",
+      objectType: "job_application",
+      objectId: application.id,
+      objectSnapshot: { applicantName: input.applicantName, jobId: job.id },
+      context: { actorName: "Public job portal" },
+    });
+
+    await emitEvent({
+      name: "job_application/submitted",
+      orgId,
+      actorId: "system",
+      actorName: "Public job portal",
+      requestId: application.id,
+      timestamp: new Date().toISOString(),
+      data: {
+        applicationId: application.id,
+        jobId: job.id,
         jobTitle: job.title,
         applicantName: input.applicantName,
         applicantEmail: input.applicantEmail,

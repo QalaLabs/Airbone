@@ -10,7 +10,9 @@ import type {
   ReviewTestimonialInput,
   TestimonialFilters,
 } from "@/lib/validations/testimonial.schema";
+import type { PublicTestimonialInput } from "@/lib/validations/public-testimonial.schema";
 import type { RequestContext } from "@/types";
+import { prisma } from "@/lib/db/client";
 
 export class TestimonialService {
   static async list(ctx: RequestContext, filters: TestimonialFilters) {
@@ -59,6 +61,70 @@ export class TestimonialService {
       requestId: ctx.requestId,
       timestamp: new Date().toISOString(),
       data: { testimonialId: testimonial.id, authorName: input.authorName, courseId: input.courseId },
+    });
+
+    return testimonial;
+  }
+
+  /**
+   * Unauthenticated submission from the marketing site. Always PENDING and never
+   * featured; a courseId is kept only if it is a published course of this org.
+   */
+  static async submitPublic(orgId: string, input: PublicTestimonialInput, meta: { ipAddress?: string } = {}) {
+    let courseId: string | null = null;
+    if (input.courseId) {
+      const course = await prisma.course.findFirst({
+        where: { id: input.courseId, orgId, status: "PUBLISHED" },
+        select: { id: true },
+      });
+      if (!course) throw new ValidationError([{ path: ["courseId"], message: "Unknown course" }]);
+      courseId = course.id;
+    }
+
+    const testimonial = await prisma.testimonial.create({
+      data: {
+        orgId,
+        authorName: input.authorName,
+        authorTitle: input.authorTitle ?? null,
+        authorEmail: input.authorEmail ?? null,
+        content: input.content,
+        rating: input.rating ?? null,
+        courseId,
+        batchYear: input.batchYear ?? null,
+        status: "PENDING",
+        isFeatured: false,
+        source: "public_form",
+        metadata: { consentAt: new Date().toISOString() },
+      },
+      select: { id: true, status: true, isFeatured: true, createdAt: true },
+    });
+
+    await AuditService.write({
+      orgId,
+      ipAddress: meta.ipAddress,
+      action: "testimonial.submitted",
+      entityType: "testimonial",
+      entityId: testimonial.id,
+      newValue: { authorName: input.authorName, courseId, source: "public_form" },
+    });
+
+    await ActivityFeedService.write({
+      orgId,
+      verb: "submitted",
+      objectType: "testimonial",
+      objectId: testimonial.id,
+      objectSnapshot: { authorName: input.authorName },
+      context: { actorName: "Public website" },
+    });
+
+    await emitEvent({
+      name: "testimonial/submitted",
+      orgId,
+      actorId: "system",
+      actorName: "Public website",
+      requestId: testimonial.id,
+      timestamp: new Date().toISOString(),
+      data: { testimonialId: testimonial.id, authorName: input.authorName, courseId: courseId ?? undefined },
     });
 
     return testimonial;

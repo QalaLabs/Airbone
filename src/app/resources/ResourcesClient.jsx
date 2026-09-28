@@ -9,20 +9,9 @@ import useFormValidation from '@/hooks/useFormValidation'
 import { validateName, validatePhone, validateEmail, validateRequired } from '@/utils/validation'
 import FormField from '@/components/FormField'
 import SubmitButton from '@/components/SubmitButton'
-
-function mapResource(r) {
-  const meta = r.metadata ?? {}
-  return {
-    id: r.id,
-    title: r.title,
-    description: r.description ?? '',
-    fileName: meta.fileName ?? r.slug ?? `${r.id}.pdf`,
-    size: meta.size ?? null,
-    type: r.type ?? meta.type ?? 'Document',
-    fileUrl: r.fileUrl ?? null,
-    isGated: r.isGated !== false,
-  }
-}
+import { parseResourcesResponse, resolveResourceAction } from '@/lib/resources'
+import Honeypot from '@/components/Honeypot'
+import { HONEYPOT_FIELD, readHoneypot } from '@/utils/honeypot'
 
 export default function ResourcesClient() {
   const [resources, setResources] = useState([])
@@ -47,12 +36,29 @@ export default function ResourcesClient() {
     { name: validateName, phone: validatePhone, email: validateEmail, course: validateRequired }
   )
 
+  const [downloadError, setDownloadError] = useState('')
+
+  const [reloadKey, setReloadKey] = useState(0)
+
   useEffect(() => {
+    let cancelled = false
     fetch('/api/public-proxy/resources')
-      .then((r) => r.json())
-      .then((d) => { setResources((d.data ?? []).map(mapResource)); setLoading(false) })
-      .catch(() => { setError(true); setLoading(false) })
-  }, [])
+      .then(parseResourcesResponse)
+      .catch(() => ({ ok: false }))
+      .then((result) => {
+        if (cancelled) return
+        if (result.ok) setResources(result.resources)
+        else setError(true)
+        setLoading(false)
+      })
+    return () => { cancelled = true }
+  }, [reloadKey])
+
+  const retryResources = () => {
+    setLoading(true)
+    setError(false)
+    setReloadKey((k) => k + 1)
+  }
 
   const triggerFileDownload = (url, fileName) => {
     const link = document.createElement('a')
@@ -77,8 +83,18 @@ export default function ResourcesClient() {
   }
 
   const handleDownloadClick = async (resource) => {
-    if (!resource.isGated) {
-      if (resource.fileUrl) triggerFileDownload(resource.fileUrl, resource.fileName)
+    setDownloadError('')
+    const action = resolveResourceAction(resource)
+    if (action.kind === 'download') {
+      triggerFileDownload(action.url, resource.fileName)
+      return
+    }
+    if (action.kind === 'external') {
+      window.open(action.url, '_blank', 'noopener,noreferrer')
+      return
+    }
+    if (action.kind === 'none') {
+      setDownloadError(`"${resource.title}" is not available right now. Please contact us at +91 9953 777 320.`)
       return
     }
     const token = gateToken ?? sessionStorage.getItem('resource_gate_token')
@@ -89,10 +105,12 @@ export default function ResourcesClient() {
     }
     const url = await fetchGatedUrl(resource.id, token)
     if (url) triggerFileDownload(url, resource.fileName)
+    else setDownloadError(`We could not open "${resource.title}". Please try again or call +91 9953 777 320.`)
   }
 
   const handleGateSubmit = async (e) => {
     e.preventDefault()
+    const hp = readHoneypot(e.currentTarget)
     if (!validate()) return
     setFormStatus('loading')
     setFormError('')
@@ -104,6 +122,7 @@ export default function ResourcesClient() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...values,
+          [HONEYPOT_FIELD]: hp,
           source: `Resource Gate: ${targetResource?.title || 'Unknown'}`
         })
       })
@@ -169,17 +188,26 @@ export default function ResourcesClient() {
         )}
 
         {/* Error */}
-        {error && (
-          <div style={{ padding: '4rem 2rem', textAlign: 'center', background: '#ffffff', border: '1px dashed rgba(0,39,76,0.15)' }}>
-            <p style={{ color: 'rgba(33,33,33,0.65)', fontSize: '0.9rem' }}>
+        {!loading && error && (
+          <div role="alert" data-testid="resources-error" style={{ padding: '4rem 2rem', textAlign: 'center', background: '#ffffff', border: '1px dashed rgba(0,39,76,0.15)' }}>
+            <p style={{ color: 'rgba(33,33,33,0.65)', fontSize: '0.9rem', marginBottom: '1rem' }}>
               Could not load resources. Please try again or contact us at <a href="tel:+919953777320" style={{ color: '#D8A027' }}>+91 9953 777 320</a>.
             </p>
+            <button type="button" className="btn btn-ghost" onClick={retryResources} style={{ fontSize: '0.72rem' }}>
+              Retry
+            </button>
+          </div>
+        )}
+
+        {downloadError && (
+          <div role="alert" data-testid="resource-download-error" style={{ background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.25)', color: '#b91c1c', fontSize: '0.8rem', padding: '0.75rem 1rem', marginBottom: '1.5rem' }}>
+            {downloadError}
           </div>
         )}
 
         {/* Empty */}
         {!loading && !error && resources.length === 0 && (
-          <div style={{ padding: '4rem 2rem', textAlign: 'center', background: '#ffffff', border: '1px dashed rgba(0,39,76,0.15)' }}>
+          <div data-testid="resources-empty" style={{ padding: '4rem 2rem', textAlign: 'center', background: '#ffffff', border: '1px dashed rgba(0,39,76,0.15)' }}>
             <p style={{ color: 'rgba(33,33,33,0.65)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
               No resources published yet.
             </p>
@@ -190,7 +218,7 @@ export default function ResourcesClient() {
         )}
 
         {/* Resources Grid */}
-        {!loading && resources.length > 0 && (
+        {!loading && !error && resources.length > 0 && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2rem' }}>
             {resources.map((res) => (
               <div
@@ -221,11 +249,17 @@ export default function ResourcesClient() {
 
                 <div>
                   <button
+                    type="button"
+                    data-testid={`resource-action-${res.id}`}
                     onClick={() => handleDownloadClick(res)}
                     className={(unlocked || !res.isGated) ? 'btn btn-primary' : 'btn btn-ghost'}
                     style={{ width: '100%', justifyContent: 'center', fontSize: '0.72rem' }}
                   >
-                    {(unlocked || !res.isGated) ? '⬇️ Download PDF' : '🔒 Unlock Document'}
+                    {res.isGated && !unlocked
+                      ? '🔒 Unlock Document'
+                      : !res.isGated && !res.fileUrl && res.externalUrl
+                        ? '↗ Open Resource'
+                        : '⬇️ Download PDF'}
                   </button>
                 </div>
               </div>
@@ -257,6 +291,7 @@ export default function ResourcesClient() {
                 </div>
               ) : (
                 <form className="modal-form" onSubmit={handleGateSubmit} noValidate>
+                  <Honeypot />
                   {formStatus === 'error' && (
                     <div style={{ background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.25)', color: '#b91c1c', fontSize: '0.8rem', padding: '0.75rem 1rem', marginBottom: '1rem', lineHeight: '1.5' }}>
                       {formError}

@@ -18,6 +18,7 @@ import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { MediaPicker } from "@/components/shared/media-picker";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { apiFetch } from "@/lib/api";
+import { usePendingTestimonialCount } from "@/lib/queries/testimonial-pending";
 import { formatDate } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
 
@@ -222,7 +223,7 @@ export default function TestimonialsPage() {
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Actions for ${t.authorName}`}>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -250,7 +251,7 @@ export default function TestimonialsPage() {
     },
   ];
 
-  const pendingCount = data?.data.filter((t) => t.status === "PENDING").length ?? 0;
+  const { count: pendingCount } = usePendingTestimonialCount();
 
   return (
     <div className="space-y-5">
@@ -260,7 +261,7 @@ export default function TestimonialsPage() {
         action={
           <div className="flex items-center gap-3">
             {pendingCount > 0 && (
-              <Badge variant="warning" className="text-sm px-3 py-1">
+              <Badge variant="warning" className="text-sm px-3 py-1" data-testid="testimonials-pending-count">
                 {pendingCount} pending review
               </Badge>
             )}

@@ -85,3 +85,7 @@ yarn.lock
 .claude/
 .vercel
 .env*
+
+# Playwright
+test-results/
+playwright-report/

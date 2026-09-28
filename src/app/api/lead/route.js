@@ -4,6 +4,7 @@ import { storeFallbackLead } from '@/utils/fallback-storage'
 import { sendLeadToCRM } from '@/lib/crm'
 import { consumeVerifyToken } from '@/utils/otp-store'
 import { resolveAdminApiUrl, resolveIntakeKey, LeadConfigError } from '@/lib/upstream'
+import { isHoneypotTripped } from '@/utils/honeypot'
 
 const UPSTREAM_FETCH_TIMEOUT = parseInt(process.env.UPSTREAM_FETCH_TIMEOUT || '10000', 10)
 
@@ -96,6 +97,18 @@ export async function POST(req) {
     }
 
     rawSource = typeof payload.source === 'string' ? payload.source.trim() : 'unknown'
+
+    // Bot trap: acknowledge like a normal success so the bot learns nothing, but
+    // never forward to Admin, the CRM, webhooks or fallback storage.
+    if (isHoneypotTripped(payload)) {
+      console.warn(JSON.stringify({
+        correlationId,
+        event: 'lead_honeypot_triggered',
+        timestamp: new Date().toISOString(),
+        leadSource: rawSource,
+      }))
+      return NextResponse.json({ success: true, message: 'Lead captured successfully.' }, { status: 200 })
+    }
 
     // Input Validation & Sanitization
     const name = typeof payload.name === 'string' ? payload.name.trim() : ''

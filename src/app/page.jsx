@@ -17,6 +17,8 @@ import useFormValidation from '@/hooks/useFormValidation'
 import { validateName, validatePhone, validateEmailRequired, validatePincode } from '@/utils/validation'
 import FormField from '@/components/FormField'
 import SubmitButton from '@/components/SubmitButton'
+import Honeypot from '@/components/Honeypot'
+import { HONEYPOT_FIELD, readHoneypot } from '@/utils/honeypot'
 
 // Premium FX components — pure UI, no backend dependencies
 import {
@@ -573,6 +575,9 @@ function TestimonialsSection() {
               Real names. Real cockpits. <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>Real scores.</span>
             </h2>
           </div>
+          <Link href="/share-your-story" className="btn btn-ghost" style={{ fontSize: '0.75rem' }}>
+            Share your story →
+          </Link>
         </div>
 
         <div className="success-club-container">
@@ -741,6 +746,7 @@ function FinalCTA() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    const hp = readHoneypot(e.currentTarget)
     if (!validate()) return
     setLoading(true)
     setSubmitError('')
@@ -756,7 +762,7 @@ function FinalCTA() {
       const res = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...values, course: 'DGCA CPL Ground School', source: 'Homepage Final CTA', utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page })
+        body: JSON.stringify({ ...values, [HONEYPOT_FIELD]: hp, course: 'DGCA CPL Ground School', source: 'Homepage Final CTA', utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page })
       })
       if (!res.ok && res.status !== 409) {
         // 409 = this phone already has an enquiry on file — not a failure.
@@ -816,8 +822,10 @@ function FinalCTA() {
             <form
               onSubmit={handleSubmit}
               className="cta-form"
+              data-testid="homepage-cta-form"
               noValidate
             >
+              <Honeypot />
               <FormField
                 id="cta-name"
                 type="text"
@@ -918,6 +926,7 @@ function BookingModal({ open, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    const hp = readHoneypot(e.currentTarget)
     if (!validate()) return
     setStatus('loading')
     const urlParams = new URLSearchParams(window.location.search)
@@ -932,7 +941,7 @@ function BookingModal({ open, onClose }) {
       const res = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...values, course: 'DGCA CPL Ground School', source: 'Homepage Modal', utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page })
+        body: JSON.stringify({ ...values, [HONEYPOT_FIELD]: hp, course: 'DGCA CPL Ground School', source: 'Homepage Modal', utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page })
       })
       if (!res.ok && res.status !== 409) throw new Error('Lead submit failed')
       // 409 = this phone already has an enquiry on file — not a failure.
@@ -1002,6 +1011,7 @@ function BookingModal({ open, onClose }) {
                   A 90-minute introduction with Capt. Navrang Singh. Free, no commitment.
                 </p>
                 <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'rgba(0,39,76,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <Honeypot />
                   <FormField
                     id="m-name"
                     type="text"

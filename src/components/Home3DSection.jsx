@@ -15,6 +15,8 @@ import useFormValidation from '@/hooks/useFormValidation'
 import { validateName, validatePhone, validateEmailRequired, validateRequired } from '@/utils/validation'
 import FormField from '@/components/FormField'
 import SubmitButton from '@/components/SubmitButton'
+import Honeypot from '@/components/Honeypot'
+import { HONEYPOT_FIELD, readHoneypot } from '@/utils/honeypot'
 
 /* ─── CURSOR ─── */
 function Cursor() {
@@ -456,6 +458,7 @@ function Modal({ open, type, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    const hp = readHoneypot(e.currentTarget)
     if (!validate() || submitting) return
 
     const urlParams = new URLSearchParams(window.location.search)
@@ -472,7 +475,7 @@ function Modal({ open, type, onClose }) {
       const res = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...values, source: 'Homepage Modal', course: values.course || 'DGCA CPL Ground School', utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page })
+        body: JSON.stringify({ ...values, [HONEYPOT_FIELD]: hp, source: 'Homepage Modal', course: values.course || 'DGCA CPL Ground School', utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page })
       })
       if (!res.ok && res.status !== 409) {
         // 409 = this phone already has an enquiry on file — not a failure.
@@ -505,6 +508,7 @@ function Modal({ open, type, onClose }) {
             : 'Upcoming batch seats are limited to 25 students. Submit your details and we will contact you within 24 hours.'}
         </p>
         <form className="modal-form" onSubmit={handleSubmit} noValidate>
+          <Honeypot />
           <FormField id="modal-name" type="text" placeholder="Your Full Name" dark value={values.name} onChange={(v) => handleChange('name', v)} onBlur={() => handleBlur('name')} error={touched.name ? errors.name : null} required />
           <FormField id="modal-phone" type="tel" placeholder="Phone Number" dark value={values.phone} onChange={(v) => handleChange('phone', v)} onBlur={() => handleBlur('phone')} error={touched.phone ? errors.phone : null} required maxLength={10} />
           <FormField id="modal-email" type="email" placeholder="Email Address" dark value={values.email} onChange={(v) => handleChange('email', v)} onBlur={() => handleBlur('email')} error={touched.email ? errors.email : null} required />

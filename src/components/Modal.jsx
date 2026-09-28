@@ -5,6 +5,8 @@ import useFormValidation from '@/hooks/useFormValidation'
 import { validateName, validatePhone, validateEmail, validatePincode, validateRequired } from '@/utils/validation'
 import FormField from '@/components/FormField'
 import SubmitButton from '@/components/SubmitButton'
+import Honeypot from '@/components/Honeypot'
+import { HONEYPOT_FIELD, readHoneypot } from '@/utils/honeypot'
 
 const COURSES = [
   'DGCA CPL Ground Classes (₹2,70,000)',
@@ -54,6 +56,7 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
 
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault()
+    const hp = readHoneypot(e.currentTarget)
     if (!validate() || submitLock.current) return
     submitLock.current = true
     setSubmitError('')
@@ -77,6 +80,7 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
           pincode: values.pincode,
           course: values.course || 'DGCA CPL Ground School',
           source: 'Homepage Modal',
+          [HONEYPOT_FIELD]: hp,
           utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page,
         }),
       })
@@ -177,6 +181,7 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
             </div>
 
             <form onSubmit={handleSubmit} className="form-grid" noValidate>
+              <Honeypot />
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label" htmlFor="modal-name">Full Name *</label>

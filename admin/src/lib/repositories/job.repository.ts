@@ -63,6 +63,12 @@ const APPLICATION_SELECT = {
   reviewer: { select: { id: true, name: true } },
 } satisfies Prisma.JobApplicationSelect;
 
+/** The API contract exposes a flat `applicationCount`; Prisma's `_count` stays internal. */
+export function withApplicationCount<T extends { _count: { applications: number } }>(row: T) {
+  const { _count, ...rest } = row;
+  return { ...rest, applicationCount: _count.applications };
+}
+
 export class JobRepository {
   static async findMany(orgId: string, filters: JobFilters) {
     const where: Prisma.JobWhereInput = {
@@ -90,11 +96,12 @@ export class JobRepository {
       }),
       prisma.job.count({ where }),
     ]);
-    return { data, total };
+    return { data: data.map(withApplicationCount), total };
   }
 
   static async findById(orgId: string, id: string) {
-    return prisma.job.findFirst({ where: { id, orgId }, select: JOB_SELECT });
+    const row = await prisma.job.findFirst({ where: { id, orgId }, select: JOB_SELECT });
+    return row ? withApplicationCount(row) : null;
   }
 
   static async findBySlug(orgId: string, slug: string) {
@@ -102,7 +109,7 @@ export class JobRepository {
   }
 
   static async create(orgId: string, createdBy: string, data: CreateJobInput, slug: string) {
-    return prisma.job.create({
+    return withApplicationCount(await prisma.job.create({
       data: {
         orgId,
         createdBy,
@@ -126,11 +133,11 @@ export class JobRepository {
         metadata: (data.metadata ?? {}) as Prisma.InputJsonValue,
       },
       select: JOB_SELECT,
-    });
+    }));
   }
 
   static async update(orgId: string, id: string, data: UpdateJobInput) {
-    return prisma.job.update({
+    return withApplicationCount(await prisma.job.update({
       where: { id, orgId },
       data: {
         ...(data.title !== undefined && { title: data.title }),
@@ -153,18 +160,18 @@ export class JobRepository {
         ...(data.metadata !== undefined && { metadata: data.metadata as Prisma.InputJsonValue }),
       },
       select: JOB_SELECT,
-    });
+    }));
   }
 
   static async updateStatus(orgId: string, id: string, status: string, publishedBy?: string) {
-    return prisma.job.update({
+    return withApplicationCount(await prisma.job.update({
       where: { id, orgId },
       data: {
         status: status as "DRAFT" | "PUBLISHED" | "CLOSED" | "ARCHIVED",
         ...(status === "PUBLISHED" && { publishedAt: new Date(), publishedBy }),
       },
       select: JOB_SELECT,
-    });
+    }));
   }
 
   static async delete(orgId: string, id: string) {

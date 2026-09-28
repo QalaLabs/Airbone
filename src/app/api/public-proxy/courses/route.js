@@ -1,23 +1,11 @@
-import { NextResponse } from 'next/server'
-
-const ADMIN_API_URL = process.env.ADMIN_API_URL ?? 'http://localhost:4000'
+import { proxyPublicGet, clampLimit } from '@/lib/publicProxy'
 
 export async function GET(req) {
-  try {
-    const url = new URL(req.url)
-    // Catalog pages request everything published; upstream caps at 50.
-    const limit = url.searchParams.get('limit') ?? '100'
-    const slug = url.searchParams.get('slug')
-    let upstream = `${ADMIN_API_URL}/api/public/courses?limit=${limit}`
-    if (slug) upstream += `&slug=${encodeURIComponent(slug)}`
-    const res = await fetch(upstream, {
-      next: { revalidate: 60 },
-    })
-    if (!res.ok) throw new Error('Upstream failed')
-    const data = await res.json()
-    return NextResponse.json(data)
-  } catch (err) {
-    console.error('[Proxy Error /courses]:', err.message)
-    return NextResponse.json({ error: 'Upstream Error' }, { status: 502 })
-  }
+  const url = new URL(req.url)
+  // Catalog pages request everything published; upstream caps at 50.
+  const limit = clampLimit(url.searchParams.get('limit'), 100, 100)
+  const slug = url.searchParams.get('slug')
+  let path = `/api/public/courses?limit=${limit}`
+  if (slug) path += `&slug=${encodeURIComponent(slug)}`
+  return proxyPublicGet('/courses', path)
 }
