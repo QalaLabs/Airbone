@@ -527,6 +527,7 @@ model Lead {
 
   @@unique([orgId, phone])
   @@index([orgId, status])
+  @@index([orgId, status, createdAt(sort: Desc)])
   @@index([orgId, assignedTo, createdAt(sort: Desc)])
   @@index([orgId, createdAt(sort: Desc)])
   @@index([phone, orgId])

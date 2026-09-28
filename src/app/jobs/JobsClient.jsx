@@ -61,7 +61,10 @@ export default function JobsClient() {
 
   useEffect(() => {
     fetch('/api/public-proxy/jobs')
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`)
+        return r.json()
+      })
       .then((d) => { setJobs((d.data ?? []).map(mapJob)); setLoading(false) })
       .catch(() => { setError(true); setLoading(false) })
   }, [])
@@ -150,7 +153,7 @@ export default function JobsClient() {
                     style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--gold)' }}
                   />
                 ) : (
-                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: '2px solid var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(0,39,76,0.05)', border: '2px solid var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>
                     ✈
                   </div>
                 )}
@@ -171,7 +174,7 @@ export default function JobsClient() {
                 {featuredJob.role}
               </h2>
 
-              <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.78)', lineHeight: '1.75', marginBottom: '2rem', marginTop: '1rem' }}>
+              <p style={{ fontSize: '0.88rem', color: 'rgba(0,39,76,0.78)', lineHeight: '1.75', marginBottom: '2rem', marginTop: '1rem' }}>
                 {featuredJob.description || featuredJob.eligibility || ''}
               </p>
 
@@ -182,11 +185,11 @@ export default function JobsClient() {
                   { label: 'Experience', value: featuredJob.experience },
                   { label: 'Employment Type', value: featuredJob.type },
                 ].map((d) => (
-                  <div key={d.label} style={{ background: 'rgba(255,255,255,0.06)', borderLeft: '2px solid var(--gold)', padding: '0.75rem 1rem' }}>
-                    <span style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', display: 'block', marginBottom: '0.2rem', letterSpacing: '0.12em' }}>
+                  <div key={d.label} style={{ background: 'rgba(0,39,76,0.05)', borderLeft: '2px solid var(--gold)', padding: '0.75rem 1rem' }}>
+                    <span style={{ fontSize: '0.55rem', color: 'rgba(0,39,76,0.55)', textTransform: 'uppercase', display: 'block', marginBottom: '0.2rem', letterSpacing: '0.12em' }}>
                       {d.label}
                     </span>
-                    <span style={{ fontSize: '0.85rem', color: '#FFFFFF', fontWeight: 700 }}>{d.value}</span>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--navy)', fontWeight: 700 }}>{d.value}</span>
                   </div>
                 ))}
               </div>
@@ -195,7 +198,7 @@ export default function JobsClient() {
               <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                 {featuredJob.salary && featuredJob.salary !== 'Competitive' && (
                   <div>
-                    <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', display: 'block', marginBottom: '0.2rem' }}>
+                    <span style={{ fontSize: '0.62rem', color: 'rgba(0,39,76,0.55)', textTransform: 'uppercase', display: 'block', marginBottom: '0.2rem' }}>
                       Compensation
                     </span>
                     <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.4rem', fontWeight: 900, color: 'var(--gold)' }}>
@@ -222,10 +225,10 @@ export default function JobsClient() {
             >
               <div style={{ textAlign: 'center', padding: '2rem' }}>
                 <div style={{ fontSize: '3.5rem', marginBottom: '1rem', opacity: 0.8 }}>✈</div>
-                <p style={{ fontFamily: 'var(--font-h)', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>
+                <p style={{ fontFamily: 'var(--font-h)', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(0,39,76,0.6)' }}>
                   {featuredJob.airline}
                 </p>
-                <p style={{ fontFamily: 'var(--font-h)', fontSize: '0.52rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginTop: '0.5rem' }}>
+                <p style={{ fontFamily: 'var(--font-h)', fontSize: '0.52rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(0,39,76,0.45)', marginTop: '0.5rem' }}>
                   {featuredJob.type} · {featuredJob.location}
                 </p>
               </div>

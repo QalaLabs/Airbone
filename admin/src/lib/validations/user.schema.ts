@@ -46,7 +46,11 @@ export const resetPasswordSchema = z.object({
 export const userFiltersSchema = z.object({
   role: z.nativeEnum(UserRole).optional(),
   campusId: z.string().uuid().optional(),
-  isActive: z.coerce.boolean().optional(),
+  // z.coerce.boolean() turns the string "false" into true — parse explicitly.
+  isActive: z
+    .union([z.boolean(), z.enum(["true", "false"])])
+    .optional()
+    .transform((v) => (v === undefined ? undefined : v === true || v === "true")),
   search: z.string().max(255).optional(),
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(100).default(20),

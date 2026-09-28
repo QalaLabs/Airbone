@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
+import { formatInIST, fromISTInput, toISTInput } from "@/lib/time/ist";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -198,7 +199,7 @@ export default function FacultyAssignmentsPage() {
       moduleId: moduleId || null,
       title: title.trim(),
       description: description.trim() || null,
-      dueAt: dueAt ? new Date(dueAt).toISOString() : null,
+      dueAt: dueAt ? fromISTInput(dueAt) : null,
       maxScore,
       status,
     });
@@ -215,7 +216,7 @@ export default function FacultyAssignmentsPage() {
         moduleId: moduleId || null,
         title: title.trim(),
         description: description.trim() || null,
-        dueAt: dueAt ? new Date(dueAt).toISOString() : null,
+        dueAt: dueAt ? fromISTInput(dueAt) : null,
         maxScore,
         status,
       },
@@ -248,7 +249,7 @@ export default function FacultyAssignmentsPage() {
     setDescription(a.description || "");
     setCourseId(a.course.id);
     setBatchId(a.batch?.id || "");
-    setDueAt(a.dueAt ? new Date(a.dueAt).toISOString().slice(0, 16) : "");
+    setDueAt(toISTInput(a.dueAt));
     setMaxScore(a.maxScore);
     setStatus(a.status);
     setEditDialogOpen(true);
@@ -361,7 +362,7 @@ export default function FacultyAssignmentsPage() {
                   )}
                   {a.dueAt && (
                     <span className="flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5" /> Due: {new Date(a.dueAt).toLocaleString()}
+                      <Clock className="h-3.5 w-3.5" /> Due: {formatInIST(a.dueAt)}
                     </span>
                   )}
                   <span>Max Score: {a.maxScore}</span>

@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
 const PAYMENT_STATUSES = ["PENDING", "COMPLETED", "FAILED", "PARTIALLY_REFUNDED", "REFUNDED"];
-const PAYMENT_METHODS = ["CASH", "CARD", "UPI", "BANK_TRANSFER", "CHEQUE", "OTHER"];
+const PAYMENT_METHODS = ["CASH", "CARD", "UPI", "BANK_TRANSFER", "CHEQUE", "DD"];
 const FEE_TYPES = ["tuition", "admission", "exam", "uniform", "other"];
 
 interface LedgerPayment {

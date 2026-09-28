@@ -8,6 +8,7 @@ import {
   TODAY_FOLLOW_UP_STATUSES,
   LOST_STATUSES,
 } from "@/lib/leads/lead-status";
+import { startOfISTDay, endOfISTDay } from "@/lib/time/ist";
 
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -28,17 +29,9 @@ function pct(part: number, total: number): string {
   return ((part / total) * 100).toFixed(1);
 }
 
-function startOfDay(d: Date): Date {
-  const x = new Date(d);
-  x.setHours(0, 0, 0, 0);
-  return x;
-}
-
-function endOfDay(d: Date): Date {
-  const x = new Date(d);
-  x.setHours(23, 59, 59, 999);
-  return x;
-}
+// "Today" is the IST business day, not the server's (UTC on Cloud Run) day.
+const startOfDay = startOfISTDay;
+const endOfDay = endOfISTDay;
 
 export async function GET() {
   try {
@@ -389,6 +382,8 @@ export async function GET() {
         collectionsToday: Number(collectionsToday.toFixed(2)),
         totalCollections: Number(totalCollections.toFixed(2)),
         totalCollectionPending: Number(totalCollectionPending.toFixed(2)),
+        totalFeeBilled: Number(totalfeeFinal.toFixed(2)),
+        totalFeePaid: Number(totalPaid.toFixed(2)),
         collectionPct,
         workableLeads: workableTotal,
         workablePct: overallWorkablePct,

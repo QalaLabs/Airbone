@@ -7,7 +7,7 @@
  *
  * The hardcoded display map was removed because it drifted from the DB:
  *   - a320-simulator: stale ₹12,000, Admin DB = ₹10,000
- *   - airline-preparation: stale ₹1,25,000, Admin DB = ₹1,00,000
+ *   - airline-preparation: Admin DB = ₹1,25,000 (client fee correction)
  *
  * A small set of NON-AUTHORITATIVE exceptions remains ONLY for values that have
  * no single canonical answer in the Admin DB today:
@@ -41,16 +41,6 @@ const COURSE_FEE_EXCEPTIONS = {
     label: '₹25,00,000',
     numeric: 2500000,
     reason: 'Legacy static-only course (no Admin record); documented pending migration.',
-  },
-  'multi-engine-rating': {
-    label: '₹3–5L',
-    numeric: null,
-    reason: 'Band quote, no single price; legacy static-only course.',
-  },
-  'aviation-english-icao': {
-    label: '₹50K–1L',
-    numeric: null,
-    reason: 'Band quote, no single price; legacy static-only course.',
   },
   /* Legacy static-only courses awaiting Admin migration (CONFIGURATION REQUIRED). */
   'ground-school': {

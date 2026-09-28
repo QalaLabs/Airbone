@@ -5,6 +5,7 @@ import {
   verifyMetaSignature,
   hubChallengeMatches,
   processMetaLeadGen,
+  processMetaLeadGenBatch,
   type MetaWebhookDb,
   type MetaWebhookDeps,
   type MetaWebhookPayload,
@@ -27,11 +28,17 @@ interface FakeLead {
   source?: string;
   createdAt: Date;
   customFields: Record<string, unknown>;
+  deletedAt?: Date | null;
 }
 
 function matches(where: Record<string, unknown>, row: FakeLead): boolean {
   if (where.orgId !== undefined && row.orgId !== where.orgId) return false;
-  if (where.phone !== undefined && row.phone !== String(where.phone)) return false;
+  if (where.phone !== undefined) {
+    const p = where.phone as string | { in?: string[] };
+    if (typeof p === "object" && p !== null && Array.isArray(p.in)) {
+      if (!p.in.includes(row.phone)) return false;
+    } else if (row.phone !== String(p)) return false;
+  }
   const cf = where.customFields as { path?: string[]; equals?: unknown } | undefined;
   if (cf?.path && cf.path.length === 1 && "equals" in cf) {
     const key = cf.path[0] as string;
@@ -75,6 +82,7 @@ function makeDb() {
       },
       update: async (args: { where: { id: string }; data: Record<string, unknown> }) => {
         const row = leads.find((l) => l.id === args.where.id);
+        if (row && "deletedAt" in args.data) row.deletedAt = args.data.deletedAt as Date | null;
         return row ?? null;
       },
     },
@@ -413,4 +421,93 @@ test("same-phone race converges via unique(orgId, phone) P2002 path", async () =
   assert.equal(r2.kind, "duplicate");
   assert.equal(k.leads.length, 1, "P2002 path never creates a second row");
   assert.equal(d.emitted.length, 2);
+});
+// ─── Phone-format dedupe, Recycle Bin restore, batched deliveries ────────────
+
+function seedLead(k: ReturnType<typeof makeDb>, phone: string, deletedAt: Date | null = null): FakeLead {
+  const row: FakeLead = {
+    orgId: ORG, id: `seed-${phone}`, name: "Existing Person", email: null, phone,
+    courseInterest: null, status: "NEW", createdAt: NOW, customFields: {}, deletedAt,
+  };
+  k.leads.push(row);
+  return row;
+}
+
+test("dedupe: the same mobile stored without +91/spaces converges instead of creating a duplicate", async () => {
+  const k = makeDb();
+  const existing = seedLead(k, "9988776655");
+  const d = makeDeps(k.db);
+  const r = await processMetaLeadGen({
+    orgId: ORG, orgSettings: null, appSecret: APP_SECRET, pageAccessToken: PAGE_TOKEN,
+    payload: validPayload, deps: d.deps,
+  });
+  assert.deepEqual(r, { kind: "duplicate", leadId: existing.id, test: false });
+  assert.equal(k.leads.length, 1, "no second lead row for the same person");
+});
+
+test("recycle bin: a new Facebook lead for a binned phone restores that lead", async () => {
+  const k = makeDb();
+  const binned = seedLead(k, "+919988776655", new Date("2026-09-01T00:00:00.000Z"));
+  const d = makeDeps(k.db);
+  const r = await processMetaLeadGen({
+    orgId: ORG, orgSettings: null, appSecret: APP_SECRET, pageAccessToken: PAGE_TOKEN,
+    payload: validPayload, deps: d.deps,
+  });
+  assert.equal(r.kind, "duplicate");
+  assert.equal(binned.deletedAt, null, "lead is restored out of the Recycle Bin");
+  assert.equal(k.leads.length, 1);
+  assert.ok(d.logs.some((l) => l.event === "facebook_leadgen_restored"));
+});
+
+test("batch: every leadgen change in one delivery is processed", async () => {
+  const k = makeDb();
+  let n = 0;
+  const d = makeDeps(k.db, async (requestedId: string) => {
+    n += 1;
+    return {
+      ok: true,
+      status: 200,
+      json: { ...graphLead, id: requestedId, field_data: [
+        { name: "full_name", values: [`Person ${n}`] },
+        { name: "phone_number", values: [`+91 90000 0000${n}`] },
+      ] },
+    };
+  });
+  const payload: MetaWebhookPayload = {
+    object: "page",
+    entry: [
+      { id: "page-1", changes: [
+        { field: "leadgen", value: { leadgen_id: "LGN-A", form_id: "f" } },
+        { field: "leadgen", value: { leadgen_id: "LGN-B", form_id: "f" } },
+      ] },
+      { id: "page-1", changes: [{ field: "leadgen", value: { leadgen_id: "LGN-C", form_id: "f" } }] },
+    ],
+  };
+  const { result, results } = await processMetaLeadGenBatch({
+    orgId: ORG, orgSettings: null, appSecret: APP_SECRET, pageAccessToken: PAGE_TOKEN, payload, deps: d.deps,
+  });
+  assert.equal(results.length, 3);
+  assert.equal(k.leads.length, 3, "all three leads persisted, not just the first entry");
+  assert.equal(result.kind, "created");
+});
+
+test("batch: a transient Graph failure on any change makes the delivery retryable", async () => {
+  const k = makeDb();
+  const d = makeDeps(k.db, async (requestedId: string) =>
+    requestedId === "LGN-B"
+      ? { ok: false, status: 500, json: {} }
+      : { ok: true, status: 200, json: { ...graphLead, id: requestedId } },
+  );
+  const payload: MetaWebhookPayload = {
+    object: "page",
+    entry: [{ id: "page-1", changes: [
+      { field: "leadgen", value: { leadgen_id: "LGN-A", form_id: "f" } },
+      { field: "leadgen", value: { leadgen_id: "LGN-B", form_id: "f" } },
+    ] }],
+  };
+  const { result } = await processMetaLeadGenBatch({
+    orgId: ORG, orgSettings: null, appSecret: APP_SECRET, pageAccessToken: PAGE_TOKEN, payload, deps: d.deps,
+  });
+  assert.equal(result.kind, "provider_error");
+  assert.equal(k.leads.length, 1, "the successful change is still saved; redelivery dedupes on leadgen_id");
 });

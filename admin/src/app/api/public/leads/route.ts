@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/db/client";
 import type { LeadSource } from "@prisma/client";
 import { consumeRateLimit, rateLimitHeaders } from "@/lib/utils/rate-limit";
-import { resolveClientIp } from "@/lib/utils/client-ip";
+import { resolveIntakeRateLimitIp } from "@/lib/utils/client-ip";
 import { safeEqualString } from "@/lib/utils/crypto";
 import { generateResourceToken } from "@/lib/utils/resource-token";
 import { publicLeadSchema } from "@/lib/validations/public-lead.schema";
@@ -28,8 +28,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-  // Rate limit: 5 requests per minute per IP
-  const ip = resolveClientIp(req);
+  // Rate limit: 5 requests per minute per visitor IP
+  const ip = resolveIntakeRateLimitIp(req);
   const decision = await consumeRateLimit(`lead:${ip}`, 5, 60_000);
 
   if (!decision.allowed) {
@@ -217,8 +217,54 @@ export async function POST(req: NextRequest) {
         }
         const existingByPhone = await prisma.lead.findFirst({
           where: { orgId: org.id, phone: normalizedPhone },
-          select: { id: true, name: true },
+          select: { id: true, name: true, createdAt: true, deletedAt: true },
         });
+        // A lead sitting in the Recycle Bin still owns unique(orgId, phone).
+        // A fresh enquiry from that person restores it instead of being lost.
+        if (existingByPhone?.deletedAt) {
+          await prisma.$transaction([
+            prisma.lead.update({
+              where: { id: existingByPhone.id },
+              data: { deletedAt: null, lastActivityAt: new Date() },
+            }),
+            prisma.leadActivity.create({
+              data: {
+                leadId: existingByPhone.id,
+                orgId: org.id,
+                activityType: "NOTE",
+                title: "Re-enquiry — restored from Recycle Bin",
+                notes: `New enquiry received via ${leadSource.replace("_", " ")}${courseInterest ? ` for ${courseInterest}` : ""}.`,
+                completedAt: new Date(),
+                metadata: { source: leadSource, webSource: source ?? "website", restoredFromTrash: true },
+              },
+            }),
+          ]);
+          await AuditService.write({
+            orgId: org.id,
+            action: "lead.restored",
+            entityType: "lead",
+            entityId: existingByPhone.id,
+            newValue: { reason: "public_re_enquiry", source: leadSource },
+          });
+          await emitLeadCreated({
+            orgId: org.id,
+            leadId: existingByPhone.id,
+            leadName: existingByPhone.name,
+            source: leadSource,
+            courseInterest: courseInterest,
+            actorName: "Public form",
+            ipAddress: ip,
+          });
+          return NextResponse.json(
+            {
+              success: true,
+              data: { id: existingByPhone.id, name: existingByPhone.name, createdAt: existingByPhone.createdAt },
+              gateToken: generateResourceToken(normalizedPhone),
+              meta: { restored: true },
+            },
+            { status: 200 },
+          );
+        }
         if (existingByPhone) {
           await emitLeadCreated({
             orgId: org.id,

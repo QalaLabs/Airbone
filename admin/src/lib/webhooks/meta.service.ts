@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import type { PrismaClient, Prisma, LeadSource, LeadStatus } from "@prisma/client";
 import type { EmitLeadCreatedInput } from "@/lib/automation/emit-lead-created";
+import { contactCandidates } from "@/lib/messaging/phone";
 
 // ─── Meta/Facebook Lead Ads webhook contract ─────────────────────────────────
 // GET (subscription verification): ?hub.mode=subscribe&hub.verify_token=...&hub.challenge=...
@@ -197,6 +198,44 @@ function courseFrom(fields: MetaLeadField[]): string | undefined {
 }
 
 /**
+ * Meta batches several entries / leadgen changes into one delivery. Each change
+ * is processed on its own (leadgen_id dedupe makes redelivery safe). The batch
+ * result is the most severe outcome: any transient provider error → retry.
+ */
+export async function processMetaLeadGenBatch(
+  params: Parameters<typeof processMetaLeadGen>[0],
+): Promise<{ result: MetaWebhookResult; results: MetaWebhookResult[] }> {
+  const singles: MetaWebhookPayload[] = [];
+  for (const entry of params.payload.entry ?? []) {
+    for (const change of entry?.changes ?? []) {
+      if (change?.field === "leadgen") {
+        singles.push({ object: params.payload.object, entry: [{ ...entry, changes: [change] }] });
+      }
+    }
+  }
+  if (singles.length <= 1) {
+    const result = await processMetaLeadGen(params);
+    return { result, results: [result] };
+  }
+
+  const results: MetaWebhookResult[] = [];
+  for (const payload of singles) {
+    results.push(await processMetaLeadGen({ ...params, payload }));
+  }
+  const severity: Record<MetaWebhookResult["kind"], number> = {
+    not_configured: 5,
+    provider_error: 4,
+    bad_request: 3,
+    created: 2,
+    duplicate: 1,
+    replayed: 1,
+    skipped_no_phone: 0,
+  };
+  const result = results.reduce((worst, r) => (severity[r.kind] > severity[worst.kind] ? r : worst));
+  return { result, results };
+}
+
+/**
  * Core Meta lead-Gen processing. Extracted from the route so the full contract
  * (signature → map → dedup → Graph fetch → create → event) is unit-testable.
  * No PII is ever logged — only leadgen_id / internal lead id / event name.
@@ -302,6 +341,46 @@ export async function processMetaLeadGen(params: {
     webSource: "facebook_lead_form",
     leadgenRawGraph: leadData as unknown as Prisma.InputJsonValue,
   };
+
+  // Same person in another phone format (+91 / spaces / leading 0), or a lead
+  // sitting in the Recycle Bin: converge on it instead of creating a duplicate.
+  const samePerson = await db.lead.findFirst({
+    where: { orgId, phone: { in: contactCandidates(normalizedPhone) } },
+    select: { id: true, name: true, courseInterest: true, status: true, deletedAt: true },
+  });
+  if (samePerson) {
+    const existing = samePerson;
+    if (existing.deletedAt) {
+      await db.$transaction(async (tx) => {
+        await tx.lead.update({ where: { id: existing.id }, data: { deletedAt: null, lastActivityAt: now() } });
+        await tx.leadActivity.create({
+          data: {
+            leadId: existing.id,
+            orgId,
+            activityType: "NOTE",
+            title: "Restored from Recycle Bin",
+            notes: `New Facebook Lead Ads submission (Form ID: ${value.form_id ?? "unknown"}) for this phone.`,
+            completedAt: now(),
+            metadata: { source: SOURCE, leadgenId, restoredFromTrash: true },
+          },
+        });
+      });
+      log({ event: "facebook_leadgen_restored", leadgenId, leadId: existing.id, timestamp: now().toISOString() });
+    }
+    if (!isTest && existing.status !== "TEST_LEAD") {
+      await deps.emitLeadCreated({
+        orgId,
+        leadId: existing.id,
+        leadName: existing.name,
+        source: SOURCE,
+        courseInterest: existing.courseInterest ?? courseInterest,
+        actorName: ACTOR_NAME,
+        ipAddress: IP_ADDRESS,
+      });
+    }
+    log({ event: "facebook_leadgen_duplicate", leadgenId, leadId: existing.id, timestamp: now().toISOString() });
+    return { kind: "duplicate", leadId: existing.id, test: isTest };
+  }
 
   let lead: { id: string; name: string };
   try {

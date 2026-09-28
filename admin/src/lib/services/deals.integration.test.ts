@@ -190,14 +190,21 @@ test("deal lifecycle: ensure idempotent, guarded transitions, won/lost markers, 
     const admissionCount = await prisma.admission.count({ where: { orgId, leadId: leadB.id } });
     assert.equal(admissionCount, 1, "only one admission may exist for a converted deal");
 
-    // 8. Revert to Prospect archives the deal and restores the lead.
+    // 8. Revert to Prospect reopens the same deal at ENQUIRY and restores the lead.
     await prisma.lead.update({
       where: { id: leadB.id, orgId },
       data: { status: "WON" },
     });
     const reverted = await DealService.revertToProspect(c, dealB.deal.id, { notes: "Test revert" });
-    assert.equal(reverted.isActive, false);
+    assert.equal(reverted.isActive, true, "reverted deal is reopened, not archived");
+    assert.equal(reverted.stage, "ENQUIRY");
+    assert.equal(reverted.wonAt, null, "revert must clear wonAt");
     assert.ok(reverted.revertedAt);
+    await assert.rejects(
+      DealService.revertToProspect(c, dealB.deal.id, {}),
+      (err) => err instanceof ValidationError,
+      "reverting a deal already at Prospect is rejected",
+    );
     // M-08 Part B: revert clears the deal↔admission link + convertedAt (keeps admission).
     assert.equal(reverted.admissionId, null, "revert must clear the deal's admissionId link");
     assert.equal(reverted.convertedAt, null, "revert must clear convertedAt so the deal is no longer dangling");

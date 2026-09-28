@@ -41,6 +41,7 @@ interface Job {
   seoDesc?: string;
   hiringPartner?: { name: string };
   applicationCount?: number;
+  _count?: { applications?: number };
   postedAt?: string;
   createdAt: string;
 }
@@ -201,7 +202,7 @@ export default function JobsPage() {
       header: "Applications",
       cell: ({ row }) => (
         <Badge variant="secondary" className="text-xs">
-          {row.original.applicationCount ?? 0}
+          {row.original._count?.applications ?? row.original.applicationCount ?? 0}
         </Badge>
       ),
     },

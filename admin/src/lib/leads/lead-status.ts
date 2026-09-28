@@ -130,11 +130,26 @@ export const CONNECTED_STATUSES: LeadStatus[] = [
   LeadStatus.WON,
 ];
 
-/** "Total Active Leads" = New + Call back + Prospect (per Phase 2 spec). */
+/**
+ * Active (non-terminal) leads for the default CRM list view.
+ * Excludes LOST* reasons, WON, and CONVERTED so counselors see working pipeline only.
+ * Maps spreadsheet "NEW / CONTACTED / ENGAGED" → NEW + CONNECTED/CONTACTED + engaged stages.
+ */
 export const ACTIVE_LEAD_STATUSES: LeadStatus[] = [
   LeadStatus.NEW,
+  LeadStatus.CONTACTED,
+  LeadStatus.CONNECTED,
   LeadStatus.CALL_BACK,
+  LeadStatus.INTERESTED,
   LeadStatus.PROSPECT,
+  LeadStatus.FOLLOW_UP,
+  LeadStatus.COUNSELED,
+  LeadStatus.APPLICATION_SUBMITTED,
+  LeadStatus.NOT_CONNECTED,
+  LeadStatus.RINGING,
+  LeadStatus.NOT_REACHABLE,
+  LeadStatus.SWITCHED_OFF,
+  LeadStatus.VOICEMAIL,
 ];
 
 /** "Today's Follow-ups" statuses (per Phase 2 spec). */
@@ -160,7 +175,17 @@ export function isActiveStatus(status: LeadStatus): boolean {
 }
 
 /** Human readable label for a status value (e.g. LOCATION_OUT_OF_SCOPE → Location Out Of Scope). */
+const STATUS_LABEL_OVERRIDES: Record<string, string> = {
+  NOT_INTERESTED: "Not Interested",
+  REASON_NOT_SHARED: "Not Interested - Reason Not Shared",
+  JOB_SEEKER: "Job Seeker",
+  CALL_BACK: "Call Back",
+  INCOMING_BARD: "Incoming Barred",
+};
+
 export function statusLabel(status: string): string {
+  const override = STATUS_LABEL_OVERRIDES[status];
+  if (override) return override;
   return status
     .toLowerCase()
     .replace(/_/g, " ")
@@ -240,11 +265,6 @@ export function getAllowedLeadStatuses(from: LeadStatus): LeadStatus[] {
   ].filter((s) => !LOCKED_LEAD_STATUSES.includes(s));
   if (from === LeadStatus.APPLICATION_SUBMITTED) {
     return [...LOST_STATUSES, LeadStatus.PROSPECT];
-  }
-  if (isLostStatus(from)) {
-    return [...allMinusLocked].filter(
-      (s) => !isLostStatus(s) || s === LeadStatus.LOST,
-    );
   }
   return allMinusLocked;
 }

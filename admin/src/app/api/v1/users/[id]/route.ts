@@ -1,6 +1,8 @@
 import { type NextRequest } from "next/server";
 import { UserService } from "@/lib/services/user.service";
 import { guard } from "@/lib/middleware/permissions";
+import { hasPermission } from "@/lib/utils/permissions";
+import { ForbiddenError } from "@/lib/utils/errors";
 import { getRequestContext } from "@/lib/middleware/context";
 import { ok, noContent, handleError } from "@/lib/utils/response";
 import { updateUserSchema } from "@/lib/validations/user.schema";
@@ -32,6 +34,17 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
     const body = await req.json() as unknown;
     const input = updateUserSchema.parse(body);
+
+    // Self-service profile edits cannot move campus (drives campus ABAC) or
+    // toggle activation — those stay behind users:write.
+    if (ctx.user.id === id && !hasPermission(ctx.user, "write", "users")) {
+      if (input.campusId !== undefined || input.isActive !== undefined) {
+        throw new ForbiddenError("write", "users");
+      }
+    }
+    if (ctx.user.id === id && input.isActive === false) {
+      throw new ForbiddenError("deactivate", "your own account");
+    }
 
     const user = await UserService.update(ctx, id, input);
     return ok(user);

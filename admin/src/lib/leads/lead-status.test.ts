@@ -18,11 +18,31 @@ import {
 } from "./lead-status";
 import { createLeadSchema, leadFiltersSchema } from "../validations/lead.schema";
 
-test("ACTIVE_LEAD_STATUSES equals NEW + CALL_BACK + PROSPECT (Phase 2 spec)", () => {
-  assert.deepEqual(
-    [...ACTIVE_LEAD_STATUSES].sort(),
-    [LeadStatus.NEW, LeadStatus.CALL_BACK, LeadStatus.PROSPECT].sort(),
+test("ACTIVE_LEAD_STATUSES = every non-terminal status (no LOST*, WON, CONVERTED)", () => {
+  const terminal = new Set<LeadStatus>([...LOST_STATUSES, LeadStatus.WON, LeadStatus.CONVERTED]);
+  for (const s of ACTIVE_LEAD_STATUSES) {
+    assert.ok(!terminal.has(s), `${s} is terminal and must not be active`);
+  }
+  for (const s of [
+    LeadStatus.NEW,
+    LeadStatus.CONTACTED,
+    LeadStatus.CONNECTED,
+    LeadStatus.CALL_BACK,
+    LeadStatus.INTERESTED,
+    LeadStatus.PROSPECT,
+    LeadStatus.FOLLOW_UP,
+    LeadStatus.NOT_CONNECTED,
+  ]) {
+    assert.ok(ACTIVE_LEAD_STATUSES.includes(s), `${s} should be active`);
+  }
+});
+
+test("ACTIVE_LEAD_STATUSES covers every LeadStatus that is neither lost nor won/converted", () => {
+  const terminal = new Set<LeadStatus>([...LOST_STATUSES, LeadStatus.WON, LeadStatus.CONVERTED]);
+  const uncategorised = Object.values(LeadStatus).filter(
+    (s) => !terminal.has(s) && !ACTIVE_LEAD_STATUSES.includes(s),
   );
+  assert.deepEqual(uncategorised, [], "every status must be either active or terminal");
 });
 
 test("LOST_STATUSES contains terminal statuses and excludes WON", () => {
@@ -159,6 +179,22 @@ test("SECTION3: lost statuses may be re-opened to an active status", () => {
     assert.equal(canTransitionLeadStatus(from, LeadStatus.PROSPECT), true);
     assert.equal(canTransitionLeadStatus(from, LeadStatus.INTERESTED), true);
   }
+});
+
+test("lost reasons can be corrected to another lost reason (e.g. NOT_INTERESTED → JOB_SEEKER)", () => {
+  assert.equal(canTransitionLeadStatus(LeadStatus.NOT_INTERESTED, LeadStatus.JOB_SEEKER), true);
+  assert.equal(canTransitionLeadStatus(LeadStatus.JOB_SEEKER, LeadStatus.REASON_NOT_SHARED), true);
+  assert.equal(canTransitionLeadStatus(LeadStatus.PRICE_HIGH, LeadStatus.NOT_INTERESTED), true);
+  assert.equal(canTransitionLeadStatus(LeadStatus.NOT_INTERESTED, LeadStatus.WON), false);
+});
+
+test("required lost reasons are selectable and labelled for users", () => {
+  for (const s of [LeadStatus.NOT_INTERESTED, LeadStatus.REASON_NOT_SHARED, LeadStatus.JOB_SEEKER]) {
+    assert.ok(getAllowedLeadStatuses(LeadStatus.NEW).includes(s), `${s} selectable from NEW`);
+  }
+  assert.equal(statusLabel("NOT_INTERESTED"), "Not Interested");
+  assert.equal(statusLabel("REASON_NOT_SHARED"), "Not Interested - Reason Not Shared");
+  assert.equal(statusLabel("JOB_SEEKER"), "Job Seeker");
 });
 
 test("SECTION3: does not transition a lead to WON/CONVERTED via the generic path", () => {

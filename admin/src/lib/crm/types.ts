@@ -26,6 +26,8 @@ export interface AnalyticsTotals {
   collectionsToday: number;
   totalCollections: number;
   totalCollectionPending: number;
+  totalFeeBilled?: number;
+  totalFeePaid?: number;
   collectionPct: string;
   workableLeads: number;
   workablePct: string;
@@ -218,6 +220,7 @@ export interface DealRecord {
   convertedAt: string | null;
   revertedAt: string | null;
   isActive: boolean;
+  metadata?: Record<string, unknown> | null;
   createdAt: string;
   updatedAt: string;
   lead: {

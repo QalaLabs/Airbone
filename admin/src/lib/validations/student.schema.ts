@@ -23,26 +23,26 @@ export const createStudentSchema = z.object({
     })
     .optional(),
 
-  // Guardian
-  guardianName: z.string().max(255).optional(),
-  guardianPhone: z.string().max(20).optional(),
-  guardianEmail: z.string().email().optional(),
+  // Guardian (empty string allowed so edit forms can clear/omit)
+  guardianName: z.string().max(255).optional().or(z.literal("")),
+  guardianPhone: z.string().max(20).optional().or(z.literal("")),
+  guardianEmail: z.string().email().optional().or(z.literal("")),
 
   // Medical
   medicalFitness: z.boolean().default(false),
 
   // Academic background
-  class10Board: z.string().max(100).optional(),
-  class10Year: z.number().int().min(1990).max(2030).optional(),
-  class10Percent: z.number().min(0).max(100).optional(),
-  class12Board: z.string().max(100).optional(),
-  class12Year: z.number().int().min(1990).max(2030).optional(),
-  class12Percent: z.number().min(0).max(100).optional(),
-  class12Stream: z.enum(["SCIENCE", "COMMERCE", "ARTS", "OTHER"]).optional(),
+  class10Board: z.string().max(100).optional().or(z.literal("")),
+  class10Year: z.number().int().min(1990).max(2030).optional().nullable(),
+  class10Percent: z.number().min(0).max(100).optional().nullable(),
+  class12Board: z.string().max(100).optional().or(z.literal("")),
+  class12Year: z.number().int().min(1990).max(2030).optional().nullable(),
+  class12Percent: z.number().min(0).max(100).optional().nullable(),
+  class12Stream: z.enum(["SCIENCE", "COMMERCE", "ARTS", "OTHER"]).optional().nullable(),
 
-  // Assignment
-  campusId: z.string().uuid().optional(),
-  leadId: z.string().uuid().optional(),
+  // Assignment — UI sends null for "NONE"
+  campusId: z.string().uuid().optional().nullable(),
+  leadId: z.string().uuid().optional().nullable(),
 
   customFields: z.record(z.unknown()).optional(),
 });
@@ -52,10 +52,24 @@ export const updateStudentSchema = createStudentSchema
   .partial()
   .extend({
     phone: z.string().min(7).max(20).optional().or(z.literal("")),
+    email: z.string().email().optional().or(z.literal("")),
+    firstName: z.string().min(1).max(100).optional(),
+    lastName: z.string().min(1).max(100).optional(),
+    address: z
+      .object({
+        line1: z.string().max(255).optional().or(z.literal("")),
+        line2: z.string().max(255).optional().or(z.literal("")),
+        city: z.string().max(100).optional().or(z.literal("")),
+        state: z.string().max(100).optional().or(z.literal("")),
+        pincode: z.string().max(10).optional().or(z.literal("")),
+        country: z.string().max(2).optional().or(z.literal("")),
+      })
+      .optional()
+      .nullable(),
     status: z.nativeEnum(StudentStatus).optional(),
-    enrolledAt: z.string().datetime().optional(),
-    graduatedAt: z.string().datetime().optional(),
-    droppedAt: z.string().datetime().optional(),
+    enrolledAt: z.string().datetime().optional().nullable(),
+    graduatedAt: z.string().datetime().optional().nullable(),
+    droppedAt: z.string().datetime().optional().nullable(),
   });
 
 export const studentFiltersSchema = z.object({
@@ -65,7 +79,7 @@ export const studentFiltersSchema = z.object({
   dateFrom: z.string().datetime().optional(),
   dateTo: z.string().datetime().optional(),
   page: z.coerce.number().min(1).default(1),
-  limit: z.coerce.number().min(1).max(100).default(20),
+  limit: z.coerce.number().min(1).max(200).default(20),
   sortBy: z.enum(["createdAt", "firstName", "lastName", "status", "enrolledAt"]).default("createdAt"),
   sortDir: z.enum(["asc", "desc"]).default("desc"),
 });

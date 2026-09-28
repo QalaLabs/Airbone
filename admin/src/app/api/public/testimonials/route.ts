@@ -31,10 +31,25 @@ export async function GET(req: NextRequest) {
         isFeatured: true,
         order: true,
         metadata: true,
+        avatarId: true,
       },
     });
 
-    return NextResponse.json({ data: testimonials });
+    const avatarIds = testimonials.map((t) => t.avatarId).filter((id): id is string => !!id);
+    const avatars = avatarIds.length
+      ? await prisma.mediaAsset.findMany({
+          where: { orgId: org.id, id: { in: avatarIds } },
+          select: { id: true, fileUrl: true },
+        })
+      : [];
+    const avatarUrl = new Map(avatars.map((a) => [a.id, a.fileUrl]));
+
+    return NextResponse.json({
+      data: testimonials.map(({ avatarId, ...t }) => ({
+        ...t,
+        avatarUrl: avatarId ? avatarUrl.get(avatarId) ?? null : null,
+      })),
+    });
   } catch (err) {
     return handleError(err);
   }

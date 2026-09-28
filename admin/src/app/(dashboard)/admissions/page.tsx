@@ -48,6 +48,10 @@ interface AdmissionListItem {
   applicationNo: string;
   stage: string;
   courseName?: string | null;
+  feeAmount?: number | string | null;
+  feePaid?: number | string | null;
+  feeFinal?: number | string | null;
+  feeBalance?: number | string | null;
   lead: { id: string; name: string; email: string; phone: string };
   campus?: { name: string } | null;
   createdAt: string;
@@ -256,7 +260,22 @@ function AdmissionCard({
           <Calendar className="h-3 w-3 text-primary" />
           <span>{formatDate(admission.createdAt)}</span>
         </div>
-        <span className="text-[10px] font-bold text-white bg-white/5 px-2 py-0.5 rounded">Review →</span>
+        <div className="flex items-center gap-1.5">
+          <IndianRupee className="h-3 w-3 text-amber-400" />
+          <span
+            className={
+              Number(admission.feeBalance ?? 0) <= 0
+                ? "font-bold text-emerald-400"
+                : "font-bold text-amber-400"
+            }
+          >
+            {new Intl.NumberFormat("en-IN", {
+              style: "currency",
+              currency: "INR",
+              maximumFractionDigits: 0,
+            }).format(Number(admission.feeBalance ?? 0))}
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -491,24 +510,33 @@ function PaymentsPanel({
           Payments & Fee Breakdown
         </h3>
         {summary && (
-          <div className="mt-2 space-y-1">
-            <p className="text-xs text-muted-foreground">
-              Course {money(summary.feeAmount)} · Discount {money(summary.feeDiscount)} · Final {money(summary.feeFinal)} · Total Paid{" "}
-              {money(summary.feePaid)}
-            </p>
-            <p className="text-xs">
-              Balance{" "}
-              <span className={balance <= 0 ? "font-bold text-emerald-400" : "font-bold text-amber-400"}>
-                {money(summary.feeBalance)}
-              </span>
+          <div className="mt-2 grid grid-cols-[1fr_auto_auto] gap-x-3 gap-y-1 items-start">
+            <div className="space-y-1 min-w-0">
+              <p className="text-xs text-muted-foreground">
+                Course {money(summary.feeAmount)} · Discount {money(summary.feeDiscount)} · Final {money(summary.feeFinal)} · Total Paid{" "}
+                {money(summary.feePaid)}
+              </p>
               {Number(summary.refundedTotal ?? 0) > 0 && (
-                <span className="text-muted-foreground"> · Refunded {money(summary.refundedTotal)}</span>
+                <p className="text-xs text-muted-foreground">Refunded {money(summary.refundedTotal)}</p>
               )}
+              {summary.paymentCount != null && (
+                <p className="text-xs text-muted-foreground">{summary.paymentCount} receipt(s)</p>
+              )}
+            </div>
+            <div className="text-right shrink-0 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-emerald-300/80">Total Paid</p>
+              <p className="text-sm font-bold text-emerald-300">{money(summary.feePaid)}</p>
+              <p className="text-[10px] text-muted-foreground">of {money(summary.feeFinal)}</p>
+            </div>
+            <div className="text-right shrink-0 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-amber-300/80">Remaining Balance</p>
+              <p className={`text-sm font-bold ${balance <= 0 ? "text-emerald-400" : "text-amber-300"}`}>
+                {money(summary.feeBalance)}
+              </p>
               {Number(summary.feeBalance ?? 0) < 0 && (
-                <span className="text-muted-foreground"> (credit on account)</span>
+                <p className="text-[10px] text-muted-foreground">(credit on account)</p>
               )}
-              {summary.paymentCount != null ? ` · ${summary.paymentCount} receipt(s)` : ""}
-            </p>
+            </div>
           </div>
         )}
       </div>

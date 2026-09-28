@@ -501,7 +501,7 @@ export default function JourneyFlightPath({ onBook }) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -14 }}
                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: 0 }}
+                style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: 0, overflowY: 'auto', paddingBottom: '0.5rem' }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
                   <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.65rem', fontWeight: 800, color: ch.accent, letterSpacing: '0.3em' }}>{ch.num}</span>
@@ -511,19 +511,20 @@ export default function JourneyFlightPath({ onBook }) {
 
                 <h2 style={{
                   fontFamily: 'var(--font-h)',
-                  fontSize: 'clamp(1.5rem,6.5vw,2.125rem)',
+                  fontSize: 'clamp(1.35rem,5.8vw,1.9rem)',
                   fontWeight: 800, color: '#fff',
-                  letterSpacing: '-0.03em', lineHeight: 1.05,
+                  letterSpacing: '-0.03em', lineHeight: 1.15,
                   textTransform: 'uppercase', marginBottom: '0.5rem',
+                  paddingRight: '0.25rem',
                 }}>
                   {ch.title}
                 </h2>
 
-                <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.875rem', fontWeight: 300, fontStyle: 'italic', color: ch.accent, marginBottom: '1.1rem' }}>
+                <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.8125rem', fontWeight: 300, fontStyle: 'italic', color: ch.accent, marginBottom: '0.9rem', lineHeight: 1.45 }}>
                   {ch.sub}
                 </div>
 
-                <p style={{ fontFamily: 'var(--font-b)', fontSize: '0.875rem', lineHeight: 1.7, color: 'rgba(255,255,255,0.6)', marginBottom: '1.5rem' }}>
+                <p style={{ fontFamily: 'var(--font-b)', fontSize: '0.8125rem', lineHeight: 1.65, color: 'rgba(255,255,255,0.72)', marginBottom: '1.25rem' }}>
                   {ch.body}
                 </p>
 

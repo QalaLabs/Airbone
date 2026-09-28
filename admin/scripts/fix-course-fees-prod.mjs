@@ -20,6 +20,8 @@ const prisma = new PrismaClient()
 const updates = [
   { slug: 'cadet-preparation', fee: 50000 },
   { slug: 'a320-simulator', fee: 10000 },
+  { slug: 'airline-preparation', fee: 125000 },
+  { slug: 'cabin-crew', fee: 54000 },
 ]
 
 async function main() {

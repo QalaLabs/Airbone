@@ -12,9 +12,7 @@ const STATIC_COURSE_SLUGS = [
   'securing-your-childs-future-in-aviation',
   'cabin-crew-training',
   'ground-school',
-  'multi-engine-rating',
   'private-pilot-license',
-  'aviation-english-icao',
 ]
 
 // Offline fallback for the seeded blog Resources (slugs match their route folders).

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   feePlanItemSchema,
   createFeePlanSchema,
+  updateFeePlanSchema,
   feePlanFiltersSchema,
 } from "@/lib/validations/fee-plan.schema";
 
@@ -42,6 +43,19 @@ test("createFeePlanSchema requires at least one item", () => {
     createFeePlanSchema.safeParse({ name: "Plan", items: [{ name: "A", amount: 1000 }] }).success,
     true,
   );
+});
+
+test("fee plan supports 3–4 percentage instalments totalling 100%", () => {
+  const four = [25, 25, 25, 25].map((p, i) => ({ name: `Inst ${i + 1}`, percentOfFee: p, dueOffsetDays: i * 30 }));
+  assert.equal(createFeePlanSchema.safeParse({ name: "4 × 25%", items: four }).success, true);
+  const three = [40, 30, 30].map((p, i) => ({ name: `Inst ${i + 1}`, percentOfFee: p }));
+  assert.equal(createFeePlanSchema.safeParse({ name: "40/30/30", items: three }).success, true);
+});
+
+test("fee plan rejects percentage instalments above 100% in total", () => {
+  const items = [50, 30, 30].map((p, i) => ({ name: `Inst ${i + 1}`, percentOfFee: p }));
+  assert.equal(createFeePlanSchema.safeParse({ name: "Over", items }).success, false);
+  assert.equal(updateFeePlanSchema.safeParse({ items }).success, false);
 });
 
 test("feePlanFiltersSchema parses query-style input with defaults", () => {

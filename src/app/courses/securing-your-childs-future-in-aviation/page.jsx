@@ -47,7 +47,7 @@ const parentGuideGraph = buildArticlePageGraph({
 const FINANCIAL_STEPS = [
   { step: 'Phase 1: Ground School', cost: '₹2.70 Lakh', duration: '3–6 Months', detail: 'DGCA CPL written exam prep (Air Regs, Navigation, Meteorology, Technical General & Specific).' },
   { step: 'Phase 2: Flying Training', cost: '₹45–65 Lakh', duration: '12–18 Months', detail: '200 Flying Hours on Single-Engine & Multi-Engine aircraft in India or DGCA-approved foreign FTOs.' },
-  { step: 'Phase 3: CPL Conversion & Type Rating', cost: '₹5–15 Lakh', duration: '3–6 Months', detail: 'DGCA skill test conversion (if abroad) and A320/B737 simulator screening prep.' },
+  { step: 'Phase 3: CPL Conversion & Type Rating', cost: '₹5–10 Lakh', duration: '3–6 Months', detail: 'DGCA skill test conversion (if abroad) and A320/B737 simulator screening prep.' },
 ]
 
 export default function SecuringChildFuturePage() {

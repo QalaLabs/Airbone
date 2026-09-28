@@ -3,8 +3,9 @@
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { type ColumnDef, type PaginationState, type SortingState } from "@tanstack/react-table";
-import { Plus, Search, Filter, MoreHorizontal, Eye, CheckSquare, UserCheck, Sparkles, SlidersHorizontal, ChevronDown, AlertCircle } from "lucide-react";
+import { Plus, Search, Filter, MoreHorizontal, Eye, CheckSquare, UserCheck, Sparkles, SlidersHorizontal, ChevronDown, AlertCircle, Trash2, Upload } from "lucide-react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -17,10 +18,17 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { LeadImportDialog } from "@/components/crm/lead-import-dialog";
 import { apiFetch } from "@/lib/api";
 import { bulkAssignLeads } from "@/lib/crm/deals";
 import { formatDate } from "@/lib/utils";
+import { isActiveStatus } from "@/lib/leads/lead-status";
+import type { LeadStatus } from "@prisma/client";
 import { toast } from "@/components/ui/use-toast";
 import { motion } from "framer-motion";
 
@@ -60,7 +68,7 @@ type CreateLeadForm = z.infer<typeof createLeadSchema>;
 
 const LEAD_SOURCES = ["HOMEPAGE_CTA", "COURSE_PAGE", "CONTACT_FORM", "CALLBACK_REQUEST", "BROCHURE_DOWNLOAD", "GOOGLE_ADS", "FACEBOOK_ADS", "ORGANIC", "REFERRAL", "WHATSAPP", "DIRECT"];
 const LEAD_STATUSES = [
-  "all", "NEW", "CONNECTED", "CALL_BACK", "INTERESTED", "PROSPECT", "WON",
+  "active", "all", "NEW", "CONNECTED", "CALL_BACK", "INTERESTED", "PROSPECT", "WON",
   "NOT_CONNECTED", "RINGING", "NOT_REACHABLE", "SWITCHED_OFF", "VOICEMAIL",
   "LOST", "INCOMING_BARD", "OUT_OF_SERVICE", "NOT_AWARE", "NOT_CONTACTABLE",
   "LOCATION_OUT_OF_SCOPE", "LANGUAGE_BARRIER", "PRICE_HIGH", "JOINED_OTHERS",
@@ -68,16 +76,25 @@ const LEAD_STATUSES = [
 ];
 
 export default function LeadsPage() {
+  const { data: session } = useSession();
+  const canAssign =
+    session?.user?.role === "ADMIN" ||
+    session?.user?.role === "SUPER_ADMIN" ||
+    session?.user?.role === "MARKETING_MANAGER";
+  // Mirrors PERMISSION_MATRIX: only ADMIN / SUPER_ADMIN hold `delete` on leads.
+  const canDelete = session?.user?.role === "ADMIN" || session?.user?.role === "SUPER_ADMIN";
+  const [deleteTargets, setDeleteTargets] = React.useState<{ id: string; name: string }[]>([]);
   const queryClient = useQueryClient();
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 20 });
   const [sorting, setSorting] = React.useState<SortingState>([{ id: "createdAt", desc: true }]);
   const [search, setSearch] = React.useState("");
-  const [statusFilter, setStatusFilter] = React.useState("all");
+  const [statusFilter, setStatusFilter] = React.useState("active");
   const [priorityFilter, setPriorityFilter] = React.useState("all");
   const [counsellorFilter, setCounsellorFilter] = React.useState("all");
   const [overdueOnly, setOverdueOnly] = React.useState(false);
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
   const [createOpen, setCreateOpen] = React.useState(false);
+  const [importOpen, setImportOpen] = React.useState(false);
   const [selectedLeadIds, setSelectedLeadIds] = React.useState<string[]>([]);
 
   React.useEffect(() => {
@@ -98,7 +115,8 @@ export default function LeadsPage() {
         limit: String(pagination.pageSize),
         ...(sorting.length > 0 && sorting[0] ? { sortBy: sorting[0].id, sortDir: sorting[0].desc ? "desc" : "asc" } : {}),
         ...(debouncedSearch ? { search: debouncedSearch } : {}),
-        ...(statusFilter && statusFilter !== "all" ? { status: statusFilter } : {}),
+        ...(statusFilter === "active" ? { isActive: "true" } : {}),
+        ...(statusFilter && statusFilter !== "all" && statusFilter !== "active" ? { status: statusFilter } : {}),
         ...(priorityFilter && priorityFilter !== "all" ? { priority: priorityFilter } : {}),
         ...(counsellorFilter && counsellorFilter !== "all" ? { assignedTo: counsellorFilter } : {}),
         ...(overdueOnly ? { followUpOverdue: "true" } : {}),
@@ -148,6 +166,27 @@ export default function LeadsPage() {
     onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (targets: { id: string; name: string }[]) => {
+      const results = await Promise.allSettled(
+        targets.map((t) => apiFetch(`/leads/${t.id}`, { method: "DELETE" })),
+      );
+      const failed = results.filter((r) => r.status === "rejected").length;
+      return { deleted: targets.length - failed, failed };
+    },
+    onSuccess: ({ deleted, failed }) => {
+      queryClient.invalidateQueries({ queryKey: ["leads"] });
+      setSelectedLeadIds([]);
+      setDeleteTargets([]);
+      if (failed > 0) {
+        toast({ title: "Some leads not deleted", description: `${deleted} deleted, ${failed} failed.`, variant: "destructive" });
+      } else {
+        toast({ title: deleted === 1 ? "Lead moved to Recycle Bin" : `${deleted} leads moved to Recycle Bin` });
+      }
+    },
+    onError: (err) => toast({ title: "Delete failed", description: err.message, variant: "destructive" }),
+  });
+
   const handleBulkAssign = async (counselorId: string, counselorName: string) => {
     try {
       await bulkAssignLeads(selectedLeadIds, counselorId, `Bulk assigned ${selectedLeadIds.length} leads to ${counselorName}`);
@@ -192,7 +231,7 @@ export default function LeadsPage() {
       header: "Lead Contact",
       cell: ({ row }) => (
         <div>
-          <Link href={row.original.status === "WON" && row.original.admissions?.[0]?.id ? `/admissions/${row.original.admissions[0].id}` : `/leads/${row.original.id}`} className="font-semibold text-white hover:text-primary transition-colors flex items-center gap-2">
+          <Link href={row.original.status === "WON" && row.original.admissions?.[0]?.id ? `/admissions?id=${row.original.admissions[0].id}` : `/leads/${row.original.id}`} className="font-semibold text-white hover:text-primary transition-colors flex items-center gap-2">
             {row.original.name}
             {row.original.score > 80 && (
               <span className="text-[9px] font-extrabold bg-amber-500/20 text-amber-400 border border-amber-500/30 px-1 py-0.5 rounded flex items-center gap-0.5">
@@ -212,6 +251,7 @@ export default function LeadsPage() {
     {
       accessorKey: "priority",
       header: "Priority",
+      enableSorting: false,
       cell: ({ row }) => (
         <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${
           row.original.priority === "HIGH" ? "bg-rose-500/20 text-rose-400 border-rose-500/30" :
@@ -259,6 +299,7 @@ export default function LeadsPage() {
     {
       accessorKey: "assignedTo",
       header: "Assigned Counselor",
+      enableSorting: false,
       cell: ({ row }) => (
         <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
           <UserCheck className="h-3.5 w-3.5 text-emerald-400" />
@@ -272,7 +313,7 @@ export default function LeadsPage() {
       cell: ({ row }) => {
         const due = row.original.nextFollowUp;
         if (!due) return <span className="text-xs text-muted-foreground">-</span>;
-        const overdue = new Date(due) < new Date() && !["CONVERTED", "LOST"].includes(row.original.status);
+        const overdue = new Date(due) < new Date() && isActiveStatus(row.original.status as LeadStatus);
         return (
           <span className={`text-xs font-semibold ${overdue ? "text-rose-400" : "text-muted-foreground"}`}>
             {overdue ? "Overdue · " : ""}
@@ -299,7 +340,7 @@ export default function LeadsPage() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="glass-panel border-white/10 w-44">
             <DropdownMenuItem asChild className="cursor-pointer hover:bg-white/5">
-              <Link href={row.original.status === "WON" && row.original.admissions?.[0]?.id ? `/admissions/${row.original.admissions[0].id}` : `/leads/${row.original.id}`}>
+              <Link href={row.original.status === "WON" && row.original.admissions?.[0]?.id ? `/admissions?id=${row.original.admissions[0].id}` : `/leads/${row.original.id}`}>
                 <Eye className="mr-2 h-4 w-4 text-primary" />
                 {row.original.status === "WON" && row.original.admissions?.[0]?.id ? "View Admission" : "View Full Profile"}
               </Link>
@@ -310,6 +351,18 @@ export default function LeadsPage() {
                 Schedule Task
               </Link>
             </DropdownMenuItem>
+            {canDelete && (
+              <>
+                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuItem
+                  onClick={() => setDeleteTargets([{ id: row.original.id, name: row.original.name }])}
+                  className="cursor-pointer text-rose-400 hover:bg-rose-500/10 focus:text-rose-400"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Lead
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       ),
@@ -323,10 +376,26 @@ export default function LeadsPage() {
         title="Lead Management CRM"
         description="Comprehensive omnichannel lead intake, routing, and priority queue management."
         action={
-          <Button onClick={() => setCreateOpen(true)} className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 transition-all hover:scale-105">
-            <Plus className="h-4 w-4 mr-2" />
-            Add New Lead
-          </Button>
+          <div className="flex items-center gap-2">
+            {canDelete && (
+              <Button asChild variant="outline" className="border-white/10 text-sm font-semibold">
+                <Link href="/leads/trash">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Recycle Bin
+                </Link>
+              </Button>
+            )}
+            {canAssign && (
+              <Button variant="outline" onClick={() => setImportOpen(true)} className="border-white/10 text-sm font-semibold">
+                <Upload className="h-4 w-4 mr-2" />
+                Import Leads
+              </Button>
+            )}
+            <Button onClick={() => setCreateOpen(true)} className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 transition-all hover:scale-105">
+              <Plus className="h-4 w-4 mr-2" />
+              Add New Lead
+            </Button>
+          </div>
         }
       />
 
@@ -353,7 +422,9 @@ export default function LeadsPage() {
               </SelectTrigger>
               <SelectContent className="glass-panel border-white/10 text-xs">
                 {LEAD_STATUSES.map((s) => (
-                  <SelectItem key={s} value={s}>{s === "all" ? "All Statuses" : s.replace(/_/g, " ")}</SelectItem>
+                  <SelectItem key={s} value={s}>
+                    {s === "all" ? "All Statuses" : s === "active" ? "Active Leads" : s.replace(/_/g, " ")}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -405,6 +476,7 @@ export default function LeadsPage() {
               {selectedLeadIds.length} lead(s) selected
             </span>
             <div className="flex items-center gap-2">
+              {canAssign && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button size="sm" variant="outline" className="text-xs font-bold border-white/10 py-1 px-3 h-8">
@@ -421,6 +493,20 @@ export default function LeadsPage() {
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
+              )}
+              {canDelete && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-xs font-bold border-rose-500/30 text-rose-400 hover:bg-rose-500/10 py-1 px-3 h-8"
+                  onClick={() => {
+                    const names = new Map((data?.items ?? []).map((l) => [l.id, l.name]));
+                    setDeleteTargets(selectedLeadIds.map((id) => ({ id, name: names.get(id) ?? "Lead" })));
+                  }}
+                >
+                  <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete
+                </Button>
+              )}
             </div>
           </motion.div>
         )}
@@ -521,6 +607,37 @@ export default function LeadsPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <LeadImportDialog open={importOpen} onOpenChange={setImportOpen} />
+
+      <AlertDialog open={deleteTargets.length > 0} onOpenChange={(o) => !o && !deleteMutation.isPending && setDeleteTargets([])}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {deleteTargets.length === 1 ? "Delete this lead?" : `Delete ${deleteTargets.length} leads?`}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteTargets.length === 1
+                ? `${deleteTargets[0]?.name} will be moved to the Recycle Bin.`
+                : "The selected leads will be moved to the Recycle Bin."}{" "}
+              You can restore them from there within 30 days, after which they are permanently deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteMutation.isPending}
+              onClick={(e) => {
+                e.preventDefault();
+                deleteMutation.mutate(deleteTargets);
+              }}
+              className="bg-rose-600 hover:bg-rose-700"
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

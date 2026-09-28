@@ -201,7 +201,7 @@ export class AdmissionRepository {
   static async update(
     orgId: string,
     id: string,
-    data: UpdateAdmissionInput & { feeFinal?: number | null },
+    data: Omit<UpdateAdmissionInput, "batchName"> & { feeFinal?: number | null; batchName?: string | null },
   ) {
     const existing = await prisma.admission.findFirst({
       where: { id, orgId },

@@ -15,6 +15,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch } from "@/lib/api";
 import { updateDeal, revertDealToProspect, convertDealToAdmission } from "@/lib/crm/deals";
 import { formatDate, formatDateTime } from "@/lib/utils";
+import { toISTInput, fromISTInput } from "@/lib/time/ist";
+import { statusLabel } from "@/lib/leads/lead-status";
 import { toast } from "@/components/ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -113,20 +115,22 @@ interface CounselorOption {
   role: string;
 }
 
-/** Phase 2 status workflow grouped by level for the radio-button picker. */
+/**
+ * Status picker. Group headings (Connected / Not Connected / Lost) are
+ * headings only — they are not offered as selectable reasons themselves.
+ */
 const STATUS_GROUPS = [
   {
-    label: "Level 1 · Connected",
-    statuses: ["NEW", "CONNECTED", "CALL_BACK", "INTERESTED", "PROSPECT", "WON"],
+    label: "Connected",
+    statuses: ["NEW", "CALL_BACK", "INTERESTED", "PROSPECT", "WON"],
   },
   {
-    label: "Level 1 · Not Connected",
-    statuses: ["NOT_CONNECTED", "RINGING", "NOT_REACHABLE", "SWITCHED_OFF", "VOICEMAIL"],
+    label: "Not Connected",
+    statuses: ["RINGING", "NOT_REACHABLE", "SWITCHED_OFF", "VOICEMAIL"],
   },
   {
     label: "Lost",
     statuses: [
-      "LOST",
       "INCOMING_BARD",
       "OUT_OF_SERVICE",
       "NOT_AWARE",
@@ -215,36 +219,12 @@ function priorityFromScore(score: number) {
   return "LOW";
 }
 
-/** IST offset in minutes; the CRM schedules follow-ups in Indian Standard Time. */
-const IST_OFFSET_MIN = 330;
-
-/** Convert a UTC ISO instant to an IST wall-clock "YYYY-MM-DDTHH:mm" string for datetime-local inputs. */
-function toISTInput(date: string | null | undefined): string {
-  if (!date) return "";
-  const d = new Date(date);
-  if (Number.isNaN(d.getTime())) return "";
-  return new Date(d.getTime() + IST_OFFSET_MIN * 60_000).toISOString().slice(0, 16);
-}
-
-/** Parse an IST wall-clock datetime-local string back into a UTC ISO instant. */
-function fromISTInput(value: string): string {
-  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(value);
-  if (!match) return new Date(value).toISOString();
-  const y = Number(match[1]);
-  const mo = Number(match[2]);
-  const da = Number(match[3]);
-  const h = Number(match[4]);
-  const mi = Number(match[5]);
-  const utcMs = Date.UTC(y, mo - 1, da, h, mi) - IST_OFFSET_MIN * 60_000;
-  return new Date(utcMs).toISOString();
-}
-
 export default function LeadDetailPage() {
   const { data: session } = useSession();
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = React.useState<"timeline" | "tasks" | "comms" | "scoring">("timeline");
+  const [activeTab, setActiveTab] = React.useState<"timeline" | "scoring" | "manual">("timeline");
   const [logOpen, setLogOpen] = React.useState(false);
   const [logDefaultType, setLogDefaultType] = React.useState<(typeof ACTIVITY_TYPES)[number]>("NOTE");
   const [assignOpen, setAssignOpen] = React.useState(false);
@@ -350,7 +330,7 @@ export default function LeadDetailPage() {
     onSuccess: (res: any) => {
       invalidate();
       toast({ title: "Converted to Admission", description: `Dossier ${res.admission?.applicationNo} created.` });
-      router.push(`/admissions?dossier=${res.admission?.id}`);
+      router.push(`/admissions?id=${res.admission?.id}`);
     },
     onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
@@ -568,6 +548,16 @@ export default function LeadDetailPage() {
           <div>
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-2xl font-bold text-white tracking-tight">{lead.name}</h1>
+              {lead.phone ? (
+                <a href={`tel:${lead.phone}`} className="flex items-center gap-1.5 text-sm font-bold text-white hover:text-primary">
+                  <Phone className="h-3.5 w-3.5 text-primary" /> {lead.phone}
+                </a>
+              ) : null}
+              {lead.email ? (
+                <a href={`mailto:${lead.email}`} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary break-all">
+                  <Mail className="h-3.5 w-3.5 shrink-0 text-primary" /> {lead.email}
+                </a>
+              ) : null}
               <span className="text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
                 <Sparkles className="h-3 w-3" /> Score: {lead.score ?? 0}
               </span>
@@ -579,19 +569,6 @@ export default function LeadDetailPage() {
               Created {formatDate(lead.createdAt)} · Source: {(lead.source ?? "").replace(/_/g, " ")}
               {lead.nextFollowUp ? ` · Follow-up ${formatDateTime(lead.nextFollowUp)}` : ""}
             </p>
-            <div className="flex flex-wrap items-center gap-3 mt-1.5 text-xs font-bold text-white">
-              {lead.phone ? (
-                <span className="flex items-center gap-1.5">
-                  <Phone className="h-3 w-3 text-primary" /> {lead.phone}
-                </span>
-              ) : null}
-                {lead.email ? (
-                  <span className="flex items-center gap-1.5 text-muted-foreground max-w-full">
-                    <Mail className="h-3 w-3 shrink-0 text-primary" /> 
-                    <span className="break-all">{lead.email}</span>
-                  </span>
-                ) : null}
-            </div>
           </div>
 
         <div className="flex flex-wrap items-end gap-3">
@@ -659,12 +636,7 @@ export default function LeadDetailPage() {
                           checked={selected}
                           onChange={() => {
                             if (LOST_STATUSES.has(s)) {
-                              // I4: lost statuses do not open a note dialog — they
-                              // apply immediately with the (required) lost reason.
-                              if (s === "LOST" && !lostReason.trim()) {
-                                toast({ title: "Lost reason required", description: "Add a lost reason below before saving.", variant: "destructive" });
-                                return;
-                              }
+                              // The selected lost reason is the reason — no note dialog.
                               setPendingStatus(null);
                               updateStatusMutation.mutate({
                                 status: s,
@@ -682,7 +654,7 @@ export default function LeadDetailPage() {
                           disabled={updateStatusMutation.isPending}
                           className="accent-primary h-3.5 w-3.5 cursor-pointer"
                         />
-                        {s.replace(/_/g, " ")}
+                        {statusLabel(s)}
                       </label>
                     );
                   })}
@@ -692,7 +664,7 @@ export default function LeadDetailPage() {
           </div>
           <div className="max-w-xl">
             <Input
-              placeholder="Lost reason (required when marking Lost)"
+              placeholder="Additional lost details (optional)"
               value={lostReason}
               onChange={(e) => setLostReason(e.target.value)}
               className="bg-secondary/40 border-white/10 text-xs"
@@ -708,6 +680,7 @@ export default function LeadDetailPage() {
         {[
           { id: "timeline" as const, label: "Timeline", icon: Clock },
           { id: "scoring" as const, label: "Scoring", icon: Sparkles },
+          { id: "manual" as const, label: "Manual Addition", icon: Plus },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -792,6 +765,22 @@ export default function LeadDetailPage() {
               onAdd={() => openLog("NOTE")}
               quickActions
               onQuick={(t) => openLog(t)}
+            />
+          )}
+
+          {activeTab === "manual" && (
+            <UnifiedTimeline
+              loading={timelineLoading}
+              items={(Array.isArray(timeline) ? timeline : []).filter(
+                (e) =>
+                  e.kind === "activity" &&
+                  !!e.activityType &&
+                  (ACTIVITY_TYPES as readonly string[]).includes(e.activityType),
+              )}
+              onAdd={() => openLog("NOTE")}
+              quickActions
+              onQuick={(t) => openLog(t)}
+              empty="No manual entries yet — add a note, call, email, WhatsApp, meeting or task."
             />
           )}
 
@@ -1085,7 +1074,7 @@ export default function LeadDetailPage() {
               />
             </div>
             
-            {pendingStatus === "PROSPECT" && (
+            {(pendingStatus === "PROSPECT" || pendingStatus === "WON") && (
               <>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold text-muted-foreground">Course Decided</Label>

@@ -62,7 +62,7 @@ const NAV_GROUPS: {
       { href: "/leads", icon: Users, label: "Lead Management" },
       { href: "/crm/outreach", icon: Mail, label: "Outreach" },
       { href: "/crm/meetings", icon: CalendarDays, label: "Meetings" },
-      { href: "/crm/deals", icon: Handshake, label: "Deals" },
+      { href: "/crm/deals", icon: Handshake, label: "Prospects & Deals" },
       { href: "/admissions", icon: GraduationCap, label: "Admissions" },
       { href: "/students", icon: Users, label: "Student Management" },
       { href: "/placements", icon: Briefcase, label: "Placements" },
@@ -128,6 +128,11 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
+  const activeHref = NAV_GROUPS.flatMap((g) => g.items.map((i) => i.href))
+    .filter((href) =>
+      href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`),
+    )
+    .sort((a, b) => b.length - a.length)[0];
 
   const { data: pendingCount } = useQuery({
     queryKey: ["testimonials", "pending-count"],
@@ -170,9 +175,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
               )}
               <div className="space-y-1">
                 {group.items.map((item) => {
-                  const isActive = item.href === "/"
-                    ? pathname === "/"
-                    : pathname.startsWith(item.href);
+                  const isActive = item.href === activeHref;
 
                   const showBadge = item.badge && pendingCount && pendingCount.count > 0;
 

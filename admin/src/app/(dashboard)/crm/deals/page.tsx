@@ -36,6 +36,8 @@ const stageOrder = [
   "CANCELLED",
 ];
 
+const stageLabel = (s: string) => (s === "ENQUIRY" ? "PROSPECT" : s.replace(/_/g, " "));
+
 const stageColor: Record<string, string> = {
   ENQUIRY: "bg-blue-500",
   DOCUMENT_COLLECTION: "bg-purple-500",
@@ -67,6 +69,15 @@ async function fetchCounselors(): Promise<{ id: string; name: string; email: str
   }
 }
 
+function dealMeta(d: DealRecord): { courseId?: string; batchId?: string; feePlanId?: string } {
+  const m = (d.metadata ?? {}) as Record<string, unknown>;
+  return {
+    courseId: typeof m.courseId === "string" ? m.courseId : undefined,
+    batchId: typeof m.batchId === "string" ? m.batchId : undefined,
+    feePlanId: typeof m.feePlanId === "string" ? m.feePlanId : undefined,
+  };
+}
+
 function statusOf(d: DealRecord): "open" | "won" | "lost" {
   if (d.lostAt) return "lost";
   if (d.wonAt) return "won";
@@ -78,6 +89,8 @@ export default function CRMDealsPage() {
   const [summary, setSummary] = React.useState<DealData | null>(null);
   const [deals, setDeals] = React.useState<DealRecord[]>([]);
   const [counselors, setCounselors] = React.useState<{ id: string; name: string; email: string }[]>([]);
+  const [courses, setCourses] = React.useState<{ id: string; title: string }[]>([]);
+  const [batches, setBatches] = React.useState<{ id: string; name: string }[]>([]);
   const [stageFilter, setStageFilter] = React.useState<string>("ALL");
   const [search, setSearch] = React.useState("");
   const [loading, setLoading] = React.useState(true);
@@ -89,7 +102,7 @@ export default function CRMDealsPage() {
     try {
       const [summaryData, list] = await Promise.all([
         getDealsData(),
-        getDeals({ limit: 100, sortBy: "updatedAt", sortDir: "desc", ...(stageFilter !== "ALL" ? { stage: stageFilter } : {}), ...(search ? { search } : {}) }),
+        getDeals({ limit: 100, isActive: true, sortBy: "updatedAt", sortDir: "desc", ...(stageFilter !== "ALL" ? { stage: stageFilter } : {}), ...(search ? { search } : {}) }),
       ]);
       setSummary(summaryData);
       setDeals(list.data);
@@ -107,7 +120,28 @@ export default function CRMDealsPage() {
 
   React.useEffect(() => {
     void fetchCounselors().then(setCounselors);
+    void (async () => {
+      try {
+        const [cRes, bRes] = await Promise.all([
+          fetch("/api/v1/courses?limit=100", { credentials: "include" }),
+          fetch("/api/v1/lms/batches?limit=100", { credentials: "include" }),
+        ]);
+        if (cRes.ok) {
+          const j = (await cRes.json()) as { data?: { id: string; title: string }[] };
+          setCourses(Array.isArray(j.data) ? j.data : []);
+        }
+        if (bRes.ok) {
+          const j = (await bRes.json()) as { data?: { id: string; name: string }[] };
+          setBatches(Array.isArray(j.data) ? j.data : []);
+        }
+      } catch {
+        /* optional enrichment */
+      }
+    })();
   }, []);
+
+  const courseTitle = (id?: string) => courses.find((c) => c.id === id)?.title;
+  const batchName = (id?: string) => batches.find((b) => b.id === id)?.name;
 
   const action = async (fn: () => Promise<unknown>) => {
     setBusyId("all");
@@ -127,8 +161,8 @@ export default function CRMDealsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight text-white">Deals</h1>
-          <p className="text-sm text-muted-foreground">Real pipeline from the Deal/opportunity entity</p>
+          <h1 className="text-2xl font-bold tracking-tight text-white">Prospects &amp; Deals</h1>
+          <p className="text-sm text-muted-foreground">Leads marked Prospect open a deal here; converting creates the admission dossier</p>
         </div>
         <div className="flex items-center gap-2">
           <Input
@@ -144,7 +178,7 @@ export default function CRMDealsPage() {
             <SelectContent>
               <SelectItem value="ALL">All stages</SelectItem>
               {stageOrder.map((s) => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
+                <SelectItem key={s} value={s}>{stageLabel(s)}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -227,7 +261,7 @@ export default function CRMDealsPage() {
                 <CardHeader className={`border-b border-white/5 pb-3 flex flex-row items-center justify-between`}>
                   <CardTitle className="text-sm font-semibold text-white flex items-center gap-2">
                     <span className={`h-2 w-2 rounded-full ${stageColor[stage] || "bg-gray-500"}`} />
-                    {stage}
+                    {stageLabel(stage)}
                   </CardTitle>
                   <Badge className="bg-white/5 text-white border-white/10">{stageDeals.length}</Badge>
                 </CardHeader>
@@ -253,6 +287,16 @@ export default function CRMDealsPage() {
                               <span className="text-sm font-bold text-white">{formatINR(dealValue(d))}</span>
                               <span className="text-[10px] text-muted-foreground">{d.counselor?.name ?? "Unassigned"}</span>
                             </div>
+                            {(dealMeta(d).courseId || dealMeta(d).batchId || d.admission?.courseName) && (
+                              <p className="text-[10px] text-muted-foreground truncate">
+                                {[
+                                  d.admission?.courseName || courseTitle(dealMeta(d).courseId),
+                                  batchName(dealMeta(d).batchId),
+                                ]
+                                  .filter(Boolean)
+                                  .join(" · ")}
+                              </p>
+                            )}
                             {st === "won" && (
                               <p className="text-[10px] text-emerald-300">
                                 {d.admission ? `Linked ${d.admission.applicationNo}` : "Converted"} · won {d.wonAt ? new Date(d.wonAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" }) : ""}
@@ -260,6 +304,22 @@ export default function CRMDealsPage() {
                             )}
                             {st === "lost" && (
                               <p className="text-[10px] text-red-300 truncate">{d.lostReason || "Lost"}</p>
+                            )}
+                            {st !== "open" && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-6 text-[10px] border-amber-500/40 text-amber-300 hover:bg-amber-500/10"
+                                disabled={busyId === d.id || busyId === "all"}
+                                onClick={() =>
+                                  action(async () => {
+                                    await revertDealToProspect(d.id, "Reverted to prospect from CRM pipeline");
+                                    setNote(`${d.title} moved back to Prospect`);
+                                  })
+                                }
+                              >
+                                <RotateCcw className="h-3 w-3" /> To Prospect
+                              </Button>
                             )}
                             {st === "open" && (
                               <div className="flex flex-wrap gap-1.5 pt-1">
@@ -286,7 +346,7 @@ export default function CRMDealsPage() {
                                       })
                                     }
                                   >
-                                    <ArrowRight className="h-3 w-3" /> {nextStage[d.stage]}
+                                    <ArrowRight className="h-3 w-3" /> {stageLabel(nextStage[d.stage]!)}
                                   </Button>
                                 )}
                                 <Button
@@ -303,20 +363,22 @@ export default function CRMDealsPage() {
                                 >
                                   Convert
                                 </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="h-6 text-[10px] border-amber-500/40 text-amber-300 hover:bg-amber-500/10"
-                                  disabled={busyId === d.id || busyId === "all"}
-                                  onClick={() =>
-                                    action(async () => {
-                                      await revertDealToProspect(d.id, "Reverted to prospect from CRM pipeline");
-                                      setNote(`${d.title} moved back to Prospect`);
-                                    })
-                                  }
-                                >
-                                  <RotateCcw className="h-3 w-3" /> To Prospect
-                                </Button>
+                                {d.stage !== "ENQUIRY" && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-6 text-[10px] border-amber-500/40 text-amber-300 hover:bg-amber-500/10"
+                                    disabled={busyId === d.id || busyId === "all"}
+                                    onClick={() =>
+                                      action(async () => {
+                                        await revertDealToProspect(d.id, "Reverted to prospect from CRM pipeline");
+                                        setNote(`${d.title} moved back to Prospect`);
+                                      })
+                                    }
+                                  >
+                                    <RotateCcw className="h-3 w-3" /> To Prospect
+                                  </Button>
+                                )}
                                 {counselors.length > 0 && (
                                   <div className="flex-1 min-w-0">
                                     <Select

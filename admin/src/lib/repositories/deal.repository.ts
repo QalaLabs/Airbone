@@ -64,6 +64,7 @@ export class DealRepository {
     const where: Prisma.DealWhereInput = {
       orgId,
       deletedAt: null,
+      lead: { deletedAt: null },
     };
 
     if (filters.isActive !== undefined) where.isActive = filters.isActive;
@@ -128,6 +129,12 @@ export class DealRepository {
   }
 
   static async create(orgId: string, data: CreateDealInput & { createdBy: string }) {
+    const meta = {
+      ...((data.metadata ?? {}) as Record<string, unknown>),
+      ...(data.courseId != null && data.courseId !== "" ? { courseId: data.courseId } : {}),
+      ...(data.batchId != null && data.batchId !== "" ? { batchId: data.batchId } : {}),
+      ...(data.feePlanId != null && data.feePlanId !== "" ? { feePlanId: data.feePlanId } : {}),
+    };
     return prisma.deal.create({
       data: {
         orgId,
@@ -141,13 +148,30 @@ export class DealRepository {
         assignedTo: data.assignedTo ?? null,
         createdBy: data.createdBy,
         notes: data.notes,
-        metadata: (data.metadata ?? {}) as Prisma.InputJsonValue,
+        metadata: meta as Prisma.InputJsonValue,
       },
       select: DEAL_SELECT,
     });
   }
 
   static async update(orgId: string, id: string, data: UpdateDealInput) {
+    const existing =
+      data.courseId !== undefined || data.batchId !== undefined || data.feePlanId !== undefined
+        ? await prisma.deal.findFirst({ where: { id, orgId }, select: { metadata: true } })
+        : null;
+    const prevMeta = (existing?.metadata ?? {}) as Record<string, unknown>;
+    const nextMeta =
+      data.metadata !== undefined
+        ? (data.metadata as Record<string, unknown>)
+        : data.courseId !== undefined || data.batchId !== undefined || data.feePlanId !== undefined
+          ? {
+              ...prevMeta,
+              ...(data.courseId !== undefined ? { courseId: data.courseId } : {}),
+              ...(data.batchId !== undefined ? { batchId: data.batchId } : {}),
+              ...(data.feePlanId !== undefined ? { feePlanId: data.feePlanId } : {}),
+            }
+          : undefined;
+
     return prisma.deal.update({
       where: { id, orgId },
       data: {
@@ -162,7 +186,7 @@ export class DealRepository {
         ...(data.assignedTo !== undefined && { assignedTo: data.assignedTo ?? null }),
         ...(data.notes !== undefined && { notes: data.notes }),
         ...(data.lostReason !== undefined && { lostReason: data.lostReason }),
-        ...(data.metadata !== undefined && { metadata: data.metadata as Prisma.InputJsonValue }),
+        ...(nextMeta !== undefined && { metadata: nextMeta as Prisma.InputJsonValue }),
       } as Prisma.DealUncheckedUpdateInput,
       select: DEAL_SELECT,
     });
@@ -179,7 +203,7 @@ export class DealRepository {
   static async getStageCounts(orgId: string) {
     return prisma.deal.groupBy({
       by: ["stage"],
-      where: { orgId, isActive: true, deletedAt: null },
+      where: { orgId, isActive: true, deletedAt: null, lead: { deletedAt: null } },
       _count: { stage: true },
       _sum: { value: true },
     });
@@ -192,16 +216,17 @@ export class DealRepository {
       wonAt: null,
       lostAt: null,
       deletedAt: null,
+      lead: { deletedAt: null },
     } satisfies Prisma.DealWhereInput;
 
     const [won, lost, active, byStage] = await Promise.all([
       prisma.deal.aggregate({
-        where: { orgId, wonAt: { not: null }, deletedAt: null },
+        where: { orgId, wonAt: { not: null }, deletedAt: null, lead: { deletedAt: null } },
         _count: true,
         _sum: { value: true },
       }),
       prisma.deal.aggregate({
-        where: { orgId, lostAt: { not: null }, deletedAt: null },
+        where: { orgId, lostAt: { not: null }, deletedAt: null, lead: { deletedAt: null } },
         _count: true,
         _sum: { value: true },
       }),

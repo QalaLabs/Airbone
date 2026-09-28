@@ -9,7 +9,7 @@ import {
   verifyMetaSignature,
   hubChallengeMatches,
   defaultFetchGraph,
-  processMetaLeadGen,
+  processMetaLeadGenBatch,
   type MetaWebhookPayload,
 } from "@/lib/webhooks/meta.service";
 
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const result = await processMetaLeadGen({
+    const { result } = await processMetaLeadGenBatch({
       orgId: org.id,
       orgSettings: org.settings,
       appSecret: env.FACEBOOK_APP_SECRET,

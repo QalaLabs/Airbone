@@ -9,6 +9,7 @@ import { toast } from "@/components/ui/use-toast";
 import { apiFetch } from "@/lib/api";
 import { ClipboardCheck, Plus, X, Check, History, Trash2, Edit } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatInIST, fromISTInput, toISTInput } from "@/lib/time/ist";
 
 interface LmsCourse { id: string; title: string; slug: string }
 interface BatchRow { id: string; name: string; type: string }
@@ -50,7 +51,7 @@ export default function LmsAttendancePage() {
   const [batchId, setBatchId] = React.useState("");
   const [subjectTag, setSubjectTag] = React.useState("");
   const [sessionTitle, setSessionTitle] = React.useState("");
-  const [heldAt, setHeldAt] = React.useState(new Date().toISOString().slice(0, 16));
+  const [heldAt, setHeldAt] = React.useState(() => toISTInput(new Date().toISOString()));
   const [records, setRecords] = React.useState<Record<string, StudentRecord>>({});
   const [submitted, setSubmitted] = React.useState(false);
   const [showHistory, setShowHistory] = React.useState(false);
@@ -109,7 +110,7 @@ export default function LmsAttendancePage() {
           batchId: batchId || null,
           subjectTag: subjectTag || null,
           title: sessionTitle,
-          heldAt: new Date(heldAt).toISOString(),
+          heldAt: fromISTInput(heldAt),
           records: Object.entries(records).map(([studentId, rec]) => ({
             studentId,
             status: rec.status,
@@ -143,7 +144,7 @@ export default function LmsAttendancePage() {
     setEditingSessionId(s.id);
     setSessionTitle(s.title);
     setSubjectTag(s.subjectTag || "");
-    setHeldAt(new Date(s.heldAt).toISOString().slice(0, 16));
+    setHeldAt(toISTInput(s.heldAt));
     setBatchId(s.batch?.id || "");
 
     const loaded: Record<string, StudentRecord> = {};
@@ -264,7 +265,7 @@ export default function LmsAttendancePage() {
                   <div className="space-y-1">
                     <p className="font-medium text-white">{s.title}</p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(s.heldAt).toLocaleString("en-IN")}
+                      {formatInIST(s.heldAt)}
                       {s.batch ? ` · ${s.batch.name}` : ""}
                       {s.subjectTag ? ` · ${s.subjectTag}` : ""}
                     </p>

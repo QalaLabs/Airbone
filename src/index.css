@@ -747,7 +747,7 @@ img, video { display: block; max-width: 100%; }
   font-family: var(--font-h);
   font-size: 1.1rem;
   font-weight: 900;
-  color: var(--gold);
+  color: #8a6508;
   margin-bottom: 0.35rem;
   letter-spacing: 0.05em;
 }
@@ -759,12 +759,13 @@ img, video { display: block; max-width: 100%; }
   color: var(--navy);
   margin-bottom: 0.5rem;
   letter-spacing: 0.08em;
+  line-height: 1.45;
 }
 .timeline-text {
   font-family: var(--font-b);
   font-size: 0.88rem;
-  color: rgba(33, 33, 33, 0.75);
-  line-height: 1.6;
+  color: rgba(33, 33, 33, 0.85);
+  line-height: 1.65;
 }
 
 /* ── PORTRAIT PLATINUM FRAMES ── */
@@ -1891,9 +1892,6 @@ html { scroll-behavior: smooth; }
   .boarding-strip-wrap {
     margin-top: -2.25rem;
   }
-}
-
-@media (max-width: 576px) {
   .hero-footer-wrapper {
     flex-direction: column !important;
     align-items: stretch !important;
@@ -1904,7 +1902,9 @@ html { scroll-behavior: smooth; }
     flex-direction: column !important;
     width: 100% !important;
     align-items: stretch !important;
-    gap: 0.65rem !important;
+    gap: 0.75rem !important;
+    position: relative;
+    z-index: 2;
   }
   .hero-btn-container > * {
     width: 100% !important;
@@ -1918,6 +1918,9 @@ html { scroll-behavior: smooth; }
   .hero-scroll-cue {
     display: none;
   }
+}
+
+@media (max-width: 576px) {
   .boarding-strip-wrap {
     margin-top: -1.5rem;
     padding-left: 1rem;

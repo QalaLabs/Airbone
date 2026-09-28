@@ -50,8 +50,9 @@ export default function CRMSalesAnalyticsPage() {
   }
 
   const { totals, monthly, bySource, byStatus, byCounselor } = data;
-  const maxLeads = monthly.length > 0 ? Math.max(...monthly.map((m) => m.leads)) : 1;
-  const maxRevenue = monthly.length > 0 ? Math.max(...monthly.map((m) => m.revenue)) : 1;
+  // Floor at 1 so an all-zero period renders empty bars instead of NaN widths.
+  const maxLeads = Math.max(1, ...monthly.map((m) => m.leads));
+  const maxRevenue = Math.max(1, ...monthly.map((m) => m.revenue));
 
   const sourceColumns: CRMColumn<AnalyticsSourceRow>[] = [
     { key: "source", header: "Channel" },
@@ -74,7 +75,7 @@ export default function CRMSalesAnalyticsPage() {
         const val = parseFloat(ch.conversion);
         return (
           <span className={`font-extrabold ${val >= 20 ? "text-emerald-500" : "text-amber-500"}`}>
-            {ch.conversion}%
+            {String(ch.conversion ?? "0").replace(/%$/, "")}%
           </span>
         );
       },
@@ -142,7 +143,7 @@ export default function CRMSalesAnalyticsPage() {
             <div>
               <p className="text-xs text-muted-foreground font-semibold">Total Active Leads</p>
               <p className="text-2xl font-bold text-white mt-1">{totals.activeLeads}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">New + Call Back + Prospect</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Open pipeline (excl. lost, won, converted)</p>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-500/10">
               <Users className="h-5 w-5 text-teal-500" />
@@ -210,7 +211,7 @@ export default function CRMSalesAnalyticsPage() {
               <p className="text-xs text-muted-foreground font-semibold">Collection %</p>
               <p className="text-2xl font-bold text-white mt-1">{totals.collectionPct}%</p>
               <p className="text-[10px] text-muted-foreground mt-0.5">
-                {formatINR(totals.totalCollections)} collected of {formatINR(totals.revenue)}
+                {formatINR(totals.totalFeePaid ?? 0)} collected of {formatINR(totals.totalFeeBilled ?? 0)} billed
               </p>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-500/10">
@@ -225,7 +226,7 @@ export default function CRMSalesAnalyticsPage() {
               <p className="text-xs text-muted-foreground font-semibold">Workable Leads</p>
               <p className="text-2xl font-bold text-white mt-1">{totals.workableLeads}</p>
               <p className="text-[10px] text-muted-foreground mt-0.5">
-                {totals.workablePct}% of total (excl. lost)
+                {totals.workablePct} of total (excl. lost)
               </p>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-500/10">

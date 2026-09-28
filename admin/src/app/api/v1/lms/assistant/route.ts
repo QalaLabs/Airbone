@@ -58,23 +58,32 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-      }),
-    });
+    const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+    const unavailable = {
+      answer: "The AI service is unavailable right now. Please try again in a moment.",
+      model: "gemini-2.0-flash",
+      stub: false,
+    };
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method: "POST",
+        // Key in a header, not the URL, so it never lands in proxy/access logs.
+        headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+        }),
+        signal: AbortSignal.timeout(25_000),
+      });
+    } catch (fetchErr) {
+      console.error("[lms-assistant] upstream request failed", (fetchErr as Error).name);
+      return ok(unavailable);
+    }
 
     if (!res.ok) {
-      const errText = await res.text();
-      return ok({
-        answer: "The AI service returned an error. Please try again later.",
-        model: "gemini-2.0-flash",
-        stub: false,
-        error: errText.slice(0, 500),
-      });
+      // Upstream error bodies can include quota/project details — log, don't return.
+      console.error("[lms-assistant] upstream error", res.status, (await res.text()).slice(0, 500));
+      return ok(unavailable);
     }
 
     const data = (await res.json()) as {

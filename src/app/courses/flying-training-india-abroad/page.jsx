@@ -16,7 +16,7 @@ export const metadata = {
 const FLYING_FAQS = [
   {
     q: 'Is it cheaper to do pilot training in India or abroad?',
-    a: 'Direct training cost can be lower in Philippines/USA (₹35–45L vs ₹65–75L). However, once conversion costs (₹5–15L), living expenses abroad, and additional 12–18 months before airline entry are added, India-trained CPL holders often reach their first airline seat faster and at lower total cost.',
+    a: 'Direct training cost can be lower in Philippines/USA (₹35–45L vs ₹65–75L). However, once conversion costs (₹5–10L), living expenses abroad, and additional 12–18 months before airline entry are added, India-trained CPL holders often reach their first airline seat faster and at lower total cost.',
   },
   {
     q: 'Does DGCA recognise FAA or EASA pilot licenses?',
@@ -181,7 +181,7 @@ export default function FlyingTrainingIndiaAbroadPage() {
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
                 {[
-                  { q: 'Is it cheaper to do pilot training in India or abroad?', a: 'Direct training cost can be lower in Philippines/USA (₹35–45L vs ₹65–75L). However, once conversion costs (₹5–15L), living expenses abroad, and additional 12–18 months before airline entry are added, India-trained CPL holders often reach their first airline seat faster and at lower total cost.' },
+                  { q: 'Is it cheaper to do pilot training in India or abroad?', a: 'Direct training cost can be lower in Philippines/USA (₹35–45L vs ₹65–75L). However, once conversion costs (₹5–10L), living expenses abroad, and additional 12–18 months before airline entry are added, India-trained CPL holders often reach their first airline seat faster and at lower total cost.' },
                   { q: 'Does DGCA recognise FAA or EASA pilot licenses?', a: 'DGCA does not directly accept FAA or EASA CPL for commercial operations in India. Pilots trained abroad must clear DGCA CPL written examinations and pass a DGCA Skill Test to receive an Indian CPL.' },
                   { q: 'Can I do DGCA ground school while flying abroad?', a: 'Yes. Airborne offers DGCA ground school for students completing flying hours abroad or between training phases. Completing DGCA exams before returning to India reduces total conversion time significantly.' },
                 ].map((faq, i) => (

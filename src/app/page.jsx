@@ -526,7 +526,9 @@ function TestimonialsSection() {
         if (d.data && Array.isArray(d.data) && d.data.length > 0) {
           setStudents(d.data.map((t) => ({
             name: t.authorName || 'Airborne Alumnus',
-            image: t.metadata?.image || '',
+            title: t.authorTitle || 'Airborne Alumnus',
+            quote: t.content || '',
+            image: t.avatarUrl || t.metadata?.image || '',
           })))
         }
       })
@@ -599,26 +601,37 @@ function TestimonialsSection() {
                 onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,39,76,0.06)'; e.currentTarget.style.transform = 'none'; }}
               >
                 <div style={{ position: 'relative', width: '100%', paddingTop: '120%', overflow: 'hidden', background: 'var(--navy)' }}>
-                  <img
-                    src={s.image}
-                    alt={s.name}
-                    loading="lazy"
-                    style={{
-                      position: 'absolute', inset: 0, height: '100%', width: '100%', objectFit: 'cover',
-                      objectPosition: 'top center',
-                      transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.06)'}
-                    onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-                  />
+                  {s.image ? (
+                    <img
+                      src={s.image}
+                      alt={s.name}
+                      loading="lazy"
+                      style={{
+                        position: 'absolute', inset: 0, height: '100%', width: '100%', objectFit: 'cover',
+                        objectPosition: 'top center',
+                        transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.06)'}
+                      onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                    />
+                  ) : (
+                    <div aria-hidden="true" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-h)', fontWeight: 900, fontSize: '3rem', color: 'var(--gold)' }}>
+                      {s.name.split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase()}
+                    </div>
+                  )}
                   <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,39,76,0.2) 0%, transparent 40%)', pointerEvents: 'none' }} />
                 </div>
                 <figcaption style={{ padding: '1.5rem 1.25rem', background: '#fff', borderTop: '3px solid var(--gold)', display: 'flex', flexDirection: 'column', gap: '0.35rem', flexGrow: 1, justifyContent: 'center' }}>
                   <div style={{ fontFamily: 'var(--font-h)', fontWeight: 800, fontSize: 'clamp(1.05rem, 1.1vw, 1.25rem)', color: 'var(--navy)', lineHeight: 1.2 }}>{s.name}</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                     <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: 'var(--red)' }} />
-                    <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--red)', fontWeight: 700 }}>Airborne Alumnus</span>
+                    <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--red)', fontWeight: 700 }}>{s.title}</span>
                   </div>
+                  {s.quote ? (
+                    <p style={{ fontSize: '0.85rem', lineHeight: 1.55, color: 'rgba(0,39,76,0.75)', margin: '0.35rem 0 0', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      “{s.quote}”
+                    </p>
+                  ) : null}
                 </figcaption>
               </motion.figure>
             ))}
@@ -1183,10 +1196,9 @@ function AirborneAdvantage() {
   const scrollToCard = useCallback((index) => {
     if (!carouselRef.current) return
     const container = carouselRef.current
-    const containerWidth = container.clientWidth
-    const cardWidth = containerWidth
+    const cardHeight = container.clientHeight
     container.scrollTo({
-      left: index * cardWidth,
+      top: index * cardHeight,
       behavior: 'smooth'
     })
   }, [])
@@ -1231,10 +1243,9 @@ function AirborneAdvantage() {
   const handleScroll = () => {
     if (!carouselRef.current) return
     const container = carouselRef.current
-    const scrollLeft = container.scrollLeft
-    const containerWidth = container.clientWidth
-    const cardWidth = containerWidth
-    const index = Math.round(scrollLeft / Math.max(cardWidth, 1))
+    const scrollTop = container.scrollTop
+    const cardHeight = container.clientHeight
+    const index = Math.round(scrollTop / Math.max(cardHeight, 1))
     setActiveIndex(Math.min(categorizedBenefits.length - 1, Math.max(0, index)))
   }
 
@@ -1437,10 +1448,11 @@ function AirborneAdvantage() {
             overflow-x: hidden;
             overflow-y: auto;
             max-height: 80vh;
-            gap: 1.25rem;
-            padding-bottom: 2rem;
+            gap: 0;
+            padding-bottom: 0;
             -webkit-overflow-scrolling: touch;
-            padding-right: 1rem;
+            padding-right: 0;
+            scroll-snap-type: y mandatory;
           }
 
           .advantage-carousel::-webkit-scrollbar {
@@ -1453,14 +1465,15 @@ function AirborneAdvantage() {
           }
 
           .advantage-carousel::-webkit-scrollbar-thumb {
-            background: rgba(0,39,76,0.2);
+            background: rgba(200,16,46,0.45);
             border-radius: 4px;
           }
 
           /* One full screen per swipe */
           .advantage-card-mobile {
-            flex: 0 0 auto;
+            flex: 0 0 80vh;
             width: 100%;
+            scroll-snap-align: start;
             background: #fff;
             border: 1px solid rgba(0, 39, 76, 0.08);
             backdrop-filter: blur(16px);
@@ -1475,6 +1488,7 @@ function AirborneAdvantage() {
             flex-direction: column;
             justify-content: flex-start;
             box-sizing: border-box;
+            margin-bottom: 1.25rem;
           }
 
           /* Gold top gradient hairline border */
@@ -1615,10 +1629,10 @@ function AirborneAdvantage() {
         <div className="advantage-mobile-layout">
           {/* Animated Swipe Hint */}
           <div className="swipe-hint-container">
-            <span>Swipe to explore benefits</span>
+            <span>Swipe up to explore benefits</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <polyline points="19 12 12 19 5 12"></polyline>
             </svg>
           </div>
 
@@ -1701,7 +1715,7 @@ function AirborneAdvantage() {
                   width: activeIndex === idx ? '20px' : '8px',
                   height: '8px',
                   borderRadius: '999px',
-                  background: activeIndex === idx ? 'var(--navy)' : 'rgba(0,39,76,0.2)',
+                  background: activeIndex === idx ? 'var(--red)' : 'rgba(200,16,46,0.25)',
                   border: 'none',
                   padding: 0,
                   cursor: 'pointer',

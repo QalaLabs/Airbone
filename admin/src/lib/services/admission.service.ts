@@ -352,7 +352,7 @@ export class AdmissionService {
       ]);
     }
 
-    const updateInput: UpdateAdmissionInput & { feeFinal?: number | null } = {
+    const updateInput: Omit<UpdateAdmissionInput, "batchName"> & { feeFinal?: number | null; batchName?: string | null } = {
       ...input,
       feeFinal: undefined,
     };
@@ -363,8 +363,10 @@ export class AdmissionService {
       updateInput.batchName = batch.name;
       updateInput.batchStartDate = batch.startDate ? batch.startDate.toISOString() : null;
     } else if (input.batchId === null) {
-      // Batch cleared — keep whatever explicit batch text the caller provided.
+      // Batch removed — derived name/start date go with it.
       updateInput.batchId = null;
+      updateInput.batchName = null;
+      updateInput.batchStartDate = null;
     }
     if (input.courseId !== undefined && input.courseId !== null) {
       const course = await resolveCourse(ctx, input.courseId);
@@ -443,7 +445,10 @@ export class AdmissionService {
       }
     }
 
-    const metadata = { ...existingMeta, ...(input.metadata ?? {}) };
+    const metadata: Record<string, unknown> = { ...existingMeta, ...(input.metadata ?? {}) };
+    // Legacy metadata.lmsBatchId mirrors batchId; keep it from resurrecting a removed batch.
+    if (input.batchId === null) delete metadata.lmsBatchId;
+    else if (input.batchId) metadata.lmsBatchId = input.batchId;
     updateInput.metadata = metadata;
 
     const updated = await AdmissionRepository.update(ctx.orgId, id, updateInput);
@@ -617,6 +622,17 @@ export class AdmissionService {
           await tx.lead.update({
             where: { id: admission.leadId },
             data: { status: "CONVERTED", convertedAt: new Date(), score: 100 },
+          });
+          await tx.leadActivity.create({
+            data: {
+              leadId: admission.leadId,
+              orgId: ctx.orgId,
+              performedBy: ctx.user.id,
+              activityType: "STATUS_CHANGE",
+              title: "Enrolled — lead converted",
+              completedAt: new Date(),
+              metadata: { admissionId: id, newStatus: "CONVERTED" },
+            },
           });
 
           if (txStudentId) {

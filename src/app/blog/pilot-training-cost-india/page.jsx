@@ -36,7 +36,7 @@ const FAQS = [
   },
   {
     q: 'Is pilot training cheaper in India or abroad?',
-    a: 'Direct training cost can be lower in the Philippines or USA (₹35–45L vs ₹55–75L in India). However, once DGCA conversion costs (₹5–15L), living expenses abroad, and an additional 12–18 months before airline entry are added, India-trained CPL holders often reach their first airline seat faster and at a lower total cost.',
+    a: 'Direct training cost can be lower in the Philippines or USA (₹35–45L vs ₹55–75L in India). However, once DGCA conversion costs (₹5–10L), living expenses abroad, and an additional 12–18 months before airline entry are added, India-trained CPL holders often reach their first airline seat faster and at a lower total cost.',
   },
   {
     q: 'What does DGCA ground school cost at Airborne?',
@@ -185,7 +185,7 @@ export default function PilotTrainingCostIndiaPage() {
               </table>
             </div>
             <p style={{ fontSize: '0.9rem', color: 'rgba(33,33,33,0.7)', fontFamily: 'var(--font-b)', lineHeight: '1.7' }}>
-              Direct training cost can be lower in the Philippines or USA. However, once DGCA conversion costs (₹5–15L), living expenses abroad, and an additional 12–18 months before airline entry are added, India-trained CPL holders often reach their first airline seat faster and at a lower total cost. See our full <Link href="/courses/flying-training-india-abroad" style={{ color: '#D8A027' }}>India vs Abroad guide</Link> for a detailed breakdown.
+              Direct training cost can be lower in the Philippines or USA. However, once DGCA conversion costs (₹5–10L), living expenses abroad, and an additional 12–18 months before airline entry are added, India-trained CPL holders often reach their first airline seat faster and at a lower total cost. See our full <Link href="/courses/flying-training-india-abroad" style={{ color: '#D8A027' }}>India vs Abroad guide</Link> for a detailed breakdown.
             </p>
           </section>
 

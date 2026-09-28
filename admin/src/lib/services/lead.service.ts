@@ -8,6 +8,7 @@ import type { Prisma } from "@prisma/client";
 import { ConflictError, NotFoundError, ValidationError, ForbiddenError } from "@/lib/utils/errors";
 import type { CreateLeadInput, UpdateLeadInput, LeadFilters, CreateActivityInput } from "@/lib/validations/lead.schema";
 import type { RequestContext } from "@/types";
+import { hasPermission } from "@/lib/utils/permissions";
 import type { LeadStatus, LeadSource } from "@prisma/client";
 import { isLostStatus, canTransitionLeadStatus, LOSS_REASON_DEFAULT_TEXT, LOCKED_LEAD_STATUSES } from "@/lib/leads/lead-status";
 
@@ -247,6 +248,14 @@ export class LeadService {
   static async create(ctx: RequestContext, input: CreateLeadInput) {
     const { notes, ...data } = input;
 
+    if (!hasPermission(ctx.user, "assign", "leads")) {
+      if (data.assignedTo && data.assignedTo !== ctx.user.id) {
+        throw new ForbiddenError("assign", "leads");
+      }
+      // Without assign rights the creator owns the lead (counselor ABAC is own-records).
+      data.assignedTo = ctx.user.id;
+    }
+
     // Race-safe dedup: unique(orgId, phone) means a lead with this phone already
     // exists in the org — surface a clean 409 instead of a 500.
     let lead: Awaited<ReturnType<typeof LeadRepository.create>>;
@@ -259,7 +268,15 @@ export class LeadService {
         "code" in err &&
         (err as { code?: string }).code === "P2002"
       ) {
-        throw new ConflictError("A lead with this phone already exists in this organization");
+        const trashed = await prisma.lead.findFirst({
+          where: { orgId: ctx.orgId, phone: data.phone, deletedAt: { not: null } },
+          select: { id: true },
+        });
+        throw new ConflictError(
+          trashed
+            ? "A lead with this phone is in the Recycle Bin. Restore it from Leads → Recycle Bin instead."
+            : "A lead with this phone already exists in this organization",
+        );
       }
       throw err;
     }
@@ -325,8 +342,8 @@ export class LeadService {
 
     // E5 Assignment permission: Only Admin, SuperAdmin, Manager may assign/reassign leads.
     if (input.assignedTo !== undefined && input.assignedTo !== existing.assignedTo) {
-      if (ctx.user.role === "ADMISSIONS_COUNSELOR") {
-        throw new ForbiddenError("Sales Agents cannot assign or reassign leads.");
+      if (!hasPermission(ctx.user, "assign", "leads")) {
+        throw new ForbiddenError("assign", "leads");
       }
     }
 
@@ -344,8 +361,12 @@ export class LeadService {
         ]);
       }
 
-      // Entering PROSPECT → ensure a Deal exists (idempotent, concurrency-safe).
-      if (input.status === "PROSPECT") {
+    }
+
+    // Entering PROSPECT (or re-confirming Prospect terms) → ensure a Deal exists
+    // and merge the decided course / batch / fee (idempotent, concurrency-safe).
+    if (input.status === "PROSPECT" && (statusChanged || input.dealData)) {
+      {
         const { DealService } = await import("@/lib/services/deal.service");
         const title =
           existing.name.length > 255 - (existing.courseInterest?.length ?? 0) - 2
@@ -357,10 +378,12 @@ export class LeadService {
           title,
           source: existing.source ?? undefined,
           assignedTo: existing.assignedTo ?? undefined,
-          ...((input as any).dealData || {}),
+          ...(input.dealData ?? {}),
         });
       }
+    }
 
+    if (statusChanged) {
       // Persist a loss reason when entering a lost status without one.
       if (isLostStatus(input.status as LeadStatus)) {
         input.lostReason =
@@ -1015,10 +1038,10 @@ export class LeadService {
       campusId?: string;
       feeAmount?: number;
       notes?: string;
+      dealData?: { courseId?: string; batchId?: string; feePlanId?: string; value?: number };
     } = {},
   ) {
     const lead = await this.getById(ctx, leadId);
-    const { AdmissionService } = await import("@/lib/services/admission.service");
     if (isLostStatus(lead.status as LeadStatus)) {
       throw new ValidationError([{ message: "Cannot convert a lost lead" }]);
     }
@@ -1046,94 +1069,23 @@ export class LeadService {
       title: lead.courseInterest ? `${lead.name} — ${lead.courseInterest}` : `${lead.name} — Prospect`,
       source: lead.source,
       assignedTo: lead.assignedTo ?? undefined,
+      ...(input.dealData ?? {}),
     });
     const deal = ensured.deal;
 
-    const existingAdmission = await prisma.admission.findFirst({
-      where: { leadId, orgId: ctx.orgId },
-      orderBy: { createdAt: "desc" },
-    });
-    if (existingAdmission && existingAdmission.stage !== "CANCELLED" && existingAdmission.stage !== "DROPPED") {
-      return { admission: existingAdmission, created: false };
-    }
-
-    // Race guard: a concurrent conversion wins via the unique(orgId, leadId)
-    // deal — read the winner's linked admission before creating another.
-    const linked = deal.admissionId
-      ? await prisma.admission.findUnique({ where: { id: deal.admissionId } })
-      : null;
-    if (linked && linked.stage !== "CANCELLED" && linked.stage !== "DROPPED") {
-      return { admission: linked, created: false };
-    }
-
-    const admission = await AdmissionService.create(ctx, {
-      leadId,
-      courseName: input.courseName ?? lead.courseInterest ?? undefined,
-      counselorId: input.counselorId ?? lead.assignedTo ?? undefined,
-      campusId: input.campusId ?? lead.campusId ?? undefined,
+    // Single conversion path: the deal service creates the admission, links it
+    // race-safely, marks the deal won and the lead WON with a timeline entry.
+    const result = await DealService.convertToAdmission(ctx, deal.id, {
+      courseName: input.courseName,
+      counselorId: input.counselorId,
+      campusId: input.campusId,
       feeAmount: input.feeAmount,
-      feeDiscount: 0,
       notes: input.notes,
     });
-
-    // Link the admission to the deal. If a concurrent conversion already linked
-    // a different admission, clean up our orphan admission (P2002 on the unique
-    // admissionId) and converge on the winner.
-    try {
-      await prisma.deal.update({
-        where: { id: deal.id, orgId: ctx.orgId },
-        data: { admissionId: admission.id, convertedAt: new Date() },
-      });
-    } catch (err) {
-      const isP2002 =
-        typeof err === "object" &&
-        err !== null &&
-        "code" in err &&
-        (err as { code?: string }).code === "P2002";
-      if (isP2002) {
-        const winner = await prisma.admission.findFirst({
-          where: { leadId, orgId: ctx.orgId },
-          orderBy: { createdAt: "desc" },
-        });
-        if (winner && winner.id !== admission.id) {
-          // M-08: soft-archive the orphan (CANCELLED) instead of hard-deleting,
-          // preserving its snapshot/audit and avoiding FK Restrict once any
-          // payment references it. CANCELLED is treated as inactive elsewhere.
-          await prisma.admission
-            .update({
-              where: { id: admission.id, orgId: ctx.orgId },
-              data: { stage: "CANCELLED", notes: "Orphaned by concurrent conversion; archived." },
-            })
-            .catch(() => undefined);
-          return { admission: winner, created: false };
-        }
-      }
-      throw err;
+    if (result.created) {
+      await this.recalculateScore(ctx, leadId, "converted_to_admission");
     }
-
-    // WON is the canonical conversion status — conversion opens the
-    // admission funnel and marks the lead lifecycle as won.
-    await prisma.lead.update({
-      where: { id: leadId },
-      data: { status: "WON", lastActivityAt: new Date() },
-    });
-
-    await prisma.leadActivity.create({
-      data: {
-        leadId,
-        orgId: ctx.orgId,
-        performedBy: ctx.user.id,
-        activityType: "STATUS_CHANGE",
-        title: "Converted to admission",
-        notes: `Application ${admission.applicationNo} created`,
-        completedAt: new Date(),
-        metadata: { admissionId: admission.id, dealId: deal.id },
-      },
-    });
-
-    await this.recalculateScore(ctx, leadId, "converted_to_admission");
-
-    return { admission, created: true };
+    return result;
   }
 
   static async listActivities(ctx: RequestContext, leadId: string, page = 1, limit = 20) {

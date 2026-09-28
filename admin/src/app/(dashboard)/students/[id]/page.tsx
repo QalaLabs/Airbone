@@ -239,8 +239,9 @@ export default function StudentDetailPage() {
     if (!student) return null;
     const addr = asAddressObject(student.address);
     return {
-      firstName: student.name.split(" ")[0] ?? "",
-      lastName: student.name.split(" ").slice(1).join(" ") ?? "",
+      // Use the stored parts — re-splitting the display name mangles multi-word first names.
+      firstName: (student as { firstName?: string }).firstName ?? student.name.split(" ")[0] ?? "",
+      lastName: (student as { lastName?: string }).lastName ?? student.name.split(" ").slice(1).join(" ") ?? "",
       email: student.email,
       phone: student.phone,
       gender: student.gender ?? "",
@@ -289,10 +290,10 @@ export default function StudentDetailPage() {
   const onSave = () => {
     if (!form) return;
     const body: Record<string, unknown> = {
-      firstName: form.firstName,
-      lastName: form.lastName,
+      firstName: String(form.firstName ?? "").trim() || undefined,
+      lastName: String(form.lastName ?? "").trim() || undefined,
       email: form.email,
-      phone: form.phone,
+      phone: String(form.phone ?? "").trim() || undefined,
       nationality: form.nationality || "Indian",
       address: {
         line1: form.address.line1 || undefined,
@@ -456,7 +457,7 @@ export default function StudentDetailPage() {
               </div>
               <div className="space-y-1 lg:col-span-2">
                 <Label className="text-[10px] font-bold text-muted-foreground">Guardian email</Label>
-                <Input value={form.guardianEmail} onChange={(e) => set("guardianEmail", e.target.value)} className="h-8 text-xs" />
+                <Input type="email" value={form.guardianEmail} onChange={(e) => set("guardianEmail", e.target.value)} className="h-8 text-xs" />
               </div>
             </div>
 
@@ -464,8 +465,8 @@ export default function StudentDetailPage() {
               <Label className="text-[10px] font-bold text-muted-foreground">Class 10</Label>
               <div className="grid grid-cols-3 gap-2">
                 <Input placeholder="Board" value={form.class10Board} onChange={(e) => set("class10Board", e.target.value)} className="h-8 text-xs" />
-                <Input placeholder="Year" type="number" value={form.class10Year} onChange={(e) => set("class10Year", e.target.value)} className="h-8 text-xs" />
-                <Input placeholder="Percent" type="number" value={form.class10Percent} onChange={(e) => set("class10Percent", e.target.value)} className="h-8 text-xs" />
+                <Input placeholder="Year" type="number" min={1990} max={2030} step={1} value={form.class10Year} onChange={(e) => set("class10Year", e.target.value)} className="h-8 text-xs" />
+                <Input placeholder="Percent" type="number" min={0} max={100} step="0.01" value={form.class10Percent} onChange={(e) => set("class10Percent", e.target.value)} className="h-8 text-xs" />
               </div>
             </div>
 
@@ -473,8 +474,8 @@ export default function StudentDetailPage() {
               <Label className="text-[10px] font-bold text-muted-foreground">Class 12</Label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <Input placeholder="Board" value={form.class12Board} onChange={(e) => set("class12Board", e.target.value)} className="h-8 text-xs" />
-                <Input placeholder="Year" type="number" value={form.class12Year} onChange={(e) => set("class12Year", e.target.value)} className="h-8 text-xs" />
-                <Input placeholder="Percent" type="number" value={form.class12Percent} onChange={(e) => set("class12Percent", e.target.value)} className="h-8 text-xs" />
+                <Input placeholder="Year" type="number" min={1990} max={2030} step={1} value={form.class12Year} onChange={(e) => set("class12Year", e.target.value)} className="h-8 text-xs" />
+                <Input placeholder="Percent" type="number" min={0} max={100} step="0.01" value={form.class12Percent} onChange={(e) => set("class12Percent", e.target.value)} className="h-8 text-xs" />
                 <Select value={form.class12Stream || "NONE"} onValueChange={(v) => set("class12Stream", v === "NONE" ? "" : v)}>
                   <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Stream" /></SelectTrigger>
                   <SelectContent>

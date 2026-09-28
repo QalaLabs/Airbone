@@ -110,6 +110,16 @@ const nextConfig = {
         destination: '/courses',
         permanent: true,
       },
+      {
+        source: '/courses/multi-engine-rating',
+        destination: '/courses',
+        permanent: true,
+      },
+      {
+        source: '/courses/aviation-english-icao',
+        destination: '/courses',
+        permanent: true,
+      },
     ]
   },
 }

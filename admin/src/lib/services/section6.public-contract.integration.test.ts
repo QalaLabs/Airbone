@@ -20,7 +20,7 @@ const CANONICAL_FEES: Record<string, number> = {
   "cadet-preparation": 50000,
   "a320-simulator": 10000,
   "cas-compass-adapt": 30000,
-  "airline-preparation": 100000,
+  "airline-preparation": 125000,
   "flying-training": 5500000,
 };
 

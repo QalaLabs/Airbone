@@ -4,8 +4,19 @@ import {
   isIpLiteral,
   parseXForwardedFor,
   resolveClientIp,
+  resolveIntakeRateLimitIp,
   resolveTrustedProxyMode,
 } from "./client-ip";
+
+test("intake rate limit keys on the visitor IP reported by the key-holding marketing server", () => {
+  const r = reqWith({ "x-intake-client-ip": "203.0.113.9", "x-forwarded-for": "10.0.0.1" });
+  assert.equal(resolveIntakeRateLimitIp(r), "203.0.113.9");
+});
+
+test("intake rate limit ignores a non-IP reported value and falls back to the peer IP", () => {
+  const r = reqWith({ "x-intake-client-ip": "evil; drop", "x-forwarded-for": "10.0.0.1" });
+  assert.equal(resolveIntakeRateLimitIp(r), resolveClientIp(r));
+});
 
 function reqWith(headers: Record<string, string | null>) {
   return {

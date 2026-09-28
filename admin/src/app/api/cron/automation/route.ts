@@ -10,6 +10,7 @@ import { LeadService } from "@/lib/services/lead.service";
 import { PageService } from "@/lib/services/page.service";
 import { CourseService } from "@/lib/services/course.service";
 import { ResourceService } from "@/lib/services/resource.service";
+import { LeadTrashService } from "@/lib/services/lead-trash.service";
 
 export async function POST(req: NextRequest) {
   const auth = verifyCronSecret(req);
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const [metrics, workflows, events, fallback, pagesPublished, coursesPublished, resourcesPublished] =
+    const [metrics, workflows, events, fallback, pagesPublished, coursesPublished, resourcesPublished, leadTrash] =
       await Promise.all([
         collectAutomationMetrics(),
         reconcileDueWorkflowRuns(50),
@@ -30,6 +31,7 @@ export async function POST(req: NextRequest) {
         PageService.publishScheduledPages(),
         CourseService.publishScheduledCourses(),
         ResourceService.publishScheduledResources(),
+        LeadTrashService.purgeExpired(),
       ]);
 
     return NextResponse.json({
@@ -42,6 +44,7 @@ export async function POST(req: NextRequest) {
       pagesPublished,
       coursesPublished,
       resourcesPublished,
+      leadTrash,
     });
   } catch (err) {
     console.error("[Cron/automation] failed", err);

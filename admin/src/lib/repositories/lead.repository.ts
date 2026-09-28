@@ -132,6 +132,12 @@ const LEAD_LIST_SELECT = {
   updatedAt: true,
   counselor: { select: { id: true, name: true, avatarUrl: true, email: true } },
   campus: { select: { id: true, name: true, city: true } },
+  admissions: {
+    where: { stage: { notIn: ["CANCELLED", "DROPPED"] } },
+    select: { id: true },
+    orderBy: { createdAt: "desc" },
+    take: 1,
+  },
 } satisfies Prisma.LeadSelect;
 
 export class LeadRepository {
@@ -172,7 +178,7 @@ export class LeadRepository {
     if (filters.followUpOverdue) {
       where.nextFollowUp = { lt: new Date() };
       if (!filters.status && !filters.isActive) {
-        where.status = { notIn: ["CONVERTED", "LOST"] };
+        where.status = { in: ACTIVE_LEAD_STATUSES };
       }
     }
     if (filters.priority) {

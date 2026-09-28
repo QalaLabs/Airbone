@@ -27,10 +27,18 @@ export const createLeadSchema = z.object({
   notes: z.string().max(5000).optional(),
 });
 
+/** Course / batch / fee decided when a lead becomes a Prospect (stored on the deal). */
+export const dealDataSchema = z.object({
+  courseId: z.string().uuid().optional(),
+  batchId: z.string().uuid().optional(),
+  feePlanId: z.string().uuid().optional(),
+  value: z.number().positive().optional(),
+});
+
 export const updateLeadSchema = createLeadSchema.partial().extend({
   status: z.nativeEnum(LeadStatus).optional(),
   lostReason: z.string().max(1000).optional(),
-  dealData: z.record(z.unknown()).optional(),
+  dealData: dealDataSchema.optional(),
 });
 
 export const updateLeadStatusSchema = z.object({
@@ -75,7 +83,21 @@ export const leadFiltersSchema = z.object({
     .transform((v) => (v === undefined ? undefined : v === "true")),
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(100).default(20),
-  sortBy: z.enum(["createdAt", "updatedAt", "score", "name", "status", "nextFollowUp", "lostReason"]).default("createdAt"),
+  sortBy: z
+    .enum([
+      "createdAt",
+      "updatedAt",
+      "score",
+      "name",
+      "status",
+      "nextFollowUp",
+      "lostReason",
+      "phone",
+      "source",
+      "courseInterest",
+      "manualAmount",
+    ])
+    .default("createdAt"),
   sortDir: z.enum(["asc", "desc"]).default("desc"),
 });
 
@@ -132,6 +154,7 @@ export const convertLeadSchema = z.object({
   campusId: z.string().uuid().optional(),
   feeAmount: z.number().positive().optional(),
   notes: z.string().max(5000).optional(),
+  dealData: dealDataSchema.optional(),
 });
 
 export type CreateLeadInput = z.infer<typeof createLeadSchema>;

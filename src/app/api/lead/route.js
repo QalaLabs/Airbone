@@ -239,6 +239,8 @@ export async function POST(req) {
       headers: {
         'Content-Type': 'application/json',
         'x-intake-key': INTAKE_KEY,
+        // Visitor IP so the admin rate limit is per visitor, not per marketing server.
+        'x-intake-client-ip': rateLimitResult.ip,
       },
       body: JSON.stringify({
         name: leadData.name,

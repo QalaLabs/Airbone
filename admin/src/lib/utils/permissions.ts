@@ -152,6 +152,18 @@ export function hasPermission(
   return allowed.includes(action);
 }
 
+/**
+ * Roles that may assign leads but lack users:read (e.g. MARKETING_MANAGER)
+ * still need the counselor picker; they get a minimal id/name/role list only.
+ */
+export function isAssigneeListOnly(user: SessionUser, role: string | undefined): boolean {
+  return (
+    role === "ADMISSIONS_COUNSELOR" &&
+    !hasPermission(user, "read", "users") &&
+    hasPermission(user, "assign", "leads")
+  );
+}
+
 // Check ownership condition (ABAC layer)
 export function meetsCondition(
   user: SessionUser,

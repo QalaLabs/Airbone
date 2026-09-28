@@ -14,12 +14,21 @@ export const feePlanItemSchema = z
     message: "Each item must specify exactly one of a fixed amount or a percent of the course fee",
   });
 
+/** Percentage instalments are shares of one course fee — together they cannot exceed 100%. */
+const feePlanItemsSchema = z
+  .array(feePlanItemSchema)
+  .min(1)
+  .refine(
+    (items) => items.reduce((sum, i) => sum + (i.percentOfFee ?? 0), 0) <= 100 + 1e-9,
+    { message: "Percentage items cannot add up to more than 100% of the course fee" },
+  );
+
 export const createFeePlanSchema = z.object({
   name: z.string().min(1).max(255),
   description: z.string().max(5000).optional(),
   currency: z.string().length(3).default("INR"),
   isActive: z.boolean().default(true),
-  items: z.array(feePlanItemSchema).min(1),
+  items: feePlanItemsSchema,
   metadata: z.record(z.unknown()).optional(),
 });
 
@@ -28,7 +37,7 @@ export const updateFeePlanSchema = z.object({
   description: z.string().max(5000).optional().nullable(),
   currency: z.string().length(3).optional(),
   isActive: z.boolean().optional(),
-  items: z.array(feePlanItemSchema).min(1).optional(),
+  items: feePlanItemsSchema.optional(),
   metadata: z.record(z.unknown()).optional(),
 });
 

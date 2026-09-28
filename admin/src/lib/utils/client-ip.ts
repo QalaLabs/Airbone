@@ -51,6 +51,18 @@ export function resolveTrustedProxyMode(env: NodeJS.ProcessEnv = process.env): T
   return raw === "cloud-run" || raw === "cloudrun" ? "cloud-run" : "none";
 }
 
+/**
+ * Public lead intake is called server-to-server by the marketing site, so the
+ * peer IP is the marketing server for every visitor. Only call this AFTER the
+ * intake key has been verified: the key-holder is trusted to report the
+ * visitor IP in `x-intake-client-ip`.
+ */
+export function resolveIntakeRateLimitIp(req: Pick<NextRequest, "headers">): string {
+  const reported = (req.headers.get("x-intake-client-ip") ?? "").trim();
+  if (isIpLiteral(reported)) return reported;
+  return resolveClientIp(req);
+}
+
 export function resolveClientIp(req: Pick<NextRequest, "headers">): string {
   const mode = resolveTrustedProxyMode();
   const forwarded = parseXForwardedFor(req.headers.get("x-forwarded-for"));

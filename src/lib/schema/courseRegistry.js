@@ -152,7 +152,7 @@ export const COURSE_SCHEMA = {
     description:
       'Transition from CPL holder to First Officer. 2.5-month airline preparation program at Airborne, Dwarka covering DGCA Ground Refresher, ADAPT Screening, A320 Systems & Sim Prep, and GD/PI. 4 hours/day.',
     path: '/courses/airline-preparation',
-    price: '100000',
+    price: '125000',
     duration: 'P4W',
     courseMode: 'onsite',
     includeInstructor: false,
@@ -173,23 +173,6 @@ export const COURSE_SCHEMA = {
       'Guidance and ground preparation support for Private Pilot License aspirants at Airborne Aviation Academy, Dwarka.',
     path: '/courses/private-pilot-license',
     courseMode: 'onsite',
-  },
-  'multi-engine-rating': {
-    slug: 'multi-engine-rating',
-    name: 'Multi-Engine Rating Preparation',
-    description:
-      'Multi-engine rating familiarisation and theory support at Airborne Aviation Academy, Dwarka.',
-    path: '/courses/multi-engine-rating',
-    courseMode: 'onsite',
-  },
-  'aviation-english-icao': {
-    slug: 'aviation-english-icao',
-    name: 'Aviation English (ICAO)',
-    description:
-      'ICAO Aviation English training for pilots and aviation professionals at Airborne Aviation Academy, Dwarka.',
-    path: '/courses/aviation-english-icao',
-    courseMode: 'onsite',
-    includeInstructor: false,
   },
   'securing-your-childs-future-in-aviation': {
     slug: 'securing-your-childs-future-in-aviation',

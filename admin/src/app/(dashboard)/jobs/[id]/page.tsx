@@ -28,8 +28,8 @@ interface Job {
   salaryMin?: number;
   salaryMax?: number;
   hiringPartner?: { name: string; logoId?: string | null };
-  postedAt?: string;
-  expiresAt?: string;
+  publishedAt?: string | null;
+  closesAt?: string | null;
   createdAt: string;
 }
 
@@ -193,7 +193,7 @@ export default function JobDetailPage() {
                 <div className="flex items-center gap-2 text-sm">
                   <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
                   <span className="text-muted-foreground">Expires:</span>
-                  <span className="font-medium">{formatDate(job.expiresAt)}</span>
+                  <span className="font-medium">{formatDate(job.closesAt)}</span>
                 </div>
                 {job.salaryMin != null && (
                   <div className="flex items-center gap-2 text-sm">
@@ -248,8 +248,8 @@ export default function JobDetailPage() {
             <CardContent className="space-y-3">
               {[
                 { label: "Status", value: <StatusBadge status={job.status} domain="job" /> },
-                { label: "Posted", value: formatDate(job.postedAt) },
-                { label: "Expires", value: formatDate(job.expiresAt) },
+                { label: "Posted", value: formatDate(job.publishedAt) },
+                { label: "Closes", value: formatDate(job.closesAt) },
                 { label: "Applications", value: String(applications?.total ?? 0) },
                 { label: "Hiring Partner", value: job.hiringPartner?.name ?? "Direct" },
               ].map(({ label, value }) => (

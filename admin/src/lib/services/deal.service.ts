@@ -9,11 +9,77 @@ import type { CreateDealInput, UpdateDealInput, ConvertDealInput, RevertDealInpu
 import type { RequestContext } from "@/types";
 import { canTransitionDealStage, LOSS_REASON_DEFAULT } from "@/lib/validations/deal.schema";
 import type { DealFilters } from "@/lib/validations/deal.schema";
-import { LOCKED_LEAD_STATUSES } from "@/lib/leads/lead-status";
 import type { LeadStatus, LeadSource } from "@prisma/client";
 
+import { isActiveAdmissionStage } from "@/lib/services/deal-admission-link";
+
 const WON_STAGES: AdmissionStage[] = ["ENROLLED"];
+
+async function setLeadStatusWithTimeline(
+  ctx: RequestContext,
+  leadId: string,
+  status: LeadStatus,
+  title: string,
+  metadata: Record<string, unknown>,
+) {
+  const before = await prisma.lead.findFirst({
+    where: { id: leadId, orgId: ctx.orgId },
+    select: { status: true },
+  });
+  if (!before) return;
+  await prisma.$transaction([
+    prisma.lead.update({
+      where: { id: leadId, orgId: ctx.orgId },
+      data: { status, lastActivityAt: new Date() },
+    }),
+    prisma.leadActivity.create({
+      data: {
+        leadId,
+        orgId: ctx.orgId,
+        performedBy: ctx.user.id,
+        activityType: "STATUS_CHANGE",
+        title,
+        completedAt: new Date(),
+        metadata: { ...metadata, oldStatus: before.status, newStatus: status } as Prisma.InputJsonValue,
+      },
+    }),
+  ]);
+}
 const LOST_STAGES: AdmissionStage[] = ["DROPPED", "CANCELLED"];
+
+/**
+ * Course / batch / fee plan / fee decided at Prospect time (stored on the deal)
+ * carried into the admission dossier. References are re-checked against the org.
+ */
+export async function resolveDecidedTerms(
+  orgId: string,
+  deal: { value?: unknown; metadata?: unknown },
+): Promise<{ courseId?: string; batchId?: string; feePlanId?: string; feeAmount?: number }> {
+  const meta = (deal.metadata ?? {}) as Record<string, unknown>;
+  const str = (v: unknown) => (typeof v === "string" && v.length > 0 ? v : undefined);
+  let courseId = str(meta.courseId);
+  let batchId = str(meta.batchId);
+  let feePlanId = str(meta.feePlanId);
+
+  let courseFee: number | undefined;
+  if (courseId) {
+    const course = await prisma.course.findFirst({ where: { id: courseId, orgId }, select: { fee: true } });
+    if (!course) courseId = undefined;
+    else if (course.fee != null && Number(course.fee) > 0) courseFee = Number(course.fee);
+  }
+  if (batchId) {
+    const batch = await prisma.lmsBatch.findFirst({ where: { id: batchId, orgId }, select: { id: true } });
+    if (!batch) batchId = undefined;
+  }
+  if (feePlanId) {
+    const plan = await prisma.feePlan.findFirst({ where: { id: feePlanId, orgId, isActive: true }, select: { id: true } });
+    if (!plan) feePlanId = undefined;
+  }
+
+  const dealValue = Number(deal.value ?? 0);
+  const feeAmount = Number.isFinite(dealValue) && dealValue > 0 ? dealValue : courseFee;
+  return { courseId, batchId, feePlanId, feeAmount };
+}
 
 export type DealStatus = "open" | "won" | "lost" | "archived";
 
@@ -55,12 +121,43 @@ export class DealService {
     },
   ) {
     const existing = await DealRepository.findActiveByLeadId(ctx.orgId, leadId);
-    if (existing) return { deal: existing, created: false };
+    if (existing) {
+      // Merge course / batch / fee when counselor re-confirms PROSPECT details
+      if (
+        input.courseId !== undefined ||
+        input.batchId !== undefined ||
+        input.feePlanId !== undefined ||
+        input.value != null
+      ) {
+        const updated = await DealRepository.update(ctx.orgId, existing.id, {
+          ...(input.courseId !== undefined ? { courseId: input.courseId } : {}),
+          ...(input.batchId !== undefined ? { batchId: input.batchId } : {}),
+          ...(input.feePlanId !== undefined ? { feePlanId: input.feePlanId } : {}),
+          ...(input.value != null ? { value: input.value } : {}),
+        });
+        return { deal: updated, created: false };
+      }
+      return { deal: existing, created: false };
+    }
 
     const closedDeal = await prisma.deal.findFirst({
       where: { leadId, orgId: ctx.orgId, deletedAt: null, isActive: false },
-      select: { id: true, stage: true, wonAt: true, lostAt: true },
+      select: { id: true, stage: true, wonAt: true, lostAt: true, revertedAt: true },
     });
+    if (closedDeal?.revertedAt) {
+      // Legacy: deals archived by the previous revert behaviour are reopened.
+      await prisma.deal.update({
+        where: { id: closedDeal.id, orgId: ctx.orgId },
+        data: { isActive: true, stage: "ENQUIRY", wonAt: null, lostAt: null, lostReason: null },
+      });
+      const reopened = await DealRepository.update(ctx.orgId, closedDeal.id, {
+        ...(input.courseId !== undefined ? { courseId: input.courseId } : {}),
+        ...(input.batchId !== undefined ? { batchId: input.batchId } : {}),
+        ...(input.feePlanId !== undefined ? { feePlanId: input.feePlanId } : {}),
+        ...(input.value != null ? { value: input.value } : {}),
+      });
+      return { deal: reopened, created: false };
+    }
     if (closedDeal) {
       throw new ValidationError([
         {
@@ -164,6 +261,21 @@ export class DealService {
       }
     }
 
+    // Winning a deal must always go through the admission conversion so the
+    // lead never becomes WON without an Admission Application Dossier.
+    if (input.stage && input.stage !== existing.stage && WON_STAGES.includes(input.stage as AdmissionStage)) {
+      const linked = existing.admissionId
+        ? await prisma.admission.findFirst({
+            where: { id: existing.admissionId, orgId: ctx.orgId },
+            select: { stage: true },
+          })
+        : null;
+      if (!isActiveAdmissionStage(linked?.stage)) {
+        await this.convertToAdmission(ctx, id, {});
+        return this.getById(ctx, id);
+      }
+    }
+
     const updated = await DealRepository.update(ctx.orgId, id, input);
 
     await AuditService.write({
@@ -234,66 +346,54 @@ export class DealService {
       }
     }
 
+    const decided = await resolveDecidedTerms(ctx.orgId, deal);
+    const feeAmount = input.feeAmount ?? decided.feeAmount;
     const admission = await AdmissionService.create(ctx, {
       leadId: deal.leadId,
-      courseName: input.courseName ?? deal.lead?.courseInterest ?? undefined,
+      courseName: input.courseName ?? (decided.courseId ? undefined : deal.lead?.courseInterest ?? undefined),
+      courseId: decided.courseId,
+      batchId: decided.batchId,
+      // Percentage fee plans need a base fee; skip the plan rather than fail conversion.
+      feePlanId: feeAmount !== undefined ? decided.feePlanId : undefined,
       counselorId: input.counselorId ?? deal.assignedTo ?? undefined,
       campusId: input.campusId ?? deal.lead?.campusId ?? undefined,
-      feeAmount: input.feeAmount ?? Number(deal.value ?? 0),
+      feeAmount,
       feeDiscount: 0,
       notes: input.notes,
     });
 
-    await DealRepository.update(ctx.orgId, id, {
-      stage: "ENROLLED" as any,
+    const { linkAdmissionToDeal } = await import("@/lib/services/deal-admission-link");
+    const link = await linkAdmissionToDeal({
+      orgId: ctx.orgId,
+      dealId: id,
+      expectedPrevious: deal.admissionId ?? null,
+      admissionId: admission.id,
+      data: { convertedAt: new Date(), stage: "ENROLLED" as AdmissionStage, wonAt: new Date() },
     });
 
-    // Concurrency-safe link: deal.admissionId is unique, so a racing second
-    // convert call will hit P2002. Recover by adopting the winner that got
-    // linked and soft-deleting our orphan Admission (keeps one Admission per
-    // Deal, no duplicate persons).
     let saved: { admission: { id: string; applicationNo: string; stage: string }; created: boolean };
-    try {
-      await prisma.deal.update({
-        where: { id, orgId: ctx.orgId },
-        data: {
-          admissionId: admission.id,
-          convertedAt: new Date(),
-          stage: "ENROLLED" as AdmissionStage,
-          wonAt: new Date(),
-        },
-      });
+    if (link.linked) {
       saved = { admission: { id: admission.id, applicationNo: admission.applicationNo, stage: admission.stage }, created: true };
-    } catch (err) {
-      const isP2002 =
-        typeof err === "object" && err !== null && "code" in err && (err as { code?: string }).code === "P2002";
-      if (!isP2002) throw err;
-
-      const linked = await DealRepository.findById(ctx.orgId, id);
-      if (!linked?.admissionId) throw err;
-
-      if (linked.admissionId !== admission.id && linked.admissionId !== deal.admissionId) {
-        // Orphan created by this racing request — it lost the unique link, so it
-        // must not survive as a duplicate (active) Admission for the same person.
-        // M-08: soft-archive (CANCELLED) instead of hard-delete, preserving the
-        // row, its fee snapshot and audit trail, and avoiding FK Restrict
-        // conflicts once payments exist. CANCELLED is the established inactive
-        // admission state (see conversion re-check below).
-        await prisma.admission.update({
-          where: { id: admission.id, orgId: ctx.orgId },
-          data: { stage: "CANCELLED", notes: "Orphaned by concurrent conversion; archived." },
-        }).catch(() => undefined);
+    } else {
+      const winner = link.admissionId
+        ? await prisma.admission.findFirst({
+            where: { id: link.admissionId, orgId: ctx.orgId },
+            select: { id: true, stage: true, applicationNo: true },
+          })
+        : null;
+      if (!winner) {
+        throw new ValidationError([{ message: "Concurrent conversion in progress. Please retry." }]);
       }
-
-      const winner = await prisma.admission.findFirst({
-        where: { id: linked.admissionId, orgId: ctx.orgId },
-        select: { id: true, stage: true, applicationNo: true },
-      });
-      if (!winner) throw err;
-      saved = { admission: winner, created: false };
+      return { admission: winner, created: false };
     }
 
     const savedAdmission = saved.admission;
+
+    await setLeadStatusWithTimeline(ctx, deal.leadId, "WON" as LeadStatus, "Converted to admission", {
+      admissionId: savedAdmission.id,
+      dealId: id,
+      applicationNo: savedAdmission.applicationNo,
+    });
 
     await AuditService.write({
       orgId: ctx.orgId,
@@ -337,16 +437,21 @@ export class DealService {
   static async revertToProspect(ctx: RequestContext, id: string, input?: RevertDealInput) {
     const deal = await this.getById(ctx, id);
 
-    if (!deal.isActive) {
-      throw new ValidationError([
-        { message: "Deal is already archived." },
-      ]);
+    if (deal.isActive && deal.stage === "ENQUIRY" && !deal.wonAt && !deal.lostAt && !deal.admissionId) {
+      throw new ValidationError([{ message: "Deal is already at the Prospect stage." }]);
     }
 
+    // Revert reopens the same deal at the Prospect stage (one deal per lead is a
+    // unique constraint, so archiving would leave the lead with no reachable deal).
+    // The admission, if any, is kept — only the link is cleared.
     const archived = await prisma.deal.update({
       where: { id, orgId: ctx.orgId },
       data: {
-        isActive: false,
+        isActive: true,
+        stage: "ENQUIRY",
+        wonAt: null,
+        lostAt: null,
+        lostReason: null,
         revertedAt: new Date(),
         notes: input?.notes ?? deal.notes,
         admissionId: null,
@@ -354,13 +459,11 @@ export class DealService {
       },
     });
 
-    // Restore lead to INTERESTED
-    if (LOCKED_LEAD_STATUSES.includes(deal.lead.status as LeadStatus)) {
-      await prisma.lead.update({
-        where: { id: deal.leadId, orgId: ctx.orgId },
-        data: { status: "INTERESTED" as LeadStatus },
-      });
-    }
+    // Restore lead to PROSPECT (schema / product: revert deal → prospect stage)
+    await setLeadStatusWithTimeline(ctx, deal.leadId, "PROSPECT" as LeadStatus, "Deal reverted to Prospect", {
+      dealId: id,
+      fromStage: deal.stage,
+    });
 
     await AuditService.write({
       orgId: ctx.orgId,
@@ -407,9 +510,9 @@ export class DealService {
       where: { id: updated.id, orgId: ctx.orgId },
       data: { wonAt: new Date() },
     });
-    await prisma.lead.update({
-      where: { id: existing.leadId, orgId: ctx.orgId },
-      data: { status: "WON" as LeadStatus },
+    await setLeadStatusWithTimeline(ctx, existing.leadId, "WON" as LeadStatus, "Deal won", {
+      dealId: updated.id,
+      stage: updated.stage,
     });
   }
 

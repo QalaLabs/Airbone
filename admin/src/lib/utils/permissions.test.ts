@@ -6,7 +6,23 @@
  */
 import test from "node:test";
 import assert from "node:assert/strict";
-import { hasPermission, PERMISSION_MATRIX } from "./permissions";
+import { hasPermission, isAssigneeListOnly, PERMISSION_MATRIX } from "./permissions";
+
+test("lead assignment: only Admin, Super Admin, Manager may assign", () => {
+  assert.equal(hasPermission(user("SUPER_ADMIN"), "assign", "leads"), true);
+  assert.equal(hasPermission(user("ADMIN"), "assign", "leads"), true);
+  assert.equal(hasPermission(user("MARKETING_MANAGER"), "assign", "leads"), true);
+  assert.equal(hasPermission(user("ADMISSIONS_COUNSELOR"), "assign", "leads"), false);
+});
+
+test("assignee picker: managers get the counselor list without users:read", () => {
+  assert.equal(isAssigneeListOnly(user("MARKETING_MANAGER"), "ADMISSIONS_COUNSELOR"), true);
+  assert.equal(isAssigneeListOnly(user("MARKETING_MANAGER"), "ADMIN"), false);
+  assert.equal(isAssigneeListOnly(user("MARKETING_MANAGER"), undefined), false);
+  assert.equal(isAssigneeListOnly(user("ADMISSIONS_COUNSELOR"), "ADMISSIONS_COUNSELOR"), false);
+  // Roles with users:read use the full endpoint, not the reduced list.
+  assert.equal(isAssigneeListOnly(user("ADMIN"), "ADMISSIONS_COUNSELOR"), false);
+});
 
 function user(role: string, id = "u1") {
   return { id, role, orgId: "o1", name: "T", email: "t@x.com" } as never;

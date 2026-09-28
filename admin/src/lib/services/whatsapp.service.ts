@@ -747,7 +747,9 @@ export class WhatsAppService {
           SELECT 1 FROM whatsapp_conversations c WHERE c."leadId" = l.id
         ) THEN 1 END) AS "viaWhatsapp"
       FROM leads l
-      WHERE l."orgId" = ${orgId}::uuid AND l.status = 'ENROLLED'
+      WHERE l."orgId" = ${orgId}::uuid
+        AND l.status IN ('WON', 'CONVERTED')
+        AND l."deletedAt" IS NULL
     `;
     const optedOutConversations = await prisma.whatsAppConversation.count({
       where: { orgId, optedOut: true },

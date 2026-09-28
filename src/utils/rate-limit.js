@@ -4,11 +4,19 @@
 
 const rateLimitMap = new Map()
 
+// Cloud Run's front end APPENDS the real peer IP as the rightmost
+// X-Forwarded-For entry; anything to its left is client-supplied.
+export function clientIpFromRequest(req) {
+  const parts = (req.headers.get('x-forwarded-for') ?? '')
+    .split(',')
+    .map((p) => p.trim())
+    .filter(Boolean)
+  return parts.length ? parts[parts.length - 1] : '127.0.0.1'
+}
+
 export function rateLimit(req, limit = 5, windowMs = 5 * 60 * 1000) {
-  // Extract IP from headers
-  const forwardedFor = req.headers.get('x-forwarded-for')
-  const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : '127.0.0.1'
-  
+  const ip = clientIpFromRequest(req)
+
   const now = Date.now()
   const windowStart = now - windowMs
 

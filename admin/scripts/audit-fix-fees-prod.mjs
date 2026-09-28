@@ -25,7 +25,7 @@ const updates = [
   { slug: 'cadet-preparation', fee: 50000 },
   { slug: 'a320-simulator', fee: 10000 },
   { slug: 'atpl', fee: 150000 },
-  { slug: 'airline-preparation', fee: 100000 },
+  { slug: 'airline-preparation', fee: 125000 },
   { slug: 'cpl-ground-classes', fee: 270000 },
   { slug: 'cas-compass-adapt', fee: 30000 },
   { slug: 'cabin-crew', fee: 54000 },
