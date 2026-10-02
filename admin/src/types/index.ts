@@ -101,7 +101,7 @@ export interface LeadActivityCreatedEvent extends BaseEvent {
 
 export interface UserInvitedEvent extends BaseEvent {
   name: "user/invited";
-  data: { userId: string; email: string; role: string; inviteToken: string };
+  data: { userId: string; email: string; role: string };
 }
 
 export interface AdmissionCreatedEvent extends BaseEvent {

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ColumnDef, type PaginationState, type SortingState } from "@tanstack/react-table";
-import { Search, MoreHorizontal, ExternalLink, Plus, Globe, Archive, Trash2, Pencil, AlertCircle } from "lucide-react";
+import { Search, MoreHorizontal, ExternalLink, Plus, Globe, Archive, Trash2, Pencil, AlertCircle, Upload } from "lucide-react";
 import { DataTable } from "@/components/shared/data-table";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PageHeader } from "@/components/shared/page-header";
@@ -46,6 +46,8 @@ interface ResourcesResponse {
   total: number;
 }
 
+const MAX_UPLOAD_BYTES = 30 * 1024 * 1024;
+
 export const RESOURCE_TYPES = ["PDF", "VIDEO", "LINK", "IMAGE", "DOCUMENT", "AUDIO", "OTHER"];
 
 export const RESOURCE_TYPE_LABELS: Record<string, string> = {
@@ -86,6 +88,30 @@ export function ResourceManager({
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
   const [editor, setEditor] = React.useState<{ open: boolean; item: Resource | null }>({ open: false, item: null });
   const [deleteTarget, setDeleteTarget] = React.useState<Resource | null>(null);
+  const [uploading, setUploading] = React.useState(false);
+  const fileUrlRef = React.useRef<HTMLInputElement>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const uploadFile = async (file: File) => {
+    // Cloud Run rejects request bodies above 32 MB, below the 50 MB storage limit.
+    if (file.size > MAX_UPLOAD_BYTES) {
+      toast({ title: "File too large", description: "Upload files up to 30 MB, or paste a link instead.", variant: "destructive" });
+      return;
+    }
+    setUploading(true);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      form.append("tags", "resource");
+      const asset = await apiFetch<{ fileUrl: string }>("/media", { method: "POST", body: form });
+      if (fileUrlRef.current) fileUrlRef.current.value = asset.fileUrl;
+      toast({ title: "File uploaded", description: file.name });
+    } catch (err) {
+      toast({ title: "Upload failed", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
+  };
 
   React.useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 400);
@@ -378,8 +404,33 @@ export function ResourceManager({
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label>File URL (hosted asset)</Label>
-                  <Input name="fileUrl" defaultValue={editor.item?.fileUrl ?? ""} placeholder="https://..." className="bg-secondary/40 border-white/10 text-xs text-white" />
+                  <Label>File (upload or paste URL)</Label>
+                  <div className="flex gap-2">
+                    <Input ref={fileUrlRef} name="fileUrl" defaultValue={editor.item?.fileUrl ?? ""} placeholder="https://..." className="bg-secondary/40 border-white/10 text-xs text-white" />
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      data-testid="resource-file-input"
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,image/*,video/mp4,audio/mpeg"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = "";
+                        if (file) uploadFile(file);
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={uploading}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="border-white/10 text-xs font-semibold shrink-0"
+                    >
+                      <Upload className="h-3.5 w-3.5 mr-1.5" />
+                      {uploading ? "Uploading..." : "Upload"}
+                    </Button>
+                  </div>
                 </div>
                 <div className="space-y-1.5">
                   <Label>External URL</Label>

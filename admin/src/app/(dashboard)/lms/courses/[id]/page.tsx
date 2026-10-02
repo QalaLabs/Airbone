@@ -20,6 +20,8 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { apiFetch, isStorageUnavailable } from "@/lib/api";
+import { isOverviewOnly } from "@/lib/lms/course-overview";
+import { CourseOverviewDetails } from "@/components/lms/course-overview-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -66,6 +68,7 @@ interface Stage { id: string; title: string; order: number; modules: Module[] }
 interface Course {
   id: string; title: string; slug: string; description?: string | null;
   isPublished: boolean; status: string;
+  metadata?: unknown;
   stages: Stage[];
 }
 interface Question {
@@ -1292,6 +1295,22 @@ export default function LmsCourseBuilderPage() {
       <div className="rounded-xl border border-destructive/40 p-4 text-sm">
         Failed to load course.{" "}
         <button type="button" className="underline" onClick={() => void refetch()}>Retry</button>
+      </div>
+    );
+  }
+
+  if (isOverviewOnly(course)) {
+    return (
+      <div className="space-y-6" data-testid="lms-course-overview-detail">
+        <div className="flex items-start gap-4">
+          <button type="button" onClick={() => router.push("/lms")} className="mt-1 rounded-md p-1.5 hover:bg-white/10" aria-label="Back to LMS courses">
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <h1 className="text-2xl font-semibold text-white truncate">{course.title}</h1>
+        </div>
+        <div className="rounded-xl border border-border bg-card/60 p-4">
+          <CourseOverviewDetails title={course.title} description={course.description} metadata={course.metadata} />
+        </div>
       </div>
     );
   }

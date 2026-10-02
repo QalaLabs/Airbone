@@ -10,6 +10,13 @@ import { toast } from "@/components/ui/use-toast";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Plus, Users, GraduationCap, X } from "lucide-react";
+import {
+  BATCH_FREQUENCIES,
+  FREQUENCY_LABELS,
+  dateInputToIso,
+  scheduleError,
+  scheduleSummary,
+} from "@/lib/lms/batch-schedule";
 
 interface LmsCourse { id: string; title: string }
 interface BatchRow {
@@ -17,6 +24,9 @@ interface BatchRow {
   name: string;
   type: string;
   courseId: string;
+  startDate?: string | null;
+  endDate?: string | null;
+  metadata?: unknown;
   course: { id: string; title: string };
   _count: { students: number; teachers: number; timetableSlots: number };
   teachers: Array<{ teacher: { id: string; name: string; email: string } }>;
@@ -29,6 +39,8 @@ interface UserRow { id: string; name: string; email: string; role: string }
 
 const BATCH_TYPES = ["MORNING", "EVENING", "WEEKEND", "CUSTOM"] as const;
 
+const FREQUENCIES = BATCH_FREQUENCIES.map((value) => ({ value, label: FREQUENCY_LABELS[value] }));
+
 export default function LmsBatchesPage() {
   const queryClient = useQueryClient();
   const [courseFilter, setCourseFilter] = React.useState("");
@@ -37,6 +49,17 @@ export default function LmsBatchesPage() {
   const [name, setName] = React.useState("");
   const [courseId, setCourseId] = React.useState("");
   const [type, setType] = React.useState<(typeof BATCH_TYPES)[number]>("MORNING");
+  const [frequency, setFrequency] = React.useState("");
+  const [startTime, setStartTime] = React.useState("");
+  const [endTime, setEndTime] = React.useState("");
+  const [startDate, setStartDate] = React.useState("");
+  const [endDate, setEndDate] = React.useState("");
+  const formError = scheduleError({
+    startTime: startTime || null,
+    endTime: endTime || null,
+    startDate: dateInputToIso(startDate),
+    endDate: dateInputToIso(endDate),
+  });
   const [selectedStudentIds, setSelectedStudentIds] = React.useState<string[]>([]);
   const [selectedTeacherIds, setSelectedTeacherIds] = React.useState<string[]>([]);
   const [teacherUuidInput, setTeacherUuidInput] = React.useState("");
@@ -83,13 +106,29 @@ export default function LmsBatchesPage() {
     mutationFn: () =>
       apiFetch("/lms/batches", {
         method: "POST",
-        body: JSON.stringify({ courseId, name, type }),
+        body: JSON.stringify({
+          courseId,
+          name,
+          type,
+          startDate: dateInputToIso(startDate),
+          endDate: dateInputToIso(endDate),
+          schedule: {
+            frequency: frequency || null,
+            startTime: startTime || null,
+            endTime: endTime || null,
+          },
+        }),
       }),
     onSuccess: () => {
       toast({ title: "Batch created" });
       setCreateOpen(false);
       setName("");
       setCourseId("");
+      setFrequency("");
+      setStartTime("");
+      setEndTime("");
+      setStartDate("");
+      setEndDate("");
       void queryClient.invalidateQueries({ queryKey: ["lms-batches"] });
     },
     onError: (err: Error) => toast({ title: "Create failed", description: err.message, variant: "destructive" }),
@@ -171,6 +210,9 @@ export default function LmsBatchesPage() {
                 </div>
                 <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold uppercase">{b.type}</span>
               </div>
+              {scheduleSummary(b) && (
+                <p data-testid="batch-schedule" className="mt-1 text-xs text-foreground/80">{scheduleSummary(b)}</p>
+              )}
               <div className="mt-2 flex gap-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1"><Users className="h-3 w-3" />{b._count.students} students</span>
                 <span className="flex items-center gap-1"><GraduationCap className="h-3 w-3" />{b._count.teachers} teachers</span>
@@ -288,10 +330,41 @@ export default function LmsBatchesPage() {
                 {BATCH_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
+            <div>
+              <label className="text-xs text-muted-foreground" htmlFor="batch-frequency">Frequency</label>
+              <select
+                id="batch-frequency"
+                className="mt-1 h-9 w-full rounded-lg border border-border bg-secondary/60 px-3 text-sm"
+                value={frequency}
+                onChange={(e) => setFrequency(e.target.value)}
+              >
+                <option value="">Select frequency…</option>
+                {FREQUENCIES.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
+              </select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-muted-foreground" htmlFor="batch-start-time">Start time</label>
+                <Input id="batch-start-time" type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="mt-1" />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground" htmlFor="batch-end-time">End time</label>
+                <Input id="batch-end-time" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className="mt-1" />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground" htmlFor="batch-start-date">Start date</label>
+                <Input id="batch-start-date" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="mt-1" />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground" htmlFor="batch-end-date">End date</label>
+                <Input id="batch-end-date" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="mt-1" />
+              </div>
+            </div>
+            {formError && <p data-testid="batch-schedule-error" className="text-xs text-rose-400">{formError}</p>}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
-            <Button disabled={!courseId || !name || createMutation.isPending} onClick={() => createMutation.mutate()}>
+            <Button disabled={!courseId || !name || !!formError || createMutation.isPending} onClick={() => createMutation.mutate()}>
               {createMutation.isPending ? "Creating…" : "Create"}
             </Button>
           </DialogFooter>

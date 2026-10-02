@@ -61,8 +61,27 @@ export const FIXTURES = {
       isFeatured: true,
       closesAt: inThirtyDays,
       publishedAt: new Date().toISOString(),
-      metadata: { airline: 'E2E Air' },
+      metadata: { airline: 'E2E Air', imageId: '00000000-0000-4000-8000-00000000e201' },
+      imageUrl: 'https://cdn.example.test/e2e-job.png',
     },
   ],
   testimonials: [],
+  googleReviews: {
+    configured: true,
+    placeName: 'E2E Academy',
+    rating: 4.9,
+    totalReviews: 42,
+    mapsUrl: 'https://maps.google.com/?cid=e2e',
+    reviews: [
+      {
+        author: 'E2E Reviewer',
+        authorUrl: 'https://www.google.com/maps/contrib/e2e',
+        authorPhoto: null,
+        rating: 5,
+        text: 'Synthetic Google review for end-to-end tests.',
+        relativeTime: 'a week ago',
+        publishTime: null,
+      },
+    ],
+  },
 }

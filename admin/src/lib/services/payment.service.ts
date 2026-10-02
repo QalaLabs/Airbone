@@ -11,7 +11,7 @@ import {
   roundMoney,
   type PaymentCashflow,
 } from "@/lib/services/fee-calculation.service";
-import { NotFoundError, ValidationError } from "@/lib/utils/errors";
+import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/utils/errors";
 import type { CreatePaymentInput, UpdatePaymentInput, RefundPaymentInput, PaymentFilters } from "@/lib/validations/payment.schema";
 import type { PaymentStatus } from "@prisma/client";
 import type { RequestContext } from "@/types";
@@ -236,6 +236,74 @@ export class PaymentService {
     });
 
     return updated;
+  }
+
+  /**
+   * Permanently remove a ledger entry (SUPER_ADMIN only). The admission's
+   * feePaid/feeBalance are re-derived in the same transaction and the full
+   * row is kept in the audit log.
+   */
+  static async remove(ctx: RequestContext, id: string) {
+    if (ctx.user.role !== "SUPER_ADMIN") {
+      throw new ForbiddenError("delete", "payment ledger entries");
+    }
+
+    const deleted = await prisma.$transaction(async (tx) => {
+      const [locked] = await tx.$queryRaw<{ id: string }[]>`
+        SELECT "id" FROM "payment_transactions"
+        WHERE "id" = ${id}::uuid AND "orgId" = ${ctx.orgId}::uuid
+        FOR UPDATE
+      `;
+      if (!locked) throw new NotFoundError("Payment", id);
+
+      const row = await tx.paymentTransaction.findFirst({ where: { id, orgId: ctx.orgId } });
+      if (!row) throw new NotFoundError("Payment", id);
+
+      await tx.paymentTransaction.delete({ where: { id } });
+      await AdmissionRepository.updateFeeBalance(ctx.orgId, row.admissionId, tx);
+
+      await AuditService.write(
+        {
+          orgId: ctx.orgId,
+          userId: ctx.user.id,
+          requestId: ctx.requestId,
+          ipAddress: ctx.ipAddress,
+          action: "payment.deleted",
+          entityType: "payment",
+          entityId: id,
+          oldValue: {
+            admissionId: row.admissionId,
+            studentId: row.studentId,
+            amount: String(row.amount),
+            refundedAmount: String(row.refundedAmount),
+            method: row.method,
+            status: row.status,
+            receiptNo: row.receiptNo,
+            referenceNo: row.referenceNo,
+            feeType: row.feeType,
+            paidAt: row.paidAt?.toISOString() ?? null,
+            createdAt: row.createdAt.toISOString(),
+          },
+        },
+        tx,
+      );
+
+      return row;
+    });
+
+    await ActivityFeedService.write({
+      orgId: ctx.orgId,
+      actorId: ctx.user.id,
+      verb: "deleted_payment",
+      objectType: "payment",
+      objectId: id,
+      objectSnapshot: { amount: String(deleted.amount), receiptNo: deleted.receiptNo },
+      targetType: "admission",
+      targetId: deleted.admissionId,
+      context: { actorName: ctx.user.name },
+    });
+
+    return { id, admissionId: deleted.admissionId };
   }
 
   /** Refund all or part of a payment. Full refund → REFUNDED, else PARTIALLY_REFUNDED. */

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db/client";
 import { FeePlanRepository } from "@/lib/repositories/fee-plan.repository";
 import { AuditService } from "@/lib/services/audit.service";
-import { NotFoundError, ValidationError } from "@/lib/utils/errors";
+import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/utils/errors";
 import { computePlanTotal, type PlanComputation, type PlanItemInput } from "@/lib/services/fee-calculation.service";
 import type { CreateFeePlanInput, UpdateFeePlanInput, FeePlanFilters } from "@/lib/validations/fee-plan.schema";
 import type { RequestContext } from "@/types";
@@ -67,6 +67,44 @@ export class FeePlanService {
     });
 
     return plan;
+  }
+
+  /**
+   * Permanently delete a fee plan and its items (SUPER_ADMIN only). Admissions
+   * keep their fee snapshot; their feePlanId is cleared by the FK (SET NULL).
+   */
+  static async remove(ctx: RequestContext, id: string) {
+    if (ctx.user.role !== "SUPER_ADMIN") {
+      throw new ForbiddenError("delete", "fee plans");
+    }
+    const before = await this.getById(ctx, id);
+    const admissionCount = before._count?.admissions ?? 0;
+
+    await prisma.feePlan.delete({ where: { id: before.id } });
+
+    await AuditService.write({
+      orgId: ctx.orgId,
+      userId: ctx.user.id,
+      requestId: ctx.requestId,
+      ipAddress: ctx.ipAddress,
+      action: "fee_plan.deleted",
+      entityType: "fee_plan",
+      entityId: id,
+      oldValue: {
+        name: before.name,
+        courseId: before.courseId,
+        isActive: before.isActive,
+        items: before.items.map((i) => ({
+          name: i.name,
+          amount: String(i.amount),
+          percentOfFee: i.percentOfFee != null ? String(i.percentOfFee) : null,
+          dueOffsetDays: i.dueOffsetDays,
+        })),
+        linkedAdmissions: admissionCount,
+      },
+    });
+
+    return { id, unlinkedAdmissions: admissionCount };
   }
 
   /**

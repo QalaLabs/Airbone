@@ -1,8 +1,10 @@
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/client";
 import type { RequestContext } from "@/types";
 import { NotFoundError, ForbiddenError, ConflictError, ValidationError } from "@/lib/utils/errors";
 import { LmsService } from "@/lib/services/lms.service";
 import { emitEvent } from "@/lib/events/inngest";
+import { scheduleError } from "@/lib/lms/batch-schedule";
 import type {
   CreateBatchInput,
   UpdateBatchInput,
@@ -73,6 +75,7 @@ export class LmsOpsService {
         startDate: input.startDate ? new Date(input.startDate) : null,
         endDate: input.endDate ? new Date(input.endDate) : null,
         capacity: input.capacity ?? null,
+        ...(input.schedule ? { metadata: { schedule: input.schedule } } : {}),
       },
     });
   }
@@ -80,6 +83,11 @@ export class LmsOpsService {
   static async updateBatch(ctx: RequestContext, batchId: string, input: UpdateBatchInput) {
     const batch = await prisma.lmsBatch.findFirst({ where: { id: batchId, orgId: ctx.orgId } });
     if (!batch) throw new NotFoundError("LmsBatch", batchId);
+
+    const nextStart = input.startDate !== undefined ? input.startDate : batch.startDate?.toISOString() ?? null;
+    const nextEnd = input.endDate !== undefined ? input.endDate : batch.endDate?.toISOString() ?? null;
+    const dateError = scheduleError({ startDate: nextStart, endDate: nextEnd });
+    if (dateError) throw new ValidationError([{ path: ["endDate"], message: dateError }]);
 
     // Phase I — a capacity can never be lowered below the current roster size.
     if (input.capacity !== undefined && input.capacity !== null) {
@@ -101,6 +109,16 @@ export class LmsOpsService {
           : {}),
         ...(input.endDate !== undefined ? { endDate: input.endDate ? new Date(input.endDate) : null } : {}),
         ...(input.capacity !== undefined ? { capacity: input.capacity } : {}),
+        ...(input.schedule !== undefined
+          ? {
+              metadata: {
+                ...(batch.metadata && typeof batch.metadata === "object" && !Array.isArray(batch.metadata)
+                  ? (batch.metadata as Record<string, unknown>)
+                  : {}),
+                schedule: input.schedule,
+              } as Prisma.InputJsonValue,
+            }
+          : {}),
       },
     });
   }

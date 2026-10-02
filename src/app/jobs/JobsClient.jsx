@@ -42,7 +42,7 @@ function mapJob(j) {
     externalApplyUrl: safeHttpUrl(meta.applyUrl),
     isFeatured: j.isFeatured ?? false,
     closesAt: j.closesAt ?? null,
-    airlineLogo: meta.airlineLogo ?? null,
+    airlineLogo: safeHttpUrl(j.imageUrl) ?? safeHttpUrl(meta.airlineLogo),
     salaryMin: j.salaryMin,
     salaryMax: j.salaryMax,
     currency: j.currency,
@@ -172,6 +172,7 @@ export default function JobsClient() {
                   fontWeight: 900,
                   textTransform: 'uppercase',
                   lineHeight: '1.1',
+                  color: 'var(--navy)',
                 }}
               >
                 {featuredJob.role}
@@ -226,6 +227,14 @@ export default function JobsClient() {
               className="cpl-banner-image-wrap"
               style={{ borderRadius: '8px', minHeight: '220px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
+              {featuredJob.airlineLogo ? (
+                <img
+                  src={featuredJob.airlineLogo}
+                  alt={featuredJob.role}
+                  data-testid="featured-job-image"
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
               <div style={{ textAlign: 'center', padding: '2rem' }}>
                 <div style={{ fontSize: '3.5rem', marginBottom: '1rem', opacity: 0.8 }}>✈</div>
                 <p style={{ fontFamily: 'var(--font-h)', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(0,39,76,0.6)' }}>
@@ -235,6 +244,7 @@ export default function JobsClient() {
                   {featuredJob.type} · {featuredJob.location}
                 </p>
               </div>
+              )}
             </div>
           </div>
         )}

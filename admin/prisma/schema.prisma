@@ -263,10 +263,35 @@ model Organization {
   internalEvents         InternalEvent[]
   interaktLeadSyncs      InteraktLeadSync[]
   interaktAutomations    InteraktAutomation[]
+  integrationKeys        IntegrationKey[]        @relation("OrgIntegrationKeys")
 
   @@index([slug])
   @@index([isActive])
   @@map("organizations")
+}
+
+// ─── INTEGRATION KEYS ───────────────────────────────────────────────────────
+// Inbound webhook keys (e.g. one per Google Ads lead form). Only the SHA-256
+// hash is stored; the raw key is shown once at creation.
+
+model IntegrationKey {
+  id         String    @id @default(uuid()) @db.Uuid
+  orgId      String    @db.Uuid
+  provider   String    @db.VarChar(50)
+  name       String    @db.VarChar(100)
+  keyHash    String    @unique @db.VarChar(64)
+  keyPreview String    @db.VarChar(20)
+  expiresAt  DateTime?
+  revokedAt  DateTime?
+  lastUsedAt DateTime?
+  createdBy  String?   @db.Uuid
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  org Organization @relation("OrgIntegrationKeys", fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, provider])
+  @@map("integration_keys")
 }
 
 // ─── CAMPUSES ───────────────────────────────────────────────────────────────

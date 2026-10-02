@@ -34,3 +34,15 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     return handleError(err);
   }
 }
+
+export async function DELETE(_req: NextRequest, { params }: Params) {
+  try {
+    const ctx = await getRequestContext();
+    const { id } = await params;
+    guard(ctx.user, "delete", "admissions");
+
+    return ok(await FeePlanService.remove(ctx, id));
+  } catch (err) {
+    return handleError(err);
+  }
+}

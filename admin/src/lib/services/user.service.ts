@@ -5,6 +5,7 @@ import { AuditService } from "@/lib/services/audit.service";
 import { ActivityFeedService } from "@/lib/services/activity.service";
 import { emitEvent } from "@/lib/events/inngest";
 import { generateInviteToken, sha256 } from "@/lib/utils/crypto";
+import { inviteLink, sendInviteEmail } from "@/lib/services/invite-email";
 import { NotFoundError, ConflictError, ForbiddenError, ValidationError } from "@/lib/utils/errors";
 import type { InviteUserInput, CreateUserInput, UpdateUserInput, UserFilters, ForgotPasswordInput } from "@/lib/validations/user.schema";
 import type { RequestContext } from "@/types";
@@ -22,7 +23,7 @@ export class UserService {
     return user;
   }
 
-  static async invite(ctx: RequestContext, input: InviteUserInput) {
+  static async invite(ctx: RequestContext, input: InviteUserInput, origin?: string) {
     const existing = await UserRepository.findByEmail(ctx.orgId, input.email);
     if (existing) throw new ConflictError(`User with email ${input.email} already exists`);
 
@@ -73,10 +74,13 @@ export class UserService {
       actorName: ctx.user.name,
       requestId: ctx.requestId,
       timestamp: new Date().toISOString(),
-      data: { userId: user.id, email: input.email, role: input.role, inviteToken: rawToken },
+      data: { userId: user.id, email: input.email, role: input.role },
     });
 
-    return { ...user, inviteToken: rawToken };
+    const link = inviteLink(rawToken, origin);
+    const email = await sendInviteEmail({ to: input.email, name: input.name, role: input.role, link });
+
+    return { ...user, inviteToken: rawToken, inviteLink: link, emailStatus: email.status, emailError: email.errorMsg };
   }
 
   static async create(ctx: RequestContext, input: CreateUserInput) {

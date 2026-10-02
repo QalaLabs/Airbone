@@ -8,6 +8,7 @@ import { motion, useScroll, useTransform, useInView, AnimatePresence } from 'fra
 import JsonLd from '@/components/JsonLd'
 import { buildHomeGraph } from '@/lib/schema'
 import JourneyFlightPath from '@/components/JourneyFlightPath'
+import GoogleReviewsSection from '@/components/GoogleReviewsSection'
 import { GlowCard } from '@/components/ui/spotlight-card'
 import PremiumFooter from '@/components/PremiumFooter'
 import GlobalRouteMap from '@/components/GlobalRouteMap'
@@ -2382,6 +2383,7 @@ export default function HomePage() {
 
         {/* Testimonials */}
         <TestimonialsSection />
+        <GoogleReviewsSection />
 
         {/* Homepage FAQ with JSON-LD */}
         <HomepageFAQ />

@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { MediaPicker } from "@/components/shared/media-picker";
 import { apiFetch } from "@/lib/api";
 import { formatDate } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
@@ -39,6 +40,7 @@ interface Job {
   closesAt?: string;
   seoTitle?: string;
   seoDesc?: string;
+  metadata?: Record<string, unknown>;
   hiringPartner?: { name: string };
   applicationCount: number;
   publishedAt?: string | null;
@@ -74,6 +76,13 @@ export default function JobsPage() {
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
   const [editor, setEditor] = React.useState<{ open: boolean; item: Job | null }>({ open: false, item: null });
   const [deleteTarget, setDeleteTarget] = React.useState<Job | null>(null);
+  const [imageId, setImageId] = React.useState<string | null>(null);
+
+  const openEditor = (item: Job | null) => {
+    const current = item?.metadata?.imageId;
+    setImageId(typeof current === "string" ? current : null);
+    setEditor({ open: true, item });
+  };
 
   React.useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 400);
@@ -140,6 +149,10 @@ export default function JobsPage() {
     const item = editor.item;
     const closesAtRaw = (formData.get("closesAt") as string) || undefined;
     const tagsRaw = (formData.get("tags") as string) ?? "";
+    // PATCH replaces metadata wholesale, so keep keys this form doesn't edit (applyUrl, airline, ...).
+    const metadata: Record<string, unknown> = { ...(item?.metadata ?? {}) };
+    if (imageId) metadata.imageId = imageId;
+    else delete metadata.imageId;
     const body: Partial<Job> = {
       title: formData.get("title") as string,
       slug: ((formData.get("slug") as string) || undefined),
@@ -156,6 +169,7 @@ export default function JobsPage() {
       tags: tagsRaw.split(",").map((t) => t.trim()).filter(Boolean),
       seoTitle: (formData.get("seoTitle") as string) || undefined,
       seoDesc: (formData.get("seoDesc") as string) || undefined,
+      metadata,
     };
     saveMutation.mutate({ id: item?.id, body });
   };
@@ -168,7 +182,7 @@ export default function JobsPage() {
       header: "Job Title",
       cell: ({ row }) => (
         <div>
-          <button onClick={() => setEditor({ open: true, item: row.original })} className="text-sm font-medium text-foreground hover:text-primary text-left transition-colors">
+          <button onClick={() => openEditor(row.original)} className="text-sm font-medium text-foreground hover:text-primary text-left transition-colors">
             {row.original.title}
           </button>
           <p className="text-xs text-muted-foreground font-mono">/{row.original.slug}</p>
@@ -230,7 +244,7 @@ export default function JobsPage() {
                   <Eye className="mr-2 h-4 w-4" /> View Details
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setEditor({ open: true, item: r })} className="cursor-pointer">
+              <DropdownMenuItem onClick={() => openEditor(r)} className="cursor-pointer">
                 <Pencil className="mr-2 h-4 w-4" /> Edit
               </DropdownMenuItem>
               {(JOB_TRANSITIONS[r.status] ?? []).map((next) => {
@@ -259,7 +273,7 @@ export default function JobsPage() {
         title="Jobs"
         description={`${data?.total ?? 0} total job listings`}
         action={
-          <Button onClick={() => setEditor({ open: true, item: null })} className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20">
+          <Button onClick={() => openEditor(null)} className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20">
             <Plus className="h-4 w-4 mr-2" />
             Create Job
           </Button>
@@ -362,6 +376,10 @@ export default function JobsPage() {
                   <Label>Experience (years)</Label>
                   <Input name="experienceYears" type="number" min="0" defaultValue={editor.item?.experienceYears?.toString() ?? ""} placeholder="e.g. 2" className="bg-secondary/40 border-white/10 text-xs text-white" />
                 </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Job Image (shown on the public job portal)</Label>
+                <MediaPicker value={imageId} onChange={setImageId} label="Image" />
               </div>
               <div className="space-y-1.5">
                 <Label>Description</Label>

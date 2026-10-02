@@ -36,5 +36,13 @@ startIsolatedApp({
       const r = spawnSync('npx', args, { cwd: join(tmpdir(), 'airbone-e2e-admin'), env: childEnv, stdio: 'inherit', shell: process.platform === 'win32' })
       if (r.status !== 0) throw new Error(`npx ${args.join(' ')} failed`)
     }
+    // The course sync reads the website registry from the repo, so it runs from the
+    // repo script (cwd = isolated copy, which has no .env), pinned to the test DB host.
+    const sync = spawnSync(process.execPath, [join(ROOT, 'admin', 'scripts', 'lms-course-sync.mjs'), '--apply'], {
+      cwd: join(tmpdir(), 'airbone-e2e-admin'),
+      env: { ...childEnv, LMS_SYNC_EXPECT_HOST: new URL(DATABASE_URL).hostname },
+      stdio: 'inherit',
+    })
+    if (sync.status !== 0) throw new Error('lms-course-sync --apply failed')
   },
 })

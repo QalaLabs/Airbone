@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
 
     if (action === "invite") {
       const input = inviteUserSchema.parse(body);
-      const user = await UserService.invite(ctx, input);
+      const user = await UserService.invite(ctx, input, url.origin);
       return created(user);
     }
 

@@ -10,6 +10,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { BookOpen, Plus, ChevronRight, Trash2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { apiFetch } from "@/lib/api";
+import { isOverviewOnly } from "@/lib/lms/course-overview";
+import { CourseOverviewDetails } from "@/components/lms/course-overview-card";
 
 interface LmsCourseRow {
   id: string;
@@ -18,6 +20,8 @@ interface LmsCourseRow {
   isPublished: boolean;
   status: string;
   createdAt: string;
+  description?: string | null;
+  metadata?: unknown;
   _count?: { enrollments: number; stages: number };
 }
 
@@ -99,7 +103,25 @@ export default function LmsCoursesPage() {
       )}
 
       <div className="grid gap-3">
-        {(data ?? []).map((course) => (
+        {(data ?? []).map((course) => isOverviewOnly(course) ? (
+          <div
+            key={course.id}
+            data-testid="lms-course-overview"
+            className="flex items-start justify-between gap-4 rounded-xl border border-border bg-card/60 px-4 py-3"
+          >
+            <CourseOverviewDetails title={course.title} description={course.description} metadata={course.metadata} />
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => handleDeleteCourse(course.id)}
+              disabled={deleteMutation.isPending}
+              className="h-8 w-8 shrink-0 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/10 border border-transparent"
+              title="Delete course"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : (
           <Link
             key={course.id}
             href={`/lms/courses/${course.id}`}

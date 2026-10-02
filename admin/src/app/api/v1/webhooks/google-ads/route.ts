@@ -4,6 +4,7 @@ import { guard } from "@/lib/middleware/permissions";
 import { getRequestContext } from "@/lib/middleware/context";
 import { ok, handleError } from "@/lib/utils/response";
 import { orgWebhookKey } from "@/lib/webhooks/google-ads.service";
+import { IntegrationKeyService } from "@/lib/services/integration-key.service";
 
 const ADMIN_URL =
   process.env.NEXT_PUBLIC_ADMIN_URL ??
@@ -27,9 +28,11 @@ export async function GET() {
     });
     const orgKey = org ? orgWebhookKey(org.settings) : null;
 
-    const keyConfigured = Boolean(envKey || orgKey);
+    const legacyKeyConfigured = Boolean(envKey || orgKey);
+    const keyConfigured =
+      legacyKeyConfigured || (await IntegrationKeyService.hasActiveKey(ctx.orgId, "GOOGLE_ADS"));
 
-    return ok({ webhookUrl: WEBHOOK_URL, keyConfigured });
+    return ok({ webhookUrl: WEBHOOK_URL, keyConfigured, legacyKeyConfigured });
   } catch (err) {
     return handleError(err);
   }

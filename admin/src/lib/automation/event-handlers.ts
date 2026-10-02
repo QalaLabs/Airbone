@@ -149,30 +149,6 @@ async function handlePaymentReceived(event: AppEvent): Promise<void> {
   });
 }
 
-async function handleUserInvited(event: AppEvent): Promise<void> {
-  const d = event.data as EventData & {
-    userId?: string;
-    email?: string;
-    role?: string;
-    inviteToken?: string;
-  };
-  if (typeof d.email !== "string" || typeof d.userId !== "string") return;
-
-  await NotificationService.dispatch({
-    orgId: event.orgId,
-    event: "USER_INVITED",
-    channel: "EMAIL",
-    recipient: d.email,
-    variables: {
-      email: d.email,
-      role: String(d.role ?? ""),
-      inviteToken: String(d.inviteToken ?? ""),
-    },
-    entityType: "user",
-    entityId: d.userId,
-  });
-}
-
 /** Pause active marketing automations when a customer replies (human handover). */
 export async function pauseMarketingRunsOnReply(orgId: string, leadId: string): Promise<number> {
   const now = new Date();
@@ -198,7 +174,6 @@ const SIDE_EFFECT_HANDLERS: Record<string, (event: AppEvent) => Promise<void>> =
   "lead.assigned": handleLeadAssigned,
   "admission/created": handleAdmissionCreated,
   "payment/received": handlePaymentReceived,
-  "user/invited": handleUserInvited,
 };
 
 export async function runEventSideEffects(event: AppEvent): Promise<void> {

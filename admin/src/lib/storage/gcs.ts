@@ -18,6 +18,27 @@ export function isStorageConfigured(): boolean {
   return true;
 }
 
+export function storageBucketName(): string {
+  return GCS_BUCKET;
+}
+
+const HEALTH_TTL_MS = 5 * 60 * 1000;
+let healthCache: { at: number; result: { ok: boolean; error?: string } } | null = null;
+
+/** Live probe: lists at most one object, which needs only objects.list on the bucket. */
+export async function checkStorageHealth(): Promise<{ ok: boolean; error?: string }> {
+  if (healthCache && Date.now() - healthCache.at < HEALTH_TTL_MS) return healthCache.result;
+  let result: { ok: boolean; error?: string };
+  try {
+    await getStorageClient().bucket(GCS_BUCKET).getFiles({ maxResults: 1, autoPaginate: false });
+    result = { ok: true };
+  } catch (err: any) {
+    result = { ok: false, error: err?.message ?? "unknown error" };
+  }
+  healthCache = { at: Date.now(), result };
+  return result;
+}
+
 export function getPublicUrl(path: string): string {
   return `https://storage.googleapis.com/${GCS_BUCKET}/${path}`;
 }

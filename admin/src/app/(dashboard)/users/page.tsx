@@ -83,7 +83,7 @@ export default function UsersPage() {
   const [createOpen, setCreateOpen] = React.useState(false);
   const [deactivateTarget, setDeactivateTarget] = React.useState<SystemUser | null>(null);
   const [reactivateTarget, setReactivateTarget] = React.useState<SystemUser | null>(null);
-  const [inviteResult, setInviteResult] = React.useState<{ name: string; email: string; link: string } | null>(null);
+  const [inviteResult, setInviteResult] = React.useState<{ name: string; email: string; link: string; emailStatus?: string; emailError?: string } | null>(null);
   const [copied, setCopied] = React.useState(false);
 
   const { data: campuses = [] } = useQuery<Campus[]>({
@@ -120,7 +120,10 @@ export default function UsersPage() {
 
   const inviteMutation = useMutation({
     mutationFn: (body: { email: string; name: string; role: string; campusId?: string }) =>
-      apiFetch<SystemUser & { inviteToken?: string }>("/users?action=invite", { method: "POST", body: JSON.stringify(body) }),
+      apiFetch<SystemUser & { inviteToken?: string; inviteLink?: string; emailStatus?: string; emailError?: string }>(
+        "/users?action=invite",
+        { method: "POST", body: JSON.stringify(body) },
+      ),
     onSuccess: (user) => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.invalidateQueries({ queryKey: ["users-stats"] });
@@ -129,7 +132,9 @@ export default function UsersPage() {
         setInviteResult({
           name: user.name,
           email: user.email,
-          link: `${window.location.origin}/invite/${user.inviteToken}`,
+          link: user.inviteLink ?? `${window.location.origin}/invite/${user.inviteToken}`,
+          emailStatus: user.emailStatus,
+          emailError: user.emailError,
         });
       } else {
         toast({ title: "Invite created" });
@@ -453,8 +458,8 @@ export default function UsersPage() {
                 {campuses.map((c) => <option key={c.id} value={c.id} className="bg-slate-900">{c.name}</option>)}
               </select>
             </div>
-            <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-400">
-              Email delivery is not enabled yet — the invitation link will be shown after creating the invite so you can share it manually.
+            <div className="rounded-lg border border-white/10 bg-secondary/30 p-3 text-xs text-muted-foreground">
+              An invitation email with a set-password link is sent to this address. The link is also shown after creating the invite in case you need to share it manually.
             </div>
             <DialogFooter className="pt-4 border-t border-white/10">
               <Button type="button" variant="outline" onClick={() => setInviteOpen(false)} className="border-white/10 hover:bg-white/5 text-xs font-bold">Cancel</Button>
@@ -520,11 +525,20 @@ export default function UsersPage() {
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <p className="text-xs text-muted-foreground">
-              Invite sent to <span className="text-white font-bold">{inviteResult?.email}</span> ({inviteResult?.name}).
+              Invite created for <span className="text-white font-bold">{inviteResult?.email}</span> ({inviteResult?.name}).
             </p>
-            <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-400">
-              Email delivery is NOT_CONFIGURED — no email was sent. Share this invitation link manually. It expires in 7 days and is single-use.
-            </div>
+            {inviteResult?.emailStatus === "SENT" ? (
+              <div data-testid="invite-email-status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-400">
+                Invitation email sent. The link below expires in 7 days and is single-use.
+              </div>
+            ) : (
+              <div data-testid="invite-email-status" className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-400">
+                {inviteResult?.emailStatus === "FAILED"
+                  ? `The invitation email could not be sent${inviteResult.emailError ? ` (${inviteResult.emailError})` : ""}.`
+                  : "Email delivery is not configured, so no email was sent."}{" "}
+                Share this link manually. It expires in 7 days and is single-use.
+              </div>
+            )}
             <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-secondary/40 p-3">
               <Link2 className="h-4 w-4 text-primary shrink-0" />
               <span className="text-xs text-muted-foreground break-all flex-1">{inviteResult?.link}</span>

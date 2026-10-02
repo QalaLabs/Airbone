@@ -10,6 +10,7 @@ import {
   processGoogleAdsLead,
   type GoogleAdsWebhookPayload,
 } from "@/lib/webhooks/google-ads.service";
+import { IntegrationKeyService } from "@/lib/services/integration-key.service";
 
 const ORG_SLUG = process.env.PUBLIC_ORG_SLUG ?? "airborne-aviation";
 
@@ -51,16 +52,20 @@ export async function POST(req: NextRequest) {
     return json({ received: false, error: "org_not_found" }, 500);
   }
 
-  // ── Authentication: accept the org-settings key OR the env-var key ────────
+  // ── Authentication: per-form DB keys, the org-settings key, or the env key ─
   const envKey = (process.env.GOOGLE_ADS_WEBHOOK_SECRET ?? "").trim();
   const orgKey = orgWebhookKey(org.settings);
 
-  if (!envKey && !orgKey) {
+  const legacyValid = isGoogleAdsKeyValid(payload.google_key, orgKey, envKey);
+  const valid =
+    legacyValid || (await IntegrationKeyService.verify(org.id, "GOOGLE_ADS", payload.google_key));
+
+  if (!valid && !envKey && !orgKey && !(await IntegrationKeyService.hasActiveKey(org.id, "GOOGLE_ADS"))) {
     console.warn("[GoogleAds Webhook] No webhook key configured");
     return json({ received: false, error: "not_configured" }, 403);
   }
 
-  if (!isGoogleAdsKeyValid(payload.google_key, orgKey, envKey)) {
+  if (!valid) {
     console.warn("[GoogleAds Webhook] Invalid google_key", {
       googleAdsLeadId: payload.lead_id,
     });

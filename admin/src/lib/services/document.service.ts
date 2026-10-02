@@ -4,6 +4,7 @@ import { ActivityFeedService } from "@/lib/services/activity.service";
 import { emitEvent } from "@/lib/events/inngest";
 import { NotFoundError, ForbiddenError, StorageUnavailableError } from "@/lib/utils/errors";
 import { prisma } from "@/lib/db/client";
+import { createSignedUploadUrl, getPublicUrl, isStorageConfigured } from "@/lib/storage/gcs";
 import type { UploadDocumentInput, ReviewDocumentInput, DocumentFilters } from "@/lib/validations/document.schema";
 import type { RequestContext } from "@/types";
 
@@ -18,39 +19,18 @@ export class DocumentService {
     return doc;
   }
 
-  // Generate a presigned R2 upload URL (caller gets URL, uploads directly, then calls upload())
+  // Signed upload URL on the shared media bucket (caller uploads directly, then calls upload())
   static async getPresignedUrl(
     _ctx: RequestContext,
     fileName: string,
     contentType: string,
   ): Promise<{ uploadUrl: string; fileKey: string; fileUrl: string }> {
-    const { R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_PUBLIC_URL } = process.env;
-
-    if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !R2_BUCKET_NAME) {
-      throw new StorageUnavailableError(
-        "Media storage is not configured. Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, and R2_BUCKET_NAME.",
-      );
+    if (!isStorageConfigured()) {
+      throw new StorageUnavailableError("Media storage is not configured.");
     }
-
-    // Real R2 presigned URL via AWS SDK v3
-    const { S3Client, PutObjectCommand } = await import("@aws-sdk/client-s3");
-    const { getSignedUrl } = await import("@aws-sdk/s3-request-presigner");
-
-    const client = new S3Client({
-      region: "auto",
-      endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-      credentials: { accessKeyId: R2_ACCESS_KEY_ID, secretAccessKey: R2_SECRET_ACCESS_KEY },
-    });
-
     const fileKey = `documents/${Date.now()}-${fileName.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-    const command = new PutObjectCommand({ Bucket: R2_BUCKET_NAME, Key: fileKey, ContentType: contentType });
-    const uploadUrl = await getSignedUrl(client, command, { expiresIn: 300 });
-
-    return {
-      uploadUrl,
-      fileKey,
-      fileUrl: `${R2_PUBLIC_URL}/${fileKey}`,
-    };
+    const uploadUrl = await createSignedUploadUrl(fileKey, contentType, 300);
+    return { uploadUrl, fileKey, fileUrl: getPublicUrl(fileKey) };
   }
 
   static async upload(ctx: RequestContext, input: UploadDocumentInput) {

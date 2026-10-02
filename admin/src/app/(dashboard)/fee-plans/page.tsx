@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useSession } from "next-auth/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Receipt, Plus, Trash2, Pencil, X, Save, Check, IndianRupee, Clock } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
@@ -108,6 +109,8 @@ function computeTotal(items: ItemDraft[], baseFee?: number) {
 
 export default function FeePlansPage() {
   const queryClient = useQueryClient();
+  const { data: session } = useSession();
+  const isSuperAdmin = session?.user?.role === "SUPER_ADMIN";
   const [creating, setCreating] = React.useState(false);
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [courseFilter, setCourseFilter] = React.useState("");
@@ -133,6 +136,22 @@ export default function FeePlansPage() {
       toast({ title: plan.isActive ? "Fee plan deactivated" : "Fee plan activated" });
     } catch (err) {
       toast({ title: "Update failed", description: err instanceof Error ? err.message : "Unknown error", variant: "destructive" });
+    }
+  };
+
+  const deletePlan = async (plan: FeePlan) => {
+    const linked = plan._count?.admissions ?? 0;
+    const warning = linked
+      ? ` ${linked} admission(s) use it; they keep their saved fee schedule but will no longer be linked to this plan.`
+      : "";
+    if (!window.confirm(`Permanently delete fee plan "${plan.name}"?${warning} This cannot be undone.`)) return;
+    try {
+      await apiFetch(`/fee-plans/${plan.id}`, { method: "DELETE" });
+      if (editingId === plan.id) setEditingId(null);
+      queryClient.invalidateQueries({ queryKey: ["fee-plans", "all"] });
+      toast({ title: "Fee plan deleted", description: plan.name });
+    } catch (err) {
+      toast({ title: "Delete failed", description: err instanceof Error ? err.message : "Unknown error", variant: "destructive" });
     }
   };
 
@@ -249,9 +268,22 @@ export default function FeePlansPage() {
 
                 <div className="flex items-center justify-between pt-2 border-t border-white/10">
                   <p className="text-[10px] text-muted-foreground">Created {plan.createdAt.slice(0, 10)}</p>
-                  <Button variant="outline" size="sm" className="h-7 text-[11px] border-white/10" onClick={() => setEditingId(plan.id)}>
-                    <Pencil className="h-3 w-3 mr-1" /> Edit
-                  </Button>
+                  <div className="flex items-center gap-1.5">
+                    {isSuperAdmin && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        data-testid={`fee-plan-delete-${plan.id}`}
+                        className="h-7 text-[11px] border-rose-500/30 text-rose-400 hover:text-rose-300"
+                        onClick={() => void deletePlan(plan)}
+                      >
+                        <Trash2 className="h-3 w-3 mr-1" /> Delete
+                      </Button>
+                    )}
+                    <Button variant="outline" size="sm" className="h-7 text-[11px] border-white/10" onClick={() => setEditingId(plan.id)}>
+                      <Pencil className="h-3 w-3 mr-1" /> Edit
+                    </Button>
+                  </div>
                 </div>
               </div>
             );

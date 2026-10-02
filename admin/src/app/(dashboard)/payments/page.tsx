@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
+import { useSession } from "next-auth/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Wallet, Search, RotateCcw, ChevronLeft, ChevronRight, Banknote, Undo2, Landmark } from "lucide-react";
+import { Wallet, Search, RotateCcw, ChevronLeft, ChevronRight, Banknote, Undo2, Landmark, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { apiFetch } from "@/lib/api";
 import { formatDate, cn } from "@/lib/utils";
@@ -51,6 +52,8 @@ function statusClass(status: string) {
 
 export default function PaymentsLedgerPage() {
   const queryClient = useQueryClient();
+  const { data: session } = useSession();
+  const isSuperAdmin = session?.user?.role === "SUPER_ADMIN";
   const [search, setSearch] = React.useState("");
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
   const [status, setStatus] = React.useState("");
@@ -102,6 +105,24 @@ export default function PaymentsLedgerPage() {
     } catch (err) {
       toast({
         title: "Refund failed",
+        description: err instanceof Error ? err.message : "Unknown error",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deletePayment = async (p: LedgerPayment) => {
+    const label = p.receiptNo ?? p.id;
+    if (!window.confirm(`Permanently delete ledger entry ${label} (${money(p.amount)})? The admission balance will be recalculated. This cannot be undone.`)) {
+      return;
+    }
+    try {
+      await apiFetch(`/payments/${p.id}`, { method: "DELETE" });
+      queryClient.invalidateQueries({ queryKey: ["payments"] });
+      toast({ title: "Ledger entry deleted", description: label });
+    } catch (err) {
+      toast({
+        title: "Delete failed",
         description: err instanceof Error ? err.message : "Unknown error",
         variant: "destructive",
       });
@@ -272,27 +293,40 @@ export default function PaymentsLedgerPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      {refundable ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 px-1.5 text-[10px] text-sky-400 hover:text-sky-300 gap-1"
-                          onClick={() => {
-                            const amt = window.prompt(`Refund amount (max ₹${remaining.toLocaleString("en-IN")}) for ${p.receiptNo ?? p.id}:`, String(remaining));
-                            if (!amt) return;
-                            const n = Number(amt);
-                            if (!Number.isFinite(n) || n <= 0 || n > remaining) {
-                              toast({ title: "Invalid refund amount", variant: "destructive" });
-                              return;
-                            }
-                            void refundPayment(p.id, n);
-                          }}
-                        >
-                          <RotateCcw className="h-3 w-3" /> Refund
-                        </Button>
-                      ) : (
-                        <span className="text-muted-foreground text-[10px]">—</span>
-                      )}
+                      <div className="flex items-center justify-center gap-1">
+                        {refundable ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-1.5 text-[10px] text-sky-400 hover:text-sky-300 gap-1"
+                            onClick={() => {
+                              const amt = window.prompt(`Refund amount (max ₹${remaining.toLocaleString("en-IN")}) for ${p.receiptNo ?? p.id}:`, String(remaining));
+                              if (!amt) return;
+                              const n = Number(amt);
+                              if (!Number.isFinite(n) || n <= 0 || n > remaining) {
+                                toast({ title: "Invalid refund amount", variant: "destructive" });
+                                return;
+                              }
+                              void refundPayment(p.id, n);
+                            }}
+                          >
+                            <RotateCcw className="h-3 w-3" /> Refund
+                          </Button>
+                        ) : !isSuperAdmin ? (
+                          <span className="text-muted-foreground text-[10px]">—</span>
+                        ) : null}
+                        {isSuperAdmin && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            data-testid={`payment-delete-${p.id}`}
+                            className="h-6 px-1.5 text-[10px] text-rose-400 hover:text-rose-300 gap-1"
+                            onClick={() => void deletePayment(p)}
+                          >
+                            <Trash2 className="h-3 w-3" /> Delete
+                          </Button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );

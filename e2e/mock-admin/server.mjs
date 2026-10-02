@@ -54,6 +54,8 @@ const server = http.createServer(async (req, res) => {
         return send(res, 200, { success: true, data: FIXTURES.testimonials })
       case '/api/public/settings':
         return send(res, 200, { success: true, data: {} })
+      case '/api/public/google-reviews':
+        return send(res, 200, { data: FIXTURES.googleReviews })
       case '/api/public/courses':
       case '/api/public/blogs':
       case '/api/public/pages':

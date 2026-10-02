@@ -28,6 +28,15 @@ test('jobs page lists published jobs', async ({ page }) => {
   await expect(page.getByText('E2E First Officer').first()).toBeVisible()
 })
 
+test('featured job title is readable and shows the image set in admin', async ({ page }) => {
+  await page.goto('/jobs')
+  const title = page.getByRole('heading', { level: 2, name: 'E2E First Officer' })
+  await expect(title).toBeVisible()
+  const color = await title.evaluate((el) => getComputedStyle(el).color)
+  expect(color).not.toBe('rgb(255, 255, 255)')
+  await expect(page.getByTestId('featured-job-image')).toHaveAttribute('src', 'https://cdn.example.test/e2e-job.png')
+})
+
 test('job application submits to the admin API and shows success', async ({ page }) => {
   const form = await openApplyForm(page)
   await fillApplication(form)

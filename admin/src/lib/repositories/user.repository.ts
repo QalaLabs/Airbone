@@ -117,6 +117,33 @@ export class UserRepository {
       isActive?: boolean;
     },
   ) {
+    // (email, orgId) is unique across soft-deleted rows too, so a previously deactivated
+    // account must be restored in place; old credentials and MFA are wiped.
+    const deleted = await prisma.user.findFirst({
+      where: { email: data.email.toLowerCase(), orgId, deletedAt: { not: null } },
+      select: { id: true },
+    });
+    if (deleted) {
+      return prisma.user.update({
+        where: { id: deleted.id },
+        data: {
+          name: data.name,
+          passwordHash: data.passwordHash ?? null,
+          role: data.role as never,
+          campusId: data.campusId ?? null,
+          phone: data.phone ?? null,
+          avatarUrl: data.avatarUrl ?? null,
+          inviteToken: data.inviteToken ?? null,
+          inviteExpiry: data.inviteExpiry ?? null,
+          isActive: data.isActive ?? false,
+          isMfaEnabled: false,
+          mfaSecret: null,
+          deletedAt: null,
+        },
+        select: USER_SELECT,
+      });
+    }
+
     return prisma.user.create({
       data: {
         orgId,

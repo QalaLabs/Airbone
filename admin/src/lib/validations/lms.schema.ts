@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BATCH_FREQUENCIES, scheduleError } from "@/lib/lms/batch-schedule";
 
 export const createLmsCourseSchema = z.object({
   title: z.string().min(1).max(255),
@@ -156,16 +157,45 @@ export const issueCertificateSchema = z.object({
   fileUrl: z.string().optional(),
 });
 
-export const createBatchSchema = z.object({
+export { BATCH_FREQUENCIES };
+
+const timeOfDay = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "time must be HH:MM (24h)");
+
+export const batchScheduleSchema = z
+  .object({
+    frequency: z.enum(BATCH_FREQUENCIES).optional().nullable(),
+    startTime: timeOfDay.optional().nullable(),
+    endTime: timeOfDay.optional().nullable(),
+  })
+  .superRefine((s, ctx) => {
+    const error = scheduleError({ startTime: s.startTime, endTime: s.endTime });
+    if (error) ctx.addIssue({ code: z.ZodIssueCode.custom, message: error, path: ["endTime"] });
+  });
+
+const batchBase = z.object({
   courseId: z.string().uuid(),
   name: z.string().min(1).max(255),
   type: z.enum(["MORNING", "EVENING", "WEEKEND", "CUSTOM"]).optional(),
   startDate: z.string().datetime().optional().nullable(),
   endDate: z.string().datetime().optional().nullable(),
   capacity: z.number().int().positive().optional().nullable(),
+  schedule: batchScheduleSchema.optional(),
 });
 
-export const updateBatchSchema = createBatchSchema.partial().omit({ courseId: true });
+export const createBatchSchema = batchBase.superRefine((b, ctx) => {
+  const error = scheduleError({ startDate: b.startDate, endDate: b.endDate });
+  if (error) ctx.addIssue({ code: z.ZodIssueCode.custom, message: error, path: ["endDate"] });
+});
+
+// Date order against the stored batch is re-checked in LmsOpsService.updateBatch.
+export const updateBatchSchema = batchBase
+  .partial()
+  .omit({ courseId: true })
+  .superRefine((b, ctx) => {
+    if (!b.startDate || !b.endDate) return;
+    const error = scheduleError({ startDate: b.startDate, endDate: b.endDate });
+    if (error) ctx.addIssue({ code: z.ZodIssueCode.custom, message: error, path: ["endDate"] });
+  });
 
 export const batchMembersSchema = z.object({
   studentIds: z.array(z.string().uuid()).optional(),

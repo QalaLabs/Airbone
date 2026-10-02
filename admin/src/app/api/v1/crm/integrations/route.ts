@@ -3,10 +3,19 @@ import { guard } from "@/lib/middleware/permissions";
 import { getRequestContext } from "@/lib/middleware/context";
 import { ok, handleError } from "@/lib/utils/response";
 import { orgWebhookKey } from "@/lib/webhooks/google-ads.service";
+import { IntegrationKeyService } from "@/lib/services/integration-key.service";
+import { checkStorageHealth, storageBucketName } from "@/lib/storage/gcs";
 
 const ADMIN_URL =
   process.env.NEXT_PUBLIC_ADMIN_URL ??
   "https://airborne-admin-368523757732.asia-south1.run.app";
+
+const FACEBOOK_ENV = [
+  "NEXT_PUBLIC_FACEBOOK_APP_ID",
+  "FACEBOOK_APP_SECRET",
+  "FACEBOOK_WEBHOOK_VERIFY_TOKEN",
+  "FACEBOOK_PAGE_ACCESS_TOKEN",
+] as const;
 
 function configured(...vals: (string | undefined)[]): boolean {
   return vals.every((v) => Boolean(v && v.trim().length > 0));
@@ -17,27 +26,27 @@ export async function GET() {
     const ctx = await getRequestContext();
     guard(ctx.user, "read", "leads");
 
-    const r2Configured = configured(
-      process.env.R2_ACCOUNT_ID,
-      process.env.R2_ACCESS_KEY_ID,
-      process.env.R2_SECRET_ACCESS_KEY,
-    );
-
-    // Google Ads is connected when either the env-var secret (Cloud Run /
-    // Secret Manager) or a UI-generated org-settings key exists. Both are
-    // accepted by /api/webhooks/google-ads.
+    // Google Ads is connected when the env-var secret, the legacy org-settings
+    // key, or at least one active per-form key exists. All are accepted by
+    // /api/webhooks/google-ads.
     const org = await prisma.organization.findUnique({
       where: { id: ctx.orgId },
       select: { settings: true },
     });
     const envKey = (process.env.GOOGLE_ADS_WEBHOOK_SECRET ?? "").trim();
     const orgKey = org ? orgWebhookKey(org.settings) : null;
-    const googleAdsConfigured = Boolean(envKey || orgKey);
 
-    const [mediaCount, docCount] = await Promise.all([
+    const [mediaCount, docCount, activeFormKey, storage] = await Promise.all([
       prisma.mediaAsset.count({ where: { orgId: ctx.orgId, isActive: true } }),
       prisma.document.count({ where: { orgId: ctx.orgId } }),
+      IntegrationKeyService.hasActiveKey(ctx.orgId, "GOOGLE_ADS"),
+      checkStorageHealth(),
     ]);
+    const googleAdsConfigured = Boolean(envKey || orgKey) || activeFormKey;
+
+    const facebookMissing = FACEBOOK_ENV.filter((name) => !configured(process.env[name]));
+    const facebookConfigured = facebookMissing.length === 0;
+    const bucket = storageBucketName();
 
     return ok({
       crm: {
@@ -48,35 +57,19 @@ export async function GET() {
         },
       },
       facebook: {
-        status: configured(
-          process.env.NEXT_PUBLIC_FACEBOOK_APP_ID,
-          process.env.FACEBOOK_APP_SECRET,
-          process.env.FACEBOOK_WEBHOOK_VERIFY_TOKEN,
-          process.env.FACEBOOK_PAGE_ACCESS_TOKEN,
-        )
-          ? "configured_not_verified"
-          : "not_configured",
+        status: facebookConfigured ? "configured_not_verified" : "not_configured",
         provider: "Meta for Business",
-        required: [
-          "NEXT_PUBLIC_FACEBOOK_APP_ID",
-          "FACEBOOK_APP_SECRET",
-          "FACEBOOK_WEBHOOK_VERIFY_TOKEN",
-          "FACEBOOK_PAGE_ACCESS_TOKEN",
-        ],
-        note: configured(
-          process.env.NEXT_PUBLIC_FACEBOOK_APP_ID,
-          process.env.FACEBOOK_APP_SECRET,
-          process.env.FACEBOOK_WEBHOOK_VERIFY_TOKEN,
-          process.env.FACEBOOK_PAGE_ACCESS_TOKEN,
-        )
-          ? "Credentials present but the Meta connection has not been live-verified in this environment."
-          : "Facebook Lead Ads webhook is not configured. Add app credentials to enable lead ingestion.",
+        required: [...FACEBOOK_ENV],
+        missing: facebookMissing,
+        note: facebookConfigured
+          ? "Credentials present. Leads arrive once the Page is subscribed to the leadgen webhook in Meta."
+          : `Webhook endpoint is ready. Set ${facebookMissing.join(", ")} on the admin service to start receiving Facebook leads.`,
         webhookUrl: `${ADMIN_URL}/api/webhooks/facebook`,
       },
       googleAds: {
         status: googleAdsConfigured ? "connected" : "not_configured",
         provider: "Google Ads",
-        required: ["GOOGLE_ADS_WEBHOOK_SECRET"],
+        required: ["Webhook key"],
         note: googleAdsConfigured
           ? "Google Ads Lead Form webhook is active. Leads are ingested automatically."
           : "Generate a webhook key from the Integrations page to connect Google Ads Lead Forms.",
@@ -88,17 +81,17 @@ export async function GET() {
         note: "The Frappe bridge was replaced by the native CRM. Inbound lead sync from Frappe is not enabled.",
       },
       media: {
-        status: r2Configured ? "connected" : "not_configured",
-        provider: "Cloudflare R2",
-        required: ["R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY"],
+        status: storage.ok ? "connected" : "error",
+        provider: "Google Cloud Storage",
+        bucket,
         assets: mediaCount,
-        note: r2Configured
-          ? "Media uploads and public CDN are live."
-          : "R2 is not configured — media uploads return STORAGE_UNAVAILABLE.",
+        note: storage.ok
+          ? `Media uploads are live (bucket ${bucket}).`
+          : `Bucket ${bucket} is not reachable from the admin service: ${storage.error ?? "unknown error"}.`,
       },
       documents: {
-        status: r2Configured ? "connected" : "not_configured",
-        provider: "Cloudflare R2 (docs bucket)",
+        status: storage.ok ? "connected" : "error",
+        provider: "Google Cloud Storage",
         assets: docCount,
       },
       automation: {
@@ -117,19 +110,15 @@ export async function GET() {
       summary: {
         connected: [
           ...(["crm"] as const),
-          ...(r2Configured ? (["media", "documents"] as const) : []),
+          ...(storage.ok ? (["media", "documents"] as const) : []),
+          ...(googleAdsConfigured ? (["googleAds"] as const) : []),
           ...(configured(process.env.CRON_SECRET) ? (["automation"] as const) : []),
         ],
         notConfigured: Object.entries({
-          facebook: !configured(
-            process.env.NEXT_PUBLIC_FACEBOOK_APP_ID,
-            process.env.FACEBOOK_APP_SECRET,
-            process.env.FACEBOOK_WEBHOOK_VERIFY_TOKEN,
-            process.env.FACEBOOK_PAGE_ACCESS_TOKEN,
-          ),
+          facebook: !facebookConfigured,
           googleAds: !googleAdsConfigured,
-          media: !r2Configured,
-          documents: !r2Configured,
+          media: !storage.ok,
+          documents: !storage.ok,
           payments: true,
         })
           .filter(([, missing]) => missing)

@@ -22,7 +22,14 @@ const JOB_SELECT = {
   metadata: true,
   publishedAt: true,
   status: true,
+  hiringPartner: { select: { logoId: true } },
 } as const;
+
+function imageIdOf(metadata: unknown): string | null {
+  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) return null;
+  const id = (metadata as Record<string, unknown>).imageId;
+  return typeof id === "string" && id ? id : null;
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -48,7 +55,27 @@ export async function GET(req: NextRequest) {
       select: JOB_SELECT,
     });
 
-    return NextResponse.json({ data: jobs });
+    const mediaIds = jobs
+      .map((j) => imageIdOf(j.metadata) ?? j.hiringPartner?.logoId ?? null)
+      .filter((id): id is string => !!id);
+    const assets = mediaIds.length
+      ? await prisma.mediaAsset.findMany({
+          where: { orgId: org.id, id: { in: mediaIds }, isActive: true },
+          select: { id: true, fileUrl: true },
+        })
+      : [];
+    const urlById = new Map(assets.map((a) => [a.id, a.fileUrl]));
+
+    return NextResponse.json({
+      data: jobs.map(({ hiringPartner, ...j }) => {
+        const own = imageIdOf(j.metadata);
+        const logo = hiringPartner?.logoId ?? null;
+        return {
+          ...j,
+          imageUrl: (own && urlById.get(own)) || (logo && urlById.get(logo)) || null,
+        };
+      }),
+    });
   } catch (err) {
     return handleError(err);
   }
