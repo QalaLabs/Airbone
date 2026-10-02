@@ -59,8 +59,21 @@ function compare(op: string, actual: unknown, expected: unknown): boolean {
   }
 }
 
+/** Structural check of the canonical grammar; stored JSON is never trusted. */
+export function isConditionSpec(spec: unknown): spec is ConditionSpec {
+  if (!spec || typeof spec !== "object" || Array.isArray(spec)) return false;
+  const s = spec as Record<string, unknown>;
+  if ("all" in s) return Array.isArray(s.all) && s.all.length > 0 && s.all.every(isConditionSpec);
+  if ("any" in s) return Array.isArray(s.any) && s.any.length > 0 && s.any.every(isConditionSpec);
+  if ("not" in s) return isConditionSpec(s.not);
+  return typeof s.field === "string" && s.field.length > 0 && typeof s.op === "string";
+}
+
+// A malformed spec evaluates to false (fail closed) instead of throwing, so one
+// bad stored workflow can never abort matching for every other workflow.
 export function evaluateCondition(spec: ConditionSpec | undefined, ctx: Record<string, unknown>): boolean {
   if (!spec) return true;
+  if (!isConditionSpec(spec)) return false;
 
   if ("all" in spec) return spec.all.every((c) => evaluateCondition(c, ctx));
   if ("any" in spec) return spec.any.some((c) => evaluateCondition(c, ctx));

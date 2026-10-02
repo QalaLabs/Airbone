@@ -104,7 +104,7 @@ export function scheduleSummary(batch: {
 
 /**
  * Shared rule set for the create form and the API schema.
- * Times and dates are each all-or-nothing pairs; end must follow start.
+ * Times are an all-or-nothing pair; an end date needs a start date; end must follow start.
  */
 export function scheduleError(input: {
   startTime?: string | null;

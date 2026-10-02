@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { adminPortalUrl } from "@/lib/adminPortal";
 
-const ADMIN_PORTAL =
-  process.env.NEXT_PUBLIC_ADMIN_URL?.replace(/\/$/, "") || "http://localhost:4000";
+const ADMIN_PORTAL = adminPortalUrl(process.env.NEXT_PUBLIC_ADMIN_URL, process.env.NODE_ENV);
 
 /**
  * Marketing entry → Admin student portal (auth cookies live on Admin OS origin).

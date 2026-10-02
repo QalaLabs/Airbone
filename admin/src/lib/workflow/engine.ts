@@ -3,7 +3,7 @@ import type { Prisma, WorkflowTrigger } from "@prisma/client";
 import { validUuid } from "@/lib/events/actor";
 import { enqueueWorkflowRun } from "@/lib/automation/workflow-dispatcher";
 import { EVENT_TRIGGER_MAP, normalizeEventName } from "@/lib/events/catalog";
-import { evaluateCondition } from "./conditions";
+import { evaluateCondition, isConditionSpec } from "./conditions";
 import { loadEntitySnapshot, resolveEntityFromEvent } from "./snapshots";
 
 // ─── Event → workflow matcher ────────────────────────────────────────────────
@@ -55,7 +55,12 @@ export async function matchAndStartRuns(input: {
 
   for (const workflow of candidates) {
     const conditions = workflow.triggerConditions as unknown;
-    if (!conditionsMatch(conditions, evaluationCtx)) continue;
+    if (!conditionsMatch(conditions, evaluationCtx)) {
+      if (!isEmptyConditions(conditions) && !isConditionSpec(conditions)) {
+        console.warn("[workflow] skipped: invalid triggerConditions", workflow.id, workflow.code);
+      }
+      continue;
+    }
 
     try {
       const run = await prisma.workflowRun.create({
@@ -101,9 +106,11 @@ function isUniqueViolation(err: unknown): err is { code: string } {
 }
 
 /** Workflow.triggerConditions uses the same ConditionSpec grammar as steps. */
-function conditionsMatch(conditions: unknown, ctx: Record<string, unknown>): boolean {
-  if (!conditions || (typeof conditions === "object" && Object.keys(conditions as object).length === 0)) {
-    return true; // empty conditions = always match
-  }
+function isEmptyConditions(conditions: unknown): boolean {
+  return !conditions || (typeof conditions === "object" && Object.keys(conditions as object).length === 0);
+}
+
+export function conditionsMatch(conditions: unknown, ctx: Record<string, unknown>): boolean {
+  if (isEmptyConditions(conditions)) return true; // empty conditions = always match
   return evaluateCondition(conditions as Parameters<typeof evaluateCondition>[0], ctx);
 }

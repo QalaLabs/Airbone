@@ -11,5 +11,7 @@ scratch/
 test-reports/
 .tmp-env-pull/
 *.log
+.env*
+!.env.example
 .gcloudignore
 .gitignore

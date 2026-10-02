@@ -794,8 +794,14 @@ async function main() {
         code: "new-lead-welcome",
         description: "Send a WhatsApp welcome to every new lead (demo automation).",
         triggerEvent: "LEAD_CREATED",
-        triggerConditions: { source: "FACEBOOK_ADS" },
-        steps: [{ type: "SEND_WHATSAPP", templateCode: "new-lead-welcome" }],
+        triggerConditions: { field: "source", op: "eq", value: "FACEBOOK_ADS" },
+        steps: [
+          {
+            name: "Welcome on WhatsApp",
+            type: "SEND_WHATSAPP",
+            variables: { message: "Hi {{leadName}}, welcome to Airborne Aviation! A counsellor will call you shortly." },
+          },
+        ],
         isActive: true,
       },
     });
