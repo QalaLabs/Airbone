@@ -27,20 +27,20 @@ import {
   Handshake,
   Mail,
   MessageCircle,
-  Send,
-  Workflow,
-  Route,
+  ExternalLink,
   Landmark,
   Receipt,
   Wallet,
+  PhoneCall,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { usePendingTestimonialCount } from "@/lib/queries/testimonial-pending";
+import { INTERAKT_DASHBOARD_URL } from "@/lib/whatsapp/interakt-link";
 
 const NAV_GROUPS: {
   label: string;
-  items: { href: string; icon: React.ElementType; label: string; badge?: boolean }[];
+  items: { href: string; icon: React.ElementType; label: string; badge?: boolean; external?: boolean }[];
 }[] = [
   {
     label: "Core Analytics",
@@ -50,18 +50,13 @@ const NAV_GROUPS: {
     ]
   },
   {
-    label: "Integrations",
-    items: [
-      { href: "/crm/integrations", icon: Plug, label: "CRM Integrations" },
-    ]
-  },
-  {
     label: "CRM & Admissions",
     items: [
-      { href: "/leads", icon: Users, label: "Lead Management" },
+      { href: "/leads", icon: Users, label: "All Leads" },
+      { href: "/crm/agent-calling", icon: PhoneCall, label: "Agent Calling" },
       { href: "/crm/outreach", icon: Mail, label: "Outreach" },
       { href: "/crm/meetings", icon: CalendarDays, label: "Meetings" },
-      { href: "/crm/deals", icon: Handshake, label: "Prospects & Deals" },
+      { href: "/crm/lead-pipeline", icon: Handshake, label: "Lead Pipeline" },
       { href: "/admissions", icon: GraduationCap, label: "Admissions" },
       { href: "/students", icon: Users, label: "Student Management" },
       { href: "/placements", icon: Briefcase, label: "Placements" },
@@ -73,20 +68,6 @@ const NAV_GROUPS: {
     items: [
       { href: "/payments", icon: Wallet, label: "Payments Ledger" },
       { href: "/fee-plans", icon: Receipt, label: "Fee Plans" },
-    ]
-  },
-  {
-    label: "WhatsApp Business",
-    items: [
-      { href: "/whatsapp", icon: MessageCircle, label: "Overview" },
-      { href: "/whatsapp/inbox", icon: MessageCircle, label: "Inbox" },
-      { href: "/whatsapp/contacts", icon: Users, label: "Contacts" },
-      { href: "/whatsapp/campaigns", icon: Send, label: "Campaigns" },
-      { href: "/whatsapp/automations", icon: Workflow, label: "Automations" },
-      { href: "/whatsapp/sequences", icon: Route, label: "Sequences" },
-      { href: "/whatsapp/templates", icon: FileText, label: "Templates" },
-      { href: "/whatsapp/analytics", icon: PieChart, label: "Analytics" },
-      { href: "/whatsapp/settings", icon: Settings, label: "Settings" },
     ]
   },
   {
@@ -111,6 +92,13 @@ const NAV_GROUPS: {
     ]
   },
   {
+    label: "Integrations",
+    items: [
+      { href: "/crm/integrations", icon: Plug, label: "CRM Integrations" },
+      { href: INTERAKT_DASHBOARD_URL, icon: MessageCircle, label: "WhatsApp (Interakt)", external: true },
+    ]
+  },
+  {
     label: "System & Config",
     items: [
       { href: "/users", icon: Building2, label: "User Management" },
@@ -120,6 +108,24 @@ const NAV_GROUPS: {
   }
 ];
 
+const NavLink = React.forwardRef<
+  HTMLAnchorElement,
+  React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; external?: boolean }
+>(function NavLink({ href, external, children, ...rest }, ref) {
+  if (external) {
+    return (
+      <a {...rest} ref={ref} href={href} target="_blank" rel="noopener noreferrer" data-testid="whatsapp-interakt-link">
+        {children}
+      </a>
+    );
+  }
+  return (
+    <Link {...rest} ref={ref} href={href}>
+      {children}
+    </Link>
+  );
+});
+
 interface SidebarProps {
   collapsed: boolean;
   onToggle: () => void;
@@ -127,7 +133,7 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
-  const activeHref = NAV_GROUPS.flatMap((g) => g.items.map((i) => i.href))
+  const activeHref = NAV_GROUPS.flatMap((g) => g.items.filter((i) => !i.external).map((i) => i.href))
     .filter((href) =>
       href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`),
     )
@@ -162,7 +168,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto p-3 space-y-6">
           {NAV_GROUPS.map((group, gIdx) => (
-            <div key={gIdx} className="space-y-1.5">
+            <div key={gIdx} className="space-y-1.5" data-testid="sidebar-group" data-group={group.label}>
               {!collapsed && (
                 <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
                   {group.label}
@@ -177,8 +183,9 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                   return collapsed ? (
                     <Tooltip key={item.href}>
                       <TooltipTrigger asChild>
-                        <Link
+                        <NavLink
                           href={item.href}
+                          external={item.external}
                           className={cn(
                             "relative flex h-10 w-full items-center justify-center rounded-xl transition-all",
                             isActive
@@ -192,14 +199,15 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                               {pendingTestimonials > 9 ? "9+" : pendingTestimonials}
                             </span>
                           )}
-                        </Link>
+                        </NavLink>
                       </TooltipTrigger>
                       <TooltipContent side="right" className="glass-panel border-white/10 font-semibold">{item.label}</TooltipContent>
                     </Tooltip>
                   ) : (
-                    <Link
+                    <NavLink
                       key={item.href}
                       href={item.href}
+                      external={item.external}
                       className={cn(
                         "relative flex h-10 w-full items-center gap-3.5 rounded-xl px-3 text-sm font-semibold transition-all group",
                         isActive
@@ -209,12 +217,13 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                     >
                       <item.icon className={cn("h-4 w-4 shrink-0 transition-transform group-hover:scale-110", isActive ? "text-white" : "text-muted-foreground group-hover:text-primary")} />
                       <span className="truncate">{item.label}</span>
+                      {item.external && <ExternalLink className="ml-auto h-3.5 w-3.5 shrink-0 opacity-60" aria-hidden />}
                       {showBadge && (
                         <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-white animate-pulse">
                           {pendingTestimonials > 9 ? "9+" : pendingTestimonials}
                         </span>
                       )}
-                    </Link>
+                    </NavLink>
                   );
                 })}
               </div>

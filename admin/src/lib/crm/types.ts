@@ -75,7 +75,17 @@ export interface AnalyticsCounselorRow {
   collectionPct?: string;
 }
 
+export interface AnalyticsRangeInfo {
+  from: string;
+  to: string;
+  fromInput: string;
+  toInput: string;
+  timezone: string;
+}
+
 export interface AnalyticsData {
+  range: AnalyticsRangeInfo | null;
+  scope: "counselor" | "organization";
   totals: AnalyticsTotals;
   monthly: AnalyticsMonth[];
   bySource: AnalyticsSourceRow[];

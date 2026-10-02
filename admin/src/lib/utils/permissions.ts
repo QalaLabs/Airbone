@@ -140,7 +140,12 @@ export function hasPermission(
   action: string,
   resource: string,
 ): boolean {
-  const matrix = PERMISSION_MATRIX[user.role];
+  return roleCan(user.role, action, resource);
+}
+
+/** UI affordance check only; every API route still enforces guard() server-side. */
+export function roleCan(role: string | undefined | null, action: string, resource: string): boolean {
+  const matrix = role ? PERMISSION_MATRIX[role as UserRole] : undefined;
   if (!matrix) return false;
 
   // Super admin wildcard

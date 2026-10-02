@@ -21,6 +21,7 @@ import { apiFetch } from "@/lib/api";
 import { usePendingTestimonialCount } from "@/lib/queries/testimonial-pending";
 import { formatDate } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
+import { websiteSyncMessage } from "@/lib/website/website-sync-message";
 
 interface Testimonial {
   id: string;
@@ -36,6 +37,7 @@ interface Testimonial {
   batchYear?: number;
   source?: string;
   isFeatured?: boolean;
+  order?: number;
   createdAt: string;
 }
 
@@ -86,10 +88,11 @@ export default function TestimonialsPage() {
   const reviewMutation = useMutation({
     mutationFn: ({ id, status, notes }: { id: string; status: string; notes?: string }) =>
       apiFetch(`/testimonials/${id}/review`, { method: "POST", body: JSON.stringify({ status, reviewNotes: notes }) }),
-    onSuccess: (_, variables) => {
+    onSuccess: (res, variables) => {
       invalidate();
       toast({
         title: variables.status === "APPROVED" ? "Testimonial approved" : "Testimonial rejected",
+        description: websiteSyncMessage(res),
         variant: variables.status === "APPROVED" ? ("success" as "default") : "destructive",
       });
       setReviewDialog(null);
@@ -103,13 +106,16 @@ export default function TestimonialsPage() {
       id
         ? apiFetch<Testimonial>(`/testimonials/${id}`, { method: "PATCH", body: JSON.stringify(body) })
         : apiFetch<Testimonial>("/testimonials", { method: "POST", body: JSON.stringify(body) }),
-    onSuccess: (_, variables) => {
+    onSuccess: (res, variables) => {
       invalidate();
       toast({
         title: variables.id ? "Testimonial updated" : "Testimonial created",
-        description: variables.id
-          ? "Your changes have been saved."
-          : "New testimonials start as PENDING until approved.",
+        description: [
+          variables.id ? "Your changes have been saved." : "New testimonials start as PENDING until approved.",
+          websiteSyncMessage(res),
+        ]
+          .filter(Boolean)
+          .join(" "),
       });
       setEditor({ open: false, item: null });
     },
@@ -118,9 +124,12 @@ export default function TestimonialsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apiFetch(`/testimonials/${id}`, { method: "DELETE" }),
-    onSuccess: () => {
+    onSuccess: (res) => {
       invalidate();
-      toast({ title: "Testimonial deleted", description: "The testimonial has been removed." });
+      toast({
+        title: "Testimonial deleted",
+        description: ["The testimonial has been removed.", websiteSyncMessage(res)].filter(Boolean).join(" "),
+      });
       setDeleteTarget(null);
     },
     onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
@@ -152,8 +161,12 @@ export default function TestimonialsPage() {
       batchYear: batchYearRaw ? Number(batchYearRaw) : undefined,
       source: (formData.get("source") as string) || undefined,
     };
+    if (item?.avatarId) body.avatarId = item.avatarId;
     if (item?.id) {
       body.isFeatured = formData.get("isFeatured") === "true";
+      if (!item.avatarId) (body as { avatarId?: string | null }).avatarId = null;
+      const orderRaw = formData.get("order") as string;
+      if (orderRaw !== null && orderRaw !== "") body.order = Number(orderRaw);
     }
     saveMutation.mutate({ id: item?.id, body });
   };
@@ -237,6 +250,16 @@ export default function TestimonialsPage() {
                     <XCircle className="mr-2 h-4 w-4 text-destructive" /> Reject
                   </DropdownMenuItem>
                 </>
+              )}
+              {t.status === "APPROVED" && (
+                <DropdownMenuItem onClick={() => handleReview(t.id, "REJECTED")} className="cursor-pointer">
+                  <XCircle className="mr-2 h-4 w-4 text-destructive" /> Unpublish
+                </DropdownMenuItem>
+              )}
+              {t.status === "REJECTED" && (
+                <DropdownMenuItem onClick={() => handleReview(t.id, "APPROVED")} className="cursor-pointer">
+                  <CheckCircle className="mr-2 h-4 w-4 text-success" /> Publish
+                </DropdownMenuItem>
               )}
               <DropdownMenuItem onClick={() => setEditor({ open: true, item: t })} className="cursor-pointer">
                 <Pencil className="mr-2 h-4 w-4" /> Edit
@@ -440,6 +463,12 @@ export default function TestimonialsPage() {
                       <option value="false" className="bg-slate-900">Not featured</option>
                       <option value="true" className="bg-slate-900">Featured (highlight)</option>
                     </select>
+                  </div>
+                )}
+                {editor.item?.id && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="testimonial-order">Display order</Label>
+                    <Input id="testimonial-order" name="order" type="number" min={0} defaultValue={editor.item?.order ?? 0} />
                   </div>
                 )}
               </div>

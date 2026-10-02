@@ -13,7 +13,34 @@ export const createHiringPartnerSchema = z.object({
   order: z.number().int().min(0).default(0),
 });
 
-export const updateHiringPartnerSchema = createHiringPartnerSchema.partial();
+const clearableText = (max: number) =>
+  z
+    .union([z.string().trim().max(max), z.null()])
+    .optional()
+    .transform((v) => (v === "" ? null : v));
+
+// Edit form sends "" to clear optional fields; name/slug can never be blanked.
+export const updateHiringPartnerSchema = z
+  .object({
+    name: z.string().trim().min(1, "Partner name is required").max(255),
+    slug: z
+      .string()
+      .trim()
+      .min(2, "Code must be at least 2 characters")
+      .max(255)
+      .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Code must be lowercase letters, digits and single hyphens"),
+    logoId: z.union([z.string().uuid(), z.null()]),
+    website: z
+      .union([z.string().trim().url("Website must be a valid URL").max(500), z.literal(""), z.null()])
+      .transform((v) => (v === "" ? null : v)),
+    industry: clearableText(100),
+    description: clearableText(5000),
+    isActive: z.boolean(),
+    order: z.number().int().min(0),
+  })
+  .partial()
+  .strict()
+  .refine((v) => Object.keys(v).length > 0, { message: "No changes supplied" });
 
 export const hiringPartnerFiltersSchema = z.object({
   search: z.string().optional(),
@@ -54,7 +81,7 @@ export const placementFiltersSchema = z.object({
 });
 
 export type CreateHiringPartnerInput = z.infer<typeof createHiringPartnerSchema>;
-export type UpdateHiringPartnerInput = z.infer<typeof updateHiringPartnerSchema>;
+export type UpdateHiringPartnerInput = z.output<typeof updateHiringPartnerSchema>;
 export type HiringPartnerFilters = z.infer<typeof hiringPartnerFiltersSchema>;
 export type CreatePlacementInput = z.infer<typeof createPlacementSchema>;
 export type UpdatePlacementInput = z.infer<typeof updatePlacementSchema>;

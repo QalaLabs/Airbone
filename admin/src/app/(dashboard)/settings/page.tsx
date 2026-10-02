@@ -6,9 +6,10 @@ import { apiFetch } from "@/lib/api";
 import { PageHeader } from "@/components/shared/page-header";
 import {
   Key, Globe, AlertTriangle,
-  Link2, Info
+  Link2, Info, MessageCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { WhatsAppAutomationCard } from "@/components/settings/whatsapp-automation-card";
 
 const STORED_ONLY_NOTE =
   "Application intake and maintenance mode are enforced by the running application (public routes + intake gate). Force Debug Logs and webhook destinations are stored organization settings that are not yet consumed by any endpoint.";
@@ -84,6 +85,7 @@ export default function SettingsPage() {
           { id: "env", label: "Environment & Secrets", icon: Key },
           { id: "globals", label: "Global Settings & Toggles", icon: Globe },
           { id: "webhooks", label: "Webhook URLs Configuration", icon: Link2 },
+          { id: "whatsapp", label: "WhatsApp Automation", icon: MessageCircle },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -188,6 +190,12 @@ export default function SettingsPage() {
                 ))}
               </div>
             </div>
+          </motion.div>
+        )}
+
+        {activeTab === "whatsapp" && (
+          <motion.div key="whatsapp" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-6">
+            <WhatsAppAutomationCard />
           </motion.div>
         )}
       </AnimatePresence>

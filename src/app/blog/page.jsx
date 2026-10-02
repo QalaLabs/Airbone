@@ -54,6 +54,18 @@ export default async function BlogIndexPage() {
       }))
     : LEGACY_POSTS
 
+  // Canonical: Admin APPROVED testimonials; curated set only when the API is unavailable/empty.
+  const apiReviews = await fetchPublic('/testimonials', { limit: 6 })
+  const reviews = Array.isArray(apiReviews) && apiReviews.some((t) => t?.content)
+    ? apiReviews
+        .filter((t) => t?.content)
+        .map((t) => ({
+          name: t.authorName || 'Airborne Student',
+          role: t.authorTitle || (t.batchYear ? `Batch ${t.batchYear}` : 'Student'),
+          quote: t.content,
+        }))
+    : [...DEFAULT_COURSE_REVIEWS, ...PARENT_TESTIMONIALS]
+
   return (
     <>
       <JsonLd data={blogIndexGraph} />
@@ -102,9 +114,9 @@ export default async function BlogIndexPage() {
               What students and their parents say about training and counselling at Airborne.
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
-              {[...DEFAULT_COURSE_REVIEWS, ...PARENT_TESTIMONIALS].map((r) => (
+              {reviews.map((r, i) => (
                 <figure
-                  key={r.name + r.role}
+                  key={`${r.name}-${i}`}
                   style={{
                     margin: 0,
                     background: '#fff',

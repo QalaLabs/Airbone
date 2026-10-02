@@ -948,8 +948,15 @@ export class LmsService {
     if (ctx.user.role === "STUDENT") {
       throw new ForbiddenError("read", "lms");
     }
+    const teacherCourses = await this.teacherCourseIds(ctx);
+    if (teacherCourses && courseId && !teacherCourses.includes(courseId)) {
+      throw new ForbiddenError("read", "lms");
+    }
     return prisma.lmsEnrollment.findMany({
-      where: { orgId: ctx.orgId, ...(courseId ? { courseId } : {}) },
+      where: {
+        orgId: ctx.orgId,
+        ...(courseId ? { courseId } : teacherCourses ? { courseId: { in: teacherCourses } } : {}),
+      },
       include: {
         student: { select: { id: true, firstName: true, lastName: true, studentCode: true, email: true } },
         course: { select: { id: true, title: true, slug: true } },
@@ -1074,12 +1081,71 @@ export class LmsService {
 
   // ─── Attendance ───────────────────────────────────────────────────────────
 
+  /**
+   * Courses a TEACHER is assigned to (course teacher, batch teacher, or the
+   * teacher on a timetable slot). `null` means the caller is not a teacher and
+   * is not narrowed beyond org scope.
+   */
+  static async teacherCourseIds(ctx: RequestContext): Promise<string[] | null> {
+    if (ctx.user.role !== "TEACHER") return null;
+    const [courseLinks, batchLinks, slots] = await Promise.all([
+      prisma.lmsCourseTeacher.findMany({
+        where: { teacherId: ctx.user.id, course: { orgId: ctx.orgId } },
+        select: { courseId: true },
+      }),
+      prisma.lmsBatchTeacher.findMany({
+        where: { teacherId: ctx.user.id, batch: { orgId: ctx.orgId } },
+        select: { batch: { select: { courseId: true } } },
+      }),
+      prisma.lmsTimetableSlot.findMany({
+        where: { teacherId: ctx.user.id, orgId: ctx.orgId },
+        select: { courseId: true, batch: { select: { courseId: true } } },
+      }),
+    ]);
+    const ids = new Set<string>();
+    for (const l of courseLinks) ids.add(l.courseId);
+    for (const l of batchLinks) ids.add(l.batch.courseId);
+    for (const s of slots) ids.add(s.courseId ?? s.batch.courseId);
+    return [...ids];
+  }
+
+  /** Teachers may only read or mark attendance for courses they are assigned to. */
+  static async assertAttendanceCourseAccess(ctx: RequestContext, courseId: string, action: "read" | "write") {
+    const allowed = await this.teacherCourseIds(ctx);
+    if (allowed && !allowed.includes(courseId)) {
+      throw new ForbiddenError(action, "lms_attendance");
+    }
+  }
+
+  /** Courses the caller can take attendance for (teachers: assigned only). */
+  static async listAttendanceCourses(ctx: RequestContext) {
+    const allowed = await this.teacherCourseIds(ctx);
+    return prisma.lmsCourse.findMany({
+      where: { orgId: ctx.orgId, ...(allowed ? { id: { in: allowed } } : {}) },
+      orderBy: { title: "asc" },
+      select: { id: true, title: true, slug: true },
+    });
+  }
+
+  private static async assertOrgStudents(ctx: RequestContext, studentIds: string[]) {
+    if (studentIds.length === 0) return;
+    const unique = [...new Set(studentIds)];
+    const students = await prisma.student.findMany({
+      where: { id: { in: unique }, orgId: ctx.orgId, deletedAt: null },
+      select: { id: true },
+    });
+    if (students.length !== unique.length) {
+      throw new ValidationError([{ message: "One or more student ids do not belong to this organization" }]);
+    }
+  }
+
   static async markAttendance(ctx: RequestContext, input: MarkAttendanceInput) {
     const course = await prisma.lmsCourse.findFirst({
       where: { id: input.courseId, orgId: ctx.orgId },
       select: { id: true },
     });
     if (!course) throw new NotFoundError("LmsCourse", input.courseId);
+    await this.assertAttendanceCourseAccess(ctx, input.courseId, "write");
 
     if (input.batchId) {
       const batch = await prisma.lmsBatch.findFirst({
@@ -1154,6 +1220,8 @@ export class LmsService {
       where: { id, orgId: ctx.orgId },
     });
     if (!session) throw new NotFoundError("LmsAttendanceSession", id);
+    await this.assertAttendanceCourseAccess(ctx, session.courseId, "write");
+    if (input.records) await this.assertOrgStudents(ctx, input.records.map((r) => r.studentId));
 
     return prisma.$transaction(async (tx) => {
       await tx.lmsAttendanceSession.update({
@@ -1202,6 +1270,7 @@ export class LmsService {
       where: { id, orgId: ctx.orgId },
     });
     if (!session) throw new NotFoundError("LmsAttendanceSession", id);
+    await this.assertAttendanceCourseAccess(ctx, session.courseId, "write");
 
     await prisma.lmsAttendanceRecord.deleteMany({ where: { sessionId: id } });
     await prisma.lmsAttendanceSession.delete({ where: { id } });
@@ -1214,16 +1283,27 @@ export class LmsService {
   ) {
     const course = await prisma.lmsCourse.findFirst({ where: { id: courseId, orgId: ctx.orgId } });
     if (!course) throw new NotFoundError("LmsCourse", courseId);
+    await this.assertAttendanceCourseAccess(ctx, courseId, "read");
+
+    const from = opts.from ? new Date(opts.from) : undefined;
+    const to = opts.to ? new Date(opts.to) : undefined;
+    if ((from && Number.isNaN(from.getTime())) || (to && Number.isNaN(to.getTime()))) {
+      throw new ValidationError([{ message: "Invalid date range" }]);
+    }
+    if (from && to && from > to) {
+      throw new ValidationError([{ message: "Start date must be on or before the end date" }]);
+    }
 
     const sessions = await prisma.lmsAttendanceSession.findMany({
       where: {
+        orgId: ctx.orgId,
         courseId,
         ...(opts.batchId ? { batchId: opts.batchId } : {}),
         ...(opts.from || opts.to
           ? {
               heldAt: {
-                ...(opts.from ? { gte: new Date(opts.from) } : {}),
-                ...(opts.to ? { lte: new Date(opts.to) } : {}),
+                ...(from ? { gte: from } : {}),
+                ...(to ? { lte: to } : {}),
               },
             }
           : {}),
@@ -1275,6 +1355,34 @@ export class LmsService {
         student: { select: { id: true, firstName: true, lastName: true, studentCode: true } },
       },
     });
+  }
+
+  /**
+   * Single certificate for viewing. Org-scoped for staff; a STUDENT only ever
+   * resolves their own ISSUED certificate (anything else is a 404, not a 403,
+   * so ids of other students' certificates are not confirmed).
+   */
+  static async getCertificate(ctx: RequestContext, id: string) {
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+      throw new NotFoundError("LmsCertificate", id);
+    }
+    const cert = await prisma.lmsCertificate.findFirst({
+      where: { id, orgId: ctx.orgId },
+      include: {
+        course: { select: { id: true, title: true, slug: true } },
+        student: { select: { id: true, firstName: true, lastName: true, studentCode: true } },
+        org: { select: { name: true } },
+        issuer: { select: { name: true } },
+      },
+    });
+    if (!cert) throw new NotFoundError("LmsCertificate", id);
+    if (ctx.user.role === "STUDENT") {
+      const student = await this.resolveLinkedStudent(ctx);
+      if (cert.studentId !== student.id || cert.status !== "ISSUED") {
+        throw new NotFoundError("LmsCertificate", id);
+      }
+    }
+    return cert;
   }
 
   // Certificate numbers are server-owned identity. Generated on the server and

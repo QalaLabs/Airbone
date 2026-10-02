@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import { whatsappHref } from '@/lib/whatsapp'
 
 /**
  * CoursePageFooter — shared bottom section injected into every course page.
@@ -14,7 +15,7 @@ export default function CoursePageFooter({
   relatedCourses = [],
   nextCourses = [],
 }) {
-  const waHref = `https://wa.me/919953777320?text=${encodeURIComponent(whatsappText)}`
+  const waHref = whatsappHref(whatsappText)
 
   const sectionH2Style = {
     fontFamily: 'var(--font-h)',

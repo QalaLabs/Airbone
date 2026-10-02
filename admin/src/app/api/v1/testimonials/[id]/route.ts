@@ -2,8 +2,9 @@ import { type NextRequest } from "next/server";
 import { TestimonialService } from "@/lib/services/testimonial.service";
 import { guard } from "@/lib/middleware/permissions";
 import { getRequestContext } from "@/lib/middleware/context";
-import { ok, noContent, handleError } from "@/lib/utils/response";
+import { ok, handleError } from "@/lib/utils/response";
 import { updateTestimonialSchema } from "@/lib/validations/testimonial.schema";
+import { syncWebsiteContent } from "@/lib/website/revalidate";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -25,7 +26,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     guard(ctx.user, "write", "testimonials");
     const body = await req.json() as unknown;
     const input = updateTestimonialSchema.parse(body);
-    return ok(await TestimonialService.update(ctx, id, input));
+    const testimonial = await TestimonialService.update(ctx, id, input);
+    return ok({ ...testimonial, websiteSync: await syncWebsiteContent("testimonial", ctx.requestId) });
   } catch (err) {
     return handleError(err);
   }
@@ -37,7 +39,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     const { id } = await params;
     guard(ctx.user, "delete", "testimonials");
     await TestimonialService.delete(ctx, id);
-    return noContent();
+    return ok({ id, deleted: true, websiteSync: await syncWebsiteContent("testimonial", ctx.requestId) });
   } catch (err) {
     return handleError(err);
   }

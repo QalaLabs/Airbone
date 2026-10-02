@@ -4,6 +4,7 @@ import { guard } from "@/lib/middleware/permissions";
 import { getRequestContext } from "@/lib/middleware/context";
 import { ok, created, handleError } from "@/lib/utils/response";
 import { markAttendanceSchema } from "@/lib/validations/lms.schema";
+import { ValidationError } from "@/lib/utils/errors";
 
 export async function GET(req: NextRequest) {
   try {
@@ -11,7 +12,7 @@ export async function GET(req: NextRequest) {
     guard(ctx.user, "read", "lms_attendance");
     const url = new URL(req.url);
     const courseId = url.searchParams.get("courseId");
-    if (!courseId) return handleError(new Error("courseId required"));
+    if (!courseId) throw new ValidationError([{ path: "courseId", message: "courseId is required" }]);
     const sessions = await LmsService.getAttendanceForCourse(ctx, courseId, {
       batchId: url.searchParams.get("batchId") ?? undefined,
       from: url.searchParams.get("from") ?? undefined,

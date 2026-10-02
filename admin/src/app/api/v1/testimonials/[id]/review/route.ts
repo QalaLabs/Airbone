@@ -4,6 +4,7 @@ import { guard } from "@/lib/middleware/permissions";
 import { getRequestContext } from "@/lib/middleware/context";
 import { ok, handleError } from "@/lib/utils/response";
 import { reviewTestimonialSchema } from "@/lib/validations/testimonial.schema";
+import { syncWebsiteContent } from "@/lib/website/revalidate";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -14,7 +15,8 @@ export async function POST(req: NextRequest, { params }: Params) {
     guard(ctx.user, "approve", "testimonials");
     const body = await req.json() as unknown;
     const input = reviewTestimonialSchema.parse(body);
-    return ok(await TestimonialService.review(ctx, id, input));
+    const testimonial = await TestimonialService.review(ctx, id, input);
+    return ok({ ...testimonial, websiteSync: await syncWebsiteContent("testimonial", ctx.requestId) });
   } catch (err) {
     return handleError(err);
   }

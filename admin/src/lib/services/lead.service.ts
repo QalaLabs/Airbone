@@ -10,7 +10,8 @@ import type { CreateLeadInput, UpdateLeadInput, LeadFilters, CreateActivityInput
 import type { RequestContext } from "@/types";
 import { hasPermission } from "@/lib/utils/permissions";
 import type { LeadStatus, LeadSource } from "@prisma/client";
-import { isLostStatus, canTransitionLeadStatus, LOSS_REASON_DEFAULT_TEXT, LOCKED_LEAD_STATUSES } from "@/lib/leads/lead-status";
+import { isLostStatus, canTransitionLeadStatus, LOSS_REASON_DEFAULT_TEXT, LOCKED_LEAD_STATUSES, isInitialLeadStatus } from "@/lib/leads/lead-status";
+import { withMeetingMode, type MeetingMode } from "@/lib/crm/meeting-mode";
 
 export class LeadService {
   static resolveSource(raw: string = ""): LeadSource {
@@ -246,7 +247,10 @@ export class LeadService {
   }
 
   static async create(ctx: RequestContext, input: CreateLeadInput) {
-    const { notes, ...data } = input;
+    const { notes, status: initialStatus, ...data } = input;
+    if (initialStatus && !isInitialLeadStatus(initialStatus)) {
+      throw new ValidationError([{ path: ["status"], message: `${initialStatus} is not a valid initial lead status` }]);
+    }
 
     if (!hasPermission(ctx.user, "assign", "leads")) {
       if (data.assignedTo && data.assignedTo !== ctx.user.id) {
@@ -334,6 +338,12 @@ export class LeadService {
       ipAddress: ctx.ipAddress,
     });
 
+    // Leads are born NEW; a chosen initial status goes through the normal status
+    // change path so it gets the same STATUS_CHANGE activity, audit and events.
+    if (initialStatus && initialStatus !== "NEW") {
+      return (await this.update(ctx, lead.id, { status: initialStatus })) ?? lead;
+    }
+
     return lead;
   }
 
@@ -392,6 +402,32 @@ export class LeadService {
     }
 
     const updated = await LeadRepository.update(ctx.orgId, id, input);
+
+    if (input.source !== undefined && input.source !== existing.source) {
+      await prisma.leadActivity.create({
+        data: {
+          leadId: id,
+          orgId: ctx.orgId,
+          performedBy: ctx.user.id,
+          activityType: "SYSTEM",
+          title: "Source changed",
+          notes: `Changed from ${existing.source} to ${input.source}`,
+          completedAt: new Date(),
+          metadata: { oldSource: existing.source, newSource: input.source },
+        },
+      });
+      await AuditService.write({
+        orgId: ctx.orgId,
+        userId: ctx.user.id,
+        requestId: ctx.requestId,
+        ipAddress: ctx.ipAddress,
+        action: "lead.source_changed",
+        entityType: "lead",
+        entityId: id,
+        oldValue: { source: existing.source },
+        newValue: { source: input.source },
+      });
+    }
 
     if (statusChanged) {
       await prisma.leadActivity.create({
@@ -772,6 +808,7 @@ export class LeadService {
       title?: string;
       dueAt: string;
       durationMins?: number;
+      mode?: MeetingMode;
       notes?: string;
       outcome?: string;
       metadata?: Record<string, unknown>;
@@ -797,7 +834,7 @@ export class LeadService {
         dueAt,
         completedAt: null,
         durationMins: input.durationMins,
-        metadata: (input.metadata ?? {}) as Prisma.InputJsonValue,
+        metadata: (withMeetingMode(input.metadata, input.mode) ?? {}) as Prisma.InputJsonValue,
       },
       include: {
         performer: { select: { id: true, name: true, avatarUrl: true } },
@@ -861,6 +898,7 @@ export class LeadService {
       title?: string;
       dueAt?: string;
       durationMins?: number;
+      mode?: MeetingMode;
       notes?: string;
       outcome?: string;
       metadata?: Record<string, unknown>;
@@ -886,7 +924,14 @@ export class LeadService {
         ...(input.durationMins !== undefined ? { durationMins: input.durationMins } : {}),
         ...(input.notes !== undefined ? { notes: input.notes } : {}),
         ...(input.outcome !== undefined ? { outcome: input.outcome } : {}),
-        ...(input.metadata !== undefined ? { metadata: input.metadata as Prisma.InputJsonValue } : {}),
+        ...(input.metadata !== undefined || input.mode !== undefined
+          ? {
+              metadata: withMeetingMode(
+                input.metadata ?? ((existing.metadata ?? {}) as Record<string, unknown>),
+                input.mode,
+              ) as Prisma.InputJsonValue,
+            }
+          : {}),
       },
       include: {
         performer: { select: { id: true, name: true, avatarUrl: true } },

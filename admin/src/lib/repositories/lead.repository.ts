@@ -140,52 +140,92 @@ const LEAD_LIST_SELECT = {
   },
 } satisfies Prisma.LeadSelect;
 
+export type LeadWhereFilters = Omit<LeadFilters, "page" | "limit" | "sortBy" | "sortDir">;
+
+/** Canonical lead list query, shared by the paginated list and the CSV export. */
+export function buildLeadWhere(orgId: string, filters: LeadWhereFilters, now: Date = new Date()): Prisma.LeadWhereInput {
+  const where: Prisma.LeadWhereInput = {
+    orgId,
+    deletedAt: null,
+  };
+
+  if (filters.isActive) {
+    where.status = { in: ACTIVE_LEAD_STATUSES };
+  } else if (filters.status) {
+    where.status = filters.status;
+  }
+
+  if (filters.source) where.source = filters.source;
+  if (filters.assignedTo) where.assignedTo = filters.assignedTo;
+  if (filters.campusId) where.campusId = filters.campusId;
+  if (filters.courseInterest) {
+    where.courseInterest = { contains: filters.courseInterest, mode: "insensitive" };
+  }
+  if (filters.search) {
+    where.OR = [
+      { name: { contains: filters.search, mode: "insensitive" } },
+      { email: { contains: filters.search, mode: "insensitive" } },
+      { phone: { contains: filters.search } },
+    ];
+  }
+  if (filters.lostReason) {
+    where.lostReason = { contains: filters.lostReason, mode: "insensitive" };
+  }
+  if (filters.dateFrom || filters.dateTo) {
+    where.createdAt = {
+      ...(filters.dateFrom ? { gte: new Date(filters.dateFrom) } : {}),
+      ...(filters.dateTo ? { lte: new Date(filters.dateTo) } : {}),
+    };
+  }
+  if (filters.followUpOverdue) {
+    where.nextFollowUp = { lt: now };
+    if (!filters.status && !filters.isActive) {
+      where.status = { in: ACTIVE_LEAD_STATUSES };
+    }
+  }
+  if (filters.priority) {
+    where.score = scoreRangeForPriority(filters.priority);
+  }
+  return where;
+}
+
+/** Export ordering: `id` breaks ties so keyset batches never overlap or skip rows. */
+export function leadExportOrderBy(
+  sortBy: LeadFilters["sortBy"],
+  sortDir: LeadFilters["sortDir"],
+): Prisma.LeadOrderByWithRelationInput[] {
+  return [{ [sortBy]: sortDir }, { id: sortDir }];
+}
+
+export const LEAD_EXPORT_SELECT = {
+  id: true,
+  name: true,
+  email: true,
+  phone: true,
+  city: true,
+  state: true,
+  pincode: true,
+  courseInterest: true,
+  source: true,
+  status: true,
+  score: true,
+  manualAmount: true,
+  lostReason: true,
+  nextFollowUp: true,
+  lastActivityAt: true,
+  createdAt: true,
+  utmSource: true,
+  utmMedium: true,
+  utmCampaign: true,
+  counselor: { select: { name: true } },
+  campus: { select: { name: true } },
+} satisfies Prisma.LeadSelect;
+
+export type LeadExportRow = Prisma.LeadGetPayload<{ select: typeof LEAD_EXPORT_SELECT }>;
+
 export class LeadRepository {
   static async findMany(orgId: string, filters: LeadFilters) {
-    const where: Prisma.LeadWhereInput = {
-      orgId,
-      deletedAt: null,
-    };
-
-    if (filters.isActive) {
-      where.status = { in: ACTIVE_LEAD_STATUSES };
-    } else if (filters.status) {
-      where.status = filters.status;
-    }
-    
-    if (filters.source) where.source = filters.source;
-    if (filters.assignedTo) where.assignedTo = filters.assignedTo;
-    if (filters.campusId) where.campusId = filters.campusId;
-    if (filters.courseInterest) {
-      where.courseInterest = { contains: filters.courseInterest, mode: "insensitive" };
-    }
-    if (filters.search) {
-      where.OR = [
-        { name: { contains: filters.search, mode: "insensitive" } },
-        { email: { contains: filters.search, mode: "insensitive" } },
-        { phone: { contains: filters.search } },
-      ];
-    }
-    if (filters.lostReason) {
-      where.lostReason = { contains: filters.lostReason, mode: "insensitive" };
-    }
-    if (filters.dateFrom || filters.dateTo) {
-      where.createdAt = {
-        ...(filters.dateFrom ? { gte: new Date(filters.dateFrom) } : {}),
-        ...(filters.dateTo ? { lte: new Date(filters.dateTo) } : {}),
-      };
-    }
-    if (filters.followUpOverdue) {
-      where.nextFollowUp = { lt: new Date() };
-      if (!filters.status && !filters.isActive) {
-        where.status = { in: ACTIVE_LEAD_STATUSES };
-      }
-    }
-    if (filters.priority) {
-      const range = scoreRangeForPriority(filters.priority);
-      where.score = range;
-    }
-
+    const where = buildLeadWhere(orgId, filters);
     const skip = (filters.page - 1) * filters.limit;
 
     const [data, total] = await Promise.all([
@@ -202,6 +242,36 @@ export class LeadRepository {
     return { data, total };
   }
 
+  /**
+   * Streams every lead matching `filters` in keyset-paginated batches so memory
+   * stays bounded regardless of result size.
+   */
+  static async *iterateForExport(
+    orgId: string,
+    filters: LeadWhereFilters & Pick<LeadFilters, "sortBy" | "sortDir">,
+    batchSize = 500,
+  ): AsyncGenerator<LeadExportRow[]> {
+    const where = buildLeadWhere(orgId, filters);
+    const orderBy = leadExportOrderBy(filters.sortBy, filters.sortDir);
+    let cursor: string | undefined;
+    for (;;) {
+      const batch = await prisma.lead.findMany({
+        where,
+        select: LEAD_EXPORT_SELECT,
+        orderBy,
+        take: batchSize,
+        ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      });
+      if (batch.length === 0) return;
+      yield batch;
+      if (batch.length < batchSize) return;
+      cursor = batch[batch.length - 1]!.id;
+    }
+  }
+
+  static async countForExport(orgId: string, filters: LeadWhereFilters): Promise<number> {
+    return prisma.lead.count({ where: buildLeadWhere(orgId, filters) });
+  }
   static async findById(orgId: string, id: string) {
     return prisma.lead.findFirst({
       where: { id, orgId, deletedAt: null },

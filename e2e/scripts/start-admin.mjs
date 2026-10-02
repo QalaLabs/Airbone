@@ -6,6 +6,7 @@ import { join, resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
 import { startIsolatedApp, baseEnv } from './isolated-app.mjs'
+import { startMockGa4 } from './mock-ga4.mjs'
 import { assertSafeDatabaseUrl } from '../../admin/scripts/safe-db-check.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
@@ -22,6 +23,15 @@ const env = {
   AUTH_TRUST_HOST: 'true',
   PUBLIC_INTAKE_KEY: 'e2e-intake-key-not-a-secret',
   PUBLIC_ORG_SLUG: 'airborne-aviation',
+  // Deterministic fixture job source (test data only) for the ingestion E2E.
+  JOB_SOURCE_FIXTURE: '1',
+  // Document uploads go to a throwaway local directory instead of the GCS bucket.
+  STORAGE_LOCAL_DIR: join(tmpdir(), 'airbone-e2e-storage'),
+  // CMS changes purge the live E2E website copy (e2e/scripts/start-web-live.mjs).
+  WEBSITE_REVALIDATE_URL: `http://127.0.0.1:${Number(process.env.E2E_LIVE_WEB_PORT || 4101)}/api/revalidate`,
+  WEBSITE_REVALIDATE_SECRET: 'e2e-revalidate-secret-not-a-secret',
+  // GA4 Data API is a local deterministic mock with a key generated at startup.
+  ...startMockGa4(Number(process.env.E2E_MOCK_GA4_PORT || 4102)),
 }
 
 console.log(`[start-admin] ${assertSafeDatabaseUrl(env)}`)

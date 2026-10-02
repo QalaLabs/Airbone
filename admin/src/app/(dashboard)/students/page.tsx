@@ -3,7 +3,10 @@
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { type ColumnDef, type PaginationState, type SortingState } from "@tanstack/react-table";
-import { Search, Eye, MoreHorizontal, AlertCircle, CheckCircle2, XCircle } from "lucide-react";
+import { Search, Eye, MoreHorizontal, AlertCircle, CheckCircle2, XCircle, Upload } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { roleCan } from "@/lib/utils/permissions";
+import { StudentImportDialog } from "@/components/students/student-import-dialog";
 import { DataTable } from "@/components/shared/data-table";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
@@ -39,6 +42,9 @@ export default function StudentsPage() {
   const [search, setSearch] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState("all");
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
+  const [importOpen, setImportOpen] = React.useState(false);
+  const { data: session } = useSession();
+  const canImport = roleCan(session?.user?.role, "write", "students");
 
   React.useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 400);
@@ -182,7 +188,15 @@ export default function StudentsPage() {
       <PageHeader
         title="Student Database"
         description="Enrolled student records and status tracking."
+        action={
+          canImport ? (
+            <Button onClick={() => setImportOpen(true)} data-testid="student-import-open" className="bg-primary hover:bg-primary/90 text-white">
+              <Upload className="h-4 w-4 mr-2" /> Bulk Upload CSV
+            </Button>
+          ) : undefined
+        }
       />
+      <StudentImportDialog open={importOpen} onOpenChange={setImportOpen} />
 
       <div className="glass-card rounded-2xl p-5 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3 flex-1 max-w-md">

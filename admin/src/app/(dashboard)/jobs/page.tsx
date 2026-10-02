@@ -3,8 +3,11 @@
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ColumnDef, type PaginationState, type SortingState } from "@tanstack/react-table";
-import { Search, MoreHorizontal, Plus, Globe, Archive, Trash2, Pencil, AlertCircle, Eye, Lock, Briefcase } from "lucide-react";
+import { Search, MoreHorizontal, Plus, Globe, Archive, Trash2, Pencil, AlertCircle, Eye, Lock, Briefcase, Upload, CloudDownload } from "lucide-react";
+import { JobImportDialog } from "@/components/jobs/job-import-dialog";
+import { JobSourcesDialog } from "@/components/jobs/job-sources-dialog";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { DataTable } from "@/components/shared/data-table";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PageHeader } from "@/components/shared/page-header";
@@ -77,12 +80,23 @@ export default function JobsPage() {
   const [editor, setEditor] = React.useState<{ open: boolean; item: Job | null }>({ open: false, item: null });
   const [deleteTarget, setDeleteTarget] = React.useState<Job | null>(null);
   const [imageId, setImageId] = React.useState<string | null>(null);
+  const [importOpen, setImportOpen] = React.useState(false);
+  const [sourcesOpen, setSourcesOpen] = React.useState(false);
 
   const openEditor = (item: Job | null) => {
     const current = item?.metadata?.imageId;
     setImageId(typeof current === "string" ? current : null);
     setEditor({ open: true, item });
   };
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const wantsNew = searchParams.get("new") === "1";
+  React.useEffect(() => {
+    if (!wantsNew) return;
+    openEditor(null);
+    router.replace("/jobs", { scroll: false });
+  }, [wantsNew, router]);
 
   React.useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 400);
@@ -273,10 +287,20 @@ export default function JobsPage() {
         title="Jobs"
         description={`${data?.total ?? 0} total job listings`}
         action={
-          <Button onClick={() => openEditor(null)} className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20">
-            <Plus className="h-4 w-4 mr-2" />
-            Create Job
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => setSourcesOpen(true)} className="border-white/10">
+              <CloudDownload className="h-4 w-4 mr-2" />
+              External Sources
+            </Button>
+            <Button variant="outline" onClick={() => setImportOpen(true)} className="border-white/10">
+              <Upload className="h-4 w-4 mr-2" />
+              Bulk Upload CSV
+            </Button>
+            <Button onClick={() => openEditor(null)} className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20">
+              <Plus className="h-4 w-4 mr-2" />
+              Create Job
+            </Button>
+          </div>
         }
       />
 
@@ -441,6 +465,9 @@ export default function JobsPage() {
         onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
         loading={deleteMutation.isPending}
       />
+
+      <JobImportDialog open={importOpen} onOpenChange={setImportOpen} />
+      <JobSourcesDialog open={sourcesOpen} onOpenChange={setSourcesOpen} />
     </div>
   );
 }

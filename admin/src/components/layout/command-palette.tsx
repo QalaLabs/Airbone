@@ -2,13 +2,14 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Search, Command, CornerDownLeft, FileText, Users, GraduationCap, BookOpen, Briefcase, Settings, Star, ShieldCheck, Activity, Globe, Image as ImageIcon, PieChart, Mail, CalendarDays, Handshake } from "lucide-react";
+import { Search, Command, CornerDownLeft, FileText, Users, GraduationCap, BookOpen, Briefcase, Settings, Star, ShieldCheck, Activity, Globe, Image as ImageIcon, PieChart, Mail, CalendarDays, Handshake, PhoneCall } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { resolvePaletteKey, wrapIndex } from "./command-palette-keys";
 
 const MODULES = [
   { id: "dashboard", name: "Operations Dashboard", category: "Analytics & Core", shortcut: "G D", href: "/", icon: Activity },
-  { id: "leads", name: "Lead Management & CRM", category: "Core CRM", shortcut: "G L", href: "/leads", icon: Users },
+  { id: "leads", name: "All Leads", category: "Core CRM", shortcut: "G L", href: "/leads", icon: Users },
+  { id: "agent-calling", name: "Agent Calling", category: "Core CRM", shortcut: "G K", href: "/crm/agent-calling", icon: PhoneCall },
   { id: "admissions", name: "Admissions Workflow", category: "Operations", shortcut: "G A", href: "/admissions", icon: GraduationCap },
   { id: "students", name: "Student Management", category: "Operations", shortcut: "G S", href: "/students", icon: Users },
   { id: "courses", name: "Course Manager", category: "Academic", shortcut: "G C", href: "/courses", icon: BookOpen },
@@ -20,7 +21,7 @@ const MODULES = [
   { id: "analytics", name: "Analytics & Reports", category: "Analytics & Core", shortcut: "G N", href: "/crm/analytics", icon: PieChart },
   { id: "outreach", name: "Outreach & Templates", category: "Core CRM", shortcut: "G O", href: "/crm/outreach", icon: Mail },
   { id: "meetings", name: "Meetings", category: "Core CRM", shortcut: "G M T", href: "/crm/meetings", icon: CalendarDays },
-  { id: "deals", name: "Deals & Funnel", category: "Core CRM", shortcut: "G D L", href: "/crm/deals", icon: Handshake },
+  { id: "lead-pipeline", name: "Lead Pipeline", category: "Core CRM", shortcut: "G D L", href: "/crm/lead-pipeline", icon: Handshake },
   { id: "testimonials", name: "Testimonials Reviews", category: "Web & Content", shortcut: "G T", href: "/testimonials", icon: Star },
   { id: "users", name: "User Management & RBAC", category: "System", shortcut: "G U", href: "/users", icon: Users },
   { id: "settings", name: "System Settings", category: "System", shortcut: "G E", href: "/settings", icon: Settings },

@@ -132,13 +132,13 @@ test("deal lifecycle: ensure idempotent, guarded transitions, won/lost markers, 
     // Terminal stages are closed: any further edit is rejected outright.
     await assert.rejects(
       DealService.update(c, dealId, { stage: "DOCUMENT_COLLECTION" }),
-      (err) => hasDetail(err, /closed deal/),
+      (err) => hasDetail(err, /closed Lead Pipeline entry/),
     );
 
     // Closed deals reject non-stage edits entirely.
     await assert.rejects(
       DealService.update(c, dealId, { title: "Nope" }),
-      (err) => hasDetail(err, /closed deal/),
+      (err) => hasDetail(err, /closed Lead Pipeline entry/),
     );
 
     // 4. Assign persists the owner.

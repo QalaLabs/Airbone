@@ -19,7 +19,7 @@ export async function GET() {
     if (!org) return NextResponse.json({ data: null });
 
     const navMenus = await prisma.navMenu.findMany({
-      where: { orgId: org.id },
+      where: { orgId: org.id, isActive: true },
     });
 
     // Public surface only — org.settings is an allow-listed projection

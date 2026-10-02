@@ -1,5 +1,6 @@
 import { apiFetch } from "@/lib/api";
 import type { Meeting, MeetingsData } from "./types";
+import type { MeetingMode } from "./meeting-mode";
 
 export async function getMeetings(
   scope: "upcoming" | "past" | "all" = "upcoming",
@@ -15,6 +16,7 @@ export interface ScheduleMeetingInput {
   title?: string;
   dueAt: string;
   durationMins?: number;
+  mode?: MeetingMode;
   notes?: string;
   outcome?: string;
   metadata?: Record<string, unknown>;
@@ -31,6 +33,7 @@ export interface UpdateMeetingInput {
   title?: string;
   dueAt?: string;
   durationMins?: number;
+  mode?: MeetingMode;
   notes?: string;
   outcome?: string;
   metadata?: Record<string, unknown>;

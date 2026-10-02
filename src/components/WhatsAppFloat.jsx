@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { WHATSAPP_HREF } from '@/lib/whatsapp'
 
 export default function WhatsAppFloat() {
   const [visible, setVisible] = useState(true)
@@ -33,7 +34,8 @@ export default function WhatsAppFloat() {
   return (
     <div className={`whatsapp-float ${!visible ? 'whatsapp-hide' : ''}`}>
       <a
-        href="https://wa.me/919953777320"
+        href={WHATSAPP_HREF}
+        data-testid="whatsapp-float"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat on WhatsApp"

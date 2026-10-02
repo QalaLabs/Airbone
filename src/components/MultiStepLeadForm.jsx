@@ -9,6 +9,7 @@ import SubmitButton from '@/components/SubmitButton'
 import LeadEligibilityPrompt from '@/components/LeadEligibilityPrompt'
 import Honeypot from '@/components/Honeypot'
 import { HONEYPOT_FIELD } from '@/utils/honeypot'
+import { WHATSAPP_HREF } from '@/lib/whatsapp'
 
 const validators = { name: validateName, phone: validatePhone, email: validateEmailRequired, pincode: validatePincode, course: validateRequired }
 
@@ -253,7 +254,7 @@ export default function MultiStepLeadForm({ courseName = '', source = 'Multi-Ste
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
           <a href="tel:+919953777320" className="btn btn-outline" style={{ textDecoration: 'none', fontSize: '0.75rem', padding: '0.6rem 1rem' }}>📞 Call Us</a>
-          <a href="https://wa.me/919953777320" target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ textDecoration: 'none', fontSize: '0.75rem', padding: '0.6rem 1rem', borderColor: '#25D366', color: '#25D366' }}>💬 WhatsApp</a>
+          <a href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ textDecoration: 'none', fontSize: '0.75rem', padding: '0.6rem 1rem', borderColor: '#25D366', color: '#25D366' }}>💬 WhatsApp</a>
         </div>
         <LeadEligibilityPrompt courseCategory={courseCategory} />
       </div>

@@ -4,6 +4,7 @@ import { guard } from "@/lib/middleware/permissions";
 import { getRequestContext } from "@/lib/middleware/context";
 import { ok, handleError } from "@/lib/utils/response";
 import { publishPageSchema } from "@/lib/validations/page.schema";
+import { syncWebsiteContent } from "@/lib/website/revalidate";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -17,7 +18,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     const input = publishPageSchema.parse(body);
 
     const result = await PageService.publish(ctx, id, input);
-    return ok(result);
+    return ok({ ...result, websiteSync: await syncWebsiteContent("page", ctx.requestId) });
   } catch (err) {
     return handleError(err);
   }

@@ -1,10 +1,15 @@
 import { z } from "zod";
+import { safeHref } from "@/lib/cms/safe-content";
 
 const navItemSchema: z.ZodType<NavItem> = z.lazy(() =>
   z.object({
     id: z.string().uuid(),
     label: z.string().min(1).max(255),
-    url: z.string().min(1).max(2048),
+    url: z
+      .string()
+      .min(1)
+      .max(2048)
+      .refine((u) => safeHref(u) !== null, "Use a site path (/courses), #anchor, or an http(s), mailto: or tel: link"),
     target: z.enum(["_self", "_blank"]).optional().default("_self"),
     icon: z.string().max(100).nullable().optional(),
     isVisible: z.boolean().optional().default(true),

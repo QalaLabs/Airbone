@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { type ColumnDef, type PaginationState, type SortingState } from "@tanstack/react-table";
-import { Plus, Search, Filter, MoreHorizontal, Eye, CheckSquare, UserCheck, Sparkles, SlidersHorizontal, ChevronDown, AlertCircle, Trash2, Upload } from "lucide-react";
+import { Plus, Search, Filter, MoreHorizontal, Eye, CheckSquare, UserCheck, Sparkles, SlidersHorizontal, ChevronDown, AlertCircle, Trash2, Upload, Download, Radio } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
@@ -27,7 +27,9 @@ import { LeadImportDialog } from "@/components/crm/lead-import-dialog";
 import { apiFetch } from "@/lib/api";
 import { bulkAssignLeads } from "@/lib/crm/deals";
 import { formatDate } from "@/lib/utils";
-import { isActiveStatus } from "@/lib/leads/lead-status";
+import { isActiveStatus, INITIAL_LEAD_STATUSES, statusLabel } from "@/lib/leads/lead-status";
+import { LEAD_SOURCE_OPTIONS, leadSourceLabel } from "@/lib/leads/lead-source";
+import { roleCan } from "@/lib/utils/permissions";
 import type { LeadStatus } from "@prisma/client";
 import { toast } from "@/components/ui/use-toast";
 import { motion } from "framer-motion";
@@ -58,6 +60,7 @@ const createLeadSchema = z.object({
   email: z.string().email("Invalid email"),
   phone: z.string().min(10, "Phone must be at least 10 characters"),
   source: z.string().min(1, "Source is required"),
+  status: z.string().min(1, "Initial status is required"),
   courseInterest: z.string().optional(),
   pincode: z.string().max(10).optional(),
   manualAmount: z.coerce.number().nonnegative().optional(),
@@ -66,7 +69,6 @@ const createLeadSchema = z.object({
 
 type CreateLeadForm = z.infer<typeof createLeadSchema>;
 
-const LEAD_SOURCES = ["HOMEPAGE_CTA", "COURSE_PAGE", "CONTACT_FORM", "CALLBACK_REQUEST", "BROCHURE_DOWNLOAD", "GOOGLE_ADS", "FACEBOOK_ADS", "ORGANIC", "REFERRAL", "WHATSAPP", "DIRECT"];
 const LEAD_STATUSES = [
   "active", "all", "NEW", "CONNECTED", "CALL_BACK", "INTERESTED", "PROSPECT", "WON",
   "NOT_CONNECTED", "RINGING", "NOT_REACHABLE", "SWITCHED_OFF", "VOICEMAIL",
@@ -81,6 +83,7 @@ export default function LeadsPage() {
     session?.user?.role === "ADMIN" ||
     session?.user?.role === "SUPER_ADMIN" ||
     session?.user?.role === "MARKETING_MANAGER";
+  const canExport = roleCan(session?.user?.role, "export", "leads");
   // Mirrors PERMISSION_MATRIX: only ADMIN / SUPER_ADMIN hold `delete` on leads.
   const canDelete = session?.user?.role === "ADMIN" || session?.user?.role === "SUPER_ADMIN";
   const [deleteTargets, setDeleteTargets] = React.useState<{ id: string; name: string }[]>([]);
@@ -92,6 +95,11 @@ export default function LeadsPage() {
   const [priorityFilter, setPriorityFilter] = React.useState("all");
   const [counsellorFilter, setCounsellorFilter] = React.useState("all");
   const [overdueOnly, setOverdueOnly] = React.useState(false);
+  const [sourceFilter, setSourceFilter] = React.useState("all");
+  const [dateDraft, setDateDraft] = React.useState({ from: "", to: "" });
+  const [dateRange, setDateRange] = React.useState({ from: "", to: "" });
+  const [dateError, setDateError] = React.useState<string | null>(null);
+  const [exporting, setExporting] = React.useState(false);
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
   const [createOpen, setCreateOpen] = React.useState(false);
   const [importOpen, setImportOpen] = React.useState(false);
@@ -107,20 +115,75 @@ export default function LeadsPage() {
     queryFn: () => apiFetch<{ id: string; name: string }[]>("/users?role=ADMISSIONS_COUNSELOR&limit=100"),
   });
 
-  const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["leads", pagination.pageIndex, pagination.pageSize, sorting, debouncedSearch, statusFilter, priorityFilter, counsellorFilter, overdueOnly],
-    queryFn: async () => {
-      const params = new URLSearchParams({
-        page: String(pagination.pageIndex + 1),
-        limit: String(pagination.pageSize),
+  // Filters shared by the paginated list and the CSV export so both hit the same server query.
+  const filterParams = React.useMemo(
+    () =>
+      new URLSearchParams({
         ...(sorting.length > 0 && sorting[0] ? { sortBy: sorting[0].id, sortDir: sorting[0].desc ? "desc" : "asc" } : {}),
         ...(debouncedSearch ? { search: debouncedSearch } : {}),
         ...(statusFilter === "active" ? { isActive: "true" } : {}),
         ...(statusFilter && statusFilter !== "all" && statusFilter !== "active" ? { status: statusFilter } : {}),
         ...(priorityFilter && priorityFilter !== "all" ? { priority: priorityFilter } : {}),
         ...(counsellorFilter && counsellorFilter !== "all" ? { assignedTo: counsellorFilter } : {}),
+        ...(sourceFilter && sourceFilter !== "all" ? { source: sourceFilter } : {}),
         ...(overdueOnly ? { followUpOverdue: "true" } : {}),
-      });
+        ...(dateRange.from ? { dateFrom: dateRange.from } : {}),
+        ...(dateRange.to ? { dateTo: dateRange.to } : {}),
+      }),
+    [sorting, debouncedSearch, statusFilter, priorityFilter, counsellorFilter, sourceFilter, overdueOnly, dateRange],
+  );
+
+  React.useEffect(() => {
+    setPagination((p) => (p.pageIndex === 0 ? p : { ...p, pageIndex: 0 }));
+  }, [debouncedSearch, statusFilter, priorityFilter, counsellorFilter, sourceFilter, overdueOnly, dateRange]);
+
+  const applyDateRange = () => {
+    if (dateDraft.from && dateDraft.to && dateDraft.from > dateDraft.to) {
+      setDateError("Start date must be on or before the end date");
+      return;
+    }
+    setDateError(null);
+    setDateRange({ ...dateDraft });
+  };
+
+  const clearDateRange = () => {
+    setDateError(null);
+    setDateDraft({ from: "", to: "" });
+    setDateRange({ from: "", to: "" });
+  };
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const res = await fetch(`/api/v1/leads/export?${filterParams.toString()}`, { credentials: "include" });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+        throw new Error(body?.error?.message ?? `HTTP ${res.status}`);
+      }
+      const rows = res.headers.get("X-Total-Count");
+      const filename = /filename="([^"]+)"/.exec(res.headers.get("Content-Disposition") ?? "")?.[1] ?? "leads.csv";
+      const url = URL.createObjectURL(await res.blob());
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast({ title: "Export ready", description: `${rows ?? "All"} matching lead(s) exported to ${filename}.` });
+    } catch (err) {
+      toast({ title: "Export failed", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ["leads", pagination.pageIndex, pagination.pageSize, filterParams.toString()],
+    queryFn: async () => {
+      const params = new URLSearchParams(filterParams);
+      params.set("page", String(pagination.pageIndex + 1));
+      params.set("limit", String(pagination.pageSize));
       // Save filters for Previous/Next navigation in the lead detail view
       if (typeof window !== "undefined") {
         sessionStorage.setItem("lastLeadFilters", params.toString());
@@ -152,7 +215,7 @@ export default function LeadsPage() {
 
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<CreateLeadForm>({
     resolver: zodResolver(createLeadSchema),
-    defaultValues: { source: "GOOGLE_ADS" },
+    defaultValues: { source: "GOOGLE_ADS", status: "NEW" },
   });
 
   const createMutation = useMutation({
@@ -272,7 +335,7 @@ export default function LeadsPage() {
       header: "Source Channel",
       cell: ({ row }) => (
         <span className="text-xs font-medium text-muted-foreground bg-secondary/60 px-2 py-1 rounded-md border border-white/5">
-          {row.original.source.replace(/_/g, " ")}
+          {leadSourceLabel(row.original.source)}
         </span>
       ),
     },
@@ -373,10 +436,22 @@ export default function LeadsPage() {
   return (
     <div className="space-y-6 pb-12">
       <PageHeader
-        title="Lead Management CRM"
+        title="All Leads"
         description="Comprehensive omnichannel lead intake, routing, and priority queue management."
         action={
           <div className="flex items-center gap-2">
+            {canExport && (
+              <Button
+                variant="outline"
+                onClick={handleExport}
+                disabled={exporting}
+                className="border-white/10 text-sm font-semibold"
+                title="Download every lead matching the current filters as CSV"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                {exporting ? "Exporting..." : "Export CSV"}
+              </Button>
+            )}
             {canDelete && (
               <Button asChild variant="outline" className="border-white/10 text-sm font-semibold">
                 <Link href="/leads/trash">
@@ -455,6 +530,19 @@ export default function LeadsPage() {
               </SelectContent>
             </Select>
 
+            <Select value={sourceFilter} onValueChange={setSourceFilter}>
+              <SelectTrigger aria-label="Source filter" className="w-40 bg-secondary/40 border-white/10 text-xs font-semibold">
+                <Radio className="mr-2 h-3.5 w-3.5 text-sky-400" />
+                <SelectValue placeholder="Source" />
+              </SelectTrigger>
+              <SelectContent className="glass-panel border-white/10 text-xs">
+                <SelectItem value="all">All Sources</SelectItem>
+                {LEAD_SOURCE_OPTIONS.map((s) => (
+                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
             <Button
               type="button"
               size="sm"
@@ -466,6 +554,51 @@ export default function LeadsPage() {
               Overdue follow-ups
             </Button>
           </div>
+        </div>
+
+        <div className="flex flex-wrap items-end gap-3" aria-label="Created date filter">
+          <div className="space-y-1">
+            <Label htmlFor="lead-date-from" className="text-[11px] font-bold text-muted-foreground">Created from (IST)</Label>
+            <Input
+              id="lead-date-from"
+              type="date"
+              value={dateDraft.from}
+              max={dateDraft.to || undefined}
+              onChange={(e) => setDateDraft((d) => ({ ...d, from: e.target.value }))}
+              className="h-9 w-40 bg-secondary/40 border-white/10 text-xs"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="lead-date-to" className="text-[11px] font-bold text-muted-foreground">Created to (IST)</Label>
+            <Input
+              id="lead-date-to"
+              type="date"
+              value={dateDraft.to}
+              min={dateDraft.from || undefined}
+              onChange={(e) => setDateDraft((d) => ({ ...d, to: e.target.value }))}
+              className="h-9 w-40 bg-secondary/40 border-white/10 text-xs"
+            />
+          </div>
+          <Button type="button" size="sm" className="h-9 text-xs font-bold" onClick={applyDateRange}>
+            Apply dates
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="h-9 text-xs font-bold border-white/10"
+            onClick={clearDateRange}
+            disabled={!dateDraft.from && !dateDraft.to && !dateRange.from && !dateRange.to}
+          >
+            Clear dates
+          </Button>
+          {(dateRange.from || dateRange.to) && !dateError && (
+            <span className="text-[11px] text-muted-foreground" data-testid="active-date-range">
+              Showing leads created {dateRange.from ? `from ${dateRange.from}` : ""}{dateRange.from && dateRange.to ? " " : ""}
+              {dateRange.to ? `to ${dateRange.to}` : ""} (IST)
+            </span>
+          )}
+          {dateError && <span role="alert" className="text-[11px] font-semibold text-destructive">{dateError}</span>}
         </div>
 
         {/* Bulk Actions Toolbar */}
@@ -576,10 +709,23 @@ export default function LeadsPage() {
                   className="flex h-9 w-full rounded-lg border border-white/10 bg-secondary/40 px-3 py-1 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                   {...register("source")}
                 >
-                  {LEAD_SOURCES.map((s) => (
-                    <option key={s} value={s} className="bg-slate-900">{s.replace(/_/g, " ")}</option>
+                  {LEAD_SOURCE_OPTIONS.map((s) => (
+                    <option key={s.value} value={s.value} className="bg-slate-900">{s.label}</option>
                   ))}
                 </select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="status" className="text-xs font-bold text-muted-foreground">Initial Status *</Label>
+                <select
+                  id="status"
+                  className="flex h-9 w-full rounded-lg border border-white/10 bg-secondary/40 px-3 py-1 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+                  {...register("status")}
+                >
+                  {INITIAL_LEAD_STATUSES.map((s) => (
+                    <option key={s} value={s} className="bg-slate-900">{statusLabel(s)}</option>
+                  ))}
+                </select>
+                {errors.status && <p className="text-xs text-destructive">{errors.status.message}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="courseInterest" className="text-xs font-bold text-muted-foreground">Course Interest</Label>

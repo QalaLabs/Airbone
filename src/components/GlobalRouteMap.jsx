@@ -1,83 +1,21 @@
 'use client'
 
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, useSyncExternalStore } from 'react'
 import { motion, useInView, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
+import { DESTINATIONS, HUB_POINT, REGION_COLORS, CITY_LIGHTS, GRATICULE, PANEL_GROUPS, DESKTOP_VIEWBOX, MOBILE_VIEWBOX, LABEL_FONT, routeArc } from '@/lib/routeMap'
+import { WORLD_LAND_PATH } from '@/lib/worldLand'
+
 if (typeof window !== 'undefined') gsap.registerPlugin(ScrollTrigger)
 
-/* ─────────────────────────────────────────────────────────
-   COORDINATE SYSTEM: equirectangular, viewBox "0 0 1000 500"
-   DEL (Delhi Hub) is manual coordinate x: 714, y: 170.
-   All other coordinates are visual/stylized.
-───────────────────────────────────────────────────────── */
-const HUB = { x: 714, y: 170 }
+/* Real airport positions projected onto viewBox "0 0 1000 500" — see lib/routeMap.js */
+const HUB = HUB_POINT
+const REGION = Object.fromEntries(Object.entries(REGION_COLORS).map(([name, color]) => [name, { color }]))
 
-/* ─── Region palette ─── */
-const REGION = {
-  'North America': { color: '#DB241E' },
-  Europe:          { color: '#fb923c' },
-  'Middle East':   { color: '#D8A027' },
-  India:           { color: '#facc15' },
-  'SE Asia':       { color: '#a855f7' }
-}
-
-/* ─── Airport positions ─── */
-const DESTINATIONS = [
-  // India (Domestic)
-  { id: 'bom', city: 'MUMBAI', iata: 'BOM', region: 'India', x: 685, y: 220, airline: 'IndiGo', pos: 'First Officer', alumni: 'Ruzal Dhral', year: '2024', labelAlign: 'left' },
-  { id: 'goi', city: 'GOA', iata: 'GOI', region: 'India', x: 695, y: 250, airline: 'GoFirst', pos: 'Cadet', alumni: 'Naveen Kumar', year: '2023', labelAlign: 'right' },
-  { id: 'blr', city: 'BENGALURU', iata: 'BLR', region: 'India', x: 710, y: 280, airline: 'Air India', pos: 'First Officer', alumni: 'Nipun Singh', year: '2023', labelAlign: 'right' },
-  { id: 'hyd', city: 'HYDERABAD', iata: 'HYD', region: 'India', x: 730, y: 240, airline: 'Akasa', pos: 'Cadet', alumni: 'Adesh Yadav', year: '2024', labelAlign: 'right' },
-  { id: 'maa', city: 'CHENNAI', iata: 'MAA', region: 'India', x: 740, y: 280, airline: 'IndiGo', pos: 'Cadet', alumni: 'Priyanshi K.', year: '2024', labelAlign: 'right' },
-  
-  // Middle East
-  { id: 'ruh', city: 'RIYADH', country: 'SAUDI ARABIA', iata: 'RUH', region: 'Middle East', x: 610, y: 195, airline: 'Saudia', pos: 'Cadet', alumni: 'Arjun Mehta', year: '2024', labelAlign: 'left' },
-  { id: 'doh', city: 'DOHA', country: 'QATAR', iata: 'DOH', region: 'Middle East', x: 625, y: 225, airline: 'Qatar Airways', pos: 'Cadet', alumni: 'Kartik Juneja', year: '2023', labelAlign: 'left' },
-  { id: 'auh', city: 'ABU DHABI', country: 'UAE', iata: 'AUH', region: 'Middle East', x: 640, y: 255, airline: 'Etihad', pos: 'First Officer', alumni: 'Nabansh Sardana', year: '2023', labelAlign: 'left' },
-  { id: 'mct', city: 'MUSCAT', country: 'OMAN', iata: 'MCT', region: 'Middle East', x: 655, y: 285, airline: 'Oman Air', pos: 'First Officer', alumni: 'Deepak Mohan', year: '2023', labelAlign: 'left' },
-  
-  // Europe
-  { id: 'lhr', city: 'LONDON', country: 'UK', iata: 'LHR', region: 'Europe', x: 483, y: 100, airline: 'Air India', pos: 'First Officer', alumni: 'Nipun Singh', year: '2023', labelAlign: 'left' },
-  { id: 'ams', city: 'AMSTERDAM', country: 'NETHERLANDS', iata: 'AMS', region: 'Europe', x: 515, y: 96, airline: 'KLM', pos: 'First Officer', alumni: 'Vikram Pandey', year: '2022', labelAlign: 'right' },
-  { id: 'fra', city: 'FRANKFURT', country: 'GERMANY', iata: 'FRA', region: 'Europe', x: 538, y: 114, airline: 'Lufthansa', pos: 'Cadet', alumni: 'Shreya Kapoor', year: '2024', labelAlign: 'right', labelDy: 9 },
-  
-  // North America
-  { id: 'yvr', city: 'VANCOUVER', country: 'CANADA', iata: 'YVR', region: 'North America', x: 158, y: 113, airline: 'Air India', pos: 'First Officer', alumni: 'Naman Gupta', year: '2024', labelAlign: 'right' },
-  { id: 'jfk', city: 'NEW YORK', country: 'USA', iata: 'JFK', region: 'North America', x: 295, y: 137, airline: 'Air India', pos: 'First Officer', alumni: 'Rahul Sethi', year: '2023', labelAlign: 'right' },
-  
-  // SE Asia
-  { id: 'bkk', city: 'BANGKOK', country: 'THAILAND', iata: 'BKK', region: 'SE Asia', x: 785, y: 220, airline: 'Thai Airways', pos: 'Cadet', alumni: 'Rohit Verma', year: '2024', labelAlign: 'right' },
-  { id: 'kul', city: 'KUALA LUMPUR', country: 'MALAYSIA', iata: 'KUL', region: 'SE Asia', x: 795, y: 255, airline: 'AirAsia', pos: 'First Officer', alumni: 'Priya Madan', year: '2023', labelAlign: 'right' },
-  { id: 'sin', city: 'SINGAPORE', country: 'SINGAPORE', iata: 'SIN', region: 'SE Asia', x: 810, y: 285, airline: 'Singapore Airlines', pos: 'First Officer', alumni: 'Ankit Sharma', year: '2022', labelAlign: 'right' }
-]
-
-/* ─── Right panel groups ─── */
-const PANEL_GROUPS = [
-  { label: 'India', color: '#facc15', items: [
-    { airline: 'IndiGo', route: 'DEL • BOM • MAA' },
-    { airline: 'Air India', route: 'DEL • BLR' },
-    { airline: 'Akasa Air', route: 'DEL • HYD' }
-  ]},
-  { label: 'Middle East', color: '#D8A027', items: [
-    { airline: 'Emirates', route: 'DEL • DXB' },
-    { airline: 'Qatar Airways', route: 'DEL • DOH' },
-    { airline: 'Etihad Airways', route: 'DEL • AUH' },
-    { airline: 'Saudia', route: 'DEL • RUH' },
-    { airline: 'Oman Air', route: 'DEL • MCT' }
-  ]},
-  { label: 'SE Asia', color: '#a855f7', items: [
-    { airline: 'Singapore Airlines', route: 'DEL • SIN' },
-    { airline: 'AirAsia', route: 'DEL • KUL' },
-    { airline: 'Thai Airways', route: 'DEL • BKK' }
-  ]},
-  { label: 'Europe', color: '#fb923c', items: [
-    { airline: 'Air India', route: 'DEL • LHR' },
-    { airline: 'Lufthansa', route: 'DEL • FRA' },
-    { airline: 'KLM', route: 'DEL • AMS' }
-  ]}
-]
+/* Mobile frames the Europe → SE Asia corridor; the Americas are listed under the map. */
+const OFF_FRAME_ON_MOBILE = DESTINATIONS.filter(d => d.region === 'North America')
 
 /* ─── Metrics data ─── */
 const STATS = [
@@ -137,112 +75,24 @@ const STATS = [
   }
 ]
 
-/* ─── Continent outlines equirectangular 1000×500 ─── */
-const CONTINENTS = [
-  'M 28,58 L 61,56 L 100,67 L 128,58 L 150,53 L 192,47 L 242,47 L 281,72 L 317,83 L 342,103 L 347,117 L 322,120 L 300,131 L 289,156 L 278,183 L 261,197 L 253,219 L 208,200 L 186,200 L 167,175 L 153,144 L 145,111 L 111,94 L 72,83 Z',
-  'M 347,25 L 378,14 L 408,22 L 411,42 L 394,50 L 369,50 L 353,39 Z',
-  'M 281,222 L 297,217 L 319,217 L 367,225 L 400,256 L 403,278 L 381,317 L 358,350 L 336,344 L 314,369 L 306,400 L 289,386 L 292,358 L 281,319 L 275,278 L 278,250 Z',
-  'M 478,150 L 476,125 L 486,111 L 483,94 L 500,89 L 519,89 L 531,100 L 564,97 L 578,92 L 581,58 L 592,61 L 589,117 L 581,128 L 578,133 L 567,144 L 556,142 L 544,142 L 536,131 L 519,133 L 511,133 L 508,139 L 494,142 L 483,147 Z',
-  'M 478,147 L 503,147 L 528,144 L 556,150 L 589,161 L 594,169 L 644,219 L 617,253 L 606,278 L 594,317 L 553,347 L 517,325 L 508,300 L 519,278 L 531,264 L 525,242 L 506,233 L 500,236 L 472,222 L 456,208 L 467,192 L 475,175 Z',
-  'M 594,117 L 617,117 L 636,131 L 650,156 L 664,150 L 686,139 L 722,122 L 753,103 L 806,78 L 853,64 L 906,56 L 942,78 L 917,100 L 908,111 L 892,119 L 878,133 L 856,153 L 833,164 L 822,183 L 806,206 L 789,228 L 775,242 L 767,247 L 756,244 L 742,228 L 728,214 L 719,200 L 714,197 L 708,200 L 700,214 L 694,222 L 681,219 L 664,214 L 650,208 L 644,219 L 636,206 L 625,189 L 619,175 L 611,156 L 603,147 L 597,139 Z',
-  'M 669,150 L 683,148 L 706,147 L 728,153 L 742,167 L 739,181 L 731,197 L 723,211 L 717,222 L 711,225 L 706,222 L 697,214 L 689,200 L 681,186 L 675,170 Z',
-  'M 569,158 L 581,150 L 597,150 L 614,156 L 628,167 L 636,181 L 644,197 L 644,211 L 633,219 L 625,219 L 614,211 L 608,200 L 600,186 L 592,172 L 583,167 Z',
-  'M 756,192 L 769,194 L 778,200 L 781,211 L 783,228 L 775,242 L 764,247 L 753,247 L 744,244 L 739,236 L 728,225 L 728,214 Z',
-  'M 764,247 L 769,253 L 772,261 L 769,267 L 764,261 L 761,253 Z',
-  'M 803,278 L 814,261 L 828,253 L 853,258 L 869,267 L 881,275 L 894,289 L 903,308 L 906,325 L 894,342 L 875,353 L 850,353 L 825,342 L 808,325 L 803,308 L 806,294 Z',
-  'M 936,336 L 942,325 L 950,328 L 950,339 L 944,344 Z',
-  'M 869,144 L 878,136 L 886,142 L 883,150 L 875,153 Z'
-]
-
-/* ─── Dotted city lights textures coordinates — 100+ points distributed globally ─── */
-const CITY_LIGHTS = [
-  // North America
-  { x: 100, y: 120 }, { x: 110, y: 115 }, { x: 120, y: 110 }, { x: 130, y: 90 },
-  { x: 140, y: 85 }, { x: 150, y: 110 }, { x: 160, y: 105 }, { x: 170, y: 115 },
-  { x: 180, y: 125 }, { x: 190, y: 130 }, { x: 200, y: 140 }, { x: 210, y: 145 },
-  { x: 220, y: 135 }, { x: 230, y: 130 }, { x: 240, y: 125 }, { x: 250, y: 120 },
-  { x: 260, y: 115 }, { x: 270, y: 110 }, { x: 280, y: 115 }, { x: 290, y: 120 },
-  { x: 300, y: 125 }, { x: 310, y: 130 }, { x: 320, y: 135 }, { x: 285, y: 145 },
-  { x: 295, y: 150 }, { x: 305, y: 155 }, { x: 315, y: 160 }, { x: 325, y: 165 },
-  // South America
-  { x: 290, y: 240 }, { x: 300, y: 250 }, { x: 310, y: 260 }, { x: 320, y: 280 },
-  { x: 330, y: 300 }, { x: 340, y: 320 }, { x: 350, y: 340 }, { x: 360, y: 350 },
-  { x: 370, y: 330 }, { x: 380, y: 310 }, { x: 390, y: 290 }, { x: 355, y: 270 },
-  // Europe
-  { x: 485, y: 95 }, { x: 495, y: 100 }, { x: 505, y: 105 }, { x: 515, y: 110 },
-  { x: 525, y: 115 }, { x: 535, y: 120 }, { x: 545, y: 125 }, { x: 555, y: 130 },
-  { x: 500, y: 90 }, { x: 510, y: 95 }, { x: 520, y: 100 }, { x: 530, y: 105 },
-  { x: 540, y: 110 }, { x: 550, y: 115 }, { x: 560, y: 120 }, { x: 570, y: 125 },
-  // Africa
-  { x: 490, y: 180 }, { x: 500, y: 190 }, { x: 510, y: 200 }, { x: 520, y: 220 },
-  { x: 530, y: 240 }, { x: 540, y: 260 }, { x: 550, y: 280 }, { x: 560, y: 300 },
-  { x: 570, y: 320 }, { x: 580, y: 310 }, { x: 590, y: 290 }, { x: 600, y: 270 },
-  // Middle East
-  { x: 590, y: 180 }, { x: 600, y: 185 }, { x: 610, y: 190 }, { x: 620, y: 195 },
-  { x: 630, y: 200 }, { x: 640, y: 205 }, { x: 605, y: 200 }, { x: 615, y: 205 },
-  { x: 625, y: 210 }, { x: 635, y: 215 }, { x: 645, y: 220 }, { x: 650, y: 210 },
-  // India
-  { x: 680, y: 190 }, { x: 690, y: 195 }, { x: 700, y: 200 }, { x: 710, y: 205 },
-  { x: 720, y: 210 }, { x: 730, y: 215 }, { x: 685, y: 210 }, { x: 695, y: 215 },
-  { x: 705, y: 220 }, { x: 715, y: 225 }, { x: 725, y: 230 }, { x: 735, y: 235 },
-  // East Asia & China
-  { x: 740, y: 120 }, { x: 750, y: 125 }, { x: 760, y: 130 }, { x: 770, y: 135 },
-  { x: 780, y: 140 }, { x: 790, y: 145 }, { x: 800, y: 150 }, { x: 810, y: 155 },
-  { x: 820, y: 160 }, { x: 830, y: 165 }, { x: 840, y: 170 }, { x: 850, y: 175 },
-  { x: 765, y: 110 }, { x: 775, y: 115 }, { x: 785, y: 120 }, { x: 795, y: 125 },
-  { x: 805, y: 130 }, { x: 815, y: 135 }, { x: 825, y: 140 }, { x: 835, y: 145 },
-  // SE Asia
-  { x: 760, y: 210 }, { x: 770, y: 215 }, { x: 780, y: 220 }, { x: 790, y: 225 },
-  { x: 800, y: 230 }, { x: 810, y: 235 }, { x: 775, y: 230 }, { x: 785, y: 235 },
-  { x: 795, y: 240 }, { x: 805, y: 245 }, { x: 815, y: 250 }, { x: 820, y: 260 },
-  // Australia
-  { x: 820, y: 310 }, { x: 830, y: 315 }, { x: 840, y: 320 }, { x: 850, y: 325 },
-  { x: 860, y: 330 }, { x: 870, y: 335 }, { x: 835, y: 330 }, { x: 845, y: 335 },
-  { x: 855, y: 340 }, { x: 865, y: 345 }, { x: 875, y: 350 }, { x: 880, y: 340 }
-]
-
-/* ─── Perpendicular custom bezier arc calculator ─── */
-function arcPath([x1, y1], [x2, y2], region, id) {
-  const cx = (x1 + x2) / 2
-  const cy = (y1 + y2) / 2
-  
-  let px = cx
-  let py = cy
-  
-  const dx = x2 - x1
-  const dy = y2 - y1
-  const dist = Math.sqrt(dx * dx + dy * dy)
-  
-  if (region === 'India') {
-    if (id === 'bom' || id === 'goi' || id === 'blr') {
-      px = cx - dist * 0.14
-      py = cy + dist * 0.18
-    } else {
-      px = cx + dist * 0.14
-      py = cy + dist * 0.18
-    }
-  } else if (region === 'SE Asia') {
-    px = cx + dist * 0.1
-    py = cy + dist * 0.18
-  } else if (region === 'Middle East') {
-    px = cx - dist * 0.05
-    py = cy - dist * 0.28
-  } else if (region === 'Europe') {
-    px = cx - dist * 0.02
-    py = cy - dist * 0.24
-  } else if (region === 'North America') {
-    px = cx - dist * 0.05
-    py = cy - dist * 0.22
-  }
-  
-  return `M ${x1} ${y1} Q ${px} ${py} ${x2} ${y2}`
+/* Server snapshot is false, so SSR and hydration agree; the client value follows. */
+function useMediaQuery(query) {
+  return useSyncExternalStore(
+    (onChange) => {
+      const mq = window.matchMedia(query)
+      mq.addEventListener('change', onChange)
+      return () => mq.removeEventListener('change', onChange)
+    },
+    () => window.matchMedia(query).matches,
+    () => false
+  )
 }
 
 /* ─── Hub pulse rings definition ─── */
 const HUB_RINGS = [
-  { r0: 10, r1: 35, dur: 2.8, begin: '0s',   sw: 2,   sc: 'rgba(219,36,30,0.5)'  },
-  { r0: 18, r1: 65, dur: 4.2, begin: '0.8s', sw: 1.5, sc: 'rgba(219,36,30,0.25)' },
-  { r0: 15, r1: 90, dur: 6.0, begin: '1.8s', sw: 1,   sc: 'rgba(216,160,39,0.15)' },
+  { r0: 5, r1: 20, dur: 2.8, begin: '0s',   sw: 1.4, sc: 'rgba(219,36,30,0.5)'  },
+  { r0: 8, r1: 36, dur: 4.2, begin: '0.8s', sw: 1.1, sc: 'rgba(219,36,30,0.25)' },
+  { r0: 7, r1: 52, dur: 6.0, begin: '1.8s', sw: 0.8, sc: 'rgba(216,160,39,0.15)' },
 ]
 
 /* ─── Dust particles ─── */
@@ -334,23 +184,9 @@ export default function GlobalRouteMap() {
   const [hovered, setHovered]   = useState(null)
   const [tooltip, setTooltip]   = useState(null)
   const [pinned, setPinned]     = useState(null)
-  const [reducedMotion, setReducedMotion] = useState(() =>
-    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  )
-  const [isMobile, setIsMobile] = useState(() =>
-    typeof window !== 'undefined' && window.innerWidth < 769
-  )
-
-  /* Respect prefers-reduced-motion + cut particle density on small screens */
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const onMqChange = e => setReducedMotion(e.matches)
-    mq.addEventListener('change', onMqChange)
-    const onResize = () => setIsMobile(window.innerWidth < 769)
-    window.addEventListener('resize', onResize)
-    return () => { mq.removeEventListener('change', onMqChange); window.removeEventListener('resize', onResize) }
-  }, [])
+  /* Respect prefers-reduced-motion + cut particle density / reframe on small screens */
+  const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
+  const isMobile      = useMediaQuery('(max-width: 768px)')
 
   /* GSAP scroll-driven micro-scale */
   useEffect(() => {
@@ -376,16 +212,17 @@ export default function GlobalRouteMap() {
   /* Tooltip coordination */
   function handleEnter(i) {
     setHovered(i)
-    const rect  = svgRef.current?.getBoundingClientRect()
+    const svg   = svgRef.current
+    const ctm   = svg?.getScreenCTM?.()
     const sRect = sectionRef.current?.getBoundingClientRect()
-    if (!rect || !sRect) return
+    if (!svg || !ctm || !sRect) return
     const dest = DESTINATIONS[i]
-    const sx = rect.width  / 1000
-    const sy = rect.height / 500
-    setTooltip({ 
-      x: rect.left - sRect.left + dest.x * sx, 
-      y: rect.top - sRect.top + dest.y * sy - 65, 
-      dest 
+    // Screen position of the marker under whichever viewBox is active.
+    const pt = new DOMPoint(dest.x, dest.y).matrixTransform(ctm)
+    setTooltip({
+      x: pt.x - sRect.left,
+      y: pt.y - sRect.top - 65,
+      dest
     })
   }
   function handleLeave() { if (pinned === null) { setHovered(null); setTooltip(null) } }
@@ -399,11 +236,11 @@ export default function GlobalRouteMap() {
   const mapScrollY  = useTransform(scrollYProgress, [0,1], ['0%','-3%'])
 
   /* SVG node scaling specs */
-  const SW_ROUTE   = 1.15
-  const SW_GLOW    = 2.8
-  const R_OUTER    = 7.0
-  const R_INNER    = 4.5
-  const R_CORE     = 3.0
+  const SW_ROUTE   = 1.0
+  const SW_GLOW    = 2.4
+  const R_OUTER    = 4.6
+  const R_INNER    = 3.2
+  const R_CORE     = 2.0
 
   return (
     <section
@@ -465,8 +302,11 @@ export default function GlobalRouteMap() {
           <div className="grm-map-canvas" style={{ position:'relative', flex:'1 1 auto', minWidth:0 }}>
           <motion.svg
             ref={svgRef}
-            viewBox="0 0 1000 500"
-            style={{ width:'100%', height:'auto', display:'block', overflow:'visible' }}
+            data-testid="route-map"
+            role="img"
+            aria-label="Map of routes flown by Airborne alumni from Delhi"
+            viewBox={isMobile ? MOBILE_VIEWBOX : DESKTOP_VIEWBOX}
+            style={{ width:'100%', height:'auto', display:'block', overflow: isMobile ? 'hidden' : 'visible' }}
             preserveAspectRatio="xMidYMid meet"
             initial={{ opacity:0 }}
             animate={inView?{opacity:1}:{}}
@@ -534,38 +374,19 @@ export default function GlobalRouteMap() {
             </defs>
 
             {/* ─ Longitude / Latitude dashed grid ─ */}
-            <g stroke="rgba(56,189,248,0.015)" strokeWidth="0.5" strokeDasharray="3 4" fill="none">
-              <line x1="0" y1="80" x2="1000" y2="80" />
-              <line x1="0" y1="160" x2="1000" y2="160" />
-              <line x1="0" y1="240" x2="1000" y2="240" />
-              <line x1="0" y1="320" x2="1000" y2="320" />
-              <line x1="0" y1="400" x2="1000" y2="400" />
-              <line x1="160" y1="0" x2="160" y2="500" />
-              <line x1="320" y1="0" x2="320" y2="500" />
-              <line x1="480" y1="0" x2="480" y2="500" />
-              <line x1="640" y1="0" x2="640" y2="500" />
-              <line x1="800" y1="0" x2="800" y2="500" />
+            <g stroke="rgba(56,189,248,0.05)" strokeWidth="0.5" strokeDasharray="3 4" fill="none">
+              {GRATICULE.parallels.map(y => <line key={`p${y}`} x1="0" y1={y} x2="1000" y2={y} />)}
+              {GRATICULE.meridians.map(x => <line key={`m${x}`} x1={x} y1="0" x2={x} y2="500" />)}
             </g>
 
-            {/* ─ Dotted world map continents fill and edge glow ─ */}
-            {CONTINENTS.map((d, i) => (
-              <path
-                key={i}
-                d={d}
-                fill="url(#grm-dot-grid)"
-                stroke="rgba(56,189,248,0.12)"
-                strokeWidth="0.8"
-                style={{ filter: 'drop-shadow(0 0 1px rgba(56,189,248,0.15))' }}
-              />
-            ))}
-
-            {/* ─ Glowing India geopolitical base territory silhouette ─ */}
+            {/* ─ Dotted world land (Natural Earth 1:110m) with edge glow ─ */}
             <path
-              d={CONTINENTS[6]}
-              fill="rgba(219, 36, 30, 0.28)"
-              stroke="#DB241E"
-              strokeWidth="1.8"
-              filter="url(#g2-glow-xs)"
+              data-testid="route-map-land"
+              d={WORLD_LAND_PATH}
+              fill="url(#grm-dot-grid)"
+              stroke="rgba(56,189,248,0.14)"
+              strokeWidth="0.6"
+              style={{ filter: 'drop-shadow(0 0 1px rgba(56,189,248,0.15))' }}
             />
 
             {/* ─ Satellite City lights ─ */}
@@ -585,17 +406,20 @@ export default function GlobalRouteMap() {
             {DESTINATIONS.map((d, i) => {
               const r    = REGION[d.region]
               const gid  = d.region === 'India' ? 'g2-india' : d.region === 'Middle East' ? 'g2-me' : d.region === 'SE Asia' ? 'g2-sea' : d.region === 'Europe' ? 'g2-eu' : 'g2-na'
-              const path = arcPath([HUB.x, HUB.y], [d.x, d.y], d.region, d.id)
+              const path = routeArc(HUB, d, d.region === 'India' ? 0.32 : 0.2)
               const dim  = hovered !== null && hovered !== i
+              const lx   = d.x + d.label.dx
+              const ly   = d.y + d.label.dy
+              const callout = Math.abs(d.label.dx) > 12 || Math.abs(d.label.dy) > 8
               return (
-                <g key={d.id} opacity={dim ? 0.12 : 1} style={{ transition:'opacity 0.35s' }}>
+                <g key={d.id} data-testid="route-destination" data-iata={d.iata} opacity={dim ? 0.12 : 1} style={{ transition:'opacity 0.35s' }}>
                   
                   {/* Thick glowing route background */}
                   <motion.path d={path} fill="none" stroke={r.color} strokeWidth={SW_GLOW} strokeOpacity="0.25" filter="url(#g2-glow-xs)"
                     initial={{ pathLength:0 }} animate={inView?{pathLength:1}:{}} transition={{ duration:1.5+i*0.04, delay:0.06*i+0.3, ease:[0.16,1,0.3,1] }}/>
                   
                   {/* Main solid route line */}
-                  <motion.path d={path} fill="none" stroke={`url(#${gid})`} strokeWidth={hovered===i?SW_ROUTE*1.6:SW_ROUTE}
+                  <motion.path data-testid="route-line" data-iata={d.iata} d={path} fill="none" stroke={`url(#${gid})`} strokeWidth={hovered===i?SW_ROUTE*1.6:SW_ROUTE}
                     initial={{ pathLength:0, opacity:0 }} animate={inView?{pathLength:1,opacity:1}:{}} transition={{ duration:1.4+i*0.04, delay:0.06*i+0.3, ease:[0.16,1,0.3,1] }}/>
                   
                   {/* Animated plane arrowheads */}
@@ -621,22 +445,25 @@ export default function GlobalRouteMap() {
                     style={{ transformOrigin:`${d.x}px ${d.y}px`, transition:'r 0.2s' }}/>
                   
                   {/* Node Dot */}
-                  <motion.circle cx={d.x} cy={d.y} r={hovered===i?R_CORE*1.35:R_CORE} fill={hovered===i?r.color:'#fff'} filter={hovered===i?'url(#g2-glow-xs)':''}
+                  <motion.circle data-testid="route-marker" data-iata={d.iata} data-lat={d.lat} data-lon={d.lon} cx={d.x} cy={d.y} r={hovered===i?R_CORE*1.35:R_CORE} fill={hovered===i?r.color:'#fff'} filter={hovered===i?'url(#g2-glow-xs)':''}
                     initial={{ scale:0 }} animate={inView?{scale:1}:{}} transition={{ delay:0.05*i+1.0, type:'spring', stiffness:220 }}
                     style={{ transformOrigin:`${d.x}px ${d.y}px`, cursor:'pointer', transition:'r 0.2s, fill 0.2s', pointerEvents:'none' }}/>
 
                   {/* Invisible larger hit target — real dot is too small to reliably tap on mobile */}
-                  <circle cx={d.x} cy={d.y} r={14} fill="transparent" style={{ cursor:'pointer' }}
+                  <circle cx={d.x} cy={d.y} r={isMobile ? 5 : 6} fill="transparent" style={{ cursor:'pointer' }}
                     onMouseEnter={() => handleEnter(i)} onMouseLeave={handleLeave} onClick={() => handleTap(i)}/>
 
                   {/* Stacked Labels */}
                   <g style={{ pointerEvents:'none' }}>
+                    {callout && (
+                      <line x1={d.x} y1={d.y} x2={lx} y2={ly} stroke={r.color} strokeOpacity="0.45" strokeWidth="0.5" />
+                    )}
                     <motion.text
-                      x={d.x + (d.labelAlign === 'left' ? -10 : 10)}
-                      y={d.y - 4 + (d.labelDy || 0)}
-                      textAnchor={d.labelAlign === 'left' ? 'end' : 'start'}
+                      x={lx + (d.label.anchor === 'end' ? -LABEL_FONT.pad : LABEL_FONT.pad)}
+                      y={ly + LABEL_FONT.iataY}
+                      textAnchor={d.label.anchor}
                       fill="#fff"
-                      fontSize="7.8"
+                      fontSize={LABEL_FONT.iata}
                       fontFamily="var(--font-h)"
                       fontWeight="900"
                       letterSpacing="0.05em"
@@ -647,11 +474,11 @@ export default function GlobalRouteMap() {
                       {d.iata}
                     </motion.text>
                     <motion.text
-                      x={d.x + (d.labelAlign === 'left' ? -10 : 10)}
-                      y={d.y + 4 + (d.labelDy || 0)}
-                      textAnchor={d.labelAlign === 'left' ? 'end' : 'start'}
+                      x={lx + (d.label.anchor === 'end' ? -LABEL_FONT.pad : LABEL_FONT.pad)}
+                      y={ly + LABEL_FONT.cityY}
+                      textAnchor={d.label.anchor}
                       fill={r.color}
-                      fontSize="4.8"
+                      fontSize={LABEL_FONT.city}
                       fontFamily="var(--font-h)"
                       fontWeight="700"
                       letterSpacing="0.05em"
@@ -663,11 +490,11 @@ export default function GlobalRouteMap() {
                     </motion.text>
                     {d.country && (
                       <motion.text
-                        x={d.x + (d.labelAlign === 'left' ? -10 : 10)}
-                        y={d.y + 11 + (d.labelDy || 0)}
-                        textAnchor={d.labelAlign === 'left' ? 'end' : 'start'}
+                        x={lx + (d.label.anchor === 'end' ? -LABEL_FONT.pad : LABEL_FONT.pad)}
+                        y={ly + LABEL_FONT.countryY}
+                        textAnchor={d.label.anchor}
                         fill="rgba(255,255,255,0.4)"
-                        fontSize="4.2"
+                        fontSize={LABEL_FONT.country}
                         fontFamily="var(--font-b)"
                         fontWeight="500"
                         letterSpacing="0.02em"
@@ -684,10 +511,10 @@ export default function GlobalRouteMap() {
             })}
 
             {/* ─ Delhi Hub DEL ─ */}
-            <circle cx={HUB.x} cy={HUB.y} r="85" fill="url(#g2-hub-bloom)" opacity={reducedMotion ? 0.45 : undefined}>
+            <circle cx={HUB.x} cy={HUB.y} r="40" fill="url(#g2-hub-bloom)" opacity={reducedMotion ? 0.45 : undefined}>
               {!reducedMotion && (
                 <>
-                  <animate attributeName="r"       values="65;110;65"    dur="4.5s"   repeatCount="indefinite"/>
+                  <animate attributeName="r"       values="30;52;30"    dur="4.5s"   repeatCount="indefinite"/>
                   <animate attributeName="opacity" values="0.65;0.25;0.65"  dur="4.5s"   repeatCount="indefinite"/>
                 </>
               )}
@@ -704,9 +531,9 @@ export default function GlobalRouteMap() {
               </circle>
             ))}
 
-            <circle cx={HUB.x} cy={HUB.y} r="28" fill="url(#g2-hub-core)" filter="url(#g2-glow-lg)"/>
-            <ellipse cx={HUB.x-3} cy={HUB.y-3} rx="6" ry="3" fill="url(#g2-lens)" opacity="0.65" transform={`rotate(-35,${HUB.x},${HUB.y})`}/>
-            <circle cx={HUB.x} cy={HUB.y} r="7" fill="#fff" filter="url(#g2-glow-lg)"/>
+            <circle cx={HUB.x} cy={HUB.y} r="12" fill="url(#g2-hub-core)" filter="url(#g2-glow-lg)"/>
+            <ellipse cx={HUB.x-1.5} cy={HUB.y-1.5} rx="3" ry="1.5" fill="url(#g2-lens)" opacity="0.65" transform={`rotate(-35,${HUB.x},${HUB.y})`}/>
+            <circle data-testid="route-hub" data-lat={HUB.lat} data-lon={HUB.lon} cx={HUB.x} cy={HUB.y} r="3.5" fill="#fff" filter="url(#g2-glow-lg)"/>
 
             {/* Outward drifting hub particles */}
             {!reducedMotion && Array.from({length:8}, (_,i) => {
@@ -714,18 +541,25 @@ export default function GlobalRouteMap() {
               return (
                 <motion.circle key={i} r="1.8" fill={i%2===0?'var(--gold)':'#DB241E'}
                   initial={{ cx:HUB.x, cy:HUB.y, opacity:0 }}
-                  animate={inView?{ cx:[HUB.x, HUB.x+Math.cos(ang)*60], cy:[HUB.y, HUB.y+Math.sin(ang)*60], opacity:[0.85,0] }:{}}
+                  animate={inView?{ cx:[HUB.x, HUB.x+Math.cos(ang)*28], cy:[HUB.y, HUB.y+Math.sin(ang)*28], opacity:[0.85,0] }:{}}
                   transition={{ duration:1.8+i*0.15, delay:i*0.25, repeat:Infinity, repeatDelay:1.2, ease:'easeOut' }}/>
               )
             })}
 
-            {/* Dark halo behind hub text so labels stay legible against the red bloom */}
-            <g style={{ paintOrder:'stroke', stroke:'#02060d', strokeWidth:4, strokeLinejoin:'round' }}>
-              <text x={HUB.x} y={HUB.y+20} textAnchor="middle" fill="#fff" fontSize="12" fontFamily="var(--font-h)" fontWeight="900" letterSpacing="0.06em">DEL</text>
-              <text x={HUB.x} y={HUB.y+31} textAnchor="middle" fill="rgba(255,255,255,0.65)" fontSize="6" fontFamily="var(--font-h)" fontWeight="700" letterSpacing="0.08em">DWARKA · DELHI</text>
-              <text x={HUB.x} y={HUB.y+39} textAnchor="middle" fill="rgba(255,255,255,0.45)" fontSize="5.2" fontFamily="var(--font-h)" fontWeight="600" letterSpacing="0.08em">INDIA</text>
+            {/* Dark halo behind hub text; label sits north of the hub, clear of the Indian airports */}
+            <g style={{ paintOrder:'stroke', stroke:'#02060d', strokeWidth:3, strokeLinejoin:'round', pointerEvents:'none' }}>
+              <text x={HUB.x + 8} y={HUB.y - 14} textAnchor="start" fill="#fff" fontSize="9" fontFamily="var(--font-h)" fontWeight="900" letterSpacing="0.06em">DEL</text>
+              <text x={HUB.x + 8} y={HUB.y - 7} textAnchor="start" fill="rgba(255,255,255,0.65)" fontSize="4.6" fontFamily="var(--font-h)" fontWeight="700" letterSpacing="0.08em">{HUB.city}</text>
+              <text x={HUB.x + 8} y={HUB.y - 1.5} textAnchor="start" fill="rgba(255,255,255,0.45)" fontSize="4" fontFamily="var(--font-h)" fontWeight="600" letterSpacing="0.08em">{HUB.country}</text>
             </g>
           </motion.svg>
+
+          {isMobile && (
+            <p data-testid="route-map-offframe" style={{ margin:'0.5rem 0 0', textAlign:'center', fontFamily:'var(--font-h)', fontSize:'0.62rem', letterSpacing:'0.08em', color:'rgba(255,255,255,0.55)' }}>
+              <span style={{ color: REGION['North America'].color }}>✈</span>{' '}
+              Also flying: {OFF_FRAME_ON_MOBILE.map(d => `${d.city.charAt(0)}${d.city.slice(1).toLowerCase().replace(/ (\w)/g, (_, c) => ` ${c.toUpperCase()}`)} (${d.iata})`).join(' · ')}
+            </p>
+          )}
 
           {/* Legend (Bottom-Left) */}
           <div 
@@ -840,11 +674,13 @@ export default function GlobalRouteMap() {
             {tooltip.dest.iata} · {tooltip.dest.city} {tooltip.dest.country ? `· ${tooltip.dest.country}` : ''}
           </div>
           <div style={{ fontFamily:'var(--font-h)', fontSize:'0.55rem', color:'rgba(255,255,255,0.65)', marginTop:'0.2rem', fontWeight: 700 }}>
-            {tooltip.dest.airline} · {tooltip.dest.pos}
+            {tooltip.dest.airline}{tooltip.dest.pos ? ` · ${tooltip.dest.pos}` : ''}
           </div>
-          <div style={{ fontFamily:'var(--font-b)', fontSize:'0.52rem', color:'rgba(255,255,255,0.35)', marginTop:'0.15rem' }}>
-            Alumni: {tooltip.dest.alumni} · Class of {tooltip.dest.year}
-          </div>
+          {tooltip.dest.alumni && (
+            <div style={{ fontFamily:'var(--font-b)', fontSize:'0.52rem', color:'rgba(255,255,255,0.35)', marginTop:'0.15rem' }}>
+              Alumni: {tooltip.dest.alumni} · Class of {tooltip.dest.year}
+            </div>
+          )}
         </div>
       )}
 
@@ -857,7 +693,8 @@ export default function GlobalRouteMap() {
         }
         @media (max-width:1024px) {
           .grm-map-wrap { margin-top:1.5rem !important; }
-          .grm-map-outer { flex-direction:column !important; padding:0 1.25rem !important; }
+          .grm-map-outer { flex-direction:column !important; align-items:stretch !important; padding:0 1.25rem !important; }
+          .grm-map-canvas { width:100%; }
           .grm-right-panel { position:relative !important; top:auto !important; bottom:auto !important; left:auto !important; right:auto !important; transform:none !important; width:calc(100% - 2.5rem) !important; max-width:360px !important; margin:0 auto !important; }
           .grm-stats-strip { grid-template-columns:repeat(2,1fr) !important; }
         }

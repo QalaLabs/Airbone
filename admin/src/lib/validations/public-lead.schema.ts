@@ -23,6 +23,9 @@ export const publicLeadSchema = z.object({
   // Replays of the same submission (same leadUuid) resolve to the original lead
   // instead of a false 409. Genuinely new submissions always generate a new key.
   leadUuid: z.string().trim().min(1).max(64).nullish(),
+  // Course eligibility pre-check answers ({ questionKey: "yes" | "no" }); validated
+  // against the selected course's question set by the intake route.
+  eligibility: z.record(z.string().max(40), z.unknown()).nullish(),
 });
 
 export type PublicLeadInput = z.infer<typeof publicLeadSchema>;

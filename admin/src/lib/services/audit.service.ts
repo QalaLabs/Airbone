@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/client";
 import type { Prisma } from "@prisma/client";
 import { buildAuditRowHash } from "@/lib/utils/crypto";
+import { scheduleWebsiteRevalidation } from "@/lib/website/revalidate";
 
 interface WriteAuditParams {
   orgId: string;
@@ -72,6 +73,9 @@ export class AuditService {
         where: { id: created.id },
         data: { rowHash },
       });
+
+      // Inside a transaction the write may still roll back; the caller syncs after commit.
+      if (!tx) scheduleWebsiteRevalidation(params.entityType, params.requestId);
     } catch (err) {
       // Audit must never crash the caller
       console.error("[AuditService] write failed", err);

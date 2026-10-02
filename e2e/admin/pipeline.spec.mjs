@@ -23,8 +23,25 @@ test('Lead → Prospect opens exactly one deal', async ({ page }) => {
 })
 
 test('Prospect → Deal shows on the deals board', async ({ page }) => {
-  await page.goto('/crm/deals')
+  await page.goto('/crm/lead-pipeline')
+  await expect(page.getByRole('heading', { name: 'Lead Pipeline', level: 1 })).toBeVisible()
+  await expect(page).toHaveTitle(/Lead Pipeline/)
   await expect(page.getByText('E2E Pipeline Lead').first()).toBeVisible()
+})
+
+test('C1: old Deals URLs redirect to the Lead Pipeline and no UI says "Deals"', async ({ page }) => {
+  for (const old of ['/crm/deals', '/crm/pipeline']) {
+    await page.goto(old)
+    await expect(page).toHaveURL(/\/crm\/lead-pipeline$/)
+  }
+  const nav = page.getByRole('link', { name: 'Lead Pipeline' }).first()
+  await expect(nav).toHaveAttribute('href', '/crm/lead-pipeline')
+  await expect(page.getByRole('link', { name: /^Deals$/ })).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: /^Deals$/ })).toHaveCount(0)
+
+  await page.goto('/crm/dashboard')
+  await expect(page.getByText('Lead Pipeline Stages')).toBeVisible()
+  await expect(page.getByText(/\bDeals\b/)).toHaveCount(0)
 })
 
 test('WON → admission dossier is created once', async ({ page }) => {

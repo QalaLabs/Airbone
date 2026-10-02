@@ -5,7 +5,7 @@ import { AuditService } from "@/lib/services/audit.service";
 import { NotFoundError } from "@/lib/utils/errors";
 import type { RequestContext } from "@/types";
 
-export const INTEGRATION_PROVIDERS = ["GOOGLE_ADS"] as const;
+export const INTEGRATION_PROVIDERS = ["GOOGLE_ADS", "JOBS_FEED"] as const;
 export type IntegrationProvider = (typeof INTEGRATION_PROVIDERS)[number];
 
 export const KEY_VALIDITY_OPTIONS = ["1", "3", "7", "15", "30", "45", "60", "never"] as const;
@@ -133,17 +133,26 @@ export class IntegrationKeyService {
 
   /** True when `raw` matches an unrevoked, unexpired key of this org/provider. */
   static async verify(orgId: string, provider: IntegrationProvider, raw: string | undefined | null): Promise<boolean> {
-    if (!raw || !raw.trim()) return false;
+    return (await this.authenticate(orgId, provider, raw)) !== null;
+  }
+
+  /** Like verify, but returns the matching key (id, name, creator) for attribution. */
+  static async authenticate(
+    orgId: string,
+    provider: IntegrationProvider,
+    raw: string | undefined | null,
+  ): Promise<{ id: string; name: string; createdBy: string | null } | null> {
+    if (!raw || !raw.trim()) return null;
     const key = await prisma.integrationKey.findUnique({
       where: { keyHash: hashIntegrationKey(raw) },
-      select: { id: true, orgId: true, provider: true, expiresAt: true, revokedAt: true },
+      select: { id: true, orgId: true, provider: true, name: true, createdBy: true, expiresAt: true, revokedAt: true },
     });
-    if (!key || key.orgId !== orgId || key.provider !== provider) return false;
-    if (keyStatus(key) !== "active") return false;
+    if (!key || key.orgId !== orgId || key.provider !== provider) return null;
+    if (keyStatus(key) !== "active") return null;
 
     await prisma.integrationKey
       .update({ where: { id: key.id }, data: { lastUsedAt: new Date() } })
       .catch(() => undefined);
-    return true;
+    return { id: key.id, name: key.name, createdBy: key.createdBy ?? null };
   }
 }

@@ -170,7 +170,7 @@ export default function LmsCertificatesPage() {
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
                     <a
-                      href={`/portal/certificates/${c.certificateNo}/print`}
+                      href={`/certificates/${c.id}`}
                       target="_blank"
                       rel="noreferrer"
                       className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] hover:bg-white/5"

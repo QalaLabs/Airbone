@@ -4,6 +4,7 @@ import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch, ApiClientError } from "@/lib/api";
 import { toast } from "@/components/ui/use-toast";
+import { websiteSyncMessage } from "@/lib/website/website-sync-message";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -148,11 +149,14 @@ export default function PageEditor({ pageId }: { pageId: string }) {
         method: "POST",
         body: JSON.stringify({ status, ...(scheduledAt ? { scheduledAt } : {}) }),
       }),
-    onSuccess: () => {
+    onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["cms-pages"] });
       queryClient.invalidateQueries({ queryKey: ["cms-page", pageId] });
       queryClient.invalidateQueries({ queryKey: ["cms-versions", pageId] });
-      toast({ title: "Status Updated", description: "Page publishing status transitioned." });
+      toast({
+        title: "Status Updated",
+        description: ["Page publishing status transitioned.", websiteSyncMessage(res)].filter(Boolean).join(" "),
+      });
     },
     onError: (err) => {
       toast({ title: "Status Change Failed", description: err.message, variant: "destructive" });

@@ -38,12 +38,17 @@ function toCashflow(payments: {
 }
 
 export class PaymentService {
+  /** Counselors only see payments on admissions whose lead is assigned to them. */
+  static counselorScope(ctx: RequestContext): string | undefined {
+    return ctx.user.role === "ADMISSIONS_COUNSELOR" ? ctx.user.id : undefined;
+  }
+
   static async list(ctx: RequestContext, filters: PaymentFilters) {
-    return PaymentRepository.findMany(ctx.orgId, filters);
+    return PaymentRepository.findMany(ctx.orgId, filters, undefined, this.counselorScope(ctx));
   }
 
   static async getById(ctx: RequestContext, id: string) {
-    const payment = await PaymentRepository.findById(ctx.orgId, id);
+    const payment = await PaymentRepository.findById(ctx.orgId, id, this.counselorScope(ctx));
     if (!payment) throw new NotFoundError("Payment", id);
     return payment;
   }

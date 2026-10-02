@@ -42,10 +42,16 @@ const PAYMENT_SELECT = {
   refunder: { select: { id: true, name: true } },
 } satisfies Prisma.PaymentTransactionSelect;
 
+/** A counselor owns a payment when they are the admission counselor or the lead assignee. */
+export function paymentCounselorWhere(userId: string): Prisma.PaymentTransactionWhereInput {
+  return { admission: { OR: [{ counselorId: userId }, { lead: { assignedTo: userId } }] } };
+}
+
 export class PaymentRepository {
-  static async findMany(orgId: string, filters: PaymentFilters, db: Db = prisma) {
+  static async findMany(orgId: string, filters: PaymentFilters, db: Db = prisma, assignedTo?: string) {
     const where: Prisma.PaymentTransactionWhereInput = {
       orgId,
+      ...(assignedTo !== undefined && paymentCounselorWhere(assignedTo)),
       ...(filters.status && { status: filters.status }),
       ...(filters.method && { method: filters.method }),
       ...(filters.feeType && { feeType: filters.feeType }),
@@ -85,8 +91,11 @@ export class PaymentRepository {
     return { data, total };
   }
 
-  static async findById(orgId: string, id: string) {
-    return prisma.paymentTransaction.findFirst({ where: { id, orgId }, select: PAYMENT_SELECT });
+  static async findById(orgId: string, id: string, assignedTo?: string) {
+    return prisma.paymentTransaction.findFirst({
+      where: { id, orgId, ...(assignedTo !== undefined && paymentCounselorWhere(assignedTo)) },
+      select: PAYMENT_SELECT,
+    });
   }
 
   static async findByIdempotencyKey(orgId: string, idempotencyKey: string) {

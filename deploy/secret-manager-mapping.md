@@ -25,6 +25,8 @@ Cloud Run service must exist in the **same project**; bind at deploy time with
 | `CRM_ENDPOINT` | `airborne-web/CRM_ENDPOINT` | optional |
 | `CRM_COMPANY`, `CRM_SOURCE` | plain env (non-secret) | optional |
 | `PUBLIC_ORG_SLUG` | plain env (non-secret) | `airborne-aviation` |
+| `REVALIDATE_SECRET` | `airborne-web/REVALIDATE_SECRET` | Must equal admin's `WEBSITE_REVALIDATE_SECRET`. Unset → `/api/revalidate` answers 503 and content refreshes on the 60 s window only |
+| `CMS_REVALIDATE_SECONDS` | plain env (non-secret) | optional fallback refresh window, default `60` |
 
 ## airborne-admin (admin + API)
 
@@ -48,6 +50,27 @@ Cloud Run service must exist in the **same project**; bind at deploy time with
 | `FACEBOOK_APP_SECRET` | `airborne-admin/FACEBOOK_APP_SECRET` | optional CRM integration |
 | `R2_*` | `airborne-admin/R2_*` | documents feature only |
 | `GEMINI_API_KEY` | `airborne-admin/GEMINI_API_KEY` | optional |
+| `WEBSITE_REVALIDATE_URL` | plain env (non-secret) | `https://<website>/api/revalidate` |
+| `WEBSITE_REVALIDATE_SECRET` | `airborne-admin/WEBSITE_REVALIDATE_SECRET` | `openssl rand -base64 32`; same value as the website's `REVALIDATE_SECRET` |
+| `GA4_PROPERTY_ID` | plain env (non-secret) | Numeric GA4 **property** id (Admin → Property settings), not the `G-…` measurement id |
+| `GA4_SERVICE_ACCOUNT_JSON` | `airborne-admin/GA4_SERVICE_ACCOUNT_JSON` | Service-account key JSON (raw or base64). Server-only, never `NEXT_PUBLIC_*` |
+| `GA4_DATA_API_URL` | plain env (non-secret) | optional override (tests only); https required except loopback |
+
+## Website content sync and GA4
+
+- **Instant website refresh.** After a successful DB write the admin POSTs
+  `{resources:[...]}` to `WEBSITE_REVALIDATE_URL` with header
+  `x-revalidate-secret`. The website compares it in constant time, purges only
+  allow-listed `cms:<resource>` tags, returns 401 on a wrong secret and 503 when
+  `REVALIDATE_SECRET` is unset. Without these vars the site still updates on the
+  60 s window, and the admin UI says so after each save.
+- **GA4 Page Performance traffic.** Enable the *Google Analytics Data API* in
+  the service account's GCP project, then add the service-account email as a
+  **Viewer** on the GA4 property (Admin → Property access management). GA4 is
+  read server-side only, for the `PUBLIC_ORG_SLUG` organization. Counselors
+  cannot see it. GA4 reports whole days in the property time zone; the admin
+  sends IST calendar dates and flags a property that is not set to
+  Asia/Kolkata. Without the vars the panel shows "Not connected" (never zeros).
 | `NEXT_PUBLIC_APP_URL` | plain env (non-secret, build-time) | |
 | `NEXT_PUBLIC_APP_NAME` | plain env (non-secret, build-time) | |
 | `NEXT_PUBLIC_FACEBOOK_APP_ID` | plain env (non-secret, build-time) | |
@@ -60,7 +83,10 @@ Cloud Run service must exist in the **same project**; bind at deploy time with
   `src/app/api/v1/crm/integrations/route.ts`, `NEXT_PUBLIC_APP_URL`,
   `NEXT_PUBLIC_APP_NAME`).
 - The marketing app inlines `NEXT_PUBLIC_ADMIN_URL` (portal link fallback in
-  `src/app/portal/page.jsx`).
+  `src/app/portal/page.jsx`) and `NEXT_PUBLIC_WHATSAPP_NUMBER` (every WhatsApp
+  button/link, via `src/lib/whatsapp.js`; digits with country code, e.g.
+  `91XXXXXXXXXX`). Unset or invalid falls back to `919953777320`. Changing the
+  number needs a website rebuild + deploy, not just a revision env change.
 - Cloud Run builds must receive these as build args / build-time env vars.
   Secret Manager values are runtime-only; do not rely on them for `NEXT_PUBLIC_`.
 

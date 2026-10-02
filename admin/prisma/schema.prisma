@@ -79,6 +79,7 @@ enum LeadSource {
   REFERRAL
   WHATSAPP
   DIRECT
+  WALK_IN
 }
 
 enum ActivityType {

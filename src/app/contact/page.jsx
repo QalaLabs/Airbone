@@ -3,6 +3,7 @@ import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
 import JsonLd from '@/components/JsonLd'
 import { buildContactGraph } from '@/lib/schema'
+import { WHATSAPP_DISPLAY, WHATSAPP_HREF } from '@/lib/whatsapp'
 
 export const metadata = {
   title: 'Contact Airborne Aviation Academy - Dwarka, Delhi | Capt. Navrang Singh',
@@ -31,7 +32,7 @@ const MAPS_DIRECTIONS = 'https://www.google.com/maps/dir/?api=1&destination=28.5
 
 const CONTACT = [
   { label: 'Direct Calling Line', value: '+91 9953 777 320', href: 'tel:+919953777320', secondary: '+91 9818 282 209', secondaryHref: 'tel:+919818282209' },
-  { label: 'WhatsApp Support', value: '+91 9953 777 320', href: 'https://wa.me/919953777320' },
+  { label: 'WhatsApp Support', value: WHATSAPP_DISPLAY, href: WHATSAPP_HREF },
   { label: 'Electronic Mail', value: 'info@airborneaviation.in', href: 'mailto:info@airborneaviation.in' },
   { label: 'Office Timings', value: 'Mon – Sat: 9:30 AM – 6:00 PM', sub: '(Closed on Sundays)' },
   { label: 'Head Office', value: 'E-549, 2nd Floor, Ramphal Chowk, Sector 7, Dwarka, New Delhi - 110075', href: MAPS_URL },

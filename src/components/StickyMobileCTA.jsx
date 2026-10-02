@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { WHATSAPP_HREF } from '@/lib/whatsapp'
 
 export default function StickyMobileCTA({ onBookDemo }) {
   const [visible, setVisible] = useState(false)
@@ -47,7 +48,7 @@ export default function StickyMobileCTA({ onBookDemo }) {
         <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Call</span>
       </a>
       <a
-        href="https://wa.me/919953777320"
+        href={WHATSAPP_HREF}
         target="_blank"
         rel="noopener noreferrer"
         style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0.9rem 0.5rem', color: '#25D366', textDecoration: 'none', borderRight: '1px solid rgba(255,255,255,0.06)', background: 'transparent' }}

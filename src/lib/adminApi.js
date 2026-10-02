@@ -1,4 +1,5 @@
 import { resolveAdminApiUrl } from '@/lib/upstream'
+import { cmsFetchOptions } from '@/lib/cmsCache'
 
 const BASE = resolveAdminApiUrl()
 
@@ -10,9 +11,7 @@ export async function fetchPublicWithStatus(path, params = {}) {
     if (v !== undefined && v !== null) url.searchParams.set(k, String(v))
   })
   try {
-    const res = await fetch(url.toString(), {
-      next: { revalidate: 60 },
-    })
+    const res = await fetch(url.toString(), cmsFetchOptions(path))
     if (res.ok) {
       const json = await res.json()
       return { data: json.data ?? null, status: res.status }
@@ -30,9 +29,7 @@ export async function fetchPublic(path, params = {}) {
     if (v !== undefined && v !== null) url.searchParams.set(k, String(v))
   })
   try {
-    const res = await fetch(url.toString(), {
-      next: { revalidate: 60 },
-    })
+    const res = await fetch(url.toString(), cmsFetchOptions(path))
     if (!res.ok) return null
     const json = await res.json()
     return json.data ?? null

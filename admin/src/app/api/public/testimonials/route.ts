@@ -73,7 +73,8 @@ export async function GET(req: NextRequest) {
     if (!org) return NextResponse.json({ data: [] });
 
     const url = new URL(req.url);
-    const limit = Math.min(parseInt(url.searchParams.get("limit") ?? "6"), 20);
+    const requested = parseInt(url.searchParams.get("limit") ?? "6", 10);
+    const limit = Number.isFinite(requested) && requested > 0 ? Math.min(requested, 20) : 6;
 
     const testimonials = await prisma.testimonial.findMany({
       where: { orgId: org.id, status: "APPROVED" },

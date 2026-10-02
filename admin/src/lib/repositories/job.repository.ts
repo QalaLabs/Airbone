@@ -108,8 +108,14 @@ export class JobRepository {
     return prisma.job.findFirst({ where: { slug, orgId }, select: JOB_SELECT });
   }
 
-  static async create(orgId: string, createdBy: string, data: CreateJobInput, slug: string) {
-    return withApplicationCount(await prisma.job.create({
+  static async create(
+    orgId: string,
+    createdBy: string | null,
+    data: CreateJobInput,
+    slug: string,
+    db: Prisma.TransactionClient = prisma,
+  ) {
+    return withApplicationCount(await db.job.create({
       data: {
         orgId,
         createdBy,

@@ -27,6 +27,8 @@ import {
 import { CRMDataTable, CRMColumn } from "@/components/shared/crm-data-table";
 import { toast } from "@/components/ui/use-toast";
 import { apiFetch } from "@/lib/api";
+import { fromISTInput } from "@/lib/time/ist";
+import { MEETING_MODES, MEETING_MODE_LABELS, readMeetingMode, type MeetingMode } from "@/lib/crm/meeting-mode";
 
 interface LeadOption {
   id: string;
@@ -34,6 +36,19 @@ interface LeadOption {
   phone: string | null;
   courseInterest: string | null;
   status: string;
+}
+
+function MeetingModeBadge({ meeting }: { meeting: Meeting }) {
+  const mode = readMeetingMode(meeting.metadata);
+  return (
+    <Badge
+      variant="outline"
+      data-testid="meeting-mode"
+      className={`text-[9px] font-semibold ${mode ? "border-primary/40 text-primary" : "border-white/10 text-muted-foreground"}`}
+    >
+      {mode ? MEETING_MODE_LABELS[mode] : "Mode not set"}
+    </Badge>
+  );
 }
 
 function formatDateTime(iso: string | null): string {
@@ -133,6 +148,11 @@ export default function CRMMeetingsPage() {
       ),
     },
     {
+      key: "mode",
+      header: "Mode",
+      render: (m) => <MeetingModeBadge meeting={m} />,
+    },
+    {
       key: "durationMins",
       header: "Duration",
       render: (m) => (m.durationMins ? `${m.durationMins}m` : "—"),
@@ -202,6 +222,7 @@ export default function CRMMeetingsPage() {
               {upcoming.map((meeting) => (
                 <div
                   key={meeting.id}
+                  data-testid="upcoming-meeting"
                   className="flex items-start gap-3 p-3 rounded-lg border border-white/5 bg-secondary/10 hover:border-primary/50 transition-colors"
                 >
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 shrink-0">
@@ -210,9 +231,12 @@ export default function CRMMeetingsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-xs font-bold text-white truncate">{meeting.title || "Meeting"}</p>
-                      <Badge variant="outline" className="border-white/10 text-[9px] font-semibold">
-                        {meeting.lead.status}
-                      </Badge>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <MeetingModeBadge meeting={meeting} />
+                        <Badge variant="outline" className="border-white/10 text-[9px] font-semibold">
+                          {meeting.lead.status}
+                        </Badge>
+                      </div>
                     </div>
                     <div className="flex items-center gap-4 mt-2 text-[10px] text-muted-foreground font-semibold">
                       <span className="flex items-center gap-1">
@@ -289,6 +313,7 @@ function ScheduleMeetingDialog({
   const [title, setTitle] = React.useState("");
   const [dueAt, setDueAt] = React.useState("");
   const [duration, setDuration] = React.useState("30");
+  const [mode, setMode] = React.useState<MeetingMode>("ONLINE");
   const [notes, setNotes] = React.useState("");
   const [submitting, setSubmitting] = React.useState(false);
 
@@ -312,8 +337,9 @@ function ScheduleMeetingDialog({
     scheduleMeeting({
       leadId,
       title: title.trim() || undefined,
-      dueAt: new Date(dueAt).toISOString(),
+      dueAt: fromISTInput(dueAt),
       durationMins: parseInt(duration, 10) || undefined,
+      mode,
       notes: notes.trim() || undefined,
     })
       .then(onScheduled)
@@ -354,9 +380,10 @@ function ScheduleMeetingDialog({
           </div>
           <div className="grid gap-3 md:grid-cols-2">
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">When</Label>
+              <Label className="text-xs text-muted-foreground">When (IST)</Label>
               <Input
                 type="datetime-local"
+                aria-label="Meeting time"
                 value={dueAt}
                 onChange={(e) => setDueAt(e.target.value)}
                 className="h-9 text-xs"
@@ -372,6 +399,25 @@ function ScheduleMeetingDialog({
                 onChange={(e) => setDuration(e.target.value)}
                 className="h-9 text-xs"
               />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground" id="meeting-mode-label">Mode</Label>
+            <div role="radiogroup" aria-labelledby="meeting-mode-label" className="grid grid-cols-3 gap-2">
+              {MEETING_MODES.map((m) => (
+                <Button
+                  key={m}
+                  type="button"
+                  role="radio"
+                  aria-checked={mode === m}
+                  size="sm"
+                  variant={mode === m ? "default" : "outline"}
+                  className="h-8 text-xs border-white/10"
+                  onClick={() => setMode(m)}
+                >
+                  {MEETING_MODE_LABELS[m]}
+                </Button>
+              ))}
             </div>
           </div>
           <div className="space-y-1">

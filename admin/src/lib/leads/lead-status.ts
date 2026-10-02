@@ -237,6 +237,27 @@ export const LOCKED_LEAD_STATUSES: LeadStatus[] = [
   LeadStatus.CONVERTED,
 ];
 
+/**
+ * Statuses a counselor may pick when creating a lead. PROSPECT is excluded
+ * because it opens a Deal; WON/CONVERTED are system-only; lost and legacy
+ * statuses are not valid starting points.
+ */
+export const INITIAL_LEAD_STATUSES: LeadStatus[] = [
+  LeadStatus.NEW,
+  LeadStatus.CONNECTED,
+  LeadStatus.CALL_BACK,
+  LeadStatus.INTERESTED,
+  LeadStatus.NOT_CONNECTED,
+  LeadStatus.RINGING,
+  LeadStatus.NOT_REACHABLE,
+  LeadStatus.SWITCHED_OFF,
+  LeadStatus.VOICEMAIL,
+];
+
+export function isInitialLeadStatus(status: string): status is LeadStatus {
+  return (INITIAL_LEAD_STATUSES as string[]).includes(status);
+}
+
 /** Legacy statuses preserved in the DB enum for historical data/automation. */
 export const LEGACY_LEAD_STATUSES: LeadStatus[] = [
   LeadStatus.CONTACTED,

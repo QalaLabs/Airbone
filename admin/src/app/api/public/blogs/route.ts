@@ -37,6 +37,7 @@ export async function GET(req: NextRequest) {
           seoDesc: true,
           downloadCount: true,
           createdAt: true,
+          publishedAt: true,
         },
       });
       return NextResponse.json({ data: blog });
@@ -66,6 +67,7 @@ export async function GET(req: NextRequest) {
         seoDesc: true,
         downloadCount: true,
         createdAt: true,
+        publishedAt: true,
       },
     });
 

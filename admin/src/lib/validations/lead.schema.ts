@@ -1,5 +1,8 @@
 import { z } from "zod";
 import { LeadSource, LeadStatus, ActivityType } from "@prisma/client";
+import { MEETING_MODES, isMeetingMode } from "@/lib/crm/meeting-mode";
+import { INITIAL_LEAD_STATUSES, isInitialLeadStatus } from "@/lib/leads/lead-status";
+import { parseISTWallClock } from "@/lib/analytics/date-range";
 
 export const createLeadSchema = z.object({
   name: z.string().min(2).max(255),
@@ -25,6 +28,12 @@ export const createLeadSchema = z.object({
   customFields: z.record(z.unknown()).optional(),
   nextFollowUp: z.string().datetime().optional(),
   notes: z.string().max(5000).optional(),
+  status: z
+    .nativeEnum(LeadStatus)
+    .refine(isInitialLeadStatus, {
+      message: `Initial status must be one of: ${INITIAL_LEAD_STATUSES.join(", ")}`,
+    })
+    .optional(),
 });
 
 /** Course / batch / fee decided when a lead becomes a Prospect (stored on the deal). */
@@ -35,7 +44,7 @@ export const dealDataSchema = z.object({
   value: z.number().positive().optional(),
 });
 
-export const updateLeadSchema = createLeadSchema.partial().extend({
+export const updateLeadSchema = createLeadSchema.omit({ status: true }).partial().extend({
   status: z.nativeEnum(LeadStatus).optional(),
   lostReason: z.string().max(1000).optional(),
   dealData: dealDataSchema.optional(),
@@ -65,7 +74,30 @@ export const LEAD_PRIORITY_SCORE = {
 
 export type LeadPriority = keyof typeof LEAD_PRIORITY_SCORE; // "HIGH" | "MEDIUM" | "LOW"
 
-export const leadFiltersSchema = z.object({
+/**
+ * Lead list date bound on `createdAt`. `YYYY-MM-DD` is an IST calendar day
+ * (start of day for `dateFrom`, end of day for `dateTo`); full ISO datetimes
+ * pass through unchanged for API callers.
+ */
+function leadDateBound(edge: "start" | "end") {
+  return z
+    .string()
+    .trim()
+    .transform((value, ctx) => {
+      const parsed = /^\d{4}-\d{2}-\d{2}$/.test(value)
+        ? parseISTWallClock(value, edge)
+        : z.string().datetime({ offset: true }).safeParse(value).success
+          ? new Date(value)
+          : null;
+      if (!parsed || Number.isNaN(parsed.getTime())) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Use YYYY-MM-DD (IST) or an ISO datetime" });
+        return z.NEVER;
+      }
+      return parsed.toISOString();
+    });
+}
+
+const leadFiltersObject = z.object({
   status: z.nativeEnum(LeadStatus).optional(),
   source: z.nativeEnum(LeadSource).optional(),
   assignedTo: z.string().uuid().optional(),
@@ -74,8 +106,8 @@ export const leadFiltersSchema = z.object({
   priority: z.enum(["HIGH", "MEDIUM", "LOW"]).optional(),
   lostReason: z.string().optional(),
   search: z.string().max(255).optional(),
-  dateFrom: z.string().datetime().optional(),
-  dateTo: z.string().datetime().optional(),
+  dateFrom: leadDateBound("start").optional(),
+  dateTo: leadDateBound("end").optional(),
   isActive: z.preprocess((v) => v === "true", z.boolean()).optional(),
   followUpOverdue: z
     .enum(["true", "false"])
@@ -101,6 +133,11 @@ export const leadFiltersSchema = z.object({
   sortDir: z.enum(["asc", "desc"]).default("desc"),
 });
 
+export const leadFiltersSchema = leadFiltersObject.refine(
+  (f) => !f.dateFrom || !f.dateTo || new Date(f.dateFrom).getTime() <= new Date(f.dateTo).getTime(),
+  { message: "Start date must be on or before the end date", path: ["dateFrom"] },
+);
+
 // Lead Activity schemas
 export const createActivitySchema = z.object({
   activityType: z.nativeEnum(ActivityType),
@@ -118,23 +155,37 @@ export const updateFollowUpSchema = z.object({
   nextFollowUp: z.string().datetime().nullable(),
 });
 
+const meetingModeSchema = z.enum(MEETING_MODES, {
+  errorMap: () => ({ message: "Meeting mode must be Online, Offline or Campus Visit" }),
+});
+
+// metadata.mode may only carry a supported mode, so it cannot bypass `mode` validation.
+const meetingMetadataSchema = z
+  .record(z.unknown())
+  .refine((m) => m.mode === undefined || isMeetingMode(m.mode), {
+    message: "Meeting mode must be Online, Offline or Campus Visit",
+    path: ["mode"],
+  });
+
 export const scheduleMeetingSchema = z.object({
   leadId: z.string().uuid(),
   title: z.string().max(500).optional(),
   dueAt: z.string().datetime(),
   durationMins: z.number().int().min(0).max(1440).optional(),
+  mode: meetingModeSchema.optional(),
   notes: z.string().max(5000).optional(),
   outcome: z.string().max(255).optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: meetingMetadataSchema.optional(),
 });
 
 export const updateMeetingSchema = z.object({
   title: z.string().max(500).optional(),
   dueAt: z.string().datetime().optional(),
   durationMins: z.number().int().min(0).max(1440).optional(),
+  mode: meetingModeSchema.optional(),
   notes: z.string().max(5000).optional(),
   outcome: z.string().max(255).optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: meetingMetadataSchema.optional(),
 });
 
 // Meeting completion / cancellation action for the dedicated route.

@@ -162,10 +162,9 @@ export class TestimonialService {
   static async review(ctx: RequestContext, id: string, input: ReviewTestimonialInput) {
     const existing = await this.getById(ctx, id);
 
-    if (existing.status !== "PENDING") {
-      throw new ValidationError([
-        { message: `Testimonial already ${existing.status}. Only PENDING testimonials can be reviewed.` },
-      ]);
+    // APPROVED -> REJECTED unpublishes from the website; REJECTED -> APPROVED republishes.
+    if (existing.status === input.status) {
+      throw new ValidationError([{ message: `Testimonial is already ${existing.status}.` }]);
     }
 
     const updated = await TestimonialRepository.review(

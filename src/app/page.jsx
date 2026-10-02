@@ -12,6 +12,7 @@ import GoogleReviewsSection from '@/components/GoogleReviewsSection'
 import { GlowCard } from '@/components/ui/spotlight-card'
 import PremiumFooter from '@/components/PremiumFooter'
 import GlobalRouteMap from '@/components/GlobalRouteMap'
+import PilotSupplyGraph from '@/components/PilotSupplyGraph'
 import ProgramGrid from '@/components/ProgramGrid'
 import MediaSection from '@/components/MediaSection'
 import useFormValidation from '@/hooks/useFormValidation'
@@ -20,6 +21,7 @@ import FormField from '@/components/FormField'
 import SubmitButton from '@/components/SubmitButton'
 import Honeypot from '@/components/Honeypot'
 import { HONEYPOT_FIELD, readHoneypot } from '@/utils/honeypot'
+import { WHATSAPP_HREF } from '@/lib/whatsapp'
 
 // Premium FX components — pure UI, no backend dependencies
 import {
@@ -540,7 +542,7 @@ function TestimonialsSection() {
       })
   }, [])
 
-  if (students.length < 3) {
+  if (students.length === 0) {
     return null
   }
 
@@ -567,7 +569,7 @@ function TestimonialsSection() {
   }
 
   return (
-    <section id="stories" style={{ position: 'relative', padding: 'clamp(3.5rem,8vw,10rem) clamp(1.5rem,5vw,4rem)', background: 'var(--paper)' }}>
+    <section id="stories" data-testid="home-testimonials" style={{ position: 'relative', padding: 'clamp(3.5rem,8vw,10rem) clamp(1.5rem,5vw,4rem)', background: 'var(--paper)' }}>
       <div className="container-xl">
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem', marginBottom: '3.5rem', flexWrap: 'wrap' }}>
           <div>
@@ -590,6 +592,7 @@ function TestimonialsSection() {
             {students.map((s, i) => (
               <motion.figure
                 key={`${s.name}-${i}`}
+                data-testid="home-testimonial"
                 className="success-club-card"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -815,7 +818,7 @@ function FinalCTA() {
               <p style={{ fontFamily: 'var(--font-b)', fontSize: '0.9rem', color: 'rgba(33,33,33,0.65)', marginBottom: '2rem' }}>Capt. Navrang Singh's team · Dwarka, New Delhi</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
                 <a href="tel:+919953777320" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', borderRadius: '0.6rem', border: '1px solid rgba(0,39,76,0.15)', color: 'var(--navy)', textDecoration: 'none', fontSize: '0.9375rem', fontFamily: 'var(--font-h)', fontWeight: 600 }}>📞 Call Us</a>
-                <a href="https://wa.me/919953777320" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', borderRadius: '0.6rem', border: '1px solid #25D366', color: '#25D366', textDecoration: 'none', fontSize: '0.9375rem', fontFamily: 'var(--font-h)', fontWeight: 600 }}>💬 WhatsApp</a>
+                <a href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', borderRadius: '0.6rem', border: '1px solid #25D366', color: '#25D366', textDecoration: 'none', fontSize: '0.9375rem', fontFamily: 'var(--font-h)', fontWeight: 600 }}>💬 WhatsApp</a>
                 <a href="/courses" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', borderRadius: '0.6rem', background: 'var(--red)', color: '#fff', textDecoration: 'none', fontSize: '0.9375rem', fontFamily: 'var(--font-h)', fontWeight: 700 }}>Explore Courses →</a>
               </div>
             </motion.div>
@@ -984,7 +987,7 @@ function BookingModal({ open, onClose }) {
                 <p style={{ fontFamily: 'var(--font-b)', fontSize: '0.85rem', color: 'rgba(33,33,33,0.7)', lineHeight: 1.6, marginBottom: '1.5rem' }}>Our admissions team will reach out within 24 hours to confirm your demo class schedule with Capt. Navrang Singh.</p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
                   <a href="tel:+919953777320" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid rgba(0,39,76,0.2)', color: 'var(--navy)', textDecoration: 'none', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>📞 Call Us</a>
-                  <a href="https://wa.me/919953777320" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid #25D366', color: '#25D366', textDecoration: 'none', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>💬 WhatsApp</a>
+                  <a href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid #25D366', color: '#25D366', textDecoration: 'none', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>💬 WhatsApp</a>
                   <a href="/courses" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', background: 'var(--red)', color: '#fff', textDecoration: 'none', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>Explore Courses →</a>
                 </div>
               </div>
@@ -996,7 +999,7 @@ function BookingModal({ open, onClose }) {
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
                   <button type="button" onClick={() => setStatus('idle')} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid rgba(0,39,76,0.2)', color: 'var(--navy)', background: 'transparent', cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>Try again</button>
                   <a href="tel:+919953777320" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid rgba(0,39,76,0.2)', color: 'var(--navy)', textDecoration: 'none', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>Call Us</a>
-                  <a href="https://wa.me/919953777320" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid #25D366', color: '#25D366', textDecoration: 'none', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>WhatsApp</a>
+                  <a href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid #25D366', color: '#25D366', textDecoration: 'none', fontSize: '0.8rem', fontFamily: 'var(--font-h)' }}>WhatsApp</a>
                 </div>
               </div>
             ) : (
@@ -2187,109 +2190,6 @@ function CampusGallerySection() {
         </div>
       </div>
     </section>
-  )
-}
-
-/* ─────────────────────────────────────
-   TRIPLE LINE GRAPH (PILOT SUPPLY IN INDIA)
-───────────────────────────────────── */
-function PilotSupplyGraph() {
-  return (
-    <div style={{
-      background: '#ffffff',
-      border: '1px solid rgba(0, 39, 76, 0.08)',
-      borderRadius: '16px',
-      padding: '2rem',
-      boxShadow: '0 10px 40px rgba(0,39,76,0.04)',
-      marginTop: '3rem',
-      marginBottom: '4rem',
-      fontFamily: 'var(--font-b)'
-    }}>
-      <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '1.05rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'var(--red)', display: 'inline-block' }} />
-        <span>Indian Airline Pilot Supply & Airborne Share (2015-2025)</span>
-      </h4>
-      <p style={{ fontSize: '0.82rem', color: 'rgba(33,33,33,0.65)', lineHeight: 1.6, marginBottom: '2rem' }}>
-        Historical expansion of active commercial pilots in Indian airlines compared to Airborne graduates. Airborne Aviation supplies approximately 10% of new pilot placements (1,500 active pilots).
-      </p>
-
-      {/* SVG graph container */}
-      <div style={{ width: '100%', overflowX: 'auto' }}>
-        <svg viewBox="0 0 800 360" style={{ width: '100%', minWidth: '600px', display: 'block' }}>
-          {/* Grid lines */}
-          <line x1="80" y1="50" x2="740" y2="50" stroke="#f1f5f9" strokeWidth="1" />
-          <line x1="80" y1="110" x2="740" y2="110" stroke="#f1f5f9" strokeWidth="1" />
-          <line x1="80" y1="170" x2="740" y2="170" stroke="#f1f5f9" strokeWidth="1" />
-          <line x1="80" y1="230" x2="740" y2="230" stroke="#f1f5f9" strokeWidth="1" />
-          <line x1="80" y1="290" x2="740" y2="290" stroke="#f1f5f9" strokeWidth="1" />
-
-          {/* Axes */}
-          <line x1="80" y1="290" x2="740" y2="290" stroke="rgba(0,39,76,0.15)" strokeWidth="2" />
-          <line x1="80" y1="50" x2="80" y2="290" stroke="rgba(0,39,76,0.15)" strokeWidth="2" />
-
-          {/* Axis Labels */}
-          <text x="70" y="55" fill="rgba(0,39,76,0.5)" fontSize="10" textAnchor="end" fontWeight="500">15,000</text>
-          <text x="70" y="115" fill="rgba(0,39,76,0.5)" fontSize="10" textAnchor="end" fontWeight="500">11,250</text>
-          <text x="70" y="175" fill="rgba(0,39,76,0.5)" fontSize="10" textAnchor="end" fontWeight="500">7,500</text>
-          <text x="70" y="235" fill="rgba(0,39,76,0.5)" fontSize="10" textAnchor="end" fontWeight="500">3,750</text>
-          <text x="70" y="295" fill="rgba(0,39,76,0.5)" fontSize="10" textAnchor="end" fontWeight="500">0</text>
-
-          <text x="80" y="315" fill="rgba(0,39,76,0.6)" fontSize="11" textAnchor="middle" fontWeight="600">2015</text>
-          <text x="212" y="315" fill="rgba(0,39,76,0.6)" fontSize="11" textAnchor="middle" fontWeight="600">2017</text>
-          <text x="344" y="315" fill="rgba(0,39,76,0.6)" fontSize="11" textAnchor="middle" fontWeight="600">2019</text>
-          <text x="476" y="315" fill="rgba(0,39,76,0.6)" fontSize="11" textAnchor="middle" fontWeight="600">2021</text>
-          <text x="608" y="315" fill="rgba(0,39,76,0.6)" fontSize="11" textAnchor="middle" fontWeight="600">2023</text>
-          <text x="740" y="315" fill="rgba(0,39,76,0.6)" fontSize="11" textAnchor="middle" fontWeight="600">2025</text>
-
-          {/* Line 1: Total Airline Pilots in India (Red) */}
-          <path d="M 80 230 Q 212 214 344 182 T 608 134 T 740 110" fill="none" stroke="var(--red)" strokeWidth="3" strokeLinecap="round" />
-          <circle cx="80" cy="230" r="4" fill="var(--red)" />
-          <circle cx="212" cy="214" r="4" fill="var(--red)" />
-          <circle cx="344" cy="182" r="4" fill="var(--red)" />
-          <circle cx="476" cy="174" r="4" fill="var(--red)" />
-          <circle cx="608" cy="134" r="4" fill="var(--red)" />
-          <circle cx="740" cy="110" r="4" fill="var(--red)" />
-
-          {/* Line 2: Airborne Aviation Alumni (Navy) */}
-          <path d="M 80 284 Q 212 281 344 277 T 608 270 T 740 266" fill="none" stroke="var(--navy)" strokeWidth="3" strokeLinecap="round" />
-          <circle cx="80" cy="284" r="4" fill="var(--navy)" />
-          <circle cx="212" cy="281" r="4" fill="var(--navy)" />
-          <circle cx="344" cy="277" r="4" fill="var(--navy)" />
-          <circle cx="476" cy="274" r="4" fill="var(--navy)" />
-          <circle cx="608" cy="270" r="4" fill="var(--navy)" />
-          <circle cx="740" cy="266" r="4" fill="var(--navy)" />
-
-          {/* Line 3: Airborne Supply Contribution Share (Gold) */}
-          <path d="M 80 260 Q 212 245 344 230 T 608 210 T 740 200" fill="none" stroke="var(--gold)" strokeWidth="3" strokeLinecap="round" strokeDasharray="4 4" />
-          <circle cx="80" cy="260" r="4" fill="var(--gold)" />
-          <circle cx="212" cy="245" r="4" fill="var(--gold)" />
-          <circle cx="344" cy="230" r="4" fill="var(--gold)" />
-          <circle cx="476" cy="215" r="4" fill="var(--gold)" />
-          <circle cx="608" cy="210" r="4" fill="var(--gold)" />
-          <circle cx="740" cy="200" r="4" fill="var(--gold)" />
-
-          <text x="740" y="95" fill="var(--red)" fontSize="11" fontWeight="700" textAnchor="middle">15,000</text>
-          <text x="740" y="252" fill="var(--navy)" fontSize="11" fontWeight="700" textAnchor="middle">1,500</text>
-          <text x="740" y="185" fill="var(--gold)" fontSize="11" fontWeight="700" textAnchor="middle">10%</text>
-        </svg>
-      </div>
-
-      {/* Legend */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', justifyContent: 'center', marginTop: '1rem', fontSize: '0.78rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ display: 'inline-block', width: '20px', height: '3px', background: 'var(--red)' }} />
-          <span style={{ color: 'var(--red)' }}>Active Airline Pilots (India)</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ display: 'inline-block', width: '20px', height: '3px', background: 'var(--navy)' }} />
-          <span style={{ color: 'var(--navy)' }}>Airborne Aviation Alumni (1500 Pilots)</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ display: 'inline-block', width: '20px', height: '3px', background: 'var(--gold)', borderTop: '2px dashed var(--gold)' }} />
-          <span style={{ color: 'var(--gold)' }}>Airborne Supply Share (10%)</span>
-        </div>
-      </div>
-    </div>
   )
 }
 

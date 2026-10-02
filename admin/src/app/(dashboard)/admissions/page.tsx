@@ -30,7 +30,23 @@ import {
   X,
   RotateCcw,
   IndianRupee,
+  Upload,
+  Printer,
 } from "lucide-react";
+import { DOCUMENT_ACCEPT_ATTR, MAX_DOCUMENT_BYTES } from "@/lib/documents/upload-policy";
+
+const DOCUMENT_TYPES = [
+  "AADHAR_CARD",
+  "PAN_CARD",
+  "PASSPORT",
+  "PHOTO",
+  "CLASS_10_MARKSHEET",
+  "CLASS_12_MARKSHEET",
+  "MEDICAL_CERTIFICATE",
+  "BIRTH_CERTIFICATE",
+  "BANK_STATEMENT",
+  "OTHER",
+] as const;
 import { PageHeader } from "@/components/shared/page-header";
 import { apiFetch } from "@/lib/api";
 import { createSubmissionKeyManager } from "@/lib/payments/submission-key";
@@ -338,6 +354,39 @@ function DocumentsPanel({ admissionId, fallback }: { admissionId: string; fallba
     queryFn: () => apiFetch<AdmissionDocument[]>(`/admissions/${admissionId}/documents?limit=100`),
   });
   const list = docs ?? fallback ?? [];
+  const fileRef = React.useRef<HTMLInputElement>(null);
+  const [docType, setDocType] = React.useState<(typeof DOCUMENT_TYPES)[number]>("AADHAR_CARD");
+  const [file, setFile] = React.useState<File | null>(null);
+  const [uploadError, setUploadError] = React.useState<string | null>(null);
+
+  const uploadMutation = useMutation({
+    mutationFn: () => {
+      const form = new FormData();
+      form.append("documentType", docType);
+      form.append("file", file!);
+      return apiFetch<AdmissionDocument>(`/admissions/${admissionId}/documents`, { method: "POST", body: form });
+    },
+    onSuccess: () => {
+      setUploadError(null);
+      setFile(null);
+      if (fileRef.current) fileRef.current.value = "";
+      queryClient.invalidateQueries({ queryKey: ["admission", admissionId, "documents"] });
+      queryClient.invalidateQueries({ queryKey: ["admission", admissionId] });
+      toast({ title: "Document uploaded" });
+    },
+    onError: (err: Error) => setUploadError(err.message),
+  });
+
+  const pickFile = (f: File | undefined) => {
+    setUploadError(null);
+    if (!f) return setFile(null);
+    if (f.size > MAX_DOCUMENT_BYTES) {
+      setFile(null);
+      setUploadError(`Documents must be ${MAX_DOCUMENT_BYTES / (1024 * 1024)} MB or smaller.`);
+      return;
+    }
+    setFile(f);
+  };
 
   const reviewMutation = useMutation({
     mutationFn: ({ id, status, rejectionReason }: { id: string; status: "APPROVED" | "REJECTED"; rejectionReason?: string }) =>
@@ -357,15 +406,64 @@ function DocumentsPanel({ admissionId, fallback }: { admissionId: string; fallba
           <FileSearch className="h-4 w-4 text-primary" />
           Documents
         </h3>
-        <p className="text-xs text-muted-foreground mt-1">Approve or reject submitted files.</p>
+        <p className="text-xs text-muted-foreground mt-1">Upload student documents, then approve or reject them.</p>
       </div>
+      <form
+        className="p-3 rounded-xl border border-white/10 bg-slate-900/60 space-y-2"
+        data-testid="document-upload-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (file) uploadMutation.mutate();
+        }}
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="space-y-1">
+            <Label htmlFor={`doc-type-${admissionId}`} className="text-[11px] font-bold text-muted-foreground">Document type</Label>
+            <select
+              id={`doc-type-${admissionId}`}
+              data-testid="document-upload-type"
+              value={docType}
+              onChange={(e) => setDocType(e.target.value as (typeof DOCUMENT_TYPES)[number])}
+              className="w-full h-9 rounded-md border border-white/10 bg-secondary/40 px-2 text-xs text-white"
+            >
+              {DOCUMENT_TYPES.map((t) => (
+                <option key={t} value={t}>{t.replace(/_/g, " ")}</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor={`doc-file-${admissionId}`} className="text-[11px] font-bold text-muted-foreground">File (PDF, JPG, PNG, WEBP · max 10 MB)</Label>
+            <input
+              ref={fileRef}
+              id={`doc-file-${admissionId}`}
+              data-testid="document-upload-file"
+              type="file"
+              accept={DOCUMENT_ACCEPT_ATTR}
+              onChange={(e) => pickFile(e.target.files?.[0])}
+              className="w-full text-[11px] text-muted-foreground file:mr-2 file:rounded file:border-0 file:bg-primary/20 file:px-2 file:py-1 file:text-primary"
+            />
+          </div>
+        </div>
+        {uploadError && (
+          <p className="text-[11px] text-rose-400" data-testid="document-upload-error">{uploadError}</p>
+        )}
+        <Button
+          type="submit"
+          size="sm"
+          data-testid="document-upload-submit"
+          disabled={!file || uploadMutation.isPending}
+          className="h-8 text-[11px] font-bold bg-primary text-white"
+        >
+          <Upload className="h-3 w-3 mr-1" /> {uploadMutation.isPending ? "Uploading..." : "Upload Document"}
+        </Button>
+      </form>
       {isLoading && !fallback?.length ? (
         <Skeleton className="h-24 w-full" />
       ) : list.length === 0 ? (
         <p className="text-xs text-muted-foreground py-6 text-center border border-dashed border-white/10 rounded-xl">No documents uploaded yet.</p>
       ) : (
         list.map((doc) => (
-          <div key={doc.id} className="p-4 rounded-xl bg-slate-900/80 border border-white/5 space-y-3">
+          <div key={doc.id} data-testid="document-row" className="p-4 rounded-xl bg-slate-900/80 border border-white/5 space-y-3">
             <div className="flex items-center justify-between gap-2">
               <span className="text-xs font-bold text-primary truncate">{doc.name}</span>
               <span className={cn("text-[10px] font-extrabold px-2 py-0.5 rounded-full border shrink-0", docStatusClass(doc.status))}>
@@ -1086,6 +1184,18 @@ function AdmissionDetailDialog({
                       {enrollMutation.isPending ? "Enrolling…" : "Enroll"}
                     </Button>
                   )}
+                </div>
+                <div className="flex items-center gap-2" data-testid="dossier-letters">
+                  <Button size="sm" variant="outline" className="h-7 text-[11px] font-bold border-white/10" asChild>
+                    <a href={`/api/v1/admissions/${admission.id}/letters/offer`} target="_blank" rel="noopener noreferrer" data-testid="letter-offer">
+                      <Printer className="h-3 w-3 mr-1" /> Offer Letter
+                    </a>
+                  </Button>
+                  <Button size="sm" variant="outline" className="h-7 text-[11px] font-bold border-white/10" asChild>
+                    <a href={`/api/v1/admissions/${admission.id}/letters/fee-update`} target="_blank" rel="noopener noreferrer" data-testid="letter-fee-update">
+                      <Printer className="h-3 w-3 mr-1" /> Fee Update
+                    </a>
+                  </Button>
                 </div>
                 {canEnroll && Number(admission.feeBalance ?? 0) > 0 && (
                   <span className="text-[10px] font-bold text-amber-400 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5">

@@ -105,6 +105,7 @@ export async function POST(req: NextRequest) {
       title: input.title,
       dueAt: input.dueAt,
       durationMins: input.durationMins,
+      mode: input.mode,
       notes: input.notes,
       outcome: input.outcome,
       metadata: input.metadata,

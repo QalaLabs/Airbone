@@ -1,11 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { TrendingUp, DollarSign, Users, Target } from "lucide-react";
-import { getAnalytics } from "@/lib/crm/analytics";
+import { TrendingUp, DollarSign, Users, Target, Download, RotateCcw, CalendarRange } from "lucide-react";
+import { getAnalytics, downloadAnalyticsCsv, type AnalyticsRangeInput } from "@/lib/crm/analytics";
 import type { AnalyticsData, AnalyticsSourceRow, AnalyticsCounselorRow } from "@/lib/crm/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { CRMDataTable, CRMColumn } from "@/components/shared/crm-data-table";
+import { toast } from "@/components/ui/use-toast";
+import { toISTInput } from "@/lib/time/ist";
+import { PagePerformanceSection } from "@/components/analytics/page-performance-section";
 
 function formatINR(val: number): string {
   if (val >= 10000000) return `₹${(val / 10000000).toFixed(2)} Cr`;
@@ -14,22 +18,75 @@ function formatINR(val: number): string {
   return `₹${val}`;
 }
 
+function validateRange(from: string, to: string): string | null {
+  if (!from && !to) return null;
+  if (!from || !to) return "Select both a start and an end date/time.";
+  if (from > to) return "Start must be on or before the end.";
+  if (from > toISTInput(new Date().toISOString())) return "Start cannot be in the future.";
+  return null;
+}
+
 export default function CRMSalesAnalyticsPage() {
   const [data, setData] = React.useState<AnalyticsData | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const [refreshing, setRefreshing] = React.useState(false);
+  const [exporting, setExporting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [rangeError, setRangeError] = React.useState<string | null>(null);
+  const [fromInput, setFromInput] = React.useState("");
+  const [toInput, setToInput] = React.useState("");
+  const [applied, setApplied] = React.useState<AnalyticsRangeInput | null>(null);
+
+  const load = React.useCallback(async (range: AnalyticsRangeInput | null) => {
+    setRefreshing(true);
+    try {
+      const d = await getAnalytics(range);
+      setData(d);
+      setApplied(range);
+      setError(null);
+      setRangeError(null);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : String(e);
+      if (data) setRangeError(message);
+      else setError(message);
+    } finally {
+      setRefreshing(false);
+      setLoading(false);
+    }
+  }, [data]);
 
   React.useEffect(() => {
-    getAnalytics()
-      .then((d) => {
-        setData(d);
-        setLoading(false);
-      })
-      .catch((e: unknown) => {
-        setError(e instanceof Error ? e.message : String(e));
-        setLoading(false);
-      });
+    void load(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const applyRange = () => {
+    const problem = validateRange(fromInput, toInput);
+    if (problem) {
+      setRangeError(problem);
+      return;
+    }
+    void load(fromInput && toInput ? { from: fromInput, to: toInput } : null);
+  };
+
+  const resetRange = () => {
+    setFromInput("");
+    setToInput("");
+    setRangeError(null);
+    void load(null);
+  };
+
+  const exportCsv = async () => {
+    setExporting(true);
+    try {
+      const filename = await downloadAnalyticsCsv(applied);
+      toast({ title: "Export ready", description: filename });
+    } catch (e: unknown) {
+      toast({ title: "Export failed", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    } finally {
+      setExporting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -50,6 +107,10 @@ export default function CRMSalesAnalyticsPage() {
   }
 
   const { totals, monthly, bySource, byStatus, byCounselor } = data;
+  const ranged = Boolean(data.range);
+  const periodLabel = ranged ? "Period" : "Today";
+  const periodText = ranged ? "in the selected period" : "today";
+  const monthlyTitle = ranged ? "Selected Range" : "Last 6 Months";
   // Floor at 1 so an all-zero period renders empty bars instead of NaN widths.
   const maxLeads = Math.max(1, ...monthly.map((m) => m.leads));
   const maxRevenue = Math.max(1, ...monthly.map((m) => m.revenue));
@@ -122,12 +183,60 @@ export default function CRMSalesAnalyticsPage() {
         </div>
       </div>
 
+      <Card className="bg-card border-white/10 shadow-lg" data-testid="analytics-range">
+        <CardContent className="p-4 space-y-3">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground mr-1">
+              <CalendarRange className="h-4 w-4 text-primary" /> Date &amp; time range (IST)
+            </div>
+            <label className="flex flex-col gap-1 text-[11px] font-semibold text-muted-foreground">
+              Start
+              <input
+                type="datetime-local"
+                aria-label="Start date and time"
+                value={fromInput}
+                onChange={(e) => setFromInput(e.target.value)}
+                className="h-9 rounded-lg border border-white/10 bg-secondary/40 px-2 text-xs text-white"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-[11px] font-semibold text-muted-foreground">
+              End
+              <input
+                type="datetime-local"
+                aria-label="End date and time"
+                value={toInput}
+                onChange={(e) => setToInput(e.target.value)}
+                className="h-9 rounded-lg border border-white/10 bg-secondary/40 px-2 text-xs text-white"
+              />
+            </label>
+            <Button size="sm" onClick={applyRange} disabled={refreshing} className="text-xs font-bold">
+              {refreshing ? "Loading…" : "Apply"}
+            </Button>
+            <Button size="sm" variant="outline" onClick={resetRange} disabled={refreshing} className="text-xs font-bold border-white/10">
+              <RotateCcw className="h-3.5 w-3.5 mr-1" /> Reset
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => void exportCsv()} disabled={exporting || refreshing} className="text-xs font-bold border-white/10 ml-auto">
+              <Download className="h-3.5 w-3.5 mr-1" /> {exporting ? "Exporting…" : "Export CSV"}
+            </Button>
+          </div>
+          <p className="text-[11px] text-muted-foreground" data-testid="analytics-range-label">
+            {data.range
+              ? `Showing records created ${data.range.fromInput.replace("T", " ")} → ${data.range.toInput.replace("T", " ")} IST (both inclusive).`
+              : "Showing all time. Pick a start and end, then Apply. Export uses the applied range."}
+            {data.scope === "counselor" ? " Limited to your assigned records." : ""}
+          </p>
+          {rangeError && (
+            <p role="alert" className="text-xs font-semibold text-rose-400">{rangeError}</p>
+          )}
+        </CardContent>
+      </Card>
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="bg-card border-white/10 shadow-lg">
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <p className="text-xs text-muted-foreground font-semibold">Total Leads</p>
-              <p className="text-2xl font-bold text-white mt-1">{totals.leads}</p>
+              <p className="text-2xl font-bold text-white mt-1" data-testid="metric-total-leads">{totals.leads}</p>
               <p className="text-[10px] text-muted-foreground mt-0.5">
                 {totals.pipeline} active in pipeline
               </p>
@@ -154,9 +263,9 @@ export default function CRMSalesAnalyticsPage() {
         <Card className="bg-card border-white/10 shadow-lg">
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-foreground font-semibold">New Leads (Today)</p>
-              <p className="text-2xl font-bold text-white mt-1">{totals.newLeadsToday}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">Lead enquiries created today</p>
+              <p className="text-xs text-muted-foreground font-semibold">New Leads ({periodLabel})</p>
+              <p className="text-2xl font-bold text-white mt-1" data-testid="metric-new-leads">{totals.newLeadsToday}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Lead enquiries created {periodText}</p>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/10">
               <TrendingUp className="h-5 w-5 text-blue-500" />
@@ -180,10 +289,10 @@ export default function CRMSalesAnalyticsPage() {
         <Card className="bg-card border-white/10 shadow-lg">
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-foreground font-semibold">Opportunity Sales (Today)</p>
+              <p className="text-xs text-muted-foreground font-semibold">Opportunity Sales ({periodLabel})</p>
               <p className="text-2xl font-bold text-white mt-1">{totals.opportunitySales}</p>
               <p className="text-[10px] text-muted-foreground mt-0.5">
-                Collected {formatINR(totals.opportunityCollections)} today
+                Collected {formatINR(totals.opportunityCollections)} {periodText}
               </p>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10">
@@ -238,9 +347,9 @@ export default function CRMSalesAnalyticsPage() {
         <Card className="bg-card border-white/10 shadow-lg">
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-foreground font-semibold">Collections (Today)</p>
+              <p className="text-xs text-muted-foreground font-semibold">Collections ({periodLabel})</p>
               <p className="text-2xl font-bold text-white mt-1">{formatINR(totals.collectionsToday)}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">Receipts recorded today</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Receipts recorded {periodText}</p>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-500/10">
               <TrendingUp className="h-5 w-5 text-indigo-500" />
@@ -297,13 +406,13 @@ export default function CRMSalesAnalyticsPage() {
       <div className="grid gap-4 md:grid-cols-2">
         <Card className="bg-card border-white/10 shadow-lg">
           <CardHeader className="border-b border-white/5 pb-3">
-            <CardTitle className="text-sm font-semibold text-white">New Leads · Last 6 Months</CardTitle>
+            <CardTitle className="text-sm font-semibold text-white">New Leads · {monthlyTitle}</CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
             <div className="space-y-4">
               {monthly.map((m) => (
                 <div key={m.key} className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground font-semibold w-10 shrink-0">{m.label}</span>
+                  <span className="text-xs text-muted-foreground font-semibold w-16 shrink-0">{m.label}</span>
                   <div className="flex-1 h-6 rounded bg-secondary overflow-hidden">
                     <div
                       className="h-full bg-primary/70 rounded flex items-center justify-end pr-2.5 transition-all"
@@ -318,7 +427,7 @@ export default function CRMSalesAnalyticsPage() {
                 </div>
               ))}
               {monthly.length === 0 && (
-                <p className="text-xs text-muted-foreground">No lead records in the last 6 months.</p>
+                <p className="text-xs text-muted-foreground">No lead records in this range.</p>
               )}
             </div>
           </CardContent>
@@ -326,13 +435,13 @@ export default function CRMSalesAnalyticsPage() {
 
         <Card className="bg-card border-white/10 shadow-lg">
           <CardHeader className="border-b border-white/5 pb-3">
-            <CardTitle className="text-sm font-semibold text-white">Revenue · Last 6 Months</CardTitle>
+            <CardTitle className="text-sm font-semibold text-white">Revenue · {monthlyTitle}</CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
             <div className="space-y-4">
               {monthly.map((m) => (
                 <div key={m.key} className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground font-semibold w-10 shrink-0">{m.label}</span>
+                  <span className="text-xs text-muted-foreground font-semibold w-16 shrink-0">{m.label}</span>
                   <div className="flex-1 h-6 rounded bg-secondary overflow-hidden">
                     <div
                       className="h-full bg-emerald-500/70 rounded flex items-center justify-end pr-2.5 transition-all"
@@ -344,7 +453,7 @@ export default function CRMSalesAnalyticsPage() {
                 </div>
               ))}
               {monthly.length === 0 && (
-                <p className="text-xs text-muted-foreground">No payment records in the last 6 months.</p>
+                <p className="text-xs text-muted-foreground">No payment records in this range.</p>
               )}
             </div>
           </CardContent>
@@ -400,6 +509,8 @@ export default function CRMSalesAnalyticsPage() {
           )}
         </CardContent>
       </Card>
+
+      <PagePerformanceSection range={applied} />
     </div>
   );
 }

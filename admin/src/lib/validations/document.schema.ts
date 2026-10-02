@@ -14,6 +14,10 @@ export const uploadDocumentSchema = z.object({
   metadata: z.record(z.unknown()).optional(),
 });
 
+export const multipartDocumentSchema = z.object({
+  documentType: z.nativeEnum(DocumentType, { errorMap: () => ({ message: "Choose a valid document type" }) }),
+});
+
 export const reviewDocumentSchema = z.object({
   status: z.enum(["UNDER_REVIEW", "APPROVED", "REJECTED"]),
   rejectionReason: z.string().max(1000).optional(),

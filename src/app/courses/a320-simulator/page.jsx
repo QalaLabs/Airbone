@@ -38,8 +38,10 @@ const USE_CASES = [
 ]
 
 export default async function A320SimulatorPage() {
-  const course = await fetchPublic('/courses', { slug: 'a320-simulator', limit: 1 })
-  const dbFee = course?.[0]?.fee ?? null
+  const courseResult = await fetchPublic('/courses', { slug: 'a320-simulator', limit: 1 })
+  // A slug lookup returns one course object (not a list).
+  const course = Array.isArray(courseResult) ? courseResult[0] ?? null : courseResult
+  const dbFee = course?.fee ?? null
   const feeLabel = displayCourseFee(CANONICAL_SLUG, dbFee) || OFFLINE_FEE_FALLBACK
   const priceNumeric = courseFeeNumeric(CANONICAL_SLUG, dbFee)
 

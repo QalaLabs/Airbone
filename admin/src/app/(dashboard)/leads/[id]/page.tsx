@@ -17,6 +17,8 @@ import { updateDeal, revertDealToProspect, convertDealToAdmission } from "@/lib/
 import { formatDate, formatDateTime } from "@/lib/utils";
 import { toISTInput, fromISTInput } from "@/lib/time/ist";
 import { statusLabel } from "@/lib/leads/lead-status";
+import { LEAD_SOURCE_OPTIONS, leadSourceLabel } from "@/lib/leads/lead-source";
+import { roleCan } from "@/lib/utils/permissions";
 import { toast } from "@/components/ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -56,6 +58,12 @@ interface LeadDeal {
   admission?: { id: string; applicationNo: string; stage: string } | null;
 }
 
+const ELIGIBILITY_LABEL: Record<string, string> = {
+  eligible: "Meets course criteria",
+  review: "Needs counsellor review",
+  not_applicable: "No pre-check for this course",
+};
+
 interface Lead {
   id: string;
   name: string;
@@ -79,6 +87,7 @@ interface Lead {
   admissions?: LeadAdmission[];
   deals?: LeadDeal[];
   scoreHistory?: { id: string; score: number; reason?: string | null; createdAt: string }[];
+  customFields?: { eligibility?: { course?: string | null; result?: string; answers?: Record<string, string> } } | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -324,6 +333,18 @@ export default function LeadDetailPage() {
     onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
+  const canEditSource = roleCan(session?.user?.role, "write", "leads");
+  const [editingSource, setEditingSource] = React.useState(false);
+  const [sourceDraft, setSourceDraft] = React.useState("");
+  const updateSourceMutation = useMutation({
+    mutationFn: (source: string) => apiFetch(`/leads/${id}`, { method: "PATCH", body: JSON.stringify({ source }) }),
+    onSuccess: () => {
+      invalidate();
+      setEditingSource(false);
+      toast({ title: "Source updated" });
+    },
+    onError: (err: Error) => toast({ title: "Could not update source", description: err.message, variant: "destructive" }),
+  });
   const convertLeadMutation = useMutation({
     mutationFn: (payload: { dealData?: any; notes?: string }) =>
       apiFetch(`/leads/${id}/convert`, { method: "POST", body: JSON.stringify(payload) }),
@@ -460,7 +481,7 @@ export default function LeadDetailPage() {
       updateDeal(dealId, { stage: stage as never }),
     onSuccess: () => {
       invalidate();
-      toast({ title: "Deal stage updated" });
+      toast({ title: "Pipeline stage updated" });
     },
     onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
@@ -482,7 +503,7 @@ export default function LeadDetailPage() {
     mutationFn: (dealId: string) => revertDealToProspect(dealId, "Reverted to prospect from lead detail"),
     onSuccess: () => {
       invalidate();
-      toast({ title: "Deal reverted to Prospect" });
+      toast({ title: "Moved back to Prospect" });
     },
     onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
@@ -566,7 +587,7 @@ export default function LeadDetailPage() {
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Created {formatDate(lead.createdAt)} · Source: {(lead.source ?? "").replace(/_/g, " ")}
+              Created {formatDate(lead.createdAt)} · Source: <span data-testid="lead-source-label">{leadSourceLabel(lead.source ?? "")}</span>
               {lead.nextFollowUp ? ` · Follow-up ${formatDateTime(lead.nextFollowUp)}` : ""}
             </p>
           </div>
@@ -586,6 +607,53 @@ export default function LeadDetailPage() {
                 {editingStatus ? "Close" : "Update Status"}
               </Button>
             </div>
+          </div>
+          <div className="flex flex-col gap-1 text-xs text-muted-foreground font-semibold">
+            <span>Source</span>
+            {editingSource ? (
+              <div className="flex items-center gap-2">
+                <select
+                  aria-label="Lead source"
+                  value={sourceDraft}
+                  onChange={(e) => setSourceDraft(e.target.value)}
+                  className="h-9 rounded-lg border border-white/10 bg-secondary/40 px-2 text-xs font-semibold text-foreground"
+                >
+                  {LEAD_SOURCE_OPTIONS.map((s) => (
+                    <option key={s.value} value={s.value} className="bg-slate-900">{s.label}</option>
+                  ))}
+                </select>
+                <Button
+                  size="sm"
+                  className="h-9 text-xs font-bold"
+                  disabled={updateSourceMutation.isPending || sourceDraft === lead.source}
+                  onClick={() => updateSourceMutation.mutate(sourceDraft)}
+                >
+                  {updateSourceMutation.isPending ? "Saving..." : "Save source"}
+                </Button>
+                <Button size="sm" variant="outline" className="h-9 text-xs border-white/10" onClick={() => setEditingSource(false)}>
+                  Cancel
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="h-9 inline-flex items-center rounded-md border border-white/10 px-3 text-xs text-foreground">
+                  {leadSourceLabel(lead.source ?? "")}
+                </span>
+                {canEditSource && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-white/10 text-xs font-bold h-9"
+                    onClick={() => {
+                      setSourceDraft(lead.source);
+                      setEditingSource(true);
+                    }}
+                  >
+                    Edit source
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
             {(session?.user?.role === "ADMIN" || session?.user?.role === "SUPER_ADMIN" || session?.user?.role === "MARKETING_MANAGER") && (
               <Button size="sm" variant="outline" className="border-white/10 text-xs font-bold" onClick={() => setAssignOpen(true)}>
@@ -720,6 +788,16 @@ export default function LeadDetailPage() {
               <Info label="Email" value={lead.email || "-"} icon={Mail} />
               <Info label="Phone" value={lead.phone} icon={Phone} mono />
               <Info label="Course interest" value={lead.courseInterest || "-"} />
+              {lead.customFields?.eligibility?.result ? (
+                <div data-testid="lead-eligibility" data-result={lead.customFields.eligibility.result}>
+                  <Info
+                    label="Eligibility pre-check (advisory)"
+                    value={`${ELIGIBILITY_LABEL[lead.customFields.eligibility.result] ?? lead.customFields.eligibility.result}${
+                      lead.customFields.eligibility.course ? ` · ${lead.customFields.eligibility.course}` : ""
+                    }`}
+                  />
+                </div>
+              ) : null}
               <Info label="Counselor" value={lead.counselor?.name || "Unassigned"} />
               <Info label="City" value={lead.city || "-"} />
               <Info label="Pincode" value={lead.pincode || "-"} />
@@ -848,7 +926,7 @@ export default function LeadDetailPage() {
           {activeDeal || closedDeal ? (
             <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-4">
               <h3 className="text-sm font-bold uppercase tracking-wider text-white border-b border-white/10 pb-3">
-                Deal {activeDeal ? "" : "(archived)"}
+                Lead Pipeline {activeDeal ? "" : "(archived)"}
               </h3>
               <div>
                 <span className="text-xs text-muted-foreground font-semibold">Opportunity</span>
@@ -925,9 +1003,9 @@ export default function LeadDetailPage() {
             </div>
           ) : (
             <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-3">
-              <h3 className="text-sm font-bold text-white">No deal yet</h3>
+              <h3 className="text-sm font-bold text-white">Not in the Lead Pipeline yet</h3>
               <p className="text-xs text-muted-foreground">
-                Set this lead&apos;s status to Prospect to open a pipeline deal, or convert directly to an admission.
+                Set this lead&apos;s status to Prospect to add it to the Lead Pipeline, or convert directly to an admission.
               </p>
             </div>
           )}

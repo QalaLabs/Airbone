@@ -247,7 +247,7 @@ export class DealService {
 
     if (existing.wonAt || existing.lostAt) {
       throw new ValidationError([
-        { message: "Cannot modify a closed deal. Revert it to open first." },
+        { message: "Cannot modify a closed Lead Pipeline entry. Revert it to open first." },
       ]);
     }
 
@@ -255,7 +255,7 @@ export class DealService {
       if (!canTransitionDealStage(existing.stage, input.stage)) {
         throw new ValidationError([
           {
-            message: `Cannot transition deal from ${existing.stage} to ${input.stage}`,
+            message: `Cannot move this Lead Pipeline entry from ${existing.stage} to ${input.stage}`,
           },
         ]);
       }
@@ -438,7 +438,7 @@ export class DealService {
     const deal = await this.getById(ctx, id);
 
     if (deal.isActive && deal.stage === "ENQUIRY" && !deal.wonAt && !deal.lostAt && !deal.admissionId) {
-      throw new ValidationError([{ message: "Deal is already at the Prospect stage." }]);
+      throw new ValidationError([{ message: "This lead is already at the Prospect stage of the Lead Pipeline." }]);
     }
 
     // Revert reopens the same deal at the Prospect stage (one deal per lead is a

@@ -17,6 +17,7 @@ export const createTestimonialSchema = z.object({
 });
 
 export const updateTestimonialSchema = createTestimonialSchema.partial().extend({
+  avatarId: z.string().uuid().nullable().optional(),
   isFeatured: z.boolean().optional(),
   order: z.number().int().min(0).optional(),
 });
@@ -30,7 +31,9 @@ export const testimonialFiltersSchema = z.object({
   status: z.enum(testimonialStatusValues).optional(),
   courseId: z.string().uuid().optional(),
   studentId: z.string().uuid().optional(),
-  isFeatured: z.boolean().optional(),
+  isFeatured: z
+    .union([z.boolean(), z.enum(["true", "false"]).transform((v) => v === "true")])
+    .optional(),
   batchYear: z.coerce.number().int().optional(),
   search: z.string().optional(),
   page: z.coerce.number().int().min(1).default(1),

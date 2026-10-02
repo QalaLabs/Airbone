@@ -210,6 +210,32 @@ img, video { display: block; max-width: 100%; }
 }
 .nav-cta:hover { background: var(--red-dark); transform: translateY(-1px); }
 
+/* CMS header submenus */
+.nav-has-sub { position: relative; display: flex; align-items: center; gap: .25rem; }
+.nav-sub-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; padding: 0; border: none; background: transparent;
+  color: rgba(0,39,76,0.7); cursor: pointer; border-radius: 4px;
+}
+.nav-sub-toggle:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+.nav-submenu {
+  position: absolute; top: 100%; left: 0; min-width: 220px; z-index: 50;
+  display: grid; gap: .25rem; margin: 0; padding: .6rem; list-style: none;
+  background: #fff; border: 1px solid rgba(0,39,76,0.12); border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0,39,76,0.14);
+}
+.nav-submenu[hidden] { display: none; }
+.nav-submenu-link {
+  display: block; padding: .5rem .65rem; border-radius: 6px; text-decoration: none;
+  font-family: var(--font-h); font-size: .8rem; font-weight: 600; color: var(--navy);
+}
+.nav-submenu-link:hover, .nav-submenu-link:focus-visible { background: rgba(0,39,76,0.06); outline: none; }
+.drawer-sublinks { list-style: none; margin: .25rem 0 0 2.6rem; padding: 0; display: grid; gap: .4rem; }
+.drawer-sublink-item {
+  display: inline-block; padding: .35rem 0; text-decoration: none;
+  font-family: var(--font-h); font-size: 1.05rem; font-weight: 600; color: rgba(0,39,76,0.75);
+}
+
 /* ================================================================
    3D CANVAS — Fixed, full screen, behind everything
    ================================================================ */

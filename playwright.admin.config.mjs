@@ -5,6 +5,7 @@
 import { defineConfig } from '@playwright/test'
 
 const PORT = Number(process.env.E2E_ADMIN_PORT || 4100)
+const LIVE_WEB_PORT = Number(process.env.E2E_LIVE_WEB_PORT || 4101)
 
 export default defineConfig({
   testDir: './e2e/admin',
@@ -22,10 +23,19 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
-  webServer: {
-    command: 'node e2e/scripts/start-admin.mjs',
-    url: `http://127.0.0.1:${PORT}/login`,
-    reuseExistingServer: process.env.E2E_REUSE === '1',
-    timeout: 20 * 60_000,
-  },
+  webServer: [
+    {
+      command: 'node e2e/scripts/start-admin.mjs',
+      url: `http://127.0.0.1:${PORT}/login`,
+      reuseExistingServer: process.env.E2E_REUSE === '1',
+      timeout: 20 * 60_000,
+    },
+    {
+      // Public website wired to the E2E admin above (CMS -> website assertions).
+      command: 'node e2e/scripts/start-web-live.mjs',
+      url: `http://127.0.0.1:${LIVE_WEB_PORT}/`,
+      reuseExistingServer: process.env.E2E_REUSE === '1',
+      timeout: 40 * 60_000,
+    },
+  ],
 })

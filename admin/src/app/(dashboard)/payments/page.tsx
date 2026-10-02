@@ -6,7 +6,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Wallet, Search, RotateCcw, ChevronLeft, ChevronRight, Banknote, Undo2, Landmark, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { apiFetch } from "@/lib/api";
+import Link from "next/link";
 import { formatDate, cn } from "@/lib/utils";
+import { roleCan } from "@/lib/utils/permissions";
 import { toast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -54,6 +56,8 @@ export default function PaymentsLedgerPage() {
   const queryClient = useQueryClient();
   const { data: session } = useSession();
   const isSuperAdmin = session?.user?.role === "SUPER_ADMIN";
+  const canOpenStudent = roleCan(session?.user?.role, "read", "students");
+  const canOpenAdmission = roleCan(session?.user?.role, "read", "admissions");
   const [search, setSearch] = React.useState("");
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
   const [status, setStatus] = React.useState("");
@@ -263,14 +267,40 @@ export default function PaymentsLedgerPage() {
                       {p.paidAt ? formatDate(p.paidAt) : formatDate(p.createdAt)}
                     </td>
                     <td className="px-4 py-3">
-                      <p className="font-semibold text-white">
-                        {p.student
-                          ? `${p.student.firstName} ${p.student.lastName}${p.student.studentCode ? ` (${p.student.studentCode})` : ""}`
-                          : (p.admission?.applicationNo ?? "-")}
-                      </p>
-                      {p.admission?.applicationNo && p.student && (
-                        <p className="text-[10px] text-muted-foreground">{p.admission.applicationNo}</p>
-                      )}
+                      {p.student ? (
+                        canOpenStudent ? (
+                          <Link
+                            href={`/students/${p.student.id}`}
+                            data-testid="ledger-student-link"
+                            className="block font-semibold text-white hover:text-primary hover:underline"
+                          >
+                            {`${p.student.firstName} ${p.student.lastName}${p.student.studentCode ? ` (${p.student.studentCode})` : ""}`}
+                          </Link>
+                        ) : (
+                          <p className="font-semibold text-white">
+                            {`${p.student.firstName} ${p.student.lastName}${p.student.studentCode ? ` (${p.student.studentCode})` : ""}`}
+                          </p>
+                        )
+                      ) : null}
+                      {p.admission ? (
+                        canOpenAdmission ? (
+                          <Link
+                            href={`/admissions?id=${p.admission.id}`}
+                            data-testid="ledger-admission-link"
+                            className={cn(
+                              "block hover:text-primary hover:underline",
+                              p.student ? "text-[10px] text-muted-foreground" : "font-semibold text-white",
+                            )}
+                          >
+                            {p.admission.applicationNo}
+                          </Link>
+                        ) : (
+                          <p className={p.student ? "text-[10px] text-muted-foreground" : "font-semibold text-white"}>
+                            {p.admission.applicationNo}
+                          </p>
+                        )
+                      ) : null}
+                      {!p.student && !p.admission && <p className="font-semibold text-muted-foreground">-</p>}
                     </td>
                     <td className="px-4 py-3">{p.method}</td>
                     <td className="px-4 py-3 text-muted-foreground">{p.feeType ?? "-"}</td>

@@ -6,6 +6,11 @@ export const USERS = {
   superAdmin: 'e2e-superadmin@example.test',
   staff: 'e2e-staff@example.test',
   inactive: 'e2e-inactive@example.test',
+  counselor: 'e2e-counselor@example.test',
+  content: 'e2e-content@example.test',
+  teacher: 'e2e-teacher@example.test',
+  student: 'e2e-student@example.test',
+  student2: 'e2e-student2@example.test',
 }
 
 export const SUPERADMIN_STATE = 'test-results/admin/.auth/superadmin.json'

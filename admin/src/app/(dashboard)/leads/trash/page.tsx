@@ -81,7 +81,7 @@ export default function LeadRecycleBinPage() {
     mutationFn: (id: string) => apiFetch(`/leads/${id}/restore`, { method: "POST" }),
     onSuccess: () => {
       invalidate();
-      toast({ title: "Lead restored", description: "The lead is back in Lead Management." });
+      toast({ title: "Lead restored", description: "The lead is back in All Leads." });
     },
     onError: (err) => toast({ title: "Restore failed", description: err.message, variant: "destructive" }),
   });
@@ -239,7 +239,7 @@ export default function LeadRecycleBinPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete permanently?</AlertDialogTitle>
             <AlertDialogDescription>
-              {purgeTarget?.name} and their timeline, score history and deal will be erased. This cannot be undone.
+              {purgeTarget?.name} and their timeline, score history and Lead Pipeline entry will be erased. This cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -37,6 +37,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
       title: input.title,
       dueAt: input.dueAt,
       durationMins: input.durationMins,
+      mode: input.mode,
       notes: input.notes,
       outcome: input.outcome,
       metadata: input.metadata,

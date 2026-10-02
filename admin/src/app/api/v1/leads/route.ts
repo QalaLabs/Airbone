@@ -4,6 +4,7 @@ import { guard } from "@/lib/middleware/permissions";
 import { getRequestContext } from "@/lib/middleware/context";
 import { ok, created, handleError, buildPaginationMeta } from "@/lib/utils/response";
 import { createLeadSchema, leadFiltersSchema } from "@/lib/validations/lead.schema";
+import { applyLeadReadScope } from "@/lib/leads/lead-scope";
 
 export async function GET(req: NextRequest) {
   try {
@@ -12,12 +13,7 @@ export async function GET(req: NextRequest) {
 
     const url = new URL(req.url);
     const rawFilters = Object.fromEntries(url.searchParams.entries());
-    const filters = leadFiltersSchema.parse(rawFilters);
-
-    // Counselors only see their own leads
-    if (ctx.user.role === "ADMISSIONS_COUNSELOR") {
-      filters.assignedTo = ctx.user.id;
-    }
+    const filters = applyLeadReadScope(ctx.user, leadFiltersSchema.parse(rawFilters));
 
     const { data, total } = await LeadService.list(ctx, filters);
     const meta = buildPaginationMeta(total, filters.page, filters.limit);

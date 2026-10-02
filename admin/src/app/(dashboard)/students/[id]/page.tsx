@@ -3,7 +3,9 @@
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
+  Award,
   ArrowLeft,
   Mail,
   Phone,
@@ -38,6 +40,7 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import { apiFetch } from "@/lib/api";
 import { formatDate, getInitials } from "@/lib/utils";
+import { roleCan } from "@/lib/utils/permissions";
 
 interface CourseRef {
   id: string;
@@ -207,6 +210,8 @@ export default function StudentDetailPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [editing, setEditing] = React.useState(false);
+  const { data: session } = useSession();
+  const canViewCertificates = roleCan(session?.user?.role, "read", "lms_certificates");
 
   const { data: student, isLoading } = useQuery({
     queryKey: ["student", id],
@@ -221,6 +226,15 @@ export default function StudentDetailPage() {
       } as Student;
     },
     enabled: !!id,
+  });
+
+  const { data: certificates, isError: certificatesError } = useQuery({
+    queryKey: ["student-certificates", id],
+    queryFn: () =>
+      apiFetch<{ id: string; certificateNo: string; title: string | null; status: string; issuedAt: string | null; course?: { title: string } | null }[]>(
+        `/lms/certificates?studentId=${encodeURIComponent(id)}`,
+      ),
+    enabled: !!id && canViewCertificates,
   });
 
   const { data: campuses } = useQuery({
@@ -713,6 +727,46 @@ export default function StudentDetailPage() {
                   )}
                 </CardContent>
               </Card>
+
+              {canViewCertificates && (
+                <Card data-testid="student-certificates">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <Award className="h-4 w-4" /> Certificates
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {certificatesError ? (
+                      <p role="alert" className="text-xs text-rose-400">Could not load certificates.</p>
+                    ) : (certificates ?? []).length === 0 ? (
+                      <p className="text-xs text-muted-foreground">No certificates issued.</p>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {(certificates ?? []).map((cert) => (
+                          <div key={cert.id} className="flex items-center justify-between rounded-lg border border-white/5 bg-slate-900/50 px-3 py-1.5 text-xs">
+                            <div className="min-w-0">
+                              <p className="font-bold text-white truncate">{cert.title ?? cert.course?.title ?? "Certificate"}</p>
+                              <p className="text-muted-foreground font-mono">
+                                {cert.certificateNo} · {cert.status}
+                                {cert.issuedAt ? ` · ${formatDate(cert.issuedAt)}` : ""}
+                              </p>
+                            </div>
+                            <a
+                              href={`/certificates/${cert.id}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              data-testid="certificate-view-link"
+                              className="rounded border border-white/10 px-2 py-0.5 text-[11px] font-bold hover:bg-white/5"
+                            >
+                              View
+                            </a>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
 
               <Card>
                 <CardHeader className="pb-3">

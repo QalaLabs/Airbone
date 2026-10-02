@@ -58,8 +58,8 @@ export default function LmsAttendancePage() {
   const [editingSessionId, setEditingSessionId] = React.useState<string | null>(null);
 
   const { data: courses } = useQuery({
-    queryKey: ["lms-courses"],
-    queryFn: () => apiFetch<LmsCourse[]>("/lms/courses"),
+    queryKey: ["lms-attendance-courses"],
+    queryFn: () => apiFetch<LmsCourse[]>("/lms/attendance/courses"),
   });
 
   const { data: batches } = useQuery({
@@ -213,6 +213,7 @@ export default function LmsAttendancePage() {
         <div>
           <label className="text-xs text-muted-foreground">Course</label>
           <select
+            aria-label="Course"
             className="mt-1 h-9 w-full rounded-lg border border-border bg-secondary/60 px-3 text-sm"
             value={selectedCourseId}
             onChange={(e) => { setSelectedCourseId(e.target.value); setSubmitted(false); }}

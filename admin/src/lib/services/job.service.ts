@@ -17,7 +17,7 @@ import type { PublicJobApplicationInput } from "@/lib/validations/public-job-app
 import type { RequestContext } from "@/types";
 import { prisma } from "@/lib/db/client";
 
-function generateSlug(title: string) {
+export function generateSlug(title: string) {
   return title.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/[\s]+/g, "-");
 }
 

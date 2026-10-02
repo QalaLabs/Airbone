@@ -151,15 +151,17 @@ const tableHeader = {
 }
 
 export default async function AirlinePreparationPage() {
-  const course = await fetchPublic('/courses', { slug: 'airline-preparation', limit: 1 })
-  const dbFee = course?.[0]?.fee ?? null
+  const courseResult = await fetchPublic('/courses', { slug: 'airline-preparation', limit: 1 })
+  // A slug lookup returns one course object (not a list).
+  const course = Array.isArray(courseResult) ? courseResult[0] ?? null : courseResult
+  const dbFee = course?.fee ?? null
   const feeLabel = displayCourseFee(CANONICAL_SLUG, dbFee) || OFFLINE_FEE_FALLBACK
   const priceNumeric = courseFeeNumeric(CANONICAL_SLUG, dbFee)
 
   const coursePageGraph = buildCoursePageGraph({
     ...COURSE_SCHEMA['airline-preparation'],
     price: priceNumeric != null ? String(priceNumeric) : COURSE_SCHEMA['airline-preparation'].price,
-    duration: course?.[0]?.duration ?? COURSE_SCHEMA['airline-preparation'].duration,
+    duration: course?.duration ?? COURSE_SCHEMA['airline-preparation'].duration,
     faqs: AIRLINE_FAQS,
   })
 

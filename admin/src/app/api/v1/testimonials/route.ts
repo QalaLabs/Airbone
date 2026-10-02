@@ -4,6 +4,7 @@ import { guard } from "@/lib/middleware/permissions";
 import { getRequestContext } from "@/lib/middleware/context";
 import { ok, created, handleError } from "@/lib/utils/response";
 import { createTestimonialSchema, testimonialFiltersSchema } from "@/lib/validations/testimonial.schema";
+import { syncWebsiteContent } from "@/lib/website/revalidate";
 
 export async function GET(req: NextRequest) {
   try {
@@ -23,7 +24,8 @@ export async function POST(req: NextRequest) {
     guard(ctx.user, "write", "testimonials");
     const body = await req.json() as unknown;
     const input = createTestimonialSchema.parse(body);
-    return created(await TestimonialService.create(ctx, input));
+    const testimonial = await TestimonialService.create(ctx, input);
+    return created({ ...testimonial, websiteSync: await syncWebsiteContent("testimonial", ctx.requestId) });
   } catch (err) {
     return handleError(err);
   }

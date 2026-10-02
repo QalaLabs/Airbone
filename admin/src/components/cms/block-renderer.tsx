@@ -1,4 +1,6 @@
+import { createElement, type ReactNode } from "react";
 import type { PageBlockModel } from "@/types";
+import { parseRichText, safeHref, safeMediaSrc, videoEmbedUrl, type RichNode } from "@/lib/cms/safe-content";
 
 const ALIGN_CLASSES: Record<string, string> = {
   left: "text-left",
@@ -6,26 +8,20 @@ const ALIGN_CLASSES: Record<string, string> = {
   right: "text-right",
 };
 
-function videoEmbedUrl(src: string): string {
-  const trimmed = src.trim();
-  try {
-    const url = new URL(trimmed);
-    if (url.hostname.includes("youtube.com") && url.pathname === "/watch") {
-      const v = url.searchParams.get("v");
-      if (v) return `https://www.youtube.com/embed/${v}`;
+function renderRich(nodes: RichNode[]): ReactNode[] {
+  return nodes.map((node, i) => {
+    if (node.t === "text") return node.v;
+    const children = node.children.length ? renderRich(node.children) : undefined;
+    if (node.tag === "a") {
+      if (!node.href) return <span key={i}>{children}</span>;
+      return (
+        <a key={i} href={node.href} {...(node.newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+          {children}
+        </a>
+      );
     }
-    if (url.hostname.includes("youtu.be")) {
-      const v = url.pathname.slice(1);
-      if (v) return `https://www.youtube.com/embed/${v}`;
-    }
-    if (url.hostname.includes("vimeo.com")) {
-      const v = url.pathname.slice(1).split("/")[0];
-      if (v) return `https://player.vimeo.com/video/${v}`;
-    }
-  } catch {
-    return "";
-  }
-  return "";
+    return createElement(node.tag, { key: i }, children);
+  });
 }
 
 export default function BlockRenderer({ block }: { block: PageBlockModel }) {
@@ -55,15 +51,14 @@ export default function BlockRenderer({ block }: { block: PageBlockModel }) {
 
     case "rich_text": {
       return (
-        <div
-          className="prose prose-slate dark:prose-invert max-w-none leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: String(props.content ?? "") }}
-        />
+        <div className="prose prose-slate dark:prose-invert max-w-none leading-relaxed">
+          {renderRich(parseRichText(props.content))}
+        </div>
       );
     }
 
     case "image": {
-      const src = String(props.src ?? "");
+      const src = safeMediaSrc(props.src);
       if (!src) return null;
       return (
         <figure>
@@ -82,9 +77,9 @@ export default function BlockRenderer({ block }: { block: PageBlockModel }) {
     }
 
     case "video": {
-      const src = String(props.src ?? "");
-      if (!src) return null;
-      const embed = videoEmbedUrl(src);
+      const embed = videoEmbedUrl(props.src);
+      const file = embed ? null : safeMediaSrc(props.src);
+      if (!embed && !file) return null;
       const ratio = String(props.aspectRatio ?? "16/9");
       const [w, h] = ratio.split("/").map(Number);
       const pad = w && h ? `${(h / w) * 100}%` : "56.25%";
@@ -96,11 +91,12 @@ export default function BlockRenderer({ block }: { block: PageBlockModel }) {
                 src={embed}
                 title={String(props.title ?? "Embedded video")}
                 className="absolute inset-0 h-full w-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                sandbox="allow-scripts allow-same-origin allow-presentation"
+                allow="encrypted-media; picture-in-picture"
                 allowFullScreen
               />
             ) : (
-              <video src={src} controls className="absolute inset-0 h-full w-full" />
+              <video src={file ?? undefined} controls className="absolute inset-0 h-full w-full" />
             )}
           </div>
           {props.title ? (
@@ -112,7 +108,8 @@ export default function BlockRenderer({ block }: { block: PageBlockModel }) {
 
     case "button": {
       const label = String(props.label ?? "");
-      if (!label) return null;
+      const href = safeHref(props.href);
+      if (!label || !href) return null;
       const variant = String(props.variant ?? "primary");
       const classes: Record<string, string> = {
         primary: "bg-primary text-primary-foreground hover:bg-primary/90",
@@ -120,10 +117,11 @@ export default function BlockRenderer({ block }: { block: PageBlockModel }) {
         outline: "border border-border bg-transparent hover:bg-accent hover:text-accent-foreground",
         ghost: "hover:bg-accent hover:text-accent-foreground",
       };
+      const newTab = props.target === "_blank";
       return (
         <a
-          href={String(props.href ?? "")}
-          target={String(props.target ?? "_self")}
+          href={href}
+          {...(newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}
           className={`inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${classes[variant] ?? classes.primary}`}
         >
           {label}

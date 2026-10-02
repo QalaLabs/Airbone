@@ -5,6 +5,7 @@ import { sendLeadToCRM } from '@/lib/crm'
 import { consumeVerifyToken } from '@/utils/otp-store'
 import { resolveAdminApiUrl, resolveIntakeKey, LeadConfigError } from '@/lib/upstream'
 import { isHoneypotTripped } from '@/utils/honeypot'
+import { boundEligibilityAnswers, eligibilitySummary } from '@/lib/eligibility'
 
 const UPSTREAM_FETCH_TIMEOUT = parseInt(process.env.UPSTREAM_FETCH_TIMEOUT || '10000', 10)
 
@@ -203,6 +204,8 @@ export async function POST(req) {
       // Conditional screening answers (cabin crew / pilot affordability routing).
       // Advisory only — never used to block a submission, per screening policy.
       screening: (payload.screening && typeof payload.screening === 'object') ? payload.screening : undefined,
+      // Course eligibility pre-check answers; the admin validates them per course.
+      eligibility: boundEligibilityAnswers(payload.eligibility),
     }
 
     // Optional — set only by the multi-step OTP-gated form. Consumed once;
@@ -270,6 +273,7 @@ export async function POST(req) {
         utmContent: leadData.utmContent,
         referrerUrl: leadData.referrerUrl,
         landingPage: leadData.landingPage,
+        eligibility: leadData.eligibility,
       }),
       signal: controller.signal,
     })
@@ -279,8 +283,9 @@ export async function POST(req) {
       // Read the upstream error body only to classify the failure. The body is
       // never forwarded verbatim to the visitor.
       let upstreamMessage = ''
+      let errJson = null
       try {
-        const errJson = await res.json()
+        errJson = await res.json()
         if (errJson && typeof errJson.error === 'string') {
           upstreamMessage = errJson.error
         } else if (errJson && errJson.error && typeof errJson.error.message === 'string') {
@@ -307,7 +312,9 @@ export async function POST(req) {
           timestamp: new Date().toISOString(),
           leadSource: rawSource,
         }))
-        return NextResponse.json({ error: rejectionMessage }, { status: res.status })
+        const body = { error: rejectionMessage }
+        if (res.status === 409) body.eligibility = eligibilitySummary(errJson)
+        return NextResponse.json(body, { status: res.status })
       }
 
       // Maintenance mode is a deliberate pause — never converted into a
@@ -372,7 +379,7 @@ export async function POST(req) {
     }
 
     return NextResponse.json(
-      { success: true, message: 'Lead captured successfully.', gateToken },
+      { success: true, message: 'Lead captured successfully.', gateToken, eligibility: eligibilitySummary(json) },
       { status: 200 }
     )
   } catch (err) {

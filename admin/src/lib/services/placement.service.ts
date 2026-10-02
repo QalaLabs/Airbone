@@ -18,6 +18,33 @@ function generateSlug(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/[\s]+/g, "-");
 }
 
+async function assertPartnerNameAvailable(orgId: string, name: string, excludeId?: string) {
+  const clash = await prisma.hiringPartner.findFirst({
+    where: { orgId, name: { equals: name.trim(), mode: "insensitive" }, ...(excludeId ? { NOT: { id: excludeId } } : {}) },
+    select: { id: true },
+  });
+  if (clash) throw new ConflictError(`An airline partner named "${name.trim()}" already exists.`);
+}
+
+async function assertLogoInOrg(orgId: string, logoId: string | null | undefined) {
+  if (!logoId) return;
+  const asset = await prisma.mediaAsset.findFirst({ where: { id: logoId, orgId }, select: { id: true } });
+  if (!asset) throw new NotFoundError("MediaAsset", logoId);
+}
+
+async function assertPlacementRefsInOrg(orgId: string, studentId?: string, hiringPartnerId?: string | null) {
+  if (studentId) {
+    const student = await prisma.student.findFirst({ where: { id: studentId, orgId, deletedAt: null }, select: { id: true } });
+    if (!student) throw new NotFoundError("Student", studentId);
+  }
+  if (hiringPartnerId) {
+    const partner = await prisma.hiringPartner.findFirst({ where: { id: hiringPartnerId, orgId }, select: { id: true } });
+    if (!partner) throw new NotFoundError("HiringPartner", hiringPartnerId);
+  }
+}
+
+const PARTNER_AUDIT_FIELDS = ["name", "slug", "logoId", "website", "industry", "description", "isActive", "order"] as const;
+
 async function ensureUniquePartnerSlug(orgId: string, base: string, excludeId?: string): Promise<string> {
   let slug = base;
   let n = 1;
@@ -42,6 +69,8 @@ export class HiringPartnerService {
   }
 
   static async create(ctx: RequestContext, input: CreateHiringPartnerInput) {
+    await assertPartnerNameAvailable(ctx.orgId, input.name);
+    await assertLogoInOrg(ctx.orgId, input.logoId);
     const baseSlug = input.slug ?? generateSlug(input.name);
     const slug = await ensureUniquePartnerSlug(ctx.orgId, baseSlug);
 
@@ -79,21 +108,41 @@ export class HiringPartnerService {
         select: { id: true },
       });
       if (conflict && conflict.id !== id) {
-        throw new ConflictError(`Slug "${input.slug}" already in use.`);
+        throw new ConflictError(`Code "${input.slug}" is already used by another airline partner.`);
       }
     }
+    if (input.name && input.name.trim().toLowerCase() !== existing.name.trim().toLowerCase()) {
+      await assertPartnerNameAvailable(ctx.orgId, input.name, id);
+    }
+    if (input.logoId !== undefined) await assertLogoInOrg(ctx.orgId, input.logoId);
 
+    // Jobs and placements reference the partner by id, so editing these columns
+    // never detaches them.
     const updated = await HiringPartnerRepository.update(ctx.orgId, id, input);
 
+    const changed = PARTNER_AUDIT_FIELDS.filter(
+      (f) => input[f] !== undefined && input[f] !== (existing as Record<string, unknown>)[f],
+    );
     await AuditService.write({
       orgId: ctx.orgId,
       userId: ctx.user.id,
       requestId: ctx.requestId,
+      ipAddress: ctx.ipAddress,
       action: "hiring_partner.updated",
       entityType: "hiring_partner",
       entityId: id,
-      oldValue: { name: existing.name },
-      newValue: { name: input.name ?? existing.name },
+      oldValue: Object.fromEntries(changed.map((f) => [f, (existing as Record<string, unknown>)[f] ?? null])),
+      newValue: Object.fromEntries(changed.map((f) => [f, input[f] ?? null])),
+    });
+
+    await ActivityFeedService.write({
+      orgId: ctx.orgId,
+      actorId: ctx.user.id,
+      verb: "updated",
+      objectType: "hiring_partner",
+      objectId: id,
+      objectSnapshot: { name: updated.name },
+      context: { actorName: ctx.user.name, fields: changed },
     });
 
     return updated;
@@ -134,6 +183,7 @@ export class PlacementService {
   }
 
   static async create(ctx: RequestContext, input: CreatePlacementInput) {
+    await assertPlacementRefsInOrg(ctx.orgId, input.studentId, input.hiringPartnerId);
     const placement = await PlacementRepository.create(ctx.orgId, ctx.user.id, input);
 
     await AuditService.write({
@@ -180,6 +230,7 @@ export class PlacementService {
 
   static async update(ctx: RequestContext, id: string, input: UpdatePlacementInput) {
     const existing = await this.getById(ctx, id);
+    await assertPlacementRefsInOrg(ctx.orgId, input.studentId, input.hiringPartnerId);
     const updated = await PlacementRepository.update(ctx.orgId, id, input);
 
     await AuditService.write({

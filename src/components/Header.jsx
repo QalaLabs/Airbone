@@ -4,45 +4,78 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+import { normalizeNavItems, isExternalHref } from '@/lib/cms/safeContent'
+
+const DEFAULT_LINKS = [
+  { id: 'about', name: 'About', path: '/about', newTab: false, children: [] },
+  { id: 'courses', name: 'Courses', path: '/courses', newTab: false, children: [] },
+  { id: 'jobs', name: 'Jobs Portal', path: '/jobs', newTab: false, children: [] },
+  { id: 'resources', name: 'Resources', path: '/resources', newTab: false, children: [] },
+  { id: 'contact', name: 'Contact', path: '/contact', newTab: false, children: [] },
+]
+// The built-in menu shows four links on desktop (Contact is the CTA); a CMS menu shows every visible item.
+const DEFAULT_DESKTOP_COUNT = 4
+
+/** Internal links use next/link; external or new-tab links are plain anchors with a safe rel. */
+function NavAnchor({ link, className, style, children, onClick, testId }) {
+  const rel = link.newTab || isExternalHref(link.path) ? 'noopener noreferrer' : undefined
+  const common = { className, style, onClick, 'data-testid': testId, ...(link.newTab ? { target: '_blank' } : {}), ...(rel ? { rel } : {}) }
+  if (isExternalHref(link.path) || link.newTab) {
+    return (
+      <a href={link.path} {...common}>
+        {children}
+      </a>
+    )
+  }
+  return (
+    <Link href={link.path} {...common}>
+      {children}
+    </Link>
+  )
+}
 
 export default function Header() {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [openSubmenu, setOpenSubmenu] = useState(null)
+  const [hoverSubmenu, setHoverSubmenu] = useState(null)
   const [prevPathname, setPrevPathname] = useState(pathname)
-  const [links, setLinks] = useState([
-    { name: 'About', path: '/about' },
-    { name: 'Courses', path: '/courses' },
-    { name: 'Jobs Portal', path: '/jobs' },
-    { name: 'Resources', path: '/resources' },
-    { name: 'Contact', path: '/contact' }
-  ])
+  const [links, setLinks] = useState(DEFAULT_LINKS)
+  const [fromCms, setFromCms] = useState(false)
 
   if (pathname !== prevPathname) {
     setPrevPathname(pathname)
     setMobileOpen(false)
+    setOpenSubmenu(null)
+    setHoverSubmenu(null)
   }
 
   useEffect(() => {
     fetch('/api/public-proxy/settings')
       .then(res => res.json())
       .then(payload => {
-        if (payload?.data?.navMenus) {
-          const headerMenu = payload.data.navMenus.find(m => m.location === 'header');
-          if (headerMenu && headerMenu.items && headerMenu.items.length > 0) {
-            const mapped = headerMenu.items.map(item => ({
-              name: item.label,
-              path: item.url,
-              target: item.target,
-              isVisible: item.isVisible !== false
-            })).filter(item => item.isVisible);
-            if (mapped.length > 0) {
-              setLinks(mapped);
-            }
-          }
+        const headerMenu = payload?.data?.navMenus?.find?.(m => m.location === 'header')
+        const mapped = normalizeNavItems(headerMenu?.items)
+        if (mapped.length > 0) {
+          setLinks(mapped)
+          setFromCms(true)
         }
       })
-      .catch(err => console.error('Failed to load header navigation settings:', err));
-  }, []);
+      .catch(err => console.error('Failed to load header navigation settings:', err))
+  }, [])
+
+  useEffect(() => {
+    if (!openSubmenu && !hoverSubmenu) return
+    const onKey = (e) => {
+      if (e.key !== 'Escape') return
+      setOpenSubmenu(null)
+      setHoverSubmenu(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [openSubmenu, hoverSubmenu])
+
+  const desktopLinks = fromCms ? links : links.slice(0, DEFAULT_DESKTOP_COUNT)
 
   return (
     <>
@@ -53,22 +86,57 @@ export default function Header() {
 
 
         {/* Desktop nav links */}
-        <ul className="nav-links desktop-only" role="list">
-          {links.slice(0, 4).map(link => (
-            <li key={link.name}>
-              <Link 
-                href={link.path} 
-                className="nav-link" 
-                data-active={pathname === link.path ? 'true' : 'false'}
-                style={{ 
-                  color: pathname === link.path ? 'var(--navy)' : 'rgba(0,39,76,0.7)', 
-                  borderBottom: pathname === link.path ? '1px solid #DB241E' : 'none' 
-                }}
+        <ul className="nav-links desktop-only" role="list" data-testid="header-nav">
+          {desktopLinks.map(link => {
+            const active = pathname === link.path || link.children.some(c => c.path === pathname)
+            const linkStyle = {
+              color: active ? 'var(--navy)' : 'rgba(0,39,76,0.7)',
+              borderBottom: active ? '1px solid #DB241E' : 'none',
+            }
+            if (link.children.length === 0) {
+              return (
+                <li key={link.id}>
+                  <NavAnchor link={link} className="nav-link" style={linkStyle} testId="header-nav-link">
+                    {link.name}
+                  </NavAnchor>
+                </li>
+              )
+            }
+            const submenuId = `header-sub-${link.id}`
+            // Hover and click/keyboard state are separate so a click on the toggle never undoes the hover-open.
+            const isOpen = openSubmenu === link.id || hoverSubmenu === link.id
+            return (
+              <li
+                key={link.id}
+                className="nav-has-sub"
+                onMouseEnter={() => setHoverSubmenu(link.id)}
+                onMouseLeave={() => setHoverSubmenu(null)}
               >
-                {link.name}
-              </Link>
-            </li>
-          ))}
+                <NavAnchor link={link} className="nav-link" style={linkStyle} testId="header-nav-link">
+                  {link.name}
+                </NavAnchor>
+                <button
+                  type="button"
+                  className="nav-sub-toggle"
+                  aria-expanded={isOpen}
+                  aria-controls={submenuId}
+                  aria-label={`${link.name} submenu`}
+                  onClick={() => setOpenSubmenu(openSubmenu === link.id ? null : link.id)}
+                >
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+                </button>
+                <ul id={submenuId} className="nav-submenu" role="list" hidden={!isOpen} data-testid="header-submenu">
+                  {link.children.map(child => (
+                    <li key={child.id}>
+                      <NavAnchor link={child} className="nav-submenu-link" testId="header-submenu-link" onClick={() => { setOpenSubmenu(null); setHoverSubmenu(null) }}>
+                        {child.name}
+                      </NavAnchor>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            )
+          })}
         </ul>
 
         {/* Desktop CTA */}
@@ -126,7 +194,8 @@ export default function Header() {
             </div>
 
             {/* Menu Links with Stagger animation */}
-            <motion.div
+            <motion.nav
+              aria-label="Mobile navigation"
               initial="hidden"
               animate="show"
               variants={{
@@ -140,16 +209,13 @@ export default function Header() {
             >
               {links.map((l, idx) => (
                 <motion.div
-                  key={l.path}
+                  key={l.id}
                   variants={{
                     hidden: { opacity: 0, x: -30 },
                     show: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 120, damping: 18 } }
                   }}
                 >
-                  <Link
-                    href={l.path}
-                    className="drawer-link-item"
-                  >
+                  <NavAnchor link={l} className="drawer-link-item" onClick={() => setMobileOpen(false)}>
                     <span className="drawer-link-num">
                       {`0${idx + 1}`}
                     </span>
@@ -158,10 +224,21 @@ export default function Header() {
                         {l.name}
                       </div>
                     </div>
-                  </Link>
+                  </NavAnchor>
+                  {l.children.length > 0 && (
+                    <ul className="drawer-sublinks" role="list" aria-label={`${l.name} links`}>
+                      {l.children.map(child => (
+                        <li key={child.id}>
+                          <NavAnchor link={child} className="drawer-sublink-item" onClick={() => setMobileOpen(false)}>
+                            {child.name}
+                          </NavAnchor>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </motion.div>
               ))}
-            </motion.div>
+            </motion.nav>
 
             {/* Drawer CTA at bottom */}
             <div className="drawer-footer">

@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { triggerToast } from '@/components/Toast'
 import useFormValidation from '@/hooks/useFormValidation'
 import { validateName, validatePhone, validateEmailRequired, validatePincode, validateRequired } from '@/utils/validation'
 import FormField from '@/components/FormField'
 import SubmitButton from '@/components/SubmitButton'
-import LeadEligibilityPrompt from '@/components/LeadEligibilityPrompt'
 import Honeypot from '@/components/Honeypot'
+import { WHATSAPP_HREF } from '@/lib/whatsapp'
 import { HONEYPOT_FIELD, readHoneypot } from '@/utils/honeypot'
 
 const validators = { name: validateName, phone: validatePhone, email: validateEmailRequired, pincode: validatePincode, course: validateRequired }
@@ -26,12 +26,51 @@ const COURSES = [
   'Private Pilot License (PPL)',
 ]
 
+const ELIGIBILITY_RESULT = {
+  eligible: { title: '✓ You meet the listed criteria for this course', tone: '#25D366' },
+  review: { title: 'Some criteria need a counsellor review', tone: '#D8A027' },
+  not_applicable: { title: 'No eligibility pre-check is needed for this course', tone: 'rgba(255,255,255,0.7)' },
+}
+
+/** Per-course eligibility questions served by the admin (selected course drives the set). */
+function useCourseEligibility(course) {
+  const [state, setState] = useState({ course: null, courseSlug: null, questions: [] })
+  useEffect(() => {
+    if (!course) return undefined
+    const controller = new AbortController()
+    fetch(`/api/public-proxy/eligibility?course=${encodeURIComponent(course)}`, { signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body) => {
+        const data = body?.data
+        setState({
+          course,
+          courseSlug: typeof data?.courseSlug === 'string' ? data.courseSlug : null,
+          questions: Array.isArray(data?.questions) ? data.questions.filter((q) => q && typeof q.key === 'string' && typeof q.label === 'string') : [],
+        })
+      })
+      // Advisory only: if the questions cannot be loaded the enquiry still works.
+      .catch(() => {})
+    return () => controller.abort()
+  }, [course])
+  return state.course === course ? state : { course, courseSlug: null, questions: [] }
+}
+
 export default function LeadForm({ courseName = '', source = 'Dynamic Page Form', successMessage = '' }) {
   const [status, setStatus] = useState('idle')
+  const [answers, setAnswers] = useState({})
+  const [eligibilityResult, setEligibilityResult] = useState(null)
   const { values, errors, touched, handleChange, handleBlur, validate } = useFormValidation(
     { name: '', phone: '', email: '', pincode: '', course: courseName || COURSES[0] },
     validators
   )
+  const eligibility = useCourseEligibility(values.course)
+  const currentAnswers = Object.fromEntries(
+    eligibility.questions.filter((q) => answers[q.key]).map((q) => [q.key, answers[q.key]])
+  )
+  const changeCourse = (v) => {
+    setAnswers({})
+    handleChange('course', v)
+  }
 
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault()
@@ -52,11 +91,25 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
       const res = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...values, [HONEYPOT_FIELD]: hp, source, utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page })
+        body: JSON.stringify({
+          ...values,
+          [HONEYPOT_FIELD]: hp,
+          source,
+          utm_source,
+          utm_medium,
+          utm_campaign,
+          utm_term,
+          utm_content,
+          referrer,
+          landing_page,
+          ...(Object.keys(currentAnswers).length > 0 ? { eligibility: currentAnswers } : {}),
+        })
       })
       if (res.ok || res.status === 409) {
         // 409 = this phone already has an enquiry on file — not a failure for
         // the visitor, the admin API already has their details.
+        const data = await res.json().catch(() => ({}))
+        setEligibilityResult(data?.eligibility ?? null)
         setStatus('success')
       } else {
         const data = await res.json().catch(() => ({}))
@@ -67,7 +120,7 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
       setStatus('error')
       triggerToast("We couldn't submit your enquiry", 'Please try again in a few moments or contact us directly via WhatsApp or phone.')
     }
-  }, [values, source, validate, status])
+  }, [values, source, validate, status, currentAnswers])
 
   if (status === 'success') {
     const confirmationText = successMessage || (
@@ -84,12 +137,17 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
           <a href="tel:+919953777320" className="btn btn-outline" style={{ textDecoration: 'none', fontSize: '0.75rem', padding: '0.6rem 1rem' }}>📞 Call Us</a>
-          <a href="https://wa.me/919953777320" target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ textDecoration: 'none', fontSize: '0.75rem', padding: '0.6rem 1rem', borderColor: '#25D366', color: '#25D366' }}>💬 WhatsApp</a>
+          <a href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ textDecoration: 'none', fontSize: '0.75rem', padding: '0.6rem 1rem', borderColor: '#25D366', color: '#25D366' }}>💬 WhatsApp</a>
           <a href="/courses" className="btn btn-primary" style={{ textDecoration: 'none', fontSize: '0.75rem', padding: '0.6rem 1rem' }}>Explore Courses →</a>
         </div>
-        <LeadEligibilityPrompt
-          courseCategory={(values.course || courseName || '').toLowerCase().includes('cabin') ? 'cabin-crew' : 'pilot'}
-        />
+        {eligibilityResult && ELIGIBILITY_RESULT[eligibilityResult.result] ? (
+          <div data-testid="eligibility-result" data-result={eligibilityResult.result} data-course={eligibilityResult.course ?? ''} style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px dashed rgba(255,255,255,0.15)' }}>
+            <p style={{ fontWeight: 800, fontSize: '0.85rem', color: ELIGIBILITY_RESULT[eligibilityResult.result].tone, marginBottom: '0.4rem' }}>
+              {ELIGIBILITY_RESULT[eligibilityResult.result].title}
+            </p>
+            <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)' }}>Advisory only — a counsellor makes the final eligibility assessment.</p>
+          </div>
+        ) : null}
       </div>
     )
   }
@@ -109,7 +167,7 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
       <FormField id="lead-email" type="email" placeholder="Email Address" dark value={values.email} onChange={(v) => handleChange('email', v)} onBlur={() => handleBlur('email')} error={touched.email ? errors.email : null} required />
       <FormField id="lead-pincode" type="text" placeholder="PIN Code / Zip Code" dark value={values.pincode} onChange={(v) => handleChange('pincode', v)} onBlur={() => handleBlur('pincode')} error={touched.pincode ? errors.pincode : null} required maxLength={6} />
 
-      <FormField id="lead-course" as="select" dark value={values.course} onChange={(v) => handleChange('course', v)} error={touched.course ? errors.course : null} required>
+      <FormField id="lead-course" as="select" dark value={values.course} onChange={changeCourse} error={touched.course ? errors.course : null} required>
         {COURSES.map((c) => (
           <option key={c} value={c}>{c}</option>
         ))}
@@ -117,6 +175,45 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
           <option value={courseName}>{courseName}</option>
         )}
       </FormField>
+
+      {eligibility.questions.length > 0 && (
+        <fieldset data-testid="eligibility-form" data-course={eligibility.courseSlug ?? ''} style={{ border: '1px dashed rgba(216,160,39,0.35)', borderRadius: '2px', padding: '0.9rem 1rem 0.4rem', margin: '0 0 1.25rem' }}>
+          <legend style={{ fontFamily: 'var(--font-h)', fontSize: '0.72rem', color: '#D8A027', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.08em', padding: '0 0.4rem' }}>
+            Eligibility check (optional)
+          </legend>
+          <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', margin: '0 0 0.75rem', lineHeight: 1.5 }}>
+            Questions for the selected course. Advisory only — never blocks your enquiry.
+          </p>
+          {eligibility.questions.map((q) => (
+            <div key={q.key} data-testid="eligibility-question" data-key={q.key} style={{ marginBottom: '0.75rem' }}>
+              <p id={`elig-${q.key}`} style={{ fontSize: '0.78rem', color: '#fff', margin: '0 0 0.4rem', fontWeight: 600 }}>{q.label}</p>
+              <div role="radiogroup" aria-labelledby={`elig-${q.key}`} style={{ display: 'flex', gap: '0.5rem' }}>
+                {['yes', 'no'].map((opt) => {
+                  const selected = answers[q.key] === opt
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      onClick={() => setAnswers((a) => ({ ...a, [q.key]: opt }))}
+                      style={{
+                        flex: 1, padding: '0.45rem', borderRadius: '2px', cursor: 'pointer', fontWeight: 700,
+                        fontFamily: 'var(--font-h)', fontSize: '0.7rem', textTransform: 'uppercase',
+                        border: selected ? '1px solid #D8A027' : '1px solid rgba(255,255,255,0.15)',
+                        background: selected ? 'rgba(216,160,39,0.15)' : 'transparent',
+                        color: selected ? '#D8A027' : 'rgba(255,255,255,0.6)',
+                      }}
+                    >
+                      {opt === 'yes' ? 'Yes' : 'No'}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+        </fieldset>
+      )}
 
       {status === 'error' && (
         <p role="alert" style={{ fontSize: '0.78rem', color: '#ff4444', lineHeight: '1.5', margin: '0 0 1rem' }}>

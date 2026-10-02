@@ -7,6 +7,7 @@ import FormField from '@/components/FormField'
 import SubmitButton from '@/components/SubmitButton'
 import Honeypot from '@/components/Honeypot'
 import { HONEYPOT_FIELD, readHoneypot } from '@/utils/honeypot'
+import { WHATSAPP_HREF } from '@/lib/whatsapp'
 
 const COURSES = [
   'DGCA CPL Ground Classes (₹2,70,000)',
@@ -145,7 +146,7 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
                   📞 +91 9953 777 320
                 </a>
                 <span style={{ color: 'rgba(255,255,255,0.3)' }}>|</span>
-                <a href="https://wa.me/919953777320" target="_blank" rel="noopener noreferrer" style={{ fontFamily: 'var(--font-heading)', fontSize: '1rem', fontWeight: 900, color: '#25D366', textDecoration: 'none' }}>
+                <a href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer" style={{ fontFamily: 'var(--font-heading)', fontSize: '1rem', fontWeight: 900, color: '#25D366', textDecoration: 'none' }}>
                   💬 WhatsApp
                 </a>
               </div>

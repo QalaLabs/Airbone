@@ -43,21 +43,21 @@ export default function CRMDashboardPage() {
   const statCards = [
     { label: "Active Leads", value: t.activeLeads, sub: `${t.newLeadsToday} new today`, icon: Users, color: "text-blue-500 bg-blue-500/10" },
     { label: "Today's Follow-ups", value: t.todayFollowUps, sub: "follow-ups due", icon: CalendarDays, color: "text-amber-500 bg-amber-500/10" },
-    { label: "Opportunity Sales", value: t.opportunitySales, sub: "deals won today", icon: Target, color: "text-emerald-500 bg-emerald-500/10" },
-    { label: "Opportunity Collections", value: t.opportunityCollections, sub: "INR · deal-linked", icon: DollarSign, color: "text-purple-500 bg-purple-500/10" },
+    { label: "Opportunity Sales", value: t.opportunitySales, sub: "pipeline wins today", icon: Target, color: "text-emerald-500 bg-emerald-500/10" },
+    { label: "Opportunity Collections", value: t.opportunityCollections, sub: "INR · pipeline-linked", icon: DollarSign, color: "text-purple-500 bg-purple-500/10" },
   ];
 
   const pipelineCards = [
-    { label: "Open Deals", value: pipeline?.open ?? 0, sub: `₹${(pipeline?.openValue ?? 0).toLocaleString("en-IN")}`, icon: DollarSign, color: "text-blue-500 bg-blue-500/10" },
-    { label: "Won Deals", value: pipeline?.won ?? 0, sub: `₹${(pipeline?.wonValue ?? 0).toLocaleString("en-IN")}`, icon: CircleCheck, color: "text-emerald-500 bg-emerald-500/10" },
-    { label: "Lost Deals", value: pipeline?.lost ?? 0, sub: `₹${(pipeline?.lostValue ?? 0).toLocaleString("en-IN")}`, icon: TrendingDown, color: "text-red-500 bg-red-500/10" },
+    { label: "Open in Pipeline", value: pipeline?.open ?? 0, sub: `₹${(pipeline?.openValue ?? 0).toLocaleString("en-IN")}`, icon: DollarSign, color: "text-blue-500 bg-blue-500/10" },
+    { label: "Won (Pipeline)", value: pipeline?.won ?? 0, sub: `₹${(pipeline?.wonValue ?? 0).toLocaleString("en-IN")}`, icon: CircleCheck, color: "text-emerald-500 bg-emerald-500/10" },
+    { label: "Lost (Pipeline)", value: pipeline?.lost ?? 0, sub: `₹${(pipeline?.lostValue ?? 0).toLocaleString("en-IN")}`, icon: TrendingDown, color: "text-red-500 bg-red-500/10" },
   ];
 
   return (
     <div className="space-y-6">
       <div className="space-y-1">
         <h1 className="text-2xl font-bold tracking-tight text-white">CRM Dashboard</h1>
-        <p className="text-sm text-muted-foreground">Real, persisted metrics from leads, deals and admissions</p>
+        <p className="text-sm text-muted-foreground">Real, persisted metrics from leads, the lead pipeline and admissions</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
@@ -108,7 +108,7 @@ export default function CRMDashboardPage() {
                 </div>
               ))
             ) : (
-              <p className="text-xs text-muted-foreground">No deals created yet.</p>
+              <p className="text-xs text-muted-foreground">No leads in the pipeline yet.</p>
             )}
             <div className="pt-2 flex items-center justify-between border-t border-white/5 text-sm">
               <span className="text-muted-foreground text-xs">Open / Won / Lost</span>
@@ -170,7 +170,7 @@ export default function CRMDashboardPage() {
 
         <Card className="bg-card border-white/10 shadow-lg">
           <CardHeader className="border-b border-white/5 pb-3">
-            <CardTitle className="text-sm font-semibold text-white flex items-center gap-2"><TrendingUp className="h-4 w-4 text-lime-500" /> Deal Stages (real deals)</CardTitle>
+            <CardTitle className="text-sm font-semibold text-white flex items-center gap-2"><TrendingUp className="h-4 w-4 text-lime-500" /> Lead Pipeline Stages</CardTitle>
           </CardHeader>
           <CardContent className="pt-4 space-y-2 text-sm">
             {(pipeline?.byStage ?? []).map((s) => (
@@ -180,7 +180,7 @@ export default function CRMDashboardPage() {
               </div>
             ))}
             {(pipeline?.byStage ?? []).length === 0 && (
-              <p className="text-xs text-muted-foreground">No deals yet — mark leads as Prospect to open deals.</p>
+              <p className="text-xs text-muted-foreground">Lead Pipeline is empty — mark leads as Prospect to add them.</p>
             )}
           </CardContent>
         </Card>

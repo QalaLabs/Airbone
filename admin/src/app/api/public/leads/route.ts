@@ -13,6 +13,8 @@ import { ActivityFeedService } from "@/lib/services/activity.service";
 import { checkMaintenance } from "@/lib/middleware/maintenance";
 import { handleError } from "@/lib/utils/response";
 import { isHoneypotTripped } from "@/lib/utils/honeypot";
+import { evaluateEligibility, type EvaluatedEligibility } from "@/lib/courses/eligibility";
+import { getCourseEligibility } from "@/lib/services/course-eligibility.service";
 
 const SOURCE_MAP: Record<string, LeadSource> = {
   homepage_cta: "HOMEPAGE_CTA",
@@ -95,6 +97,14 @@ export async function POST(req: NextRequest) {
     const leadSource: LeadSource = SOURCE_MAP[source?.toLowerCase() ?? ""] ?? "HOMEPAGE_CTA";
     const requestUuid = leadUuid?.trim() || null;
 
+    // Advisory course pre-check: validated against the selected course's questions
+    // (400 on unknown questions/values) but never blocks a valid enquiry.
+    const eligibility: EvaluatedEligibility | null =
+      input.eligibility && Object.keys(input.eligibility).length > 0
+        ? evaluateEligibility(await getCourseEligibility(org.id, courseInterest), input.eligibility)
+        : null;
+    const eligibilitySummary = eligibility ? { course: eligibility.course, result: eligibility.result } : null;
+
     // Idempotency: a retry of the same submission (same leadUuid) must not
     // create a second lead or a misleading 409 — return the original lead.
     if (requestUuid) {
@@ -122,7 +132,7 @@ export async function POST(req: NextRequest) {
           timestamp: new Date().toISOString(),
         }));
         return NextResponse.json(
-          { success: true, data: replayed, gateToken, meta: { replayed: true } },
+          { success: true, data: replayed, gateToken, eligibility: eligibilitySummary, meta: { replayed: true } },
           { status: 200 },
         );
       }
@@ -154,6 +164,7 @@ export async function POST(req: NextRequest) {
             customFields: {
               webSource: source ?? "website",
               ...(requestUuid ? { leadUuid: requestUuid } : {}),
+              ...(eligibility ? { eligibility: { ...eligibility, evaluatedAt: new Date().toISOString() } } : {}),
             },
           },
           select: { id: true, name: true, createdAt: true },
@@ -215,7 +226,7 @@ export async function POST(req: NextRequest) {
               timestamp: new Date().toISOString(),
             }));
             return NextResponse.json(
-              { success: true, data: raced, gateToken, meta: { replayed: true } },
+              { success: true, data: raced, gateToken, eligibility: eligibilitySummary, meta: { replayed: true } },
               { status: 200 },
             );
           }
@@ -265,6 +276,7 @@ export async function POST(req: NextRequest) {
               success: true,
               data: { id: existingByPhone.id, name: existingByPhone.name, createdAt: existingByPhone.createdAt },
               gateToken: generateResourceToken(normalizedPhone),
+              eligibility: eligibilitySummary,
               meta: { restored: true },
             },
             { status: 200 },
@@ -286,8 +298,10 @@ export async function POST(req: NextRequest) {
           phone: normalizedPhone,
           timestamp: new Date().toISOString(),
         }));
+        // The existing lead is not modified from an unauthenticated request; the
+        // pre-check result is only echoed back to the visitor.
         return NextResponse.json(
-          { error: "A lead with this phone already exists" },
+          { error: "A lead with this phone already exists", eligibility: eligibilitySummary },
           { status: 409 },
         );
       }
@@ -340,6 +354,7 @@ export async function POST(req: NextRequest) {
         success: true,
         data: lead,
         gateToken,
+        eligibility: eligibilitySummary,
         meta: { "X-RateLimit-Remaining": String(decision.remaining) },
       },
       { status: 201 },
