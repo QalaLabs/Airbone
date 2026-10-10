@@ -285,24 +285,22 @@ export class LeadService {
       throw err;
     }
 
-    // Persist intake notes as a timeline activity so they are never silently dropped
-    if (notes) {
-      await prisma.leadActivity.create({
-        data: {
-          leadId: lead.id,
-          orgId: ctx.orgId,
-          performedBy: ctx.user.id,
-          activityType: "NOTE",
-          title: "Intake note",
-          notes,
-          completedAt: new Date(),
-        },
-      });
-      await prisma.lead.update({
-        where: { id: lead.id },
-        data: { lastActivityAt: new Date() },
-      });
-    }
+    // Persist intake notes or initial lead creation so timeline is never empty
+    await prisma.leadActivity.create({
+      data: {
+        leadId: lead.id,
+        orgId: ctx.orgId,
+        performedBy: ctx.user.id,
+        activityType: "NOTE",
+        title: notes ? "Intake note" : "Lead created",
+        notes: notes || `Lead created via ${lead.source.replace(/_/g, " ")}${lead.courseInterest ? ` for ${lead.courseInterest}` : ""}`,
+        completedAt: new Date(),
+      },
+    });
+    await prisma.lead.update({
+      where: { id: lead.id },
+      data: { lastActivityAt: new Date() },
+    });
 
     // Durable audit/activity owned by the sync path (Inngest-independent)
     await AuditService.write({

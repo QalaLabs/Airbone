@@ -100,16 +100,16 @@ export class LeadImportService {
       created += inserted.length;
 
       const idByPhone = new Map(inserted.map((l) => [l.phone, l.id]));
-      const noteRows = chunk.filter((r) => r.notes && idByPhone.has(r.phone));
-      if (noteRows.length > 0) {
+      const insertedRows = chunk.filter((r) => idByPhone.has(r.phone));
+      if (insertedRows.length > 0) {
         await prisma.leadActivity.createMany({
-          data: noteRows.map((r) => ({
+          data: insertedRows.map((r) => ({
             leadId: idByPhone.get(r.phone)!,
             orgId: ctx.orgId,
             performedBy: ctx.user.id,
             activityType: "NOTE" as const,
-            title: "Imported note",
-            notes: r.notes!,
+            title: r.notes ? "Imported note" : "Imported lead",
+            notes: r.notes || `Lead imported via batch ${batchId.slice(0, 8)}`,
             completedAt: now,
           })),
         });
