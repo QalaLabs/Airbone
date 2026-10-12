@@ -111,3 +111,14 @@ All services have been migrated from Vercel + Supabase to Google Cloud.
 ### 4. Lead Timeline Activity Invariant
 - **Rule**: Every lead creation pathway (single lead create, public API, voice assistant intake, and CSV bulk import) must automatically persist an initial `leadActivity` record. This guarantees that the Unified Timeline component in the CRM/Admin portal is never empty.
 
+### 5. Database Source of Truth
+- **Active Database**: Google Cloud SQL PostgreSQL (`airbornedb` on instance `airborne-db`, project `airborne-aviation-505100`, public IP `34.93.180.179`).
+- **Rule**: Do not point local development servers or Prisma queries to stale Neon connection poolers. Always use Cloud SQL credentials or dedicated local test databases.
+
+### 6. Airborne OS Operational Rules
+- **Lead Key**: Phone number is the primary unique identifier; email is optional.
+- **Funnel Progression**: Verification stage allows jumping directly to Enrolled.
+- **Prospect Gate**: Marking a lead as Prospect in the Kanban pipeline is strictly gated behind an Online or Campus Visit meeting.
+- **Deployment Protocol**: Always build and deploy to a Google Cloud Run preview revision first before redirecting live production traffic.
+
+
