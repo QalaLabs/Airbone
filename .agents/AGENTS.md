@@ -91,3 +91,23 @@ All services have been migrated from Vercel + Supabase to Google Cloud.
 - 5 pre-migration fallback leads replayed and recovered into Cloud SQL CRM.
 - `testimonials` proxy returns `502` in dev when Admin OS is offline — expected behaviour.
 - Inngest is currently **not connected** in Cloud Run (`inngest_enabled: false`) — Cloud Run services are stateless, Inngest requires a persistent Event Key and Signing Key configured via Secret Manager if needed.
+
+## Development & Operational Guardrails
+
+### 1. Workspace Isolation Boundary
+- **Website vs. CRM/Admin Separation**: The website (`Airbone/src/app`) and CRM (`admin/` and standalone `CRM/`) are isolated systems.
+- **Rule**: Never modify CRM or Admin code when working on website features or styling, and never modify website code when working on CRM/Admin features, unless explicitly instructed by the user.
+- **Repositories**:
+  - Main Website & Monorepo: `https://github.com/QalaLabs/Airbone.git` (branch: `main`)
+  - Standalone CRM & SMS: `https://github.com/QalaLabs/airborne-crm-sms.git` (branch: `master`)
+
+### 2. Mandatory Pre-Push & Pre-Deploy Review
+- **Rule**: NEVER push directly to `origin/main` (or `origin/master`) or deploy containers to Google Cloud Run without presenting a clear diff preview to the user and receiving explicit user approval.
+
+### 3. Database Schema & Prisma Enum Synchronization
+- External microservices (e.g. `airborne-voice-assistant`) share the Cloud SQL PostgreSQL database (`airbornedb`).
+- **Rule**: Whenever an external service writes new enum values (such as `VOICE_AGENT` for `LeadSource`), both `admin/prisma/schema.prisma` and `CRM/prisma/schema.prisma` as well as their UI label helpers (`src/lib/leads/lead-source.ts`) MUST include the new enum value, followed by running `npx prisma generate`. Otherwise, Prisma runtime queries crash with HTTP 500.
+
+### 4. Lead Timeline Activity Invariant
+- **Rule**: Every lead creation pathway (single lead create, public API, voice assistant intake, and CSV bulk import) must automatically persist an initial `leadActivity` record. This guarantees that the Unified Timeline component in the CRM/Admin portal is never empty.
+
