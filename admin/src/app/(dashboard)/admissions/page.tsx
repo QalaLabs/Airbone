@@ -1,5 +1,6 @@
 "use client";
 
+import { admissionStageLabel, canonicalAdmissionStage } from "@/lib/admissions/stage-labels";
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -32,7 +33,10 @@ import {
   IndianRupee,
   Upload,
   Printer,
+  Trash2,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { DOCUMENT_ACCEPT_ATTR, MAX_DOCUMENT_BYTES } from "@/lib/documents/upload-policy";
 
 const DOCUMENT_TYPES = [
@@ -54,6 +58,16 @@ import { formatDate, cn } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -173,14 +187,12 @@ const PAYMENT_METHODS = ["CASH", "UPI", "BANK_TRANSFER", "CARD", "CHEQUE", "DD"]
 const FEE_TYPES = ["registration", "tuition", "exam", "hostel", "other"] as const;
 
 const STAGES = [
-  { key: "ENQUIRY", label: "Enquiry", color: "border-slate-500/50 text-slate-400", bg: "bg-slate-500/10", icon: User },
-  { key: "DOCUMENT_COLLECTION", label: "Document Collection", color: "border-blue-500/50 text-blue-400", bg: "bg-blue-500/10", icon: FileSearch },
-  { key: "VERIFICATION", label: "Verification", color: "border-amber-500/50 text-amber-400", bg: "bg-amber-500/10", icon: ShieldCheck },
-  { key: "OFFER_LETTER", label: "Offer Letter", color: "border-purple-500/50 text-purple-400", bg: "bg-purple-500/10", icon: Award },
-  { key: "FEE_PAYMENT", label: "Fee Payment", color: "border-emerald-500/50 text-emerald-400", bg: "bg-emerald-500/10", icon: Landmark },
-  { key: "ENROLLED", label: "Enrolled", color: "border-teal-500/50 text-teal-400", bg: "bg-teal-500/10", icon: GraduationCap },
-  { key: "DROPPED", label: "Dropped", color: "border-rose-500/50 text-rose-400", bg: "bg-rose-500/10", icon: AlertCircle },
-  { key: "CANCELLED", label: "Cancelled", color: "border-red-500/50 text-red-400", bg: "bg-red-500/10", icon: AlertCircle },
+  { key: "ENQUIRY", label: admissionStageLabel("ENQUIRY"), color: "border-slate-500/50 text-slate-400", bg: "bg-slate-500/10", icon: User },
+  { key: "FEE_PAYMENT", label: admissionStageLabel("FEE_PAYMENT"), color: "border-emerald-500/50 text-emerald-400", bg: "bg-emerald-500/10", icon: Landmark },
+  { key: "VERIFICATION", label: admissionStageLabel("VERIFICATION"), color: "border-amber-500/50 text-amber-400", bg: "bg-amber-500/10", icon: ShieldCheck },
+  { key: "ENROLLED", label: admissionStageLabel("ENROLLED"), color: "border-teal-500/50 text-teal-400", bg: "bg-teal-500/10", icon: GraduationCap },
+  { key: "CANCELLED", label: admissionStageLabel("CANCELLED"), color: "border-red-500/50 text-red-400", bg: "bg-red-500/10", icon: AlertCircle },
+  { key: "DROPPED", label: admissionStageLabel("DROPPED"), color: "border-rose-500/50 text-rose-400", bg: "bg-rose-500/10", icon: AlertCircle },
 ];
 
 function money(v: number | string | null | undefined) {
@@ -247,10 +259,14 @@ function AdmissionCard({
   admission,
   onClick,
   isDragging,
+  canDelete,
+  onDelete,
 }: {
   admission: AdmissionListItem;
   onClick: () => void;
   isDragging?: boolean;
+  canDelete?: boolean;
+  onDelete?: (admission: AdmissionListItem) => void;
 }) {
   return (
     <div
@@ -261,11 +277,26 @@ function AdmissionCard({
       )}
     >
       <div className="flex items-start justify-between gap-2 mb-2.5">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="text-sm font-bold text-white truncate group-hover:text-primary transition-colors">{admission.lead.name}</p>
           <p className="text-xs font-mono font-semibold text-primary truncate mt-0.5">{admission.applicationNo}</p>
         </div>
-        <GripVertical className="h-4 w-4 text-muted-foreground/40 group-hover:text-muted-foreground shrink-0 mt-0.5" />
+        <div className="flex items-center gap-1 shrink-0 mt-0.5">
+          {canDelete && (
+            <button
+              type="button"
+              title="Move to Recycle Bin"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete?.(admission);
+              }}
+              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-rose-500/20 text-muted-foreground hover:text-rose-400"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          )}
+          <GripVertical className="h-4 w-4 text-muted-foreground/40 group-hover:text-muted-foreground" />
+        </div>
       </div>
       {admission.courseName && (
         <p className="text-xs font-semibold text-muted-foreground mb-3 truncate bg-secondary/50 px-2 py-1 rounded border border-white/5">
@@ -298,11 +329,21 @@ function AdmissionCard({
   );
 }
 
-function SortableAdmissionCard({ admission, onClick }: { admission: AdmissionListItem; onClick: () => void }) {
+function SortableAdmissionCard({
+  admission,
+  onClick,
+  canDelete,
+  onDelete,
+}: {
+  admission: AdmissionListItem;
+  onClick: () => void;
+  canDelete?: boolean;
+  onDelete?: (admission: AdmissionListItem) => void;
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: admission.id });
   return (
     <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} {...attributes} {...listeners}>
-      <AdmissionCard admission={admission} onClick={onClick} isDragging={isDragging} />
+      <AdmissionCard admission={admission} onClick={onClick} isDragging={isDragging} canDelete={canDelete} onDelete={onDelete} />
     </div>
   );
 }
@@ -311,10 +352,14 @@ function StageColumn({
   stage,
   admissions,
   onCardClick,
+  canDelete,
+  onDelete,
 }: {
   stage: (typeof STAGES)[number];
   admissions: AdmissionListItem[];
   onCardClick: (admission: AdmissionListItem) => void;
+  canDelete?: boolean;
+  onDelete?: (admission: AdmissionListItem) => void;
 }) {
   const { setNodeRef } = useSortable({ id: stage.key });
   const Icon = stage.icon;
@@ -332,7 +377,13 @@ function StageColumn({
       <div ref={setNodeRef} className="flex-1 rounded-b-2xl border border-t-0 border-white/10 bg-secondary/20 p-3 space-y-3 min-h-[500px] backdrop-blur-sm">
         <SortableContext items={admissions.map((a) => a.id)} strategy={verticalListSortingStrategy}>
           {admissions.map((admission) => (
-            <SortableAdmissionCard key={admission.id} admission={admission} onClick={() => onCardClick(admission)} />
+            <SortableAdmissionCard
+              key={admission.id}
+              admission={admission}
+              onClick={() => onCardClick(admission)}
+              canDelete={canDelete}
+              onDelete={onDelete}
+            />
           ))}
         </SortableContext>
         {admissions.length === 0 && (
@@ -1098,10 +1149,14 @@ function AdmissionDetailDialog({
   admissionId,
   open,
   onClose,
+  canDelete,
+  onDelete,
 }: {
   admissionId: string | null;
   open: boolean;
   onClose: () => void;
+  canDelete?: boolean;
+  onDelete?: (admission: AdmissionDetail) => void;
 }) {
   const queryClient = useQueryClient();
 
@@ -1144,7 +1199,7 @@ function AdmissionDetailDialog({
     onError: (err: Error) => toast({ title: "Enroll failed", description: err.message, variant: "destructive" }),
   });
 
-  const canEnroll = admission?.stage === "FEE_PAYMENT";
+  const canEnroll = admission && !["ENROLLED", "DROPPED", "CANCELLED"].includes(admission.stage);
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
@@ -1171,7 +1226,7 @@ function AdmissionDetailDialog({
               <div className="flex flex-col items-end gap-2">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold px-3 py-1 bg-primary/20 text-white border border-primary/30 rounded-full">
-                    {admission.stage.replace(/_/g, " ")}
+                    {admissionStageLabel(admission.stage)}
                   </span>
                   {canEnroll && (
                     <Button
@@ -1196,6 +1251,16 @@ function AdmissionDetailDialog({
                       <Printer className="h-3 w-3 mr-1" /> Fee Update
                     </a>
                   </Button>
+                  {canDelete && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-[11px] font-bold border-rose-500/30 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
+                      onClick={() => onDelete?.(admission)}
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" /> Move to Recycle Bin
+                    </Button>
+                  )}
                 </div>
                 {canEnroll && Number(admission.feeBalance ?? 0) > 0 && (
                   <span className="text-[10px] font-bold text-amber-400 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5">
@@ -1266,6 +1331,10 @@ function AdmissionDetailDialog({
 export default function AdmissionsPage() {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const { data: session } = useSession();
+  const canDelete = session?.user?.role === "ADMIN" || session?.user?.role === "SUPER_ADMIN";
+  const [deleteTarget, setDeleteTarget] = React.useState<AdmissionListItem | AdmissionDetail | null>(null);
+
   const searchParams = useSearchParams();
   const detailId = searchParams.get("id");
 
@@ -1274,6 +1343,25 @@ export default function AdmissionsPage() {
   const [pendingStageChange, setPendingStageChange] = React.useState<{ id: string; stage: string } | null>(null);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+
+  const deleteMutation = useMutation({
+    mutationFn: async (admissionId: string) => {
+      return apiFetch(`/admissions/${admissionId}`, { method: "DELETE" });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admissions"] });
+      queryClient.invalidateQueries({ queryKey: ["leads"] });
+      setDeleteTarget(null);
+      closeDetail();
+      toast({
+        title: "Admission moved to Recycle Bin",
+        description: "Application dossier and associated lead moved to Recycle Bin.",
+      });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Delete failed", description: err.message, variant: "destructive" });
+    },
+  });
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admissions"],
@@ -1289,7 +1377,7 @@ export default function AdmissionsPage() {
     mutationFn: ({ id, stage, notes }: { id: string; stage: string; notes?: string }) =>
       apiFetch(`/admissions/${id}/stage`, {
         method: "PATCH",
-        body: JSON.stringify({ toStage: stage, notes }),
+        body: JSON.stringify({ toStage: stage, notes, createStudent: stage === "ENROLLED" ? true : undefined }),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admissions"] });
@@ -1305,7 +1393,7 @@ export default function AdmissionsPage() {
 
   const admissions = data?.data ?? [];
   const byStage = STAGES.reduce<Record<string, AdmissionListItem[]>>((acc, s) => {
-    acc[s.key] = admissions.filter((a) => a.stage === s.key);
+    acc[s.key] = admissions.filter((a) => canonicalAdmissionStage(a.stage) === s.key);
     return acc;
   }, {});
   const activeAdmission = activeId ? admissions.find((a) => a.id === activeId) : null;
@@ -1325,8 +1413,8 @@ export default function AdmissionsPage() {
     if (!item) return;
     const overId = over.id as string;
     const targetStage =
-      STAGES.find((s) => s.key === overId)?.key ?? admissions.find((a) => a.id === overId)?.stage;
-    if (!targetStage || targetStage === item.stage) return;
+      STAGES.find((s) => s.key === overId)?.key ?? canonicalAdmissionStage(admissions.find((a) => a.id === overId)?.stage ?? "");
+    if (!targetStage || targetStage === canonicalAdmissionStage(item.stage)) return;
     setPendingStageChange({ id: item.id, stage: targetStage });
   };
 
@@ -1371,6 +1459,16 @@ export default function AdmissionsPage() {
       <PageHeader
         title="Admissions Workflow Kanban"
         description="Visual pipeline tracker from document verification to airline cadet batch allocation."
+        action={
+          canDelete && (
+            <Button asChild variant="outline" className="border-white/10 text-sm font-semibold">
+              <Link href="/leads/trash">
+                <Trash2 className="h-4 w-4 mr-2" />
+                Recycle Bin
+              </Link>
+            </Button>
+          )
+        }
       />
 
       <div className="overflow-x-auto pb-6 pt-2">
@@ -1387,6 +1485,8 @@ export default function AdmissionsPage() {
                 stage={stage}
                 admissions={byStage[stage.key] ?? []}
                 onCardClick={openDetail}
+                canDelete={canDelete}
+                onDelete={setDeleteTarget}
               />
             ))}
           </div>
@@ -1396,19 +1496,25 @@ export default function AdmissionsPage() {
         </DndContext>
       </div>
 
-      <AdmissionDetailDialog admissionId={detailId} open={!!detailId} onClose={closeDetail} />
+      <AdmissionDetailDialog
+        admissionId={detailId}
+        open={!!detailId}
+        onClose={closeDetail}
+        canDelete={canDelete}
+        onDelete={(adm) => setDeleteTarget(adm)}
+      />
 
       <Dialog open={!!pendingStageChange} onOpenChange={(o) => !o && setPendingStageChange(null)}>
         <DialogContent className="max-w-md glass-panel border-white/10 bg-slate-900/95">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold text-white">
-              Move to {pendingStageChange?.stage.replace(/_/g, " ")}
+              Move to {admissionStageLabel(pendingStageChange?.stage ?? "")}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <p className="text-xs text-muted-foreground font-medium">
               Shift this candidate to{" "}
-              <span className="font-bold text-white">{pendingStageChange?.stage.replace(/_/g, " ")}</span>?
+              <span className="font-bold text-white">{admissionStageLabel(pendingStageChange?.stage ?? "")}</span>?
             </p>
             <div className="space-y-1.5">
               <Label className="text-xs font-bold text-muted-foreground">Stage Transition Notes (Optional)</Label>
@@ -1438,6 +1544,32 @@ export default function AdmissionsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && !deleteMutation.isPending && setDeleteTarget(null)}>
+        <AlertDialogContent className="glass-panel border-white/10 bg-slate-900/95 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Move {deleteTarget?.lead?.name} to Recycle Bin?</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
+              Application {deleteTarget?.applicationNo} and applicant {deleteTarget?.lead?.name} will be moved to the Recycle Bin. You can restore them within 30 days from the Lead Recycle Bin.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMutation.isPending} className="border-white/10 bg-secondary/30 text-white hover:bg-secondary">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteMutation.isPending}
+              onClick={(e) => {
+                e.preventDefault();
+                if (deleteTarget) deleteMutation.mutate(deleteTarget.id);
+              }}
+              className="bg-rose-600 hover:bg-rose-700 text-white font-bold"
+            >
+              {deleteMutation.isPending ? "Moving..." : "Move to Recycle Bin"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

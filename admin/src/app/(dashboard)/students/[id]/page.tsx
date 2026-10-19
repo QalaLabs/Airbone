@@ -20,8 +20,23 @@ import {
   Pencil,
   Save,
   X,
+  Clock,
+  Send,
+  Workflow,
+  MessageSquare,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -212,6 +227,29 @@ export default function StudentDetailPage() {
   const [editing, setEditing] = React.useState(false);
   const { data: session } = useSession();
   const canViewCertificates = roleCan(session?.user?.role, "read", "lms_certificates");
+  const canDelete = session?.user?.role === "ADMIN" || session?.user?.role === "SUPER_ADMIN";
+  const [deleteOpen, setDeleteOpen] = React.useState(false);
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      return apiFetch(`/students/${id}`, { method: "DELETE" });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["students"] });
+      queryClient.invalidateQueries({ queryKey: ["student", id] });
+      queryClient.invalidateQueries({ queryKey: ["leads"] });
+      queryClient.invalidateQueries({ queryKey: ["admissions"] });
+      setDeleteOpen(false);
+      toast({
+        title: "Student moved to Recycle Bin",
+        description: "Student record and associated lead moved to Recycle Bin.",
+      });
+      router.push("/students");
+    },
+    onError: (err: Error) => {
+      toast({ title: "Delete failed", description: err.message, variant: "destructive" });
+    },
+  });
 
   const { data: student, isLoading } = useQuery({
     queryKey: ["student", id],
@@ -247,6 +285,31 @@ export default function StudentDetailPage() {
         return [];
       }
     },
+  });
+
+  const { data: timelineItems = [], isLoading: timelineLoading } = useQuery({
+    queryKey: ["student", id, "timeline"],
+    queryFn: async () => {
+      try {
+        const res = await apiFetch<
+          {
+            id: string;
+            kind: "activity" | "notification" | "automation";
+            at: string;
+            title: string;
+            detail?: string | null;
+            status?: string | null;
+            channel?: string | null;
+            actorName?: string | null;
+            activityType?: string | null;
+          }[]
+        >(`/students/${id}/timeline`);
+        return Array.isArray(res) ? res : [];
+      } catch {
+        return [];
+      }
+    },
+    enabled: !!id,
   });
 
   const editable = React.useMemo(() => {
@@ -383,15 +446,28 @@ export default function StudentDetailPage() {
           </div>
           <StatusBadge status={student.status} domain="student" />
         </div>
-        <Button
-          size="sm"
-          variant={editing ? "outline" : "default"}
-          onClick={() => setEditing((v) => !v)}
-          className="shrink-0"
-        >
-          {editing ? <X className="h-4 w-4 mr-1.5" /> : <Pencil className="h-4 w-4 mr-1.5" />}
-          {editing ? "Cancel" : "Edit profile"}
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button
+            size="sm"
+            variant={editing ? "outline" : "default"}
+            onClick={() => setEditing((v) => !v)}
+            className="shrink-0"
+          >
+            {editing ? <X className="h-4 w-4 mr-1.5" /> : <Pencil className="h-4 w-4 mr-1.5" />}
+            {editing ? "Cancel" : "Edit profile"}
+          </Button>
+          {canDelete && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setDeleteOpen(true)}
+              className="border-rose-500/30 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
+            >
+              <Trash2 className="h-4 w-4 mr-1.5" />
+              Move to Bin
+            </Button>
+          )}
+        </div>
       </div>
 
       {editing && form ? (
@@ -803,6 +879,78 @@ export default function StudentDetailPage() {
                   )}
                 </CardContent>
               </Card>
+
+              <Card>
+                <CardHeader className="pb-3 border-b border-white/5">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-primary" /> Unified Candidate Journey Timeline
+                    </CardTitle>
+                    <span className="text-[10px] font-semibold text-muted-foreground">
+                      {timelineItems.length} events logged
+                    </span>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  {timelineLoading ? (
+                    <div className="space-y-3 py-2">
+                      {[...Array(3)].map((_, i) => (
+                        <Skeleton key={i} className="h-12 w-full" />
+                      ))}
+                    </div>
+                  ) : timelineItems.length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-6">
+                      No timeline history recorded yet.
+                    </p>
+                  ) : (
+                    <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1">
+                      {timelineItems.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex items-start gap-3 p-3 rounded-xl border border-white/5 bg-slate-900/40 text-xs"
+                        >
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20 mt-0.5">
+                            {item.kind === "notification" ? (
+                              <Send className="h-3.5 w-3.5" />
+                            ) : item.activityType === "STATUS_CHANGE" ? (
+                              <ShieldCheck className="h-3.5 w-3.5 text-teal-400" />
+                            ) : item.activityType === "PAYMENT" ? (
+                              <Landmark className="h-3.5 w-3.5 text-emerald-400" />
+                            ) : (
+                              <FileText className="h-3.5 w-3.5" />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-2 mb-0.5">
+                              <span className="font-bold text-white truncate">{item.title}</span>
+                              <span className="text-[10px] text-muted-foreground shrink-0 font-medium">
+                                {formatDate(item.at)}
+                              </span>
+                            </div>
+                            {item.detail && (
+                              <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">
+                                {item.detail}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-2 mt-1">
+                              {item.channel && (
+                                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-violet-500/10 text-violet-300 border border-violet-500/20">
+                                  {item.channel}
+                                </span>
+                              )}
+                              {item.actorName && (
+                                <span className="text-[9px] text-muted-foreground">
+                                  by {item.actorName}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
 
             <div>
@@ -838,6 +986,36 @@ export default function StudentDetailPage() {
           </div>
         </>
       )}
+
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent className="glass-panel border-white/10 bg-slate-900/95 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-base font-bold text-white flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-rose-400" />
+              Move Student to Recycle Bin?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-muted-foreground">
+              Are you sure you want to move student{" "}
+              <span className="font-semibold text-white">
+                {student.name} ({student.studentId})
+              </span>{" "}
+              to the Recycle Bin? The linked candidate lead will also be archived. You can restore this record within 30 days from the Recycle Bin.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-white/10 text-xs font-bold hover:bg-white/5">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteMutation.mutate()}
+              disabled={deleteMutation.isPending}
+              className="bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-lg shadow-rose-600/20"
+            >
+              {deleteMutation.isPending ? "Moving..." : "Move to Recycle Bin"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

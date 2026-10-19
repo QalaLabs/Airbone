@@ -18,6 +18,9 @@ interface NotificationDispatchParams {
   entityType?: string;
   entityId?: string;
   templateName?: string;
+  bodyValues?: string[];
+  headerValues?: string[];
+  providerCampaignId?: string;
   idempotencyKey?: string;
   metadata?: Record<string, string>;
 }
@@ -49,7 +52,7 @@ export class NotificationService {
         if (!enabled) return "NOT_CONFIGURED";
       }
 
-      const template = await prisma.notificationTemplate.findFirst({
+      let template = await prisma.notificationTemplate.findFirst({
         where: {
           orgId: params.orgId,
           event: params.event,
@@ -57,6 +60,11 @@ export class NotificationService {
           isActive: true,
         },
       });
+      if (!template && params.channel === "WHATSAPP" && params.templateName) {
+        template = await prisma.notificationTemplate.findFirst({
+          where: { orgId: params.orgId, channel: "WHATSAPP", isActive: true },
+        });
+      }
       if (!template) return null;
 
       // Provider template identity. `template.name` is a CRM display label and
@@ -114,6 +122,9 @@ export class NotificationService {
           subject,
           body,
           templateName: providerTemplateName,
+          bodyValues: params.bodyValues,
+          headerValues: params.headerValues,
+          providerCampaignId: params.providerCampaignId,
           metadata: {
             ...(params.metadata ?? {}),
             ...(params.entityId ? { leadId: params.entityId } : {}),
@@ -168,6 +179,9 @@ export class NotificationService {
         subject,
         body,
         templateName: providerTemplateName,
+        bodyValues: params.bodyValues,
+        headerValues: params.headerValues,
+        providerCampaignId: params.providerCampaignId,
         metadata: {
           ...(params.metadata ?? {}),
           ...(params.entityId ? { leadId: params.entityId } : {}),
@@ -232,6 +246,9 @@ async function dispatchToProvider(input: {
   subject: string | null;
   body: string;
   templateName?: string;
+  bodyValues?: string[];
+  headerValues?: string[];
+  providerCampaignId?: string;
   metadata?: Record<string, string>;
 }): Promise<{ status: DeliveryStatus; errorMsg?: string; externalId?: string }> {
   if (input.channel !== "EMAIL" && input.channel !== "SMS" && input.channel !== "WHATSAPP") {
@@ -246,6 +263,9 @@ async function dispatchToProvider(input: {
     subject: input.subject ?? undefined,
     body: input.body,
     templateName: input.templateName,
+    bodyValues: input.bodyValues,
+    headerValues: input.headerValues,
+    providerCampaignId: input.providerCampaignId,
     metadata: input.metadata,
   });
 }

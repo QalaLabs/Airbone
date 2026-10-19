@@ -41,6 +41,9 @@ export type WorkflowStep =
       /** NotificationTemplate name override; falls back to WORKFLOW_TRIGGERED template. */
       templateName?: string;
       variables?: Record<string, string>;
+      bodyValues?: string[];
+      headerValues?: string[];
+      providerCampaignId?: string;
     })
   | (StepBase & {
       type: "SEND_EMAIL";

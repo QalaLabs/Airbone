@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/client";
 import type { Prisma } from "@prisma/client";
+import { resolveCourseSlug } from "@/lib/courses/eligibility";
 
 // ─── Entity snapshots ─────────────────────────────────────────────────────────
 //
@@ -112,7 +113,9 @@ export async function loadEntitySnapshot(
   switch (entityType) {
     case ENTITY_TYPES.LEAD: {
       const lead = await prisma.lead.findFirst({ where: { id: entityId, orgId }, select: leadSelect });
-      return lead ? (lead as unknown as Record<string, unknown>) : null;
+      return lead
+        ? ({ ...lead, courseSlug: resolveCourseSlug(lead.courseInterest) } as unknown as Record<string, unknown>)
+        : null;
     }
     case ENTITY_TYPES.ADMISSION: {
       const admission = await prisma.admission.findFirst({

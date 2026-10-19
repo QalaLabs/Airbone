@@ -770,6 +770,68 @@ export class AdmissionService {
         },
       });
 
+      // Task 10: Auto-trigger enrollment confirmation letter email
+      if (toStage === "ENROLLED") {
+        void (async () => {
+          try {
+            const adm = await prisma.admission.findUnique({
+              where: { id },
+              select: {
+                applicationNo: true,
+                courseName: true,
+                batchName: true,
+                student: { select: { email: true, firstName: true, lastName: true, studentCode: true } },
+                lead: { select: { email: true, name: true } },
+              },
+            });
+            const recipientEmail = adm?.student?.email || adm?.lead?.email;
+            const recipientName = adm?.student
+              ? `${adm.student.firstName} ${adm.student.lastName}`
+              : (adm?.lead?.name || "Student");
+            if (recipientEmail) {
+              const { getProvider } = await import("@/lib/messaging");
+              const provider = getProvider("EMAIL");
+              if (provider.isConfigured()) {
+                const enrollmentHtml = `
+                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    <div style="text-align: center; margin-bottom: 24px;">
+                      <h2 style="color: #0f172a; margin: 0;">AIRBORNE AVIATION ACADEMY</h2>
+                      <p style="color: #0d9488; margin: 4px 0 0 0; font-size: 14px; font-weight: bold;">Official Enrollment Confirmation Letter</p>
+                    </div>
+                    <p style="color: #334155; font-size: 15px;">Dear <strong>${recipientName}</strong>,</p>
+                    <p style="color: #334155; font-size: 14px; line-height: 1.5;">
+                      Congratulations! We are delighted to inform you that your enrollment at Airborne Aviation Academy has been officially confirmed.
+                    </p>
+                    <div style="background-color: #f8fafc; padding: 16px; border-radius: 6px; margin: 20px 0;">
+                      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                        <tr><td style="color: #64748b; padding: 4px 0;">Application No:</td><td style="font-weight: bold; text-align: right;">${adm?.applicationNo}</td></tr>
+                        ${adm?.student?.studentCode ? `<tr><td style="color: #64748b; padding: 4px 0;">Cadet Code:</td><td style="font-weight: bold; text-align: right;">${adm.student.studentCode}</td></tr>` : ""}
+                        <tr><td style="color: #64748b; padding: 4px 0;">Program:</td><td style="text-align: right;">${adm?.courseName ?? "Flight Cadet Program"}</td></tr>
+                        ${adm?.batchName ? `<tr><td style="color: #64748b; padding: 4px 0;">Batch:</td><td style="text-align: right;">${adm.batchName}</td></tr>` : ""}
+                        <tr><td style="color: #64748b; padding: 4px 0;">Status:</td><td style="color: #0d9488; font-weight: bold; text-align: right;">ENROLLED</td></tr>
+                      </table>
+                    </div>
+                    <p style="color: #334155; font-size: 14px; line-height: 1.5;">
+                      Please keep this confirmation for your records. Our academy admissions and flight operations team will contact you shortly regarding orientation schedules and pre-flight ground briefing.
+                    </p>
+                    <p style="font-size: 13px; color: #64748b; margin-top: 24px;">Warm regards,<br /><strong>Director of Admissions</strong><br />Airborne Aviation Academy</p>
+                  </div>
+                `;
+
+                await provider.send({
+                  to: recipientEmail,
+                  subject: `Official Enrollment Confirmation: ${adm?.applicationNo} — Airborne Aviation Academy`,
+                  body: `Congratulations ${recipientName}! Your enrollment with application ${adm?.applicationNo} has been confirmed.`,
+                  html: enrollmentHtml,
+                });
+              }
+            }
+          } catch (e) {
+            console.error("Failed to send automated enrollment email:", e);
+          }
+        })();
+      }
+
       return updated;
     }
 
@@ -828,5 +890,35 @@ export class AdmissionService {
   static async getStageLogs(ctx: RequestContext, id: string) {
     await this.getById(ctx, id);
     return AdmissionRepository.getStageLogs(ctx.orgId, id);
+  }
+
+  static async delete(ctx: RequestContext, id: string) {
+    const admission = await prisma.admission.findFirst({
+      where: { id, orgId: ctx.orgId },
+      select: { id: true, leadId: true, studentId: true, applicationNo: true },
+    });
+    if (!admission) throw new NotFoundError("Admission", id);
+
+    const { LeadService } = await import("@/lib/services/lead.service");
+    await LeadService.delete(ctx, admission.leadId);
+
+    if (admission.studentId) {
+      await prisma.student.updateMany({
+        where: { id: admission.studentId, orgId: ctx.orgId, deletedAt: null },
+        data: { deletedAt: new Date() },
+      });
+    }
+
+    await AuditService.write({
+      orgId: ctx.orgId,
+      userId: ctx.user.id,
+      requestId: ctx.requestId,
+      action: "admission.deleted",
+      entityType: "admission",
+      entityId: id,
+      oldValue: { applicationNo: admission.applicationNo, leadId: admission.leadId },
+    });
+
+    return { ok: true };
   }
 }

@@ -92,12 +92,22 @@ export async function executeAction(
       if (optOutFlag === true) {
         return { ok: true, skipped: true, detail: "Contact opted out of WhatsApp" };
       }
+      const leadStatus = resolvePath(snapshotCtx, "status");
+      if (leadStatus === "JOB_SEEKER") {
+        return { ok: true, skipped: true, detail: "Contact is a job seeker" };
+      }
       const variables = Object.fromEntries(
         Object.entries(step.variables ?? {}).map(([k, v]) => [k, interpolate(String(v), snapshotCtx)]),
       );
-      // Routed through the existing notification pipeline. Until the WhatsApp
-      // provider abstraction lands this honestly records NOT_CONFIGURED —
-      // delivery is never faked.
+      const leadName = String(resolvePath(snapshotCtx, "name") ?? "Student").trim();
+      const bodyValues = Array.isArray(step.bodyValues) && step.bodyValues.length > 0
+        ? step.bodyValues.map((v) => interpolate(String(v), snapshotCtx))
+        : [leadName];
+      const headerValues = Array.isArray(step.headerValues) && step.headerValues.length > 0
+        ? step.headerValues.map((v) => interpolate(String(v), snapshotCtx))
+        : undefined;
+
+      // Routed through the existing notification pipeline.
       const leadIdRaw =
         ctx.entityType === "lead" ? ctx.entityId : resolvePath(snapshotCtx, "leadId");
       const leadId = typeof leadIdRaw === "string" ? leadIdRaw : undefined;
@@ -110,6 +120,9 @@ export async function executeAction(
         entityType: ctx.entityType.toLowerCase(),
         entityId: ctx.entityId,
         templateName: step.templateName,
+        bodyValues,
+        headerValues,
+        providerCampaignId: step.providerCampaignId,
         idempotencyKey: ctx.idempotencyKey,
         metadata: {
           ...(leadId ? { leadId } : {}),
@@ -117,6 +130,14 @@ export async function executeAction(
           workflowStepKey: step.name ?? "SEND_WHATSAPP",
         },
       });
+      if (leadId && (status === "SENT" || status === "PENDING")) {
+        await writeLeadActivity(
+          ctx,
+          leadId,
+          `WhatsApp: ${step.name ?? step.templateName ?? "Campaign Message"}`,
+          `Campaign template: ${step.templateName ?? "default"} (Interakt API)`,
+        );
+      }
       return { ok: true, detail: `whatsapp:${status ?? "no-template"}` };
     }
 

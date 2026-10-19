@@ -38,6 +38,7 @@ export class ResendProvider implements MessageProvider {
           to: input.to,
           subject: input.subject ?? "",
           text: input.body,
+          ...(input.html ? { html: input.html } : {}),
         }),
         signal: controller.signal,
       });

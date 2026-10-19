@@ -1,21 +1,35 @@
 "use client";
 
 import * as React from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ColumnDef, type PaginationState, type SortingState } from "@tanstack/react-table";
-import { Search, Eye, MoreHorizontal, AlertCircle, CheckCircle2, XCircle, Upload } from "lucide-react";
+import { Search, Eye, MoreHorizontal, AlertCircle, CheckCircle2, XCircle, Upload, UserPlus, GraduationCap, Phone, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { roleCan } from "@/lib/utils/permissions";
 import { StudentImportDialog } from "@/components/students/student-import-dialog";
 import { DataTable } from "@/components/shared/data-table";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { formatDate, getInitials, cn } from "@/lib/utils";
+import { toast } from "@/components/ui/use-toast";
+import { apiFetch } from "@/lib/api";
 import Link from "next/link";
 
 interface Student {
@@ -34,17 +48,97 @@ interface Student {
   admissions?: { feePaid?: string | number | null; feeBalance?: string | number | null }[];
 }
 
-const STUDENT_STATUSES = ["all", "ACTIVE", "GRADUATED", "DROPPED", "SUSPENDED", "ON_HOLD"];
+const STUDENT_STATUSES = ["all", "DRAFT", "ACTIVE", "GRADUATED", "DROPPED", "SUSPENDED", "ON_HOLD"];
 
 export default function StudentsPage() {
+  const queryClient = useQueryClient();
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 20 });
   const [sorting, setSorting] = React.useState<SortingState>([{ id: "createdAt", desc: true }]);
   const [search, setSearch] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState("all");
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
   const [importOpen, setImportOpen] = React.useState(false);
+  const router = useRouter();
+  const [admitOpen, setAdmitOpen] = React.useState(false);
+  const [leadSearchTerm, setLeadSearchTerm] = React.useState("");
+  const [selectedLead, setSelectedLead] = React.useState<{ id: string; name: string; phone: string; email?: string | null; courseInterest?: string | null; manualAmount?: number | null } | null>(null);
+  const [admitCourse, setAdmitCourse] = React.useState("");
+  const [admitFee, setAdmitFee] = React.useState("");
+  const [submittingAdmit, setSubmittingAdmit] = React.useState(false);
+  const [deleteTarget, setDeleteTarget] = React.useState<Student | null>(null);
+
   const { data: session } = useSession();
   const canImport = roleCan(session?.user?.role, "write", "students");
+  const canAdmit = roleCan(session?.user?.role, "write", "admissions") || roleCan(session?.user?.role, "write", "students");
+  const canDelete = session?.user?.role === "ADMIN" || session?.user?.role === "SUPER_ADMIN";
+
+  const deleteMutation = useMutation({
+    mutationFn: async (studentId: string) => {
+      return apiFetch(`/students/${studentId}`, { method: "DELETE" });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["students"] });
+      queryClient.invalidateQueries({ queryKey: ["leads"] });
+      queryClient.invalidateQueries({ queryKey: ["admissions"] });
+      setDeleteTarget(null);
+      refetch();
+      toast({
+        title: "Student moved to Recycle Bin",
+        description: "Student record and associated lead moved to Recycle Bin.",
+      });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Delete failed", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const { data: leadResults, isLoading: leadsSearching } = useQuery({
+    queryKey: ["leads-search-admit", leadSearchTerm],
+    queryFn: async () => {
+      if (!leadSearchTerm.trim()) return [];
+      const res = await apiFetch<{ id: string; name: string; phone: string; email?: string; courseInterest?: string; manualAmount?: number }[]>(
+        `/leads?search=${encodeURIComponent(leadSearchTerm)}&limit=10`
+      );
+      return Array.isArray(res) ? res : [];
+    },
+    enabled: admitOpen && leadSearchTerm.trim().length >= 2,
+  });
+
+  const handleAdmitLead = async () => {
+    if (!selectedLead) return;
+    setSubmittingAdmit(true);
+    try {
+      const res = await apiFetch<{ admission: { id: string; applicationNo: string }; created: boolean }>(
+        "/admissions/convert-lead",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            leadId: selectedLead.id,
+            courseName: admitCourse || selectedLead.courseInterest || undefined,
+            feeAmount: admitFee ? Number(admitFee) : (selectedLead.manualAmount ? Number(selectedLead.manualAmount) : undefined),
+            autoEnroll: true,
+          }),
+        }
+      );
+      toast({
+        title: "Student Enrolled",
+        description: `Admission ${res.admission.applicationNo} created and candidate enrolled.`,
+      });
+      setAdmitOpen(false);
+      setSelectedLead(null);
+      setLeadSearchTerm("");
+      refetch();
+      router.push(`/admissions?id=${res.admission.id}`);
+    } catch (err) {
+      toast({
+        title: "Admission Failed",
+        description: err instanceof Error ? err.message : String(err),
+        variant: "destructive",
+      });
+    } finally {
+      setSubmittingAdmit(false);
+    }
+  };
 
   React.useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 400);
@@ -170,13 +264,25 @@ export default function StudentsPage() {
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="glass-panel border-white/10 w-44">
+          <DropdownMenuContent align="end" className="glass-panel border-white/10 w-48">
             <DropdownMenuItem asChild className="cursor-pointer hover:bg-white/5">
               <Link href={`/students/${row.original.id}`}>
                 <Eye className="mr-2 h-4 w-4 text-primary" />
                 View Details
               </Link>
             </DropdownMenuItem>
+            {canDelete && (
+              <>
+                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuItem
+                  onClick={() => setDeleteTarget(row.original)}
+                  className="cursor-pointer text-rose-400 hover:bg-rose-500/10 focus:text-rose-400"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Move to Recycle Bin
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       ),
@@ -189,14 +295,155 @@ export default function StudentsPage() {
         title="Student Database"
         description="Enrolled student records and status tracking."
         action={
-          canImport ? (
-            <Button onClick={() => setImportOpen(true)} data-testid="student-import-open" className="bg-primary hover:bg-primary/90 text-white">
-              <Upload className="h-4 w-4 mr-2" /> Bulk Upload CSV
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline" className="border-white/10 text-xs font-semibold hover:bg-white/5">
+              <Link href="/leads/trash">
+                <Trash2 className="h-4 w-4 mr-1.5" /> Recycle Bin
+              </Link>
             </Button>
-          ) : undefined
+            {canAdmit && (
+              <Button
+                onClick={() => setAdmitOpen(true)}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs"
+              >
+                <UserPlus className="h-4 w-4 mr-1.5" /> Admit Lead as Student
+              </Button>
+            )}
+            {canImport && (
+              <Button
+                onClick={() => setImportOpen(true)}
+                data-testid="student-import-open"
+                className="bg-primary hover:bg-primary/90 text-white font-bold text-xs"
+              >
+                <Upload className="h-4 w-4 mr-1.5" /> Bulk Upload CSV
+              </Button>
+            )}
+          </div>
         }
       />
       <StudentImportDialog open={importOpen} onOpenChange={setImportOpen} />
+
+      {/* Admit Lead as Student Modal */}
+      <Dialog open={admitOpen} onOpenChange={(o) => {
+        if (!o) {
+          setAdmitOpen(false);
+          setSelectedLead(null);
+          setLeadSearchTerm("");
+        }
+      }}>
+        <DialogContent className="glass-panel border-white/10 bg-slate-900/95 max-w-lg text-white">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold flex items-center gap-2">
+              <GraduationCap className="h-5 w-5 text-emerald-400" />
+              Admit Lead as Enrolled Student
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            {!selectedLead ? (
+              <div className="space-y-3">
+                <Label className="text-xs text-muted-foreground font-semibold">
+                  Search Lead by Name, Phone, or Email
+                </Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Type candidate name or phone..."
+                    value={leadSearchTerm}
+                    onChange={(e) => setLeadSearchTerm(e.target.value)}
+                    className="pl-9 bg-secondary/40 border-white/10 text-xs font-semibold"
+                    autoFocus
+                  />
+                </div>
+
+                <div className="max-h-56 overflow-y-auto space-y-2 pt-1">
+                  {leadsSearching && <p className="text-xs text-muted-foreground text-center py-4">Searching candidates...</p>}
+                  {!leadsSearching && leadSearchTerm.trim().length >= 2 && (leadResults ?? []).length === 0 && (
+                    <p className="text-xs text-muted-foreground text-center py-4">No matching leads found.</p>
+                  )}
+                  {(leadResults ?? []).map((lead) => (
+                    <div
+                      key={lead.id}
+                      onClick={() => {
+                        setSelectedLead(lead);
+                        setAdmitCourse(lead.courseInterest || "");
+                        setAdmitFee(lead.manualAmount ? String(lead.manualAmount) : "");
+                      }}
+                      className="p-3 rounded-xl border border-white/5 bg-white/5 hover:bg-emerald-500/10 hover:border-emerald-500/30 cursor-pointer transition-all flex items-center justify-between"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-white truncate">{lead.name}</p>
+                        <p className="text-[11px] text-muted-foreground truncate">{lead.phone} {lead.email ? `· ${lead.email}` : ""}</p>
+                        {lead.courseInterest && <p className="text-[10px] text-primary font-semibold mt-0.5">{lead.courseInterest}</p>}
+                      </div>
+                      <Button size="sm" variant="ghost" className="text-xs text-emerald-400 font-bold shrink-0">
+                        Select
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white">{selectedLead.name}</span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setSelectedLead(null)}
+                      className="h-6 text-[11px] text-muted-foreground hover:text-white"
+                    >
+                      Change
+                    </Button>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">{selectedLead.phone} {selectedLead.email ? `· ${selectedLead.email}` : ""}</p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground font-semibold">Course / Flight Program *</Label>
+                  <Input
+                    value={admitCourse}
+                    onChange={(e) => setAdmitCourse(e.target.value)}
+                    placeholder="e.g. Commercial Pilot License (CPL)"
+                    className="bg-secondary/40 border-white/10 text-xs font-semibold"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground font-semibold">Agreed Course Fee (₹)</Label>
+                  <Input
+                    type="number"
+                    value={admitFee}
+                    onChange={(e) => setAdmitFee(e.target.value)}
+                    placeholder="e.g. 4500000"
+                    className="bg-secondary/40 border-white/10 text-xs font-semibold"
+                  />
+                </div>
+
+                <p className="text-[11px] text-muted-foreground">
+                  This action marks the lead as <span className="text-emerald-400 font-bold">WON</span>, provisions their official student record, and opens their Application Dossier.
+                </p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button variant="ghost" onClick={() => setAdmitOpen(false)} className="text-xs font-bold">
+              Cancel
+            </Button>
+            {selectedLead && (
+              <Button
+                disabled={submittingAdmit}
+                onClick={handleAdmitLead}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/20"
+              >
+                {submittingAdmit ? "Enrolling Student..." : "Confirm Admission & Enroll"}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="glass-card rounded-2xl p-5 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3 flex-1 max-w-md">
@@ -252,6 +499,35 @@ export default function StudentsPage() {
         </div>
       )}
 
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent className="glass-panel border-white/10 bg-slate-900/95 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-base font-bold text-white flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-rose-400" />
+              Move Student to Recycle Bin?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-muted-foreground">
+              Are you sure you want to move student{" "}
+              <span className="font-semibold text-white">
+                {deleteTarget ? `${deleteTarget.firstName} ${deleteTarget.lastName} (${deleteTarget.studentCode})` : ""}
+              </span>{" "}
+              to the Recycle Bin? The linked candidate lead will also be archived. You can restore this record within 30 days from the Recycle Bin.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-white/10 text-xs font-bold hover:bg-white/5">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
+              disabled={deleteMutation.isPending}
+              className="bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-lg shadow-rose-600/20"
+            >
+              {deleteMutation.isPending ? "Moving..." : "Move to Recycle Bin"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

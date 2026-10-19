@@ -4,7 +4,7 @@ import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
 
 import CoursePageFooter from '@/components/CoursePageFooter'
-import CourseReviews from '@/components/CourseReviews'
+import CabinCrewStarterKit from '@/components/CabinCrewStarterKit'
 import JsonLd from '@/components/JsonLd'
 import { buildCoursePageGraph } from '@/lib/schema'
 import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
@@ -392,7 +392,7 @@ export default async function CabinCrewTrainingPage() {
           </div>
 
         </div>
-        <CourseReviews />
+        <CabinCrewStarterKit />
         <CoursePageFooter
           whatsappText="Hi, I'm interested in the Cabin Crew Training program at Airborne Aviation Academy, Dwarka. Please share batch details and fee structure."
           relatedCourses={[

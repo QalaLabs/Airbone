@@ -496,6 +496,30 @@ export class LeadService {
         oldValue: existing as unknown as Record<string, unknown>,
         newValue: updated as unknown as Record<string, unknown>,
       });
+
+      await prisma.leadActivity
+        .create({
+          data: {
+            leadId: id,
+            orgId: ctx.orgId,
+            performedBy: ctx.user.id,
+            activityType: "NOTE",
+            title: "Lead details updated",
+            notes: `Profile updated by ${ctx.user.name || "Admin"}`,
+            completedAt: new Date(),
+          },
+        })
+        .catch(() => undefined);
+
+      await ActivityFeedService.write({
+        orgId: ctx.orgId,
+        actorId: ctx.user.id,
+        verb: "updated",
+        objectType: "lead",
+        objectId: id,
+        objectSnapshot: { name: updated.name },
+        context: { actorName: ctx.user.name },
+      }).catch(() => undefined);
     }
 
     return updated;
@@ -659,6 +683,12 @@ export class LeadService {
   static async delete(ctx: RequestContext, id: string) {
     await this.getById(ctx, id);
     await LeadRepository.softDelete(ctx.orgId, id);
+
+    // Also soft-delete any linked student so they move into the Recycle Bin together
+    await prisma.student.updateMany({
+      where: { leadId: id, orgId: ctx.orgId, deletedAt: null },
+      data: { deletedAt: new Date() },
+    });
 
     const { AuditService } = await import("@/lib/services/audit.service");
     await AuditService.write({

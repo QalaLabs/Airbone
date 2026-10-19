@@ -10,6 +10,8 @@ export interface SendMessageInput {
   to: string;
   /** Rendered body (interpolation already applied upstream). */
   body: string;
+  /** Optional HTML body for email channels. */
+  html?: string;
   /** Email only. */
   subject?: string;
   /** Provider-side template reference (e.g. Interakt template slug). */
