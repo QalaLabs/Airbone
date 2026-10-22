@@ -54,6 +54,7 @@ export function mapApiCourseToProgram(course) {
     price: displayCourseFee(apiSlug, course.fee) ?? 'Contact us',
     href: `/courses/${marketingSlug}`,
     accent: ACCENT_BY_API_SLUG[apiSlug] ?? 'var(--gold)',
+    batchStartDate: course.batchStartDate ?? course.metadata?.batchStartDate ?? null,
   }
 }
 

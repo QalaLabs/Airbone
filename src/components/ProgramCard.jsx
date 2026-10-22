@@ -3,6 +3,34 @@
 import { useRef, useState } from 'react'
 import { motion, useInView } from 'framer-motion'
 
+function getUpcomingBatchDate(customDate) {
+  if (customDate) {
+    const d = new Date(customDate);
+    if (!Number.isNaN(d.getTime())) {
+      const day = d.getDate();
+      const s = day === 1 ? 'st' : day === 2 ? 'nd' : day === 3 ? 'rd' : 'th';
+      return `${day}${s} ${d.toLocaleDateString('en-IN', { month: 'short' })} ${d.getFullYear()}`;
+    }
+  }
+  const now = new Date();
+  const day = now.getDate();
+  const month = now.getMonth();
+  const year = now.getFullYear();
+
+  let targetDate;
+  if (day < 15) {
+    targetDate = new Date(year, month, 15);
+  } else {
+    targetDate = new Date(year, month + 1, 1);
+  }
+
+  const d = targetDate.getDate();
+  const suffix = d === 1 ? 'st' : d === 2 ? 'nd' : d === 3 ? 'rd' : 'th';
+  const monthName = targetDate.toLocaleDateString('en-IN', { month: 'short' });
+  const yr = targetDate.getFullYear();
+  return `${d}${suffix} ${monthName} ${yr}`;
+}
+
 export default function ProgramCard({ program, index }) {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, amount: 0.2 })
@@ -141,6 +169,35 @@ export default function ProgramCard({ program, index }) {
         >
           {program.desc}
         </p>
+      </div>
+
+            {/* Dynamic Upcoming Batch Date (CMS-08) */}
+      <div
+        style={{
+          marginTop: '0.75rem',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.45rem',
+          fontFamily: 'var(--font-h)',
+          fontSize: '0.62rem',
+          fontWeight: 700,
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+          color: hovered ? 'var(--gold)' : '#0066cc',
+          transition: 'color 0.4s',
+        }}
+      >
+        <span
+          style={{
+            width: '6px',
+            height: '6px',
+            borderRadius: '50%',
+            backgroundColor: '#10b981',
+            boxShadow: '0 0 6px #10b981',
+            flexShrink: 0,
+          }}
+        />
+        <span>Next Batch: {program.nextBatchDate || getUpcomingBatchDate(program.batchStartDate)}</span>
       </div>
 
       {/* Footer */}

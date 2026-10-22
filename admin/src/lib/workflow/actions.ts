@@ -92,25 +92,24 @@ export async function executeAction(
       if (optOutFlag === true) {
         return { ok: true, skipped: true, detail: "Contact opted out of WhatsApp" };
       }
+      const variables = Object.fromEntries(
+        Object.entries(step.variables ?? {}).map(([k, v]) => [k, interpolate(String(v), snapshotCtx)]),
+      );
+      // Routed through the existing notification pipeline. Until the WhatsApp
+      // provider abstraction lands this honestly records NOT_CONFIGURED —
       const leadStatus = resolvePath(snapshotCtx, "status");
       if (leadStatus === "JOB_SEEKER") {
         return { ok: true, skipped: true, detail: "Contact is a job seeker" };
       }
-      const variables = Object.fromEntries(
-        Object.entries(step.variables ?? {}).map(([k, v]) => [k, interpolate(String(v), snapshotCtx)]),
-      );
-      const leadName = String(resolvePath(snapshotCtx, "name") ?? "Student").trim();
-      const bodyValues = Array.isArray(step.bodyValues) && step.bodyValues.length > 0
-        ? step.bodyValues.map((v) => interpolate(String(v), snapshotCtx))
-        : [leadName];
-      const headerValues = Array.isArray(step.headerValues) && step.headerValues.length > 0
-        ? step.headerValues.map((v) => interpolate(String(v), snapshotCtx))
-        : undefined;
-
-      // Routed through the existing notification pipeline.
       const leadIdRaw =
         ctx.entityType === "lead" ? ctx.entityId : resolvePath(snapshotCtx, "leadId");
       const leadId = typeof leadIdRaw === "string" ? leadIdRaw : undefined;
+      const bodyValues = step.bodyValues?.map((v) => interpolate(String(v), snapshotCtx));
+      const headerValues = step.headerValues?.map((v) => interpolate(String(v), snapshotCtx));
+      // Never send a template with an unresolved {{placeholder}} to a real person.
+      if (bodyValues?.some((v) => /\{\{[^}]*\}\}/.test(v))) {
+        return { ok: true, skipped: true, detail: "Unresolved template variable; send skipped" };
+      }
       const status = await NotificationService.dispatch({
         orgId: ctx.orgId,
         event: "WORKFLOW_TRIGGERED",
@@ -337,6 +336,7 @@ export async function stopAllRunsForEntity(
   entityId: string,
   reason: string,
   exceptRunId?: string,
+  onlyWorkflowCode?: string,
 ): Promise<number> {
   const result = await prisma.workflowRun.updateMany({
     where: {
@@ -345,6 +345,7 @@ export async function stopAllRunsForEntity(
       entityId,
       status: { in: ["RUNNING", "PAUSED"] },
       ...(exceptRunId && { id: { not: exceptRunId } }),
+      ...(onlyWorkflowCode && { workflow: { code: onlyWorkflowCode } }),
     },
     data: { status: "STOPPED", stoppedReason: reason, stoppedAt: new Date(), completedAt: new Date() },
   });
