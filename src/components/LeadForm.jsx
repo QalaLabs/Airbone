@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import GoogleReviewsWidget from '@/components/GoogleReviewsWidget'
 
@@ -18,7 +18,7 @@ const validators = { name: validateName, phone: validatePhone, email: validateEm
 const COURSES = CANONICAL_COURSE_OPTIONS
 
 const ELIGIBILITY_RESULT = {
-  eligible: { title: 'âœ“ You meet the listed criteria for this course', tone: '#25D366' },
+  eligible: { title: '✓ You meet the listed criteria for this course', tone: '#25D366' },
   review: { title: 'Some criteria need a counsellor review', tone: '#D8A027' },
   not_applicable: { title: 'No eligibility pre-check is needed for this course', tone: 'rgba(255,255,255,0.7)' },
 }
@@ -46,7 +46,7 @@ function useCourseEligibility(course) {
   return state.course === course ? state : { course, courseSlug: null, questions: [] }
 }
 
-export default function LeadForm({ courseName = '', source = 'Dynamic Page Form', successMessage = '', dark = true }) {
+export default function LeadForm({ courseName = '', source = 'Dynamic Page Form', successMessage = '' }) {
   const [status, setStatus] = useState('idle')
   const [answers, setAnswers] = useState({})
   const [eligibilityResult, setEligibilityResult] = useState(null)
@@ -99,7 +99,7 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
         })
       })
       if (res.ok || res.status === 409) {
-        // 409 = this phone already has an enquiry on file â€” not a failure for
+        // 409 = this phone already has an enquiry on file Ã¢â‚¬â€ not a failure for
         // the visitor, the admin API already has their details.
         const data = await res.json().catch(() => ({}))
         setEligibilityResult(data?.eligibility ?? null)
@@ -129,16 +129,16 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
           {confirmationText}
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
-          <a href="tel:+919953777320" className="btn btn-outline" style={{ textDecoration: 'none', fontSize: '0.75rem', padding: '0.6rem 1rem' }}>ðŸ“ž Call Us</a>
-          <a href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ textDecoration: 'none', fontSize: '0.75rem', padding: '0.6rem 1rem', borderColor: '#25D366', color: '#25D366' }}>ðŸ’¬ WhatsApp</a>
-          <a href="/courses" className="btn btn-primary" style={{ textDecoration: 'none', fontSize: '0.75rem', padding: '0.6rem 1rem' }}>Explore Courses â†’</a>
+          <a href="tel:+919953777320" className="btn btn-outline" style={{ textDecoration: 'none', fontSize: '0.75rem', padding: '0.6rem 1rem' }}>Call Us</a>
+          <a href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ textDecoration: 'none', fontSize: '0.75rem', padding: '0.6rem 1rem', borderColor: '#25D366', color: '#25D366' }}>WhatsApp</a>
+          <a href="/courses" className="btn btn-primary" style={{ textDecoration: 'none', fontSize: '0.75rem', padding: '0.6rem 1rem' }}>Explore Courses →</a>
         </div>
         {eligibilityResult && ELIGIBILITY_RESULT[eligibilityResult.result] ? (
           <div data-testid="eligibility-result" data-result={eligibilityResult.result} data-course={eligibilityResult.course ?? ''} style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px dashed rgba(255,255,255,0.15)' }}>
             <p style={{ fontWeight: 800, fontSize: '0.85rem', color: ELIGIBILITY_RESULT[eligibilityResult.result].tone, marginBottom: '0.4rem' }}>
               {ELIGIBILITY_RESULT[eligibilityResult.result].title}
             </p>
-            <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)' }}>Advisory only â€” a counsellor makes the final eligibility assessment.</p>
+            <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)' }}>Advisory only Ã¢â‚¬â€ a counsellor makes the final eligibility assessment.</p>
           </div>
         ) : null}
       </div>
@@ -213,7 +213,7 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
             Eligibility check (optional)
           </legend>
           <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', margin: '0 0 0.75rem', lineHeight: 1.5 }}>
-            Questions for the selected course. Advisory only â€” never blocks your enquiry.
+            Questions for the selected course. Advisory only Ã¢â‚¬â€ never blocks your enquiry.
           </p>
           {eligibility.questions.map((q) => (
             <div key={q.key} data-testid="eligibility-question" data-key={q.key} style={{ marginBottom: '0.75rem' }}>
@@ -259,9 +259,9 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
         disabled={status === 'loading'}
         style={{ width: '100%', justifyContent: 'center' }}
       >
-        Apply For Registration â†’
+        Apply For Registration →
       </SubmitButton>
-      <GoogleReviewsWidget dark={dark} />
+      <GoogleReviewsWidget />
     </form>
   )
 }

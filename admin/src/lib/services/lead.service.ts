@@ -260,6 +260,11 @@ export class LeadService {
       data.assignedTo = ctx.user.id;
     }
 
+    const rawDigits = data.phone.replace(/\D/g, "");
+    if (rawDigits.length >= 10) {
+      data.phone = rawDigits.slice(-10);
+    }
+
     // Race-safe dedup: unique(orgId, phone) means a lead with this phone already
     // exists in the org — surface a clean 409 instead of a 500.
     let lead: Awaited<ReturnType<typeof LeadRepository.create>>;
