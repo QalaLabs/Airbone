@@ -9,19 +9,20 @@ import JsonLd from '@/components/JsonLd'
 import { buildCoursePageGraph } from '@/lib/schema'
 import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 import StudentJourneyLimeTimeline from '@/components/StudentJourneyLimeTimeline'
+import CourseVideoTabs from '@/components/CourseVideoTabs'
 
 export const metadata = {
-  title: 'Commercial Pilot License Ground Classes in Delhi - DGCA Complied | Airborne Aviation',
-  description: 'Clear all 5 DGCA CPL papers on your first attempt. DGCA Complied CPL Ground School in Dwarka, Delhi by Capt. Navrang Singh.',
+  title: 'CPL Ground Classes in Delhi - DGCA | Airborne Aviation',
+  description: 'Clear all 5 DGCA CPL papers on your first attempt. DGCA-compliant CPL Ground School in Dwarka, Delhi by Capt. Navrang Singh.',
   alternates: { canonical: '/courses/commercial-pilot-license-cpl' },
   openGraph: {
-    title: 'Commercial Pilot License Ground Classes in Delhi - DGCA Complied | Airborne Aviation',
-    description: 'Clear all 5 DGCA CPL papers on your first attempt. DGCA Complied CPL Ground School in Dwarka, Delhi by Capt. Navrang Singh.',
+    title: 'CPL Ground Classes in Delhi - DGCA | Airborne Aviation',
+    description: 'Clear all 5 DGCA CPL papers on your first attempt. DGCA-compliant CPL Ground School in Dwarka, Delhi by Capt. Navrang Singh.',
     url: 'https://www.airborneaviation.in/courses/commercial-pilot-license-cpl',
   },
   twitter: {
-    title: 'Commercial Pilot License Ground Classes in Delhi - DGCA Complied | Airborne Aviation',
-    description: 'Clear all 5 DGCA CPL papers on your first attempt. DGCA Complied CPL Ground School in Dwarka, Delhi by Capt. Navrang Singh.',
+    title: 'CPL Ground Classes in Delhi - DGCA | Airborne Aviation',
+    description: 'Clear all 5 DGCA CPL papers on your first attempt. DGCA-compliant CPL Ground School in Dwarka, Delhi by Capt. Navrang Singh.',
   },
 }
 
@@ -36,7 +37,7 @@ const CPL_FAQS = [
   },
   {
     q: 'How much does the full CPL cost in India?',
-    a: 'CPL training in India costs ₹55–65 lakh at DGCA-approved FTOs, covering 200 flying hours, ground school, DGCA exam fees, and medical. Education loans available via SBI, Bank of Baroda, PNB.',
+    a: 'CPL training in India costs ₹55–65 lakh at DGCA-compliant FTOs, covering 200 flying hours, ground school, DGCA exam fees, and medical. Education loans available via SBI, Bank of Baroda, PNB.',
   },
   {
     q: 'What is the batch size?',
@@ -68,7 +69,7 @@ const SUBJECTS = [
 
 const FEE_ROWS = [
   { component: 'CPL Ground School', amount: '₹2,70,000' },
-  { component: 'Flying Training (200 Hours)', amount: '₹42,00,000' },
+  { component: 'Flying Training (200 Hours)', amount: '₹52,00,000 – ₹62,00,000' },
   { component: 'Class 2 & Class 1 Medicals', amount: '₹15,000' },
   { component: 'DGCA Exams & Licensing fees', amount: '₹20,000' },
   { component: 'Simulator Sessions (A320 FBS)', amount: '₹10,000' },
@@ -159,10 +160,10 @@ export default function CPLPage() {
                 Dwarka, Delhi · 3–6 Months · ₹2,70,000
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
-                Commercial Pilot License Ground Classes in Delhi - DGCA Complied
+                Commercial Pilot License Ground Classes in Delhi - DGCA-compliant
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75', maxWidth: '100%' }}>
-                Airborne Aviation Academy offers a DGCA Complied Commercial Pilot License (CPL) Ground School in Dwarka, Delhi. The CPL Ground School covers DGCA theory subjects including RTR - taught personally by Capt. Navrang Singh. Structured concept-focused preparation for DGCA exams. Batches capped at 25 seats. ₹2,70,000.
+                Airborne Aviation Academy offers a DGCA-compliant Commercial Pilot License (CPL) Ground School in Dwarka, Delhi. The CPL Ground School covers DGCA theory subjects including RTR - taught personally by Capt. Navrang Singh. Structured concept-focused preparation for DGCA exams. Batches capped at 25 seats. ₹2,70,000.
               </p>
             </div>
 
@@ -210,7 +211,7 @@ export default function CPLPage() {
                       <div style={{ fontFamily: 'var(--font-h)', fontSize: '0.78rem', fontWeight: 700, color: isTotal ? 'rgba(255,255,255,0.7)' : 'rgba(0, 39, 76, 0.45)', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.04em' }}>
                         {row.component}
                       </div>
-                      <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.3rem', fontWeight: 800, color: isTotal ? '#ffffff' : 'var(--navy)' }}>
+                      <div style={{ fontFamily: 'var(--font-h)', fontSize: row.amount.length > 16 ? 'clamp(1rem, 2.5vw, 1.25rem)' : '1.3rem', fontWeight: 800, color: isTotal ? '#ffffff' : 'var(--navy)' }}>
                         {row.amount}
                       </div>
                     </div>
@@ -218,7 +219,7 @@ export default function CPLPage() {
                 })}
               </div>
               <p style={{ fontSize: '0.78rem', color: 'rgba(0, 39, 76, 0.45)', marginTop: '0.75rem', lineHeight: '1.5' }}>
-                Education loans available via SBI, Bank of Baroda, and PNB. Contact our admissions team for loan guidance.
+                Itemized components sum directly to the total estimated CPL investment of ₹55–65 lakh. Flying training costs vary based on aircraft type and partner FTO. Education loans available via SBI, Bank of Baroda, and PNB.
               </p>
             </div>
 
@@ -316,6 +317,11 @@ export default function CPLPage() {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Video Briefings & Shorts */}
+            <div className="course-section-divider">
+              <CourseVideoTabs slug="commercial-pilot-license-cpl" courseName="Commercial Pilot License (CPL)" />
             </div>
 
             {/* FAQ */}

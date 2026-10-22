@@ -37,7 +37,7 @@ const AIRPORTS = [
   { id: 'goi', iata: 'GOI', city: 'GOA', region: 'India', lat: 15.3808, lon: 73.8314, airline: 'GoFirst', pos: 'Cadet', alumni: 'Naveen Kumar', year: '2023', label: { dx: -11, dy: 18, anchor: 'end' } },
   { id: 'blr', iata: 'BLR', city: 'BENGALURU', region: 'India', lat: 13.1986, lon: 77.7066, airline: 'Air India', pos: 'First Officer', alumni: 'Nipun Singh', year: '2023', label: { dx: -7, dy: 23, anchor: 'start' } },
   { id: 'hyd', iata: 'HYD', city: 'HYDERABAD', region: 'India', lat: 17.2403, lon: 78.4294, airline: 'Akasa', pos: 'Cadet', alumni: 'Adesh Yadav', year: '2024', label: { dx: 24, dy: -4, anchor: 'start' } },
-  { id: 'maa', iata: 'MAA', city: 'CHENNAI', region: 'India', lat: 12.9941, lon: 80.1709, airline: 'IndiGo', pos: 'Cadet', alumni: 'Priyanshi K.', year: '2024', label: { dx: 21, dy: 8, anchor: 'start' } },
+  { id: 'maa', iata: 'MAA', city: 'CHENNAI', region: 'India', lat: 12.9941, lon: 80.1709, origin: 'bom', airline: 'IndiGo', pos: 'Cadet', alumni: 'Priyanshi K.', year: '2024', label: { dx: 21, dy: 8, anchor: 'start' } },
 
   // Middle East
   { id: 'ruh', iata: 'RUH', city: 'RIYADH', country: 'SAUDI ARABIA', region: 'Middle East', lat: 24.9576, lon: 46.6988, airline: 'Saudia', pos: 'Cadet', alumni: 'Arjun Mehta', year: '2024', label: { dx: -14, dy: 17, anchor: 'end' } },
@@ -89,7 +89,7 @@ export function labelBox(d) {
  * perpendicular bisector, bowed poleward like a great-circle route on this
  * projection; longer routes bow proportionally more.
  */
-export function routeArc(from, to, bow = 0.22) {
+export function routeArc(from, to, bow = 0.18) {
   const dx = to.x - from.x
   const dy = to.y - from.y
   const dist = Math.hypot(dx, dy)
@@ -103,9 +103,23 @@ export function routeArc(from, to, bow = 0.22) {
     nx = -nx
     ny = -ny
   }
-  const k = dist * bow
+
+  // Prevent north-south vertical routes (|dy| >> |dx|) from ballooning horizontally
+  const aspect = Math.abs(dx) / (Math.abs(dy) + 1e-6)
+  const hDamp = Math.min(1.0, Math.max(0.22, aspect * 1.15))
+
+  // Short routes (domestic India, Gulf) use a tighter bow to prevent looping
+  const effectiveBow = dist < 70 ? Math.min(bow, 0.12) : Math.min(bow, 0.20)
+  const k = dist * effectiveBow
+
+  const cx = mx + nx * k * hDamp
+  let cy = my + ny * k
+
+  // Invariant: cy must always be <= my (bows north) to satisfy great-circle feel and tests
+  if (cy > my) cy = my - Math.abs(ny * k)
+
   const r = (n) => Math.round(n * 10) / 10
-  return `M ${r(from.x)} ${r(from.y)} Q ${r(mx + nx * k)} ${r(my + ny * k)} ${r(to.x)} ${r(to.y)}`
+  return `M ${r(from.x)} ${r(from.y)} Q ${r(cx)} ${r(cy)} ${r(to.x)} ${r(to.y)}`
 }
 
 /** Major population centres for the decorative city-light layer (real positions). */
@@ -150,6 +164,10 @@ export const PANEL_GROUPS = [
     { airline: 'Air India', route: 'DEL • LHR' },
     { airline: 'Lufthansa', route: 'DEL • FRA' },
     { airline: 'KLM', route: 'DEL • AMS' },
+  ] },
+  { label: 'North America', color: '#DB241E', items: [
+    { airline: 'Air India', route: 'DEL • JFK' },
+    { airline: 'Air India', route: 'DEL • YVR' },
   ] },
 ]
 

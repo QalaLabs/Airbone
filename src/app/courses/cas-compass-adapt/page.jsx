@@ -8,9 +8,10 @@ import CourseReviews from '@/components/CourseReviews'
 import JsonLd from '@/components/JsonLd'
 import { buildCoursePageGraph } from '@/lib/schema'
 import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
+import CourseVideoTabs from '@/components/CourseVideoTabs'
 
 export const metadata = {
-  title: 'CASS Compass & ADAPT Test Preparation | Pilot Aptitude | Airborne',
+  title: 'CASS Compass & ADAPT Test Prep | Airborne Aviation',
   description: 'Prepare for DGCA CASS Compass and ADAPT pilot aptitude screening tests at Airborne Aviation Academy, Dwarka. Structured preparation for cadet pilot selection.',
   alternates: { canonical: '/courses/cas-compass-adapt' },
 }
@@ -111,6 +112,11 @@ export default function CASCompassAdaptPage() {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Video Briefings & Shorts */}
+            <div className="course-section-divider">
+              <CourseVideoTabs slug="cas-compass-adapt" courseName="CASS Compass & ADAPT Test Prep" />
             </div>
 
             <div className="course-section-divider">

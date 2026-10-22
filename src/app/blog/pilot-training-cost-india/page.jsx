@@ -169,7 +169,7 @@ export default function PilotTrainingCostIndiaPage() {
                 <thead>
                   <tr>
                     <th style={{ padding: '1rem 1.25rem' }}>Factor</th>
-                    <th style={{ padding: '1rem 1.25rem' }}>India (DGCA-Approved FTO)</th>
+                    <th style={{ padding: '1rem 1.25rem' }}>India (DGCA-compliant FTO)</th>
                     <th style={{ padding: '1rem 1.25rem' }}>Abroad</th>
                   </tr>
                 </thead>

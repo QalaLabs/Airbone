@@ -48,22 +48,23 @@ export default function DashboardPage() {
   });
 
   const STAT_CARDS = [
-    { title: "Today's Leads", value: String(stats?.leadsToday ?? 0), icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
-    { title: "This Week", value: String(stats?.leadsThisWeek ?? 0), icon: Calendar, color: "text-indigo-500", bg: "bg-indigo-500/10" },
-    { title: "Monthly Leads", value: String(stats?.leadsThisMonth ?? 0), icon: TrendingUp, color: "text-purple-500", bg: "bg-purple-500/10" },
-    { title: "Admissions", value: String(stats?.admissionsCount ?? 0), icon: GraduationCap, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+    { title: "Today's Leads", value: String(stats?.leadsToday ?? 0), icon: Users, color: "text-blue-500", bg: "bg-blue-500/10", href: "/leads?filter=today" },
+    { title: "This Week", value: String(stats?.leadsThisWeek ?? 0), icon: Calendar, color: "text-indigo-500", bg: "bg-indigo-500/10", href: "/leads?filter=week" },
+    { title: "Monthly Leads", value: String(stats?.leadsThisMonth ?? 0), icon: TrendingUp, color: "text-purple-500", bg: "bg-purple-500/10", href: "/leads?filter=month" },
+    { title: "Admissions", value: String(stats?.admissionsCount ?? 0), icon: GraduationCap, color: "text-emerald-500", bg: "bg-emerald-500/10", href: "/admissions" },
     {
       title: "Revenue (recorded)",
       value: stats ? `₹${(Number(stats.revenue) / 100000).toFixed(1)}L` : "₹0.0L",
       icon: DollarSign,
       color: "text-amber-500",
       bg: "bg-amber-500/10",
+      href: "/payments",
     },
-    { title: "Pending Follow-ups", value: String(stats?.leadsFollowUp ?? 0), icon: Clock, color: "text-rose-500", bg: "bg-rose-500/10" },
-    { title: "Students", value: String(stats?.studentsCount ?? 0), icon: Users, color: "text-teal-500", bg: "bg-teal-500/10" },
-    { title: "Active Counsellors", value: String(stats?.activeCounsellors ?? 0), icon: UserCheck, color: "text-cyan-500", bg: "bg-cyan-500/10" },
-    { title: "Placements logged", value: String(stats?.placementsCount ?? 0), icon: Briefcase, color: "text-sky-500", bg: "bg-sky-500/10" },
-    { title: "Total Leads", value: String(stats?.leadsCount ?? 0), icon: Activity, color: "text-violet-500", bg: "bg-violet-500/10" },
+    { title: "Pending Follow-ups", value: String(stats?.leadsFollowUp ?? 0), icon: Clock, color: "text-rose-500", bg: "bg-rose-500/10", href: "/leads?status=FOLLOW_UP" },
+    { title: "Students", value: String(stats?.studentsCount ?? 0), icon: Users, color: "text-teal-500", bg: "bg-teal-500/10", href: "/students" },
+    { title: "Active Counsellors", value: String(stats?.activeCounsellors ?? 0), icon: UserCheck, color: "text-cyan-500", bg: "bg-cyan-500/10", href: "/users" },
+    { title: "Placements logged", value: String(stats?.placementsCount ?? 0), icon: Briefcase, color: "text-sky-500", bg: "bg-sky-500/10", href: "/placements" },
+    { title: "Total Leads", value: String(stats?.leadsCount ?? 0), icon: Activity, color: "text-violet-500", bg: "bg-violet-500/10", href: "/leads" },
   ];
 
   const recentLeads = leads ?? [];
@@ -95,29 +96,30 @@ export default function DashboardPage() {
         {STAT_CARDS.map((stat, idx) => {
           const Icon = stat.icon;
           return (
-            <motion.div
-              key={stat.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: idx * 0.03 }}
-              className="glass-card rounded-2xl p-5 flex flex-col justify-between group"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-muted-foreground group-hover:text-foreground transition-colors truncate pr-2">
-                  {stat.title}
-                </span>
-                <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${stat.bg} ${stat.color} shrink-0`}>
-                  <Icon className="h-4 w-4" />
+            <Link key={stat.title} href={stat.href} className="block group">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: idx * 0.03 }}
+                className="glass-card rounded-2xl p-5 flex flex-col justify-between h-full border border-white/5 transition-all group-hover:border-primary/40 group-hover:bg-white/[0.07] group-hover:-translate-y-0.5"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-muted-foreground group-hover:text-foreground transition-colors truncate pr-2">
+                    {stat.title}
+                  </span>
+                  <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${stat.bg} ${stat.color} shrink-0`}>
+                    <Icon className="h-4 w-4" />
+                  </div>
                 </div>
-              </div>
-              <div className="mt-4">
-                {statsLoading ? (
-                  <Skeleton className="h-8 w-20" />
-                ) : (
-                  <div className="text-2xl font-bold text-white tracking-tight">{stat.value}</div>
-                )}
-              </div>
-            </motion.div>
+                <div className="mt-4">
+                  {statsLoading ? (
+                    <Skeleton className="h-8 w-20" />
+                  ) : (
+                    <div className="text-2xl font-bold text-white tracking-tight">{stat.value}</div>
+                  )}
+                </div>
+              </motion.div>
+            </Link>
           );
         })}
       </div>

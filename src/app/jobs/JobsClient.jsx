@@ -37,6 +37,13 @@ function getStatus(closesAt) {
 // Map DB job to display shape expected by UI
 function mapJob(j) {
   const meta = j.metadata ?? {}
+  const isGuidance = Boolean(
+    meta.isGuidance ||
+    meta.isGuidanceTrack ||
+    meta.trackType === 'guidance' ||
+    j.jobType === 'GUIDANCE' ||
+    String(meta.type ?? j.jobType ?? '').toLowerCase().includes('guidance')
+  )
   return {
     id: j.id,
     slug: j.slug,
@@ -56,6 +63,7 @@ function mapJob(j) {
     salaryMax: j.salaryMax,
     currency: j.currency,
     publishedAt: j.publishedAt ?? null,
+    isGuidance,
   }
 }
 
@@ -185,7 +193,7 @@ export default function JobsClient() {
         {/* ====== FEATURED RECRUITMENT ====== */}
         {!loading && !error && featuredJob && (
           <article className="jobs-featured" data-testid="featured-job">
-            <div className="cpl-badge-ribbon">Now Hiring</div>
+            {!featuredJob.isGuidance && <div className="cpl-badge-ribbon">Now Hiring</div>}
 
             <div style={{ minWidth: 0 }}>
               <div className="jobs-airline">
@@ -202,19 +210,30 @@ export default function JobsClient() {
               <div className="jobs-facts">
                 <Fact label="Location" value={featuredJob.location} />
                 <Fact label="Experience" value={featuredJob.experience} />
-                <Fact label="Employment Type" value={featuredJob.type} />
+                {!featuredJob.isGuidance && <Fact label="Employment Type" value={featuredJob.type} />}
               </div>
 
               <div className="jobs-cta-row">
-                {hasSalary(featuredJob) && (
+                {!featuredJob.isGuidance && hasSalary(featuredJob) && (
                   <div>
                     <span className="jobs-salary-label">Compensation</span>
                     <span className="jobs-salary">{featuredJob.salary}</span>
                   </div>
                 )}
-                <button type="button" onClick={() => setActiveJob(featuredJob)} className="btn btn-primary">
-                  View Details &amp; Apply →
-                </button>
+                {featuredJob.isGuidance && featuredJob.externalApplyUrl ? (
+                  <a
+                    href={featuredJob.externalApplyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-primary"
+                  >
+                    Apply on Official Airline Careers →
+                  </a>
+                ) : (
+                  <button type="button" onClick={() => setActiveJob(featuredJob)} className="btn btn-primary">
+                    {featuredJob.isGuidance ? "View Guidance Details →" : "View Details & Apply →"}
+                  </button>
+                )}
               </div>
             </div>
 
@@ -312,7 +331,7 @@ export default function JobsClient() {
                       </div>
                     </div>
 
-                    <p className="jobs-card-meta">📍 {job.location} · {job.type}</p>
+                    <p className="jobs-card-meta">📍 {job.location}{!job.isGuidance && ` · ${job.type}`}</p>
                     <p className="jobs-card-meta"><strong>Experience:</strong> {job.experience}</p>
                     {job.eligibility && (
                       <p className="jobs-card-meta">
@@ -323,15 +342,27 @@ export default function JobsClient() {
                   </div>
 
                   <div>
-                    {hasSalary(job) && (
+                    {!job.isGuidance && hasSalary(job) && (
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '1rem', borderTop: '1px solid rgba(0,39,76,0.1)', paddingTop: '1rem', marginBottom: '1rem' }}>
                         <span className="jobs-salary-label" style={{ margin: 0 }}>Compensation</span>
                         <span style={{ fontFamily: 'var(--font-h)', fontSize: '0.95rem', fontWeight: 800, color: 'var(--navy)', textAlign: 'right' }}>{job.salary}</span>
                       </div>
                     )}
-                    <button type="button" onClick={() => setActiveJob(job)} className="jobs-btn-secondary" style={{ width: '100%' }}>
-                      View Details →
-                    </button>
+                    {job.isGuidance && job.externalApplyUrl ? (
+                      <a
+                        href={job.externalApplyUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="jobs-btn-secondary"
+                        style={{ width: '100%', textAlign: 'center', textDecoration: 'none', display: 'block' }}
+                      >
+                        Apply on Official Airline Careers →
+                      </a>
+                    ) : (
+                      <button type="button" onClick={() => setActiveJob(job)} className="jobs-btn-secondary" style={{ width: '100%' }}>
+                        {job.isGuidance ? "View Guidance Details →" : "View Details →"}
+                      </button>
+                    )}
                   </div>
                 </article>
               )
@@ -381,10 +412,10 @@ export default function JobsClient() {
               )}
 
               <div className="jobs-modal-facts">
-                {hasSalary(activeJob) && <Fact label="Compensation" value={activeJob.salary} />}
+                {!activeJob.isGuidance && hasSalary(activeJob) && <Fact label="Compensation" value={activeJob.salary} />}
                 <Fact label="Experience" value={activeJob.experience} />
                 <Fact label="Location" value={activeJob.location} />
-                <Fact label="Employment Type" value={activeJob.type} />
+                {!activeJob.isGuidance && <Fact label="Employment Type" value={activeJob.type} />}
                 {activeJob.closesAt && <Fact label="Last Date" value={formatDate(activeJob.closesAt)} />}
               </div>
 
@@ -396,7 +427,7 @@ export default function JobsClient() {
                     rel="noopener noreferrer"
                     className="btn btn-primary"
                   >
-                    Apply on Partner Site →
+                    {activeJob.isGuidance ? "Apply on Official Airline Careers →" : "Apply on Partner Site →"}
                   </a>
                 ) : (
                   <button

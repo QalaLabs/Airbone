@@ -1,30 +1,21 @@
-'use client'
+﻿'use client'
+
+import GoogleReviewsWidget from '@/components/GoogleReviewsWidget'
 
 import { useState, useCallback, useEffect } from 'react'
 import { triggerToast } from '@/components/Toast'
 import useFormValidation from '@/hooks/useFormValidation'
-import { validateName, validatePhone, validateEmailRequired, validatePincode, validateRequired } from '@/utils/validation'
+import { validateName, validatePhone, validateEmail, validatePincode, validateRequired } from '@/utils/validation'
 import FormField from '@/components/FormField'
 import SubmitButton from '@/components/SubmitButton'
 import Honeypot from '@/components/Honeypot'
 import { WHATSAPP_HREF } from '@/lib/whatsapp'
 import { HONEYPOT_FIELD, readHoneypot } from '@/utils/honeypot'
+import { CANONICAL_COURSE_OPTIONS } from '@/lib/publicCourses'
 
-const validators = { name: validateName, phone: validatePhone, email: validateEmailRequired, pincode: validatePincode, course: validateRequired }
+const validators = { name: validateName, phone: validatePhone, email: validateEmail, pincode: validatePincode, course: validateRequired }
 
-const COURSES = [
-  'DGCA CPL Ground Classes (₹2,70,000)',
-  'Commercial Pilot License (CPL)',
-  'Cadet Preparation (₹50,000)',
-  'Airline Preparation (₹1,25,000)',
-  'GD & PI Course (₹30,000)',
-  'CASS Compass Adapt (₹30,000)',
-  'ATPL Ground School (₹1,50,000)',
-  'Airbus A320 Simulator FBS (₹10,000)',
-  "Securing Your Child's Future in Aviation",
-  'Cabin Crew Training (₹54,000)',
-  'Private Pilot License (PPL)',
-]
+const COURSES = CANONICAL_COURSE_OPTIONS
 
 const ELIGIBILITY_RESULT = {
   eligible: { title: '✓ You meet the listed criteria for this course', tone: '#25D366' },
@@ -60,7 +51,7 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
   const [answers, setAnswers] = useState({})
   const [eligibilityResult, setEligibilityResult] = useState(null)
   const { values, errors, touched, handleChange, handleBlur, validate } = useFormValidation(
-    { name: '', phone: '', email: '', pincode: '', course: courseName || COURSES[0] },
+    { name: '', phone: '', email: '', pincode: '', course: courseName || COURSES[0], persona: 'Student' },
     validators
   )
   const eligibility = useCourseEligibility(values.course)
@@ -93,6 +84,8 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...values,
+          persona: values.persona || 'Student',
+          message: `Applicant: ${values.persona || 'Student'}`,
           [HONEYPOT_FIELD]: hp,
           source,
           utm_source,
@@ -106,7 +99,7 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
         })
       })
       if (res.ok || res.status === 409) {
-        // 409 = this phone already has an enquiry on file — not a failure for
+        // 409 = this phone already has an enquiry on file Ã¢â‚¬â€ not a failure for
         // the visitor, the admin API already has their details.
         const data = await res.json().catch(() => ({}))
         setEligibilityResult(data?.eligibility ?? null)
@@ -136,8 +129,8 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
           {confirmationText}
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
-          <a href="tel:+919953777320" className="btn btn-outline" style={{ textDecoration: 'none', fontSize: '0.75rem', padding: '0.6rem 1rem' }}>📞 Call Us</a>
-          <a href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ textDecoration: 'none', fontSize: '0.75rem', padding: '0.6rem 1rem', borderColor: '#25D366', color: '#25D366' }}>💬 WhatsApp</a>
+          <a href="tel:+919953777320" className="btn btn-outline" style={{ textDecoration: 'none', fontSize: '0.75rem', padding: '0.6rem 1rem' }}>Call Us</a>
+          <a href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ textDecoration: 'none', fontSize: '0.75rem', padding: '0.6rem 1rem', borderColor: '#25D366', color: '#25D366' }}>WhatsApp</a>
           <a href="/courses" className="btn btn-primary" style={{ textDecoration: 'none', fontSize: '0.75rem', padding: '0.6rem 1rem' }}>Explore Courses →</a>
         </div>
         {eligibilityResult && ELIGIBILITY_RESULT[eligibilityResult.result] ? (
@@ -145,7 +138,7 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
             <p style={{ fontWeight: 800, fontSize: '0.85rem', color: ELIGIBILITY_RESULT[eligibilityResult.result].tone, marginBottom: '0.4rem' }}>
               {ELIGIBILITY_RESULT[eligibilityResult.result].title}
             </p>
-            <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)' }}>Advisory only — a counsellor makes the final eligibility assessment.</p>
+            <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)' }}>Advisory only Ã¢â‚¬â€ a counsellor makes the final eligibility assessment.</p>
           </div>
         ) : null}
       </div>
@@ -162,10 +155,48 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
         Upcoming batches are capped at 25 students. Provide details to receive syllabus PDF.
       </p>
 
-      <FormField id="lead-name" type="text" placeholder="Full Name" dark value={values.name} onChange={(v) => handleChange('name', v)} onBlur={() => handleBlur('name')} error={touched.name ? errors.name : null} required />
-      <FormField id="lead-phone" type="tel" placeholder="Contact Number (e.g. +91...)" dark value={values.phone} onChange={(v) => handleChange('phone', v)} onBlur={() => handleBlur('phone')} error={touched.phone ? errors.phone : null} required maxLength={10} />
-      <FormField id="lead-email" type="email" placeholder="Email Address" dark value={values.email} onChange={(v) => handleChange('email', v)} onBlur={() => handleBlur('email')} error={touched.email ? errors.email : null} required />
-      <FormField id="lead-pincode" type="text" placeholder="PIN Code / Zip Code" dark value={values.pincode} onChange={(v) => handleChange('pincode', v)} onBlur={() => handleBlur('pincode')} error={touched.pincode ? errors.pincode : null} required maxLength={6} />
+      {/* Student / Parent selector */}
+      <div style={{ marginBottom: '1.1rem' }}>
+        <label style={{ display: 'block', fontSize: '0.72rem', color: 'rgba(255,255,255,0.7)', marginBottom: '0.45rem', fontFamily: 'var(--font-h)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+          I am a: *
+        </label>
+        <div role="radiogroup" aria-label="I am a" style={{ display: 'flex', gap: '0.5rem' }}>
+          {['Student', 'Parent'].map((opt) => {
+            const selected = (values.persona || 'Student') === opt
+            return (
+              <button
+                key={opt}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                onClick={() => handleChange('persona', opt)}
+                style={{
+                  flex: 1,
+                  padding: '0.5rem 1rem',
+                  borderRadius: '2px',
+                  cursor: 'pointer',
+                  fontWeight: 800,
+                  fontFamily: 'var(--font-h)',
+                  fontSize: '0.72rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                  border: selected ? '1px solid #D8A027' : '1px solid rgba(255,255,255,0.15)',
+                  background: selected ? 'rgba(216,160,39,0.2)' : 'transparent',
+                  color: selected ? '#D8A027' : 'rgba(255,255,255,0.6)',
+                  transition: 'all 0.2s',
+                }}
+              >
+                {opt}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      <FormField id="lead-name" type="text" placeholder="Full Name *" dark value={values.name} onChange={(v) => handleChange('name', v)} onBlur={() => handleBlur('name')} error={touched.name ? errors.name : null} required />
+      <FormField id="lead-phone" type="tel" placeholder="Contact Number (10 digits) *" dark value={values.phone} onChange={(v) => handleChange('phone', v)} onBlur={() => handleBlur('phone')} error={touched.phone ? errors.phone : null} required maxLength={10} />
+      <FormField id="lead-email" type="email" placeholder="Email Address (Optional)" dark value={values.email} onChange={(v) => handleChange('email', v)} onBlur={() => handleBlur('email')} error={touched.email ? errors.email : null} />
+      <FormField id="lead-pincode" type="text" placeholder="PIN Code / Zip Code *" dark value={values.pincode} onChange={(v) => handleChange('pincode', v)} onBlur={() => handleBlur('pincode')} error={touched.pincode ? errors.pincode : null} required maxLength={6} />
 
       <FormField id="lead-course" as="select" dark value={values.course} onChange={changeCourse} error={touched.course ? errors.course : null} required>
         {COURSES.map((c) => (
@@ -182,7 +213,7 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
             Eligibility check (optional)
           </legend>
           <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', margin: '0 0 0.75rem', lineHeight: 1.5 }}>
-            Questions for the selected course. Advisory only — never blocks your enquiry.
+            Questions for the selected course. Advisory only Ã¢â‚¬â€ never blocks your enquiry.
           </p>
           {eligibility.questions.map((q) => (
             <div key={q.key} data-testid="eligibility-question" data-key={q.key} style={{ marginBottom: '0.75rem' }}>
@@ -230,6 +261,7 @@ export default function LeadForm({ courseName = '', source = 'Dynamic Page Form'
       >
         Apply For Registration →
       </SubmitButton>
+      <GoogleReviewsWidget />
     </form>
   )
 }

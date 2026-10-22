@@ -8,6 +8,7 @@ import { fetchPublic, fetchPublicWithStatus } from '@/lib/adminApi'
 import { displayCourseFee, courseFeeNumeric } from '@/lib/courseFees'
 import JsonLd from '@/components/JsonLd'
 import { buildCoursePageGraph } from '@/lib/schema'
+import CourseVideoTabs from '@/components/CourseVideoTabs'
 
 export const revalidate = 60
 
@@ -158,6 +159,11 @@ export default async function CourseDetailPage({ params }) {
                 </ul>
               </div>
             )}
+
+            {/* Video Briefings & Shorts */}
+            <div className="course-section-divider">
+              <CourseVideoTabs slug={slug} courseName={course.title} />
+            </div>
 
             {/* Requirements intentionally omitted from public course pages (client feedback L5) */}
           </div>

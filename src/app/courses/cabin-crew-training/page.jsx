@@ -4,13 +4,14 @@ import Footer from '@/components/Footer'
 import LeadForm from '@/components/LeadForm'
 
 import CoursePageFooter from '@/components/CoursePageFooter'
-import CabinCrewStarterKit from '@/components/CabinCrewStarterKit'
 import JsonLd from '@/components/JsonLd'
 import { buildCoursePageGraph } from '@/lib/schema'
 import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
 import { fetchPublic } from '@/lib/adminApi'
 import { displayCourseFee, courseFeeNumeric } from '@/lib/courseFees'
 import CabinCrewEligibilityQuiz from '@/components/CabinCrewEligibilityQuiz'
+import CabinCrewStarterKitTeaser from '@/components/CabinCrewStarterKitTeaser'
+import CourseVideoTabs from '@/components/CourseVideoTabs'
 
 export const revalidate = 60
 
@@ -21,16 +22,16 @@ const OFFLINE_FEE_FALLBACK = '₹54,000' // matches canonical Admin seed; resili
 
 export const metadata = {
   title: 'Cabin Crew Training Delhi | Scholarship Available | Airborne',
-  description: 'Launch your cabin crew career with Airborne\'s 3-module certified training in Delhi. Batch 1 scholarship available. Grooming, safety & airline placement. Pre-register.',
+  description: 'Launch your cabin crew career with Airborne in Delhi. DGCA-compliant training, Batch 1 scholarship, grooming, safety & airline placement. Pre-register.',
   alternates: { canonical: '/courses/cabin-crew-training' },
   openGraph: {
     title: 'Cabin Crew Training Delhi | Scholarship Available | Airborne',
-    description: 'Launch your cabin crew career with Airborne\'s 3-module certified training in Delhi. Batch 1 scholarship available. Grooming, safety & airline placement. Pre-register.',
+    description: 'Launch your cabin crew career with Airborne in Delhi. DGCA-compliant training, Batch 1 scholarship, grooming, safety & airline placement. Pre-register.',
     url: 'https://www.airborneaviation.in/courses/cabin-crew-training',
   },
   twitter: {
     title: 'Cabin Crew Training Delhi | Scholarship Available | Airborne',
-    description: 'Launch your cabin crew career with Airborne\'s 3-module certified training in Delhi. Batch 1 scholarship available. Grooming, safety & airline placement. Pre-register.',
+    description: 'Launch your cabin crew career with Airborne in Delhi. DGCA-compliant training, Batch 1 scholarship, grooming, safety & airline placement. Pre-register.',
   },
 }
 
@@ -64,6 +65,9 @@ const PATHWAYS = [
     duration: '3 Months',
     classTime: '90 Minutes',
     best: 'Near-selection candidates needing final polish',
+    regularPrice: '₹54,000',
+    scholarshipText: '100%* (score ≥70%)',
+    scholarshipPrice: '₹0 (for scholarship winners)',
     focus: ['Final grooming polish', 'Professional presence', 'Service behaviour refinement', 'GD and PI readiness', 'Interview finishing support'],
   },
   {
@@ -72,6 +76,9 @@ const PATHWAYS = [
     duration: '3 Months',
     classTime: '90 Minutes',
     best: 'Candidates with communication or confidence gaps',
+    regularPrice: '₹30,000',
+    scholarshipText: '100%* (score ≥70%)',
+    scholarshipPrice: '₹30,000 (for scholarship winners)',
     focus: ['Spoken communication improvement', 'GD practice', 'PI preparation', 'Personality development', 'Confidence building'],
   },
   {
@@ -80,6 +87,9 @@ const PATHWAYS = [
     duration: '6 Months',
     classTime: '90 Minutes',
     best: 'Beginners needing complete foundation',
+    regularPrice: '₹30,000',
+    scholarshipText: '100%* (score ≥70%)',
+    scholarshipPrice: '₹54,000 (for scholarship winners)',
     focus: ['Communication foundation', 'Hospitality standards', 'Grooming basics', 'Professional readiness', 'Zero-to-selection journey'],
   },
 ]
@@ -214,26 +224,43 @@ export default async function CabinCrewTrainingPage() {
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 {PATHWAYS.map((p, i) => (
-                  <div key={i} style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', borderLeft: '3px solid var(--navy)', padding: '2rem', borderRadius: '4px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '1.5rem' }}>
+                  <div key={i} style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', borderLeft: '4px solid var(--navy)', padding: '2rem', borderRadius: '6px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '1.25rem' }}>
                     <div>
-                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '1.25rem' }}>
-                        <div style={{ flexShrink: 0, width: '2.5rem', height: '2.5rem', borderRadius: '50%', background: '#DB241E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 800, color: '#ffffff' }}>{p.num}</div>
-                        <div>
-                          <div style={{ fontFamily: 'var(--font-h)', fontSize: '1rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{p.title}</div>
-                          <div style={{ fontSize: '0.78rem', color: 'rgba(0, 39, 76, 0.45)', marginTop: '0.2rem' }}>{p.duration} · {p.classTime} daily · Best for: {p.best}</div>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.25rem', marginBottom: '1.25rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', minWidth: 'min(100%, 280px)', flex: '1 1 300px' }}>
+                          <div style={{ flexShrink: 0, width: '2.5rem', height: '2.5rem', borderRadius: '50%', background: '#DB241E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-h)', fontSize: '1.1rem', fontWeight: 800, color: '#ffffff' }}>{p.num}</div>
+                          <div>
+                            <div style={{ fontFamily: 'var(--font-h)', fontSize: '1.05rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.04em', lineHeight: '1.3' }}>{p.title}</div>
+                            <div style={{ fontSize: '0.8rem', color: 'rgba(0, 39, 76, 0.5)', marginTop: '0.35rem', lineHeight: '1.5' }}>⏱️ {p.duration} · {p.classTime} daily · <span style={{ color: 'rgba(0, 39, 76, 0.7)', fontWeight: 600 }}>Best for:</span> {p.best}</div>
+                          </div>
+                        </div>
+
+                        {/* Pricing & Batch 1 Scholarship Block */}
+                        <div style={{ background: 'rgba(0, 39, 76, 0.02)', border: '1px solid rgba(0, 39, 76, 0.08)', borderRadius: '6px', padding: '0.85rem 1.25rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.35rem', minWidth: '220px', alignSelf: 'flex-start' }}>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                            <span style={{ fontSize: '0.72rem', color: 'rgba(0, 39, 76, 0.55)', textTransform: 'uppercase', fontFamily: 'var(--font-h)', letterSpacing: '0.06em', fontWeight: 700 }}>Regular Price</span>
+                            <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 900, color: 'var(--navy)' }}>{p.regularPrice}</span>
+                          </div>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(219, 36, 30, 0.08)', border: '1px solid rgba(219, 36, 30, 0.25)', borderRadius: '4px', padding: '0.2rem 0.5rem', fontSize: '0.72rem', fontFamily: 'var(--font-h)', color: '#DB241E', fontWeight: 700 }}>
+                            <span>Batch 1 Scholarship:</span>
+                            <span style={{ fontWeight: 800 }}>{p.scholarshipText}</span>
+                          </div>
+                          <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#16a34a', fontFamily: 'var(--font-h)', letterSpacing: '0.02em', marginTop: '0.1rem' }}>
+                            {p.scholarshipPrice}
+                          </div>
                         </div>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid rgba(0, 39, 76, 0.05)' }}>
                       {p.focus.map((f, j) => (
-                        <span key={j} style={{ fontSize: '0.72rem', color: 'rgba(0, 39, 76, 0.65)', background: 'rgba(0, 39, 76, 0.04)', border: '1px solid rgba(0, 39, 76, 0.08)', borderRadius: '2px', padding: '0.25rem 0.6rem' }}>{f}</span>
+                        <span key={j} style={{ fontSize: '0.74rem', color: 'rgba(0, 39, 76, 0.75)', background: 'rgba(0, 39, 76, 0.04)', border: '1px solid rgba(0, 39, 76, 0.08)', borderRadius: '4px', padding: '0.3rem 0.65rem', fontWeight: 500 }}>{f}</span>
                       ))}
                     </div>
                   </div>
                 ))}
               </div>
               <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.9rem', color: 'rgba(0, 39, 76, 0.65)', lineHeight: '1.6' }}>
-                Every pathway is covered under the program tuition of <strong style={{ color: 'var(--navy)' }}>{feeLabel}</strong>. A 100%* scholarship is available upon scoring ≥70% on the eligibility assessment. <em>*Terms apply — batch scholarship conditions explained at counselling.</em>
+                Regular pathway tuition ranges from <strong style={{ color: 'var(--navy)' }}>₹30,000</strong> to <strong style={{ color: 'var(--navy)' }}>₹54,000</strong>. A <strong>Batch 1 Scholarship of 100%*</strong> is available upon scoring ≥70% on the eligibility assessment. <em>*Terms apply — batch scholarship conditions explained at counselling.</em>
               </div>
               <div style={{ marginTop: '3rem', textAlign: 'center' }}>
                 <a 
@@ -356,6 +383,11 @@ export default async function CabinCrewTrainingPage() {
               </div>
             </div>
 
+            {/* Video Briefings & Shorts */}
+            <div className="course-section-divider">
+              <CourseVideoTabs slug="cabin-crew-training" courseName="Cabin Crew Training" />
+            </div>
+
             {/* FAQ */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
@@ -392,7 +424,9 @@ export default async function CabinCrewTrainingPage() {
           </div>
 
         </div>
-        <CabinCrewStarterKit />
+
+        <CabinCrewStarterKitTeaser />
+
         <CoursePageFooter
           whatsappText="Hi, I'm interested in the Cabin Crew Training program at Airborne Aviation Academy, Dwarka. Please share batch details and fee structure."
           relatedCourses={[

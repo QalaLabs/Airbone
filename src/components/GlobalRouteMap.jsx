@@ -112,7 +112,7 @@ function useCounter(rawValue, active) {
   const str    = String(rawValue)
   const num    = parseInt(str.replace(/\D/g, ''))
   const suffix = str.replace(/\d/g, '')
-  const [display, setDisplay] = useState(0)
+  const [display, setDisplay] = useState(num || 0)
   useEffect(() => {
     if (!active || isNaN(num)) return
     let raf
@@ -406,8 +406,10 @@ export default function GlobalRouteMap() {
             {DESTINATIONS.map((d, i) => {
               const r    = REGION[d.region]
               const gid  = d.region === 'India' ? 'g2-india' : d.region === 'Middle East' ? 'g2-me' : d.region === 'SE Asia' ? 'g2-sea' : d.region === 'Europe' ? 'g2-eu' : 'g2-na'
-              const path = routeArc(HUB, d, d.region === 'India' ? 0.32 : 0.2)
-              const dim  = hovered !== null && hovered !== i
+              const originPoint = d.origin ? (DESTINATIONS.find(a => a.id === d.origin) || HUB) : HUB
+              const path = routeArc(originPoint, d, d.region === 'India' ? 0.12 : 0.18)
+              const isIndigoPair = hovered !== null && ((d.id === 'bom' && DESTINATIONS[hovered]?.id === 'maa') || (d.id === 'maa' && DESTINATIONS[hovered]?.id === 'bom'))
+              const dim  = hovered !== null && hovered !== i && !isIndigoPair
               const lx   = d.x + d.label.dx
               const ly   = d.y + d.label.dy
               const callout = Math.abs(d.label.dx) > 12 || Math.abs(d.label.dy) > 8
@@ -624,11 +626,13 @@ export default function GlobalRouteMap() {
                 
                 {group.items.map((item, ii) => {
                   const prevCount = PANEL_GROUPS.slice(0,gi).reduce((a,g)=>a+g.items.length,0)+ii
+                  const targetCode = item.route.split('•').map(s => s.trim()).filter(c => c !== 'DEL')[0]
+                  const targetIdx = DESTINATIONS.findIndex(d => d.iata === targetCode)
                   return (
-                    <motion.div key={item.airline} initial={{ opacity:0, x:-8 }} animate={inView?{opacity:1,x:0}:{}} transition={{ delay:0.5+prevCount*0.03, duration:0.4 }}
-                      style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0.2rem 0.4rem', borderRadius:'4px', transition:'background 0.2s' }}
-                      onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,0.03)'}
-                      onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                    <motion.div key={`${group.label}-${item.airline}-${item.route}`} initial={{ opacity:0, x:-8 }} animate={inView?{opacity:1,x:0}:{}} transition={{ delay:0.5+prevCount*0.03, duration:0.4 }}
+                      style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0.2rem 0.4rem', borderRadius:'4px', cursor:'pointer', transition:'background 0.2s' }}
+                      onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.06)'; if(targetIdx >= 0) setHovered(targetIdx); }}
+                      onMouseLeave={e=>{ e.currentTarget.style.background='transparent'; if(pinned === null) setHovered(null); }}>
                       <span style={{ fontFamily:'var(--font-h)', fontSize:'0.75rem', fontWeight:600, color:'rgba(255,255,255,0.85)' }}>{item.airline}</span>
                       <span style={{ fontFamily:'var(--font-h)', fontSize:'0.56rem', letterSpacing:'0.06em', color:'rgba(255,255,255,0.3)' }}>{item.route}</span>
                     </motion.div>
@@ -649,7 +653,7 @@ export default function GlobalRouteMap() {
               <div style={{ fontFamily:'var(--font-h)', fontSize:'0.58rem', color:'rgba(255,255,255,0.4)', letterSpacing:'0.04em' }}>Ramphal Chowk · Dwarka · Delhi · India</div>
 
               <div style={{ marginTop:'0.5rem', display:'flex', gap:'0.35rem', flexWrap:'wrap' }}>
-                {['50+ Airlines','50+ Countries','DGCA Complied'].map(tag=>(
+                {['50+ Airlines','50+ Countries','DGCA-compliant'].map(tag=>(
                   <span key={tag} style={{ fontFamily:'var(--font-h)', fontSize:'0.48rem', fontWeight:800, letterSpacing:'0.08em', textTransform:'uppercase', color:'rgba(216,160,39,0.75)', padding:'0.15rem 0.4rem', border:'1px solid rgba(216,160,39,0.15)', borderRadius:'999px' }}>{tag}</span>
                 ))}
               </div>

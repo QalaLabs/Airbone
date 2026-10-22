@@ -8,6 +8,7 @@ import CourseReviews from '@/components/CourseReviews'
 import JsonLd from '@/components/JsonLd'
 import { buildCoursePageGraph } from '@/lib/schema'
 import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
+import CourseVideoTabs from '@/components/CourseVideoTabs'
 import { fetchPublic } from '@/lib/adminApi'
 import { displayCourseFee, courseFeeNumeric } from '@/lib/courseFees'
 
@@ -19,14 +20,14 @@ export const revalidate = 60
 
 export const metadata = {
   title: 'Airbus A320 Simulator Training Delhi | Airborne Aviation',
-  description: 'A320 simulator at Airborne Aviation Academy, Dwarka - structured aviation training since 2009. Airline interview prep, type rating familiarisation, cadet selection practice. Book a session today.',
+  description: 'A320 simulator training at Airborne, Dwarka. Airline interview prep, type rating familiarisation & cadet selection practice. Book a session today.',
   alternates: { canonical: '/courses/a320-simulator' },
 }
 
 const A320_FAQS = [
   {
-    q: 'Is the A320 simulator at Airborne DGCA-approved for Type Rating completion?',
-    a: "The simulator is used for familiarisation and preparation - not as a DGCA-approved Full Flight Simulator (FFS) for Type Rating completion. Type Rating completion requires a Level D FFS at a DGCA-approved Type Rating Organisation (TRO). Airborne's simulator is ideal for pre-type rating preparation and cadet selection readiness.",
+    q: 'Is the A320 simulator at Airborne DGCA-compliant for Type Rating completion?',
+    a: "The simulator is used for familiarisation and preparation - not as a DGCA-compliant Full Flight Simulator (FFS) for Type Rating completion. Type Rating completion requires a Level D FFS at a DGCA-compliant Type Rating Organisation (TRO). Airborne's simulator is ideal for pre-type rating preparation and cadet selection readiness.",
   },
 ]
 
@@ -114,14 +115,19 @@ export default async function A320SimulatorPage() {
               </p>
             </div>
 
+            {/* Video Briefings & Shorts */}
+            <div className="course-section-divider">
+              <CourseVideoTabs slug="a320-simulator" courseName="A320 Simulator Training" />
+            </div>
+
             {/* FAQ */}
             <div className="course-section-divider">
               <h2 className="course-section-title">
                 FAQs - A320 Simulator
               </h2>
               <div>
-                <h3 className="course-faq-q">Is the A320 simulator at Airborne DGCA-approved for Type Rating completion?</h3>
-                <p style={{ fontSize: '0.88rem', color: 'rgba(0, 39, 76, 0.65)', lineHeight: '1.7', margin: 0 }}>The simulator is used for familiarisation and preparation - not as a DGCA-approved Full Flight Simulator (FFS) for Type Rating completion. Type Rating completion requires a Level D FFS at a DGCA-approved Type Rating Organisation (TRO). Airborne's simulator is ideal for pre-type rating preparation and cadet selection readiness.</p>
+                <h3 className="course-faq-q">Is the A320 simulator at Airborne DGCA-compliant for Type Rating completion?</h3>
+                <p style={{ fontSize: '0.88rem', color: 'rgba(0, 39, 76, 0.65)', lineHeight: '1.7', margin: 0 }}>The simulator is used for familiarisation and preparation - not as a DGCA-compliant Full Flight Simulator (FFS) for Type Rating completion. Type Rating completion requires a Level D FFS at a DGCA-compliant Type Rating Organisation (TRO). Airborne's simulator is ideal for pre-type rating preparation and cadet selection readiness.</p>
               </div>
             </div>
 

@@ -8,10 +8,11 @@ import CourseReviews from '@/components/CourseReviews'
 import JsonLd from '@/components/JsonLd'
 import { buildCoursePageGraph } from '@/lib/schema'
 import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
+import CourseVideoTabs from '@/components/CourseVideoTabs'
 
 export const metadata = {
   title: 'Private Pilot Licence (PPL) India | Airborne Aviation',
-  description: 'Learn to fly for recreation or business with a Private Pilot Licence. PPL training through Airborne Aviation\'s partner FTOs. ₹25,00,000 complete flight training.',
+  description: 'Learn to fly for recreation or business with a Private Pilot Licence. PPL training through Airborne partner FTOs. ₹25,00,000 complete flight training.',
   alternates: { canonical: '/courses/private-pilot-license' },
 }
 
@@ -95,7 +96,7 @@ export default function PPLPage() {
                 Private Pilot License (PPL) - Learn to Fly in India
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
-                The Private Pilot License (PPL) is the first step in your aviation journey - the license that puts you in the left seat and lets you fly. Airborne Aviation Academy provides PPL ground school in Dwarka, Delhi, alongside access to DGCA-approved partner flying training organisations (FTOs) for your practical flying hours.
+                The Private Pilot License (PPL) is the first step in your aviation journey - the license that puts you in the left seat and lets you fly. Airborne Aviation Academy provides PPL ground school in Dwarka, Delhi, alongside access to DGCA-compliant partner flying training organisations (FTOs) for your practical flying hours.
               </p>
             </div>
 
@@ -165,6 +166,11 @@ export default function PPLPage() {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Video Briefings & Shorts */}
+            <div className="course-section-divider">
+              <CourseVideoTabs slug="private-pilot-license" courseName="Private Pilot Licence (PPL)" />
             </div>
 
             {/* FAQ */}

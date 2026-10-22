@@ -174,7 +174,7 @@ export default function ResourcesClient() {
             <em style={{ color: '#D8A027', fontStyle: 'normal' }}> E-Book Library.</em>
           </h1>
           <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(33,33,33,0.7)', fontSize: '1.02rem', lineHeight: '1.6', maxWidth: '100%' }}>
-            Download professional aviation ground guides compiled by Capt. Navrang Singh. Access requires verification profile inputs to block bots and raw scrapers.
+            Download professional aviation ground guides compiled by Capt. Navrang Singh. Enter your name and phone to download free guides.
           </p>
         </div>
 

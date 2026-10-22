@@ -36,16 +36,30 @@ export function isExternalHref(href) {
   return /^https?:\/\//i.test(href ?? '')
 }
 
-/** YouTube / Vimeo watch URL -> embed URL on the provider's own host, else null. */
+/** YouTube / Vimeo watch, shorts, and playlist URL -> embed URL on the provider's own host, else null. */
 export function videoEmbedUrl(src) {
   try {
     const url = new URL(String(src ?? '').trim())
     if (url.protocol !== 'https:') return null
     const host = url.hostname.replace(/^www\./, '')
     let id = null
-    if ((host === 'youtube.com' || host === 'm.youtube.com') && url.pathname === '/watch') id = url.searchParams.get('v')
-    else if (host === 'youtu.be') id = url.pathname.slice(1)
-    if (id && /^[\w-]{6,20}$/.test(id)) return `https://www.youtube-nocookie.com/embed/${id}`
+    if (host === 'youtube.com' || host === 'm.youtube.com') {
+      if (url.pathname === '/watch') id = url.searchParams.get('v')
+      else if (url.pathname.startsWith('/shorts/')) id = url.pathname.split('/')[2]?.split('?')[0]
+      else if (url.pathname === '/playlist') {
+        const list = url.searchParams.get('list')
+        if (list && /^[\w-]{10,50}$/.test(list)) return `https://www.youtube-nocookie.com/embed/videoseries?list=${encodeURIComponent(list)}`
+      }
+    } else if (host === 'youtu.be') {
+      id = url.pathname.slice(1).split('?')[0]
+    }
+    if (id && /^[\w-]{6,20}$/.test(id)) {
+      const list = url.searchParams.get('list')
+      if (list && /^[\w-]{10,50}$/.test(list)) {
+        return `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?list=${encodeURIComponent(list)}`
+      }
+      return `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}`
+    }
     if (host === 'vimeo.com') {
       const v = url.pathname.slice(1).split('/')[0]
       if (/^\d{3,15}$/.test(v)) return `https://player.vimeo.com/video/${v}`

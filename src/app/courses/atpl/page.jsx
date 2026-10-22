@@ -8,6 +8,7 @@ import CourseReviews from '@/components/CourseReviews'
 import JsonLd from '@/components/JsonLd'
 import { buildCoursePageGraph } from '@/lib/schema'
 import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
+import CourseVideoTabs from '@/components/CourseVideoTabs'
 
 export const metadata = {
   title: 'ATPL Ground School India | All Subjects | Airborne Aviation',
@@ -169,6 +170,11 @@ export default function ATPLPage() {
                   <li key={i} className="course-list-item">{item}</li>
                 ))}
               </ul>
+            </div>
+
+            {/* Video Briefings & Shorts */}
+            <div className="course-section-divider">
+              <CourseVideoTabs slug="atpl" courseName="ATPL Ground School" />
             </div>
 
             {/* FAQ */}

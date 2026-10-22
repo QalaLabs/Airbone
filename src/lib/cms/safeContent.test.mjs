@@ -40,6 +40,8 @@ test('safeMediaSrc only allows http(s) and site paths', () => {
 test('videoEmbedUrl only produces provider embed URLs', () => {
   assert.equal(videoEmbedUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ'), 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ')
   assert.equal(videoEmbedUrl('https://youtu.be/dQw4w9WgXcQ'), 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ')
+  assert.equal(videoEmbedUrl('https://www.youtube.com/shorts/dQw4w9WgXcQ'), 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ')
+  assert.equal(videoEmbedUrl('https://www.youtube.com/playlist?list=PL1234567890abcdef'), 'https://www.youtube-nocookie.com/embed/videoseries?list=PL1234567890abcdef')
   assert.equal(videoEmbedUrl('https://vimeo.com/123456'), 'https://player.vimeo.com/video/123456')
   assert.equal(videoEmbedUrl('https://evil-youtube.com/watch?v=dQw4w9WgXcQ'), null)
   assert.equal(videoEmbedUrl('https://youtube.com.evil.example/watch?v=dQw4w9WgXcQ'), null)

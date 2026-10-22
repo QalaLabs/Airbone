@@ -1,10 +1,34 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { WHATSAPP_HREF } from '@/lib/whatsapp'
+import { usePathname } from 'next/navigation'
+import { WHATSAPP_NUMBER } from '@/lib/whatsapp'
+
+const COURSE_MESSAGES = {
+  '/courses/commercial-pilot-license-cpl': "Hi, I'd like details on CPL Ground Classes at Airborne Aviation.",
+  '/courses/flying-training-india-abroad': "Hi, I'd like details on Commercial Pilot License (CPL) Flying Training at Airborne Aviation.",
+  '/courses/cadet-preparation': "Hi, I'd like details on Cadet Pilot Program Preparation at Airborne Aviation.",
+  '/courses/airline-preparation': "Hi, I'd like details on the Airline Preparation Program (A320 + ADAPT + GD/PI) at Airborne Aviation.",
+  '/courses/gd-pi': "Hi, I'd like details on the Airline GD & PI Preparation Course at Airborne Aviation.",
+  '/courses/cas-compass-adapt': "Hi, I'd like details on CASS, COMPASS & ADAPT Pilot Aptitude Training at Airborne Aviation.",
+  '/courses/atpl': "Hi, I'd like details on ATPL Ground School classes at Airborne Aviation.",
+  '/courses/a320-simulator': "Hi, I'd like details on Airbus A320 Simulator FBS sessions at Airborne Aviation.",
+  '/courses/securing-your-childs-future-in-aviation': "Hi, I am a parent interested in the Aviation Career Roadmap for my child at Airborne Aviation.",
+  '/courses/cabin-crew-training': "Hi, I'd like details on Cabin Crew Training and Batch 1 Scholarships at Airborne Aviation.",
+  '/courses/private-pilot-license': "Hi, I'd like details on Private Pilot License (PPL) Ground School at Airborne Aviation.",
+  '/courses/ground-school': "Hi, I'd like details on DGCA Ground School at Airborne Aviation.",
+}
+
+export function getWhatsAppUrlForPath(pathname) {
+  const cleanPath = (pathname || '').split('?')[0].replace(/\/$/, '')
+  const message = COURSE_MESSAGES[cleanPath] || "Hi, I'd like more information about pilot training and courses at Airborne Aviation Academy."
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`
+}
 
 export default function WhatsAppFloat() {
   const [visible, setVisible] = useState(true)
+  const pathname = usePathname()
+  const whatsappUrl = getWhatsAppUrlForPath(pathname)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,7 +58,7 @@ export default function WhatsAppFloat() {
   return (
     <div className={`whatsapp-float ${!visible ? 'whatsapp-hide' : ''}`}>
       <a
-        href={WHATSAPP_HREF}
+        href={whatsappUrl}
         data-testid="whatsapp-float"
         target="_blank"
         rel="noopener noreferrer"

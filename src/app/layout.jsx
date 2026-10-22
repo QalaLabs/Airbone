@@ -5,7 +5,6 @@ import ToastContainer from '@/components/Toast'
 import GlobalCursor from '@/components/GlobalCursor'
 import WhatsAppFloat from '@/components/WhatsAppFloat'
 import StickyMobileCTA from '@/components/StickyMobileCTA'
-import ClarityInit from '@/components/ClarityInit'
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -28,8 +27,8 @@ export const viewport = {
 }
 
 export const metadata = {
-  title: 'Pilot Training in Delhi DGCA Complied | Airborne Aviation',
-  description: "India's DGCA Complied pilot training academy in Dwarka, Delhi. CPL, ATPL, Cabin Crew & Ground School. Structured training for airline careers since 2009. Enrol today.",
+  title: 'DGCA-Compliant Pilot Training in Delhi | Airborne Aviation',
+  description: 'DGCA-compliant CPL & ATPL ground school in Dwarka, New Delhi, since 2009.',
   metadataBase: new URL('https://www.airborneaviation.in'),
   icons: {
     icon: [
@@ -43,8 +42,8 @@ export const metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: 'Pilot Training in Delhi DGCA Complied | Airborne Aviation',
-    description: "India's DGCA Complied pilot training academy in Dwarka, Delhi. CPL, ATPL, Cabin Crew & Ground School. Structured training for airline careers since 2009. Enrol today.",
+    title: 'DGCA-Compliant Pilot Training in Delhi | Airborne Aviation',
+    description: 'DGCA-compliant CPL & ATPL ground school in Dwarka, New Delhi, since 2009.',
     url: 'https://www.airborneaviation.in',
     siteName: 'Airborne Aviation Academy',
     images: [
@@ -60,8 +59,8 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Pilot Training in Delhi DGCA Complied | Airborne Aviation',
-    description: "India's DGCA Complied pilot training academy in Dwarka, Delhi. CPL, ATPL, Cabin Crew & Ground School. Structured training for airline careers since 2009. Enrol today.",
+    title: 'DGCA-Compliant Pilot Training in Delhi | Airborne Aviation',
+    description: 'DGCA-compliant CPL & ATPL ground school in Dwarka, New Delhi, since 2009.',
     images: ['https://www.airborneaviation.in/campus/og_image.jpg'],
   },
 }
@@ -70,6 +69,7 @@ export const metadata = {
 const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID || 'GTM-KCM9CDK9'
 const GA4_ID = process.env.NEXT_PUBLIC_GA4_ID || 'G-KB3Y1MSLR6'
 const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || '974236902284876'
+const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID || 'xv0yvv94yd'
 
 export default function RootLayout({ children }) {
   return (
@@ -105,22 +105,53 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             gtag('config', '${GA4_ID}');
           `}
         </Script>
-        {/* Meta Pixel Code */}
-        <Script id="meta-pixel" strategy="afterInteractive">
+        {/* Meta Pixel Code - deferred until after window.onload or idle hydration */}
+        <Script id="meta-pixel" strategy="lazyOnload">
           {`
-            !function(f,b,e,v,n,t,s)
-            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-            n.queue=[];t=b.createElement(e);t.async=!0;
-            t.src=v;s=b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t,s)}(window, document,'script',
-            'https://connect.facebook.net/en_US/fbevents.js');
-            fbq('init', '${META_PIXEL_ID}');
-            fbq('track', 'PageView');
+            function initMetaPixel() {
+              if (window.fbq) return;
+              !function(f,b,e,v,n,t,s)
+              {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+              n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+              if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+              n.queue=[];t=b.createElement(e);t.async=!0;
+              t.src=v;s=b.getElementsByTagName(e)[0];
+              s.parentNode.insertBefore(t,s)}(window, document,'script',
+              'https://connect.facebook.net/en_US/fbevents.js');
+              fbq('init', '${META_PIXEL_ID}');
+              fbq('track', 'PageView');
+            }
+            if (document.readyState === 'complete') {
+              (window.requestIdleCallback || window.setTimeout)(initMetaPixel, 1);
+            } else {
+              window.addEventListener('load', function() {
+                (window.requestIdleCallback || window.setTimeout)(initMetaPixel, 1);
+              });
+            }
           `}
         </Script>
         {/* End Meta Pixel Code */}
+        {/* Microsoft Clarity - deferred until after window.onload or idle hydration */}
+        <Script id="microsoft-clarity" strategy="lazyOnload">
+          {`
+            function initClarity() {
+              if (window.clarity) return;
+              (function(c,l,a,r,i,t,y){
+                c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+              })(window, document, "clarity", "script", "${CLARITY_ID}");
+            }
+            if (document.readyState === 'complete') {
+              (window.requestIdleCallback || window.setTimeout)(initClarity, 1);
+            } else {
+              window.addEventListener('load', function() {
+                (window.requestIdleCallback || window.setTimeout)(initClarity, 1);
+              });
+            }
+          `}
+        </Script>
+        {/* End Microsoft Clarity */}
       </head>
       <body className={`${montserrat.variable} ${roboto.variable}`}>
         {/* Google Tag Manager (noscript) */}
@@ -144,7 +175,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           />
         </noscript>
         {/* End Meta Pixel (noscript) */}
-        <ClarityInit />
         <GlobalCursor />
         <ToastContainer />
         {children}

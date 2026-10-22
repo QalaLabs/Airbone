@@ -5,11 +5,12 @@ import LeadForm from '@/components/LeadForm'
 import JsonLd from '@/components/JsonLd'
 import CoursePageFooter from '@/components/CoursePageFooter'
 import CourseReviews from '@/components/CourseReviews'
+import CourseVideoTabs from '@/components/CourseVideoTabs'
 import { buildArticlePageGraph } from '@/lib/schema'
 
 export const metadata = {
-  title: "Securing Your Child's Future in Aviation | Parent Guidance | Airborne",
-  description: 'Comprehensive CPL flight training guidance and Indian CPL conversion support built for parents and aspirants. Evaluate training options, costs, and DGCA pathways.',
+  title: "Securing Your Child's Aviation Career | Airborne Aviation",
+  description: 'CPL flight training guidance & DGCA conversion support for parents and aspirants. Evaluate pilot training options, total costs, and timelines.',
   alternates: { canonical: '/courses/securing-your-childs-future-in-aviation' },
 }
 
@@ -46,7 +47,7 @@ const parentGuideGraph = buildArticlePageGraph({
 
 const FINANCIAL_STEPS = [
   { step: 'Phase 1: Ground School', cost: '₹2.70 Lakh', duration: '3–6 Months', detail: 'DGCA CPL written exam prep (Air Regs, Navigation, Meteorology, Technical General & Specific).' },
-  { step: 'Phase 2: Flying Training', cost: '₹45–65 Lakh', duration: '12–18 Months', detail: '200 Flying Hours on Single-Engine & Multi-Engine aircraft in India or DGCA-approved foreign FTOs.' },
+  { step: 'Phase 2: Flying Training', cost: '₹45–65 Lakh', duration: '12–18 Months', detail: '200 Flying Hours on Single-Engine & Multi-Engine aircraft in India or DGCA-compliant foreign FTOs.' },
   { step: 'Phase 3: CPL Conversion & Type Rating', cost: '₹5–10 Lakh', duration: '3–6 Months', detail: 'DGCA skill test conversion (if abroad) and A320/B737 simulator screening prep.' },
 ]
 
@@ -129,6 +130,14 @@ export default function SecuringChildFuturePage() {
                   </tbody>
                 </table>
               </div>
+            </div>
+
+            {/* Video Insights & Shorts */}
+            <div className="course-section-divider">
+              <CourseVideoTabs
+                slug="securing-your-childs-future-in-aviation"
+                courseName="Securing Your Child's Future in Aviation"
+              />
             </div>
 
             {/* Parent FAQs */}
