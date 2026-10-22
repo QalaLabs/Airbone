@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import Link from "next/link";
@@ -67,6 +67,7 @@ const NAV_GROUPS: {
     label: "Finance & Billing",
     items: [
       { href: "/payments", icon: Wallet, label: "Payments Ledger" },
+      { href: "/finance/collections", icon: Landmark, label: "Fee Collections" },
       { href: "/fee-plans", icon: Receipt, label: "Fee Plans" },
     ]
   },

@@ -80,6 +80,8 @@ interface Lead {
   manualAmount?: number | string | null;
   nextFollowUp?: string | null;
   lastActivityAt?: string | null;
+  lastDisposition?: string | null;
+  dispositionAt?: string | null;
   convertedAt?: string | null;
   lostReason?: string | null;
   assignedTo?: string | null;
@@ -806,6 +808,12 @@ export default function LeadDetailPage() {
                 <Info
                   label="Manual amount"
                   value={`₹${Number(lead.manualAmount).toLocaleString("en-IN")}`}
+                />
+              ) : null}
+              {lead.lastDisposition ? (
+                <Info
+                  label="Last disposition"
+                  value={`${lead.lastDisposition}${lead.dispositionAt ? ` · ${formatDate(lead.dispositionAt)}` : ""}`}
                 />
               ) : null}
               <Info

@@ -682,12 +682,17 @@ export class LeadService {
 
   static async delete(ctx: RequestContext, id: string) {
     await this.getById(ctx, id);
-    await LeadRepository.softDelete(ctx.orgId, id);
+    await LeadRepository.softDelete(ctx.orgId, id, ctx.user.id);
 
     // Also soft-delete any linked student so they move into the Recycle Bin together
     await prisma.student.updateMany({
       where: { leadId: id, orgId: ctx.orgId, deletedAt: null },
-      data: { deletedAt: new Date() },
+      data: { deletedAt: new Date(), deletedBy: ctx.user.id },
+    });
+
+    await prisma.admission.updateMany({
+      where: { leadId: id, orgId: ctx.orgId, deletedAt: null },
+      data: { deletedAt: new Date(), deletedBy: ctx.user.id },
     });
 
     const { AuditService } = await import("@/lib/services/audit.service");
@@ -704,6 +709,49 @@ export class LeadService {
   }
 
   // ─── Lead Activities ───────────────────────────────────────────────────
+
+  static async recordDisposition(
+    ctx: RequestContext,
+    leadId: string,
+    input: {
+      disposition: string;
+      remarks?: string;
+      nextFollowUp?: Date | string | null;
+    },
+  ) {
+    const lead = await LeadRepository.findById(ctx.orgId, leadId);
+    if (!lead) throw new NotFoundError("Lead", leadId);
+
+    const now = new Date();
+    const nextDate = input.nextFollowUp ? new Date(input.nextFollowUp) : undefined;
+
+    const updated = await prisma.lead.update({
+      where: { id: leadId, orgId: ctx.orgId },
+      data: {
+        lastDisposition: input.disposition,
+        dispositionAt: now,
+        lastActivityAt: now,
+        ...(nextDate !== undefined ? { nextFollowUp: nextDate } : {}),
+      },
+    });
+
+    await prisma.leadActivity.create({
+      data: {
+        orgId: ctx.orgId,
+        leadId,
+        type: "CALL",
+        title: `Call Disposition: ${input.disposition}`,
+        description: input.remarks || `Disposition logged as ${input.disposition}`,
+        performedBy: ctx.user.id,
+        metadata: {
+          disposition: input.disposition,
+          ...(nextDate ? { nextFollowUp: nextDate.toISOString() } : {}),
+        },
+      },
+    });
+
+    return updated;
+  }
 
   static async createActivity(
     ctx: RequestContext,
