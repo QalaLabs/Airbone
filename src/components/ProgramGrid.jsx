@@ -4,14 +4,22 @@ import { useEffect, useRef, useState } from 'react'
 import { motion, useInView } from 'framer-motion'
 import Link from 'next/link'
 import ProgramCard from '@/components/ProgramCard'
-import { resolveCatalogItems, LEGACY_COURSE_ITEMS } from '@/lib/publicCourses'
+import { resolveCatalogItems, LEGACY_COURSE_ITEMS, REQUIRED_ORDER } from '@/lib/publicCourses'
 
 /* Sequence matches homepage / courses listing (feedback C6 / L12).
    Canonical catalog (Admin PUBLISHED courses) is fetched on mount via the
    public-proxy; LEGACY_COURSE_ITEMS is the documented offline fallback and is
    shown/swapped until the fetch resolves. */
 
-const FALLBACK_PROGRAMS = LEGACY_COURSE_ITEMS
+const FALLBACK_PROGRAMS = [...LEGACY_COURSE_ITEMS].sort((a, b) => {
+  const slugA = a.marketingSlug || a.href?.replace('/courses/', '') || ''
+  const slugB = b.marketingSlug || b.href?.replace('/courses/', '') || ''
+  let idxA = REQUIRED_ORDER.indexOf(slugA)
+  let idxB = REQUIRED_ORDER.indexOf(slugB)
+  if (idxA === -1) idxA = 999
+  if (idxB === -1) idxB = 999
+  return idxA - idxB
+})
 
 export default function ProgramGrid() {
   const ref = useRef(null)

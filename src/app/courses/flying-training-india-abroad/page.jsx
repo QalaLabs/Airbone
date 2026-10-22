@@ -6,10 +6,11 @@ import JsonLd from '@/components/JsonLd'
 import CoursePageFooter from '@/components/CoursePageFooter'
 import CourseReviews from '@/components/CourseReviews'
 import { buildArticlePageGraph } from '@/lib/schema'
+import CourseVideoTabs from '@/components/CourseVideoTabs'
 
 export const metadata = {
-  title: 'Commercial Pilot License (CPL) Flying Training | India vs Abroad | Airborne',
-  description: 'Complete Commercial Pilot License (CPL) flying training guidance and Indian CPL conversion support. Compare CPL cost, duration, and DGCA licensing pathways in India vs abroad.',
+  title: 'CPL Flying Training: India vs Abroad | Airborne Aviation',
+  description: 'Commercial Pilot License (CPL) flying training guidance & DGCA conversion support. Compare CPL cost, duration, and pathways in India vs abroad.',
   alternates: { canonical: '/courses/flying-training-india-abroad' },
 }
 
@@ -172,6 +173,11 @@ export default function FlyingTrainingIndiaAbroadPage() {
               <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: 0 }}>
                 Book a free 30-minute counselling session with Capt. Navrang Singh's team to get a cost and timeline breakdown specific to your profile.
               </p>
+            </div>
+
+            {/* Video Briefings & Shorts */}
+            <div className="course-section-divider">
+              <CourseVideoTabs slug="flying-training-india-abroad" courseName="Flying Training: India vs Abroad" />
             </div>
 
             {/* FAQ */}

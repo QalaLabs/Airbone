@@ -12,16 +12,16 @@ import GoogleReviewsSection from '@/components/GoogleReviewsSection'
 import { GlowCard } from '@/components/ui/spotlight-card'
 import PremiumFooter from '@/components/PremiumFooter'
 import GlobalRouteMap from '@/components/GlobalRouteMap'
-import PilotSupplyGraph from '@/components/PilotSupplyGraph'
 import ProgramGrid from '@/components/ProgramGrid'
 import MediaSection from '@/components/MediaSection'
 import useFormValidation from '@/hooks/useFormValidation'
-import { validateName, validatePhone, validateEmailRequired, validatePincode } from '@/utils/validation'
+import { validateName, validatePhone, validateEmail, validateEmailRequired, validatePincode, validateRequired } from '@/utils/validation'
 import FormField from '@/components/FormField'
 import SubmitButton from '@/components/SubmitButton'
 import Honeypot from '@/components/Honeypot'
 import { HONEYPOT_FIELD, readHoneypot } from '@/utils/honeypot'
 import { WHATSAPP_HREF } from '@/lib/whatsapp'
+import { CANONICAL_COURSE_OPTIONS } from '@/lib/publicCourses'
 
 // Premium FX components — pure UI, no backend dependencies
 import {
@@ -335,7 +335,17 @@ function HeroChapter({ onBook }) {
 
       <motion.div
         className="hero-content-container container-fluid"
-        style={{ y: textY, opacity: fade, position: 'relative', zIndex: 10, display: 'flex', height: '100%', flexDirection: 'column', justifyContent: 'flex-end' }}
+        style={{
+          y: textY,
+          opacity: fade,
+          position: 'relative',
+          zIndex: 10,
+          display: 'flex',
+          height: '100%',
+          flexDirection: 'column',
+          justifyContent: 'flex-end',
+          paddingTop: 'calc(80px + env(safe-area-inset-top, 0px))',
+        }}
       >
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -370,7 +380,7 @@ function HeroChapter({ onBook }) {
           className="hero-footer-wrapper"
         >
           <p className="hero-support">
-            India&apos;s most disciplined DGCA ground school for CPL &amp; ATPL. Mentor-led training under
+            Founder-led DGCA-compliant ground school since 2009 for CPL &amp; ATPL. Mentor-led training under
             Capt. Navrang Singh - clearing exams, building careers, restarting dreams.
           </p>
 
@@ -453,7 +463,7 @@ function BoardingStrip() {
 ───────────────────────────────────── */
 function FounderSection() {
   return (
-    <section id="founder" style={{ position: 'relative', padding: 'clamp(3.5rem,8vw,10rem) clamp(1.5rem,5vw,4rem)', background: 'var(--paper)', color: 'var(--ink)', overflow: 'hidden' }}>
+    <section id="founder" style={{ position: 'relative', padding: 'clamp(2.5rem,5vw,4.5rem) clamp(1.5rem,5vw,4rem)', background: 'var(--paper)', color: 'var(--ink)', overflow: 'hidden' }}>
       {/* Ambient background glow */}
       <div
         className="animate-drift"
@@ -478,8 +488,8 @@ function FounderSection() {
 
           <div style={{ marginTop: '2.5rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'rgba(0,39,76,0.08)', maxWidth: '28rem', width: '100%' }}>
             {[
-              ['15+', 'Years teaching'],
-              ['Since 2009', 'Students mentored'],
+              ['Since 2009', 'Teaching legacy'],
+              ['2,500+', 'Students mentored'],
               ['5/5', 'Papers, first attempt'],
               ['36', 'Oldest restart, Air India'],
             ].map(([k, v]) => (
@@ -569,7 +579,7 @@ function TestimonialsSection() {
   }
 
   return (
-    <section id="stories" data-testid="home-testimonials" style={{ position: 'relative', padding: 'clamp(3.5rem,8vw,10rem) clamp(1.5rem,5vw,4rem)', background: 'var(--paper)' }}>
+    <section id="stories" data-testid="home-testimonials" style={{ position: 'relative', padding: 'clamp(2.5rem,5vw,4.5rem) clamp(1.5rem,5vw,4rem)', background: 'var(--paper)' }}>
       <div className="container-xl">
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem', marginBottom: '3.5rem', flexWrap: 'wrap' }}>
           <div>
@@ -789,7 +799,7 @@ function FinalCTA() {
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 40% 50%, rgba(255, 215, 0, 0.05) 0%, transparent 65%)', pointerEvents: 'none' }} />
       </motion.div>
 
-      <div className="cta-content-wrapper container-xl" style={{ position: 'relative', padding: 'clamp(5rem,10vw,12rem) clamp(1.25rem,5vw,4rem)' }}>
+      <div className="cta-content-wrapper container-xl" style={{ position: 'relative', padding: 'clamp(3rem,6vw,5.5rem) clamp(1.25rem,5vw,3rem)' }}>
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -804,7 +814,7 @@ function FinalCTA() {
 
           <p style={{ marginTop: '1.5rem', color: 'rgba(33,33,33,0.75)', maxWidth: '38rem', fontSize: 'clamp(0.9375rem,1.5vw,1.05rem)', lineHeight: 1.7, fontFamily: 'var(--font-b)' }}>
             Visit our Dwarka center, sit in on a class, meet Capt. Navrang. No pressure.
-            Just an honest look at the system that's been sending pilots into airline cockpits for fifteen years.
+            Just an honest look at the system that's been sending pilots into airline cockpits since 2009.
           </p>
 
           {submitted ? (
@@ -914,19 +924,29 @@ function FinalCTA() {
 /* ─────────────────────────────────────
    BOOKING MODAL - Preserved intact, connects to /api/lead
 ───────────────────────────────────── */
-function BookingModal({ open, onClose }) {
+function BookingModal({ open, onClose, initialCourse }) {
   const [status, setStatus] = useState('idle')
+  const defaultCourse = initialCourse || CANONICAL_COURSE_OPTIONS[0]
 
   const { values, errors, touched, handleChange, handleBlur, validate, setValues } = useFormValidation(
-    { name: '', phone: '', email: '', pincode: '' },
-    { name: validateName, phone: validatePhone, email: validateEmailRequired, pincode: validatePincode }
+    { name: '', phone: '', email: '', pincode: '', course: defaultCourse },
+    { name: validateName, phone: validatePhone, email: validateEmailRequired, pincode: validatePincode, course: validateRequired }
   )
+
+  useEffect(() => {
+    if (open) {
+      setValues((prev) => ({
+        ...prev,
+        course: initialCourse || prev.course || CANONICAL_COURSE_OPTIONS[0],
+      }))
+    }
+  }, [open, initialCourse, setValues])
 
   const handleClose = useCallback(() => {
     setStatus('idle')
-    setValues({ name: '', phone: '', email: '', pincode: '' })
+    setValues({ name: '', phone: '', email: '', pincode: '', course: defaultCourse })
     onClose()
-  }, [onClose, setValues])
+  }, [onClose, setValues, defaultCourse])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -945,7 +965,7 @@ function BookingModal({ open, onClose }) {
       const res = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...values, [HONEYPOT_FIELD]: hp, course: 'DGCA CPL Ground School', source: 'Homepage Modal', utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page })
+        body: JSON.stringify({ ...values, course: values.course || defaultCourse, [HONEYPOT_FIELD]: hp, source: 'Homepage Modal', utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page })
       })
       if (!res.ok && res.status !== 409) throw new Error('Lead submit failed')
       // 409 = this phone already has an enquiry on file — not a failure.
@@ -1058,6 +1078,19 @@ function BookingModal({ open, onClose }) {
                     required
                     maxLength={6}
                   />
+                  <FormField
+                    id="m-course"
+                    as="select"
+                    value={values.course}
+                    onChange={(v) => handleChange('course', v)}
+                    onBlur={() => handleBlur('course')}
+                    error={touched.course ? errors.course : null}
+                    required
+                  >
+                    {CANONICAL_COURSE_OPTIONS.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </FormField>
                   <SubmitButton
                     type="submit"
                     loading={status === 'loading'}
@@ -1140,7 +1173,7 @@ function AirborneAdvantage() {
   const categorizedBenefits = [
     {
       category: 'LEARN',
-      subheadline: "World-class instruction by India's most experienced CPL ground school instructor.",
+      subheadline: "Founder-led DGCA-compliant ground school since 2009.",
       icon: (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
@@ -1264,7 +1297,7 @@ function AirborneAdvantage() {
   }
 
   return (
-    <section id="advantage" style={{ position: 'relative', padding: 'clamp(4rem, 8vw, 10rem) clamp(1.5rem, 5vw, 4rem)', background: 'var(--paper)', color: 'var(--ink)', borderTop: '1px solid rgba(0,39,76,0.08)', overflow: 'hidden' }}>
+    <section id="advantage" style={{ position: 'relative', padding: 'clamp(2.5rem, 5vw, 4.5rem) clamp(1.5rem, 5vw, 4rem)', background: 'var(--paper)', color: 'var(--ink)', borderTop: '1px solid rgba(0,39,76,0.08)', overflow: 'hidden' }}>
       
       {/* Styles local block targeting desktop vs mobile views */}
       <style dangerouslySetInnerHTML={{ __html: `
@@ -1314,7 +1347,9 @@ function AirborneAdvantage() {
           align-items: center;
           gap: 0.75rem;
           margin-bottom: 0.875rem;
-          height: 40px;
+          min-height: 40px;
+          height: auto;
+          flex-wrap: wrap;
           box-sizing: border-box;
         }
 
@@ -1342,7 +1377,8 @@ function AirborneAdvantage() {
           text-transform: uppercase;
           margin: 0;
           line-height: 1.2;
-          white-space: nowrap;
+          white-space: normal;
+          word-break: break-word;
         }
 
         /* Intro Text Block */
@@ -1353,13 +1389,14 @@ function AirborneAdvantage() {
           line-height: 1.5;
           margin-top: 0;
           margin-bottom: 1.25rem;
-          min-height: 2.625rem;
+          min-height: 2.5rem;
           box-sizing: border-box;
         }
 
         @media (min-width: 1024px) {
           .advantage-card-subheadline {
-            height: 2.625rem;
+            min-height: 2.5rem;
+            height: auto;
           }
         }
 
@@ -1461,7 +1498,7 @@ function AirborneAdvantage() {
             flex-direction: column;
             overflow-x: hidden;
             overflow-y: auto;
-            max-height: 80vh;
+            max-height: 48vh;
             gap: 0;
             padding-bottom: 0;
             -webkit-overflow-scrolling: touch;
@@ -1483,9 +1520,10 @@ function AirborneAdvantage() {
             border-radius: 4px;
           }
 
-          /* One full screen per swipe */
+          /* Compact card per swipe */
           .advantage-card-mobile {
-            flex: 0 0 80vh;
+            flex: 0 0 auto;
+            min-height: 48vh;
             width: 100%;
             scroll-snap-align: start;
             background: #fff;
@@ -1493,8 +1531,8 @@ function AirborneAdvantage() {
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border-radius: 16px;
-            padding: 2.25rem 1.75rem;
-            box-shadow: 0 10px 30px rgba(0, 39, 76, 0.04);
+            padding: 1.25rem 1.15rem;
+            box-shadow: 0 8px 24px rgba(0, 39, 76, 0.04);
             transition: border-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
             position: relative;
             overflow: hidden;
@@ -1502,7 +1540,7 @@ function AirborneAdvantage() {
             flex-direction: column;
             justify-content: flex-start;
             box-sizing: border-box;
-            margin-bottom: 1.25rem;
+            margin-bottom: 0.75rem;
           }
 
           /* Gold top gradient hairline border */
@@ -1695,11 +1733,11 @@ function AirborneAdvantage() {
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem', borderTop: '1px solid rgba(0,39,76,0.08)', paddingTop: '1rem', flex: 1 }}>
                     {cat.benefits.map((b, j) => (
-                      <div key={j} style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start' }}>
+                      <div key={j} style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
                         <span style={{ fontSize: '1rem', color: 'var(--gold)', flexShrink: 0 }}>✓</span>
-                        <div>
-                          <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '0.15rem' }}>{b.title}</h4>
-                          <p style={{ fontSize: '0.75rem', color: 'rgba(33,33,33,0.65)', lineHeight: 1.4, fontFamily: 'var(--font-b)' }}>{b.desc}</p>
+                        <div style={{ flex: '1 1 200px', minWidth: 0 }}>
+                          <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '0.15rem', wordBreak: 'break-word' }}>{b.title}</h4>
+                          <p style={{ fontSize: '0.75rem', color: 'rgba(33,33,33,0.65)', lineHeight: 1.4, fontFamily: 'var(--font-b)', wordBreak: 'break-word' }}>{b.desc}</p>
                         </div>
                       </div>
                     ))}
@@ -1805,11 +1843,11 @@ function PilotCareerOutlook() {
   ]
 
   return (
-    <section id="outlook" style={{ position: 'relative', padding: 'clamp(4rem, 8vw, 10rem) clamp(1.5rem, 5vw, 4rem)', background: 'var(--paper)', color: 'var(--navy)' }}>
+    <section id="outlook" style={{ position: 'relative', padding: 'clamp(2.5rem, 5vw, 4.5rem) clamp(1.5rem, 5vw, 4rem)', background: 'var(--paper)', color: 'var(--navy)' }}>
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
         
         {/* Intro */}
-        <div style={{ marginBottom: '5rem', display: 'grid', gridTemplateColumns: '1fr', lgGridTemplateColumns: '1.2fr 1fr', gap: '3rem', alignItems: 'center' }}>
+        <div style={{ marginBottom: '2.5rem', display: 'grid', gridTemplateColumns: '1fr', lgGridTemplateColumns: '1.2fr 1fr', gap: '2rem', alignItems: 'center' }}>
           <div>
             <div style={{ fontSize: '0.6875rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--red)', marginBottom: '1rem', fontWeight: 700 }}>Industry Outlook</div>
             <h2 className="display-xl" style={{ fontSize: 'clamp(2rem, 5vw, 4.5rem)', color: 'var(--navy)', textTransform: 'uppercase', lineHeight: 1.1 }}>
@@ -1821,7 +1859,47 @@ function PilotCareerOutlook() {
           </p>
         </div>
 
-        <PilotSupplyGraph />
+        {/* Student Training Track Record */}
+        <div
+          data-testid="pilot-supply-chart"
+          style={{
+            background: '#ffffff',
+            border: '1px solid rgba(0, 39, 76, 0.08)',
+            borderRadius: '16px',
+            padding: '3rem 2rem',
+            boxShadow: '0 10px 40px rgba(0,39,76,0.04)',
+            marginTop: '3rem',
+            marginBottom: '4rem',
+            textAlign: 'center',
+            fontFamily: 'var(--font-b)',
+          }}
+        >
+          <div
+            style={{
+              fontFamily: 'var(--font-h)',
+              fontSize: 'clamp(2.2rem, 5vw, 3.5rem)',
+              fontWeight: 900,
+              color: 'var(--navy)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.02em',
+              lineHeight: 1.1,
+              marginBottom: '0.75rem',
+            }}
+          >
+            <span style={{ color: 'var(--red)' }}>2,500+</span> Students Trained Since 2009
+          </div>
+          <p
+            style={{
+              fontSize: '1rem',
+              color: 'rgba(33,33,33,0.65)',
+              maxWidth: '680px',
+              margin: '0 auto',
+              lineHeight: 1.6,
+            }}
+          >
+            Airborne Aviation Academy has been pioneering DGCA CPL ground training, airline preparation, and cadet mentoring since 2009 from our premier Dwarka, New Delhi campus.
+          </p>
+        </div>
 
         {/* Salaries Table */}
         <div style={{ marginBottom: '5rem' }}>
@@ -2117,9 +2195,9 @@ function CampusGallerySection() {
       : showcaseImages
 
   return (
-    <section id="gallery" style={{ position: 'relative', padding: 'clamp(4rem, 8vw, 10rem) clamp(1.5rem, 5vw, 4rem)', background: '#ffffff', color: 'var(--navy)', borderTop: '1px solid rgba(0,39,76,0.08)' }}>
+    <section id="gallery" style={{ position: 'relative', padding: 'clamp(2.5rem, 5vw, 4.5rem) clamp(1.5rem, 5vw, 4rem)', background: '#ffffff', color: 'var(--navy)', borderTop: '1px solid rgba(0,39,76,0.08)' }}>
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{ fontSize: '0.6875rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--red)', marginBottom: '1rem', fontWeight: 700 }}>Ambience Tour</div>
           <h2 className="display-xl" style={{ fontSize: 'clamp(2rem, 5vw, 4.5rem)', color: 'var(--navy)', textTransform: 'uppercase' }}>
             Dwarka Center <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>Gallery.</span>
@@ -2193,11 +2271,367 @@ function CampusGallerySection() {
   )
 }
 
+const COUNSELLING_COURSES = CANONICAL_COURSE_OPTIONS
+
+/* ─────────────────────────────────────
+   COURSES COUNSELLING CALL (Compact Form & Button)
+───────────────────────────────────── */
+function CoursesCounsellingCall({ onBook }) {
+  const [status, setStatus] = useState('idle')
+  const [submitError, setSubmitError] = useState('')
+
+  const { values, errors, touched, handleChange, handleBlur, validate, setValues } = useFormValidation(
+    { name: '', phone: '', pincode: '', course: COUNSELLING_COURSES[0], persona: 'Student' },
+    { name: validateName, phone: validatePhone, pincode: validatePincode, course: validateRequired }
+  )
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    const hp = readHoneypot(e.currentTarget)
+    if (!validate() || status === 'loading') return
+    setStatus('loading')
+    setSubmitError('')
+
+    const urlParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
+    const utm_source = urlParams.get('utm_source') || undefined
+    const utm_medium = urlParams.get('utm_medium') || undefined
+    const utm_campaign = urlParams.get('utm_campaign') || undefined
+    const utm_term = urlParams.get('utm_term') || undefined
+    const utm_content = urlParams.get('utm_content') || undefined
+    const referrer = typeof document !== 'undefined' ? document.referrer || undefined : undefined
+    const landing_page = typeof window !== 'undefined' ? window.location.href || undefined : undefined
+
+    try {
+      const res = await fetch('/api/lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: values.name,
+          phone: values.phone,
+          pincode: values.pincode,
+          course: values.course,
+          persona: values.persona || 'Student',
+          message: `Applicant: ${values.persona || 'Student'} | Request: Free Counselling Call`,
+          source: 'Homepage Courses Counselling Call',
+          [HONEYPOT_FIELD]: hp,
+          utm_source,
+          utm_medium,
+          utm_campaign,
+          utm_term,
+          utm_content,
+          referrer,
+          landing_page,
+        })
+      })
+
+      if (!res.ok && res.status !== 409) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Request failed')
+      }
+      setStatus('success')
+    } catch (err) {
+      setSubmitError(err.message && err.message !== 'Request failed' ? err.message : 'Could not submit request. Please try again or call +91 99537 77320.')
+      setStatus('error')
+    }
+  }
+
+  return (
+    <section
+      id="counselling-call"
+      style={{
+        position: 'relative',
+        background: '#001428',
+        borderTop: '2px solid #D8A027',
+        borderBottom: '1px solid rgba(216, 160, 39, 0.2)',
+        padding: 'clamp(2rem, 4vw, 3.25rem) clamp(1.25rem, 5vw, 3.5rem)',
+        color: '#FFFFFF',
+        overflow: 'hidden',
+      }}
+    >
+      <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', lgFlexDirection: 'row', gap: '2rem', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+          
+          {/* Header left */}
+          <div style={{ flex: '1 1 360px', minWidth: '280px' }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              background: 'rgba(216, 160, 39, 0.15)',
+              border: '1px solid rgba(216, 160, 39, 0.3)',
+              borderRadius: '999px',
+              padding: '0.25rem 0.75rem',
+              color: '#D8A027',
+              fontFamily: 'var(--font-h)',
+              fontSize: '0.65rem',
+              fontWeight: 800,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              marginBottom: '0.75rem',
+            }}>
+              <span>✦</span> Free Academic Counselling
+            </div>
+            <h3 style={{
+              fontFamily: 'var(--font-h)',
+              fontSize: 'clamp(1.35rem, 2.5vw, 1.95rem)',
+              fontWeight: 800,
+              letterSpacing: '-0.01em',
+              textTransform: 'uppercase',
+              color: '#FFFFFF',
+              lineHeight: 1.15,
+              marginBottom: '0.6rem',
+            }}>
+              Unsure which program fits your background?
+            </h3>
+            <p style={{
+              fontSize: '0.85rem',
+              color: 'rgba(255, 255, 255, 0.7)',
+              lineHeight: 1.6,
+              fontFamily: 'var(--font-b)',
+              margin: '0 0 1.25rem',
+              maxWidth: '32rem',
+            }}>
+              Speak with our senior flight training counselors. Get clear, unbiased advice on DGCA Class 2 medicals, batch timing, pilot career outlook, and flying school selection.
+            </p>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <a href="tel:+919953777320" style={{ color: '#FFFFFF', textDecoration: 'none', fontSize: '0.78rem', fontFamily: 'var(--font-h)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                📞 +91 9953 777 320
+              </a>
+              <span style={{ color: 'rgba(255, 255, 255, 0.3)' }}>|</span>
+              <a href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer" style={{ color: '#25D366', textDecoration: 'none', fontSize: '0.78rem', fontFamily: 'var(--font-h)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                💬 Chat on WhatsApp
+              </a>
+            </div>
+          </div>
+
+          {/* Form right */}
+          <div style={{ flex: '1 1 520px', width: '100%', maxWidth: '640px' }}>
+            {status === 'success' ? (
+              <div style={{
+                background: 'rgba(0, 24, 48, 0.85)',
+                border: '1px solid #25D366',
+                borderRadius: '8px',
+                padding: '2rem 1.5rem',
+                textAlign: 'center',
+              }}>
+                <div style={{ color: '#25D366', fontSize: '1.75rem', marginBottom: '0.5rem' }}>✓</div>
+                <h4 style={{ fontFamily: 'var(--font-h)', fontSize: '1.05rem', color: '#FFFFFF', textTransform: 'uppercase', marginBottom: '0.4rem', fontWeight: 800 }}>
+                  Counselling Call Requested!
+                </h4>
+                <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.5, margin: '0 0 1rem' }}>
+                  Our admissions counsellor will call your number within 2 hours to discuss your flight training roadmap.
+                </p>
+                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatus('idle')
+                      setValues({ name: '', phone: '', pincode: '', course: COUNSELLING_COURSES[0], persona: 'Student' })
+                    }}
+                    style={{
+                      background: 'transparent',
+                      border: '1px solid rgba(255,255,255,0.25)',
+                      color: 'rgba(255,255,255,0.8)',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '4px',
+                      fontSize: '0.75rem',
+                      cursor: 'pointer',
+                      fontFamily: 'var(--font-h)',
+                    }}
+                  >
+                    Book Another Call
+                  </button>
+                  <a
+                    href={WHATSAPP_HREF}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      background: '#25D366',
+                      color: '#001428',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '4px',
+                      fontSize: '0.75rem',
+                      fontWeight: 800,
+                      textDecoration: 'none',
+                      fontFamily: 'var(--font-h)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                    }}
+                  >
+                    Message Now →
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <form
+                onSubmit={handleSubmit}
+                noValidate
+                style={{
+                  background: 'rgba(0, 15, 30, 0.75)',
+                  border: '1px solid rgba(216, 160, 39, 0.3)',
+                  borderRadius: '8px',
+                  padding: '1.25rem 1.5rem',
+                  boxShadow: '0 12px 30px rgba(0,0,0,0.4)',
+                }}
+              >
+                <Honeypot />
+
+                {/* Persona selector: Student / Parent */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.7)', fontFamily: 'var(--font-h)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                    I am a: *
+                  </span>
+                  <div role="radiogroup" aria-label="I am a" style={{ display: 'flex', gap: '0.4rem', flex: 1, maxWidth: '240px' }}>
+                    {['Student', 'Parent'].map((opt) => {
+                      const selected = (values.persona || 'Student') === opt
+                      return (
+                        <button
+                          key={opt}
+                          type="button"
+                          role="radio"
+                          aria-checked={selected}
+                          onClick={() => handleChange('persona', opt)}
+                          style={{
+                            flex: 1,
+                            padding: '0.35rem 0.75rem',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontWeight: 800,
+                            fontFamily: 'var(--font-h)',
+                            fontSize: '0.7rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.06em',
+                            border: selected ? '1px solid #D8A027' : '1px solid rgba(255,255,255,0.15)',
+                            background: selected ? 'rgba(216, 160, 39, 0.25)' : 'transparent',
+                            color: selected ? '#D8A027' : 'rgba(255,255,255,0.6)',
+                            transition: 'all 0.2s',
+                          }}
+                        >
+                          {opt}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Inputs grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                  <div>
+                    <FormField
+                      id="counselling-name"
+                      type="text"
+                      placeholder="Your Full Name *"
+                      dark
+                      value={values.name}
+                      onChange={(v) => handleChange('name', v)}
+                      onBlur={() => handleBlur('name')}
+                      error={touched.name ? errors.name : null}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <FormField
+                      id="counselling-phone"
+                      type="tel"
+                      placeholder="Contact Number (10 digits) *"
+                      dark
+                      value={values.phone}
+                      onChange={(v) => handleChange('phone', v)}
+                      onBlur={() => handleBlur('phone')}
+                      error={touched.phone ? errors.phone : null}
+                      required
+                      maxLength={10}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '0.75rem', marginBottom: '0.85rem' }}>
+                  <div>
+                    <FormField
+                      id="counselling-pincode"
+                      type="text"
+                      placeholder="PIN Code *"
+                      dark
+                      value={values.pincode}
+                      onChange={(v) => handleChange('pincode', v)}
+                      onBlur={() => handleBlur('pincode')}
+                      error={touched.pincode ? errors.pincode : null}
+                      required
+                      maxLength={6}
+                    />
+                  </div>
+                  <div>
+                    <FormField
+                      id="counselling-course"
+                      as="select"
+                      dark
+                      value={values.course}
+                      onChange={(v) => handleChange('course', v)}
+                      error={touched.course ? errors.course : null}
+                      required
+                    >
+                      {COUNSELLING_COURSES.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </FormField>
+                  </div>
+                </div>
+
+                {submitError && (
+                  <p role="alert" style={{ fontSize: '0.75rem', color: '#ff4444', marginBottom: '0.75rem', lineHeight: 1.4 }}>
+                    {submitError}
+                  </p>
+                )}
+
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <SubmitButton
+                    id="submit-counselling-btn"
+                    className="btn btn-primary"
+                    loading={status === 'loading'}
+                    disabled={status === 'loading'}
+                    style={{ flex: '1 1 220px', justifyContent: 'center', padding: '0.75rem 1.25rem', fontSize: '0.82rem' }}
+                  >
+                    Book a Free Counselling Call →
+                  </SubmitButton>
+                  <button
+                    type="button"
+                    onClick={() => onBook?.(values.course)}
+                    style={{
+                      background: 'transparent',
+                      border: '1px solid rgba(216, 160, 39, 0.4)',
+                      color: '#D8A027',
+                      padding: '0.75rem 1.1rem',
+                      borderRadius: '2px',
+                      fontSize: '0.75rem',
+                      fontWeight: 800,
+                      fontFamily: 'var(--font-h)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(216,160,39,0.1)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                  >
+                    Open Modal Form
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 /* ─────────────────────────────────────
    ROOT PAGE - All sections orchestrated
 ───────────────────────────────────── */
 export default function HomePage() {
   const [bookingOpen, setBookingOpen] = useState(false)
+  const [bookingCourse, setBookingCourse] = useState(null)
   
   useEffect(() => {
     document.body.classList.add('is-homepage')
@@ -2209,8 +2643,14 @@ export default function HomePage() {
     if (typeof window === 'undefined') return false
     return new URLSearchParams(window.location.search).get('mode') === '3d'
   })
-  const openBooking = useCallback(() => setBookingOpen(true), [])
-  const closeBooking = useCallback(() => setBookingOpen(false), [])
+  const openBooking = useCallback((course) => {
+    if (typeof course === 'string') setBookingCourse(course)
+    setBookingOpen(true)
+  }, [])
+  const closeBooking = useCallback(() => {
+    setBookingOpen(false)
+    setBookingCourse(null)
+  }, [])
 
   // 3D mode preserved intact
   if (is3dMode) {
@@ -2243,6 +2683,49 @@ export default function HomePage() {
       <AmbientRadial />
       <PremiumCursor />
 
+      {/* Override scroll-animated container heights & handle low viewport heights */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        #journey-flight-path {
+          height: 380vh !important;
+        }
+        @media (max-width: 768px) {
+          #journey-flight-path {
+            height: 300vh !important;
+          }
+        }
+
+        /* Viewports < 700px height: top padding/margin and min-h calculation to prevent navbar overlapping hero heading */
+        @media (max-height: 700px) {
+          #top.hero-section {
+            min-height: max(680px, calc(100svh + 85px)) !important;
+            height: auto !important;
+          }
+          .hero-content-container {
+            padding-top: calc(88px + env(safe-area-inset-top, 0px)) !important;
+            padding-bottom: clamp(1.5rem, 4vh, 2.75rem) !important;
+            justify-content: flex-end !important;
+            min-height: max(680px, calc(100svh + 85px)) !important;
+          }
+          .hero-eyebrow {
+            margin-top: calc(82px + env(safe-area-inset-top, 0px)) !important;
+            margin-bottom: 0.5rem !important;
+          }
+          .hero-headline {
+            margin-top: 0.25rem !important;
+            line-height: 1.02 !important;
+          }
+          .hero-tagline {
+            margin-top: 0.5rem !important;
+          }
+          .hero-footer-wrapper {
+            margin-top: 0.75rem !important;
+          }
+          .hero-scroll-cue {
+            display: none !important;
+          }
+        }
+      ` }} />
+
       {/* Navigation */}
       <FloatingNav onBook={openBooking} />
 
@@ -2271,6 +2754,9 @@ export default function HomePage() {
         {/* Program grid — Redesigned 4×2 */}
         <ProgramGrid />
 
+        {/* Compact Book a Free Counselling Call form & button directly below courses */}
+        <CoursesCounsellingCall onBook={openBooking} />
+
         <AirborneAdvantage />
         <CampusGallerySection />
         <PilotCareerOutlook />
@@ -2296,7 +2782,7 @@ export default function HomePage() {
       <PremiumFooter onBookDemo={openBooking} />
 
       {/* Booking modal with /api/lead — preserved */}
-      <BookingModal open={bookingOpen} onClose={closeBooking} />
+      <BookingModal open={bookingOpen} onClose={closeBooking} initialCourse={bookingCourse} />
     </>
   )
 }

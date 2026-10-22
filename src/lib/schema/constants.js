@@ -80,7 +80,7 @@ export const FOUNDER = {
   alternateName: ['Captain Navrang Singh', 'Navrang Singh'],
   jobTitle: 'Co-founder & Head Mentor',
   description:
-    'Co-founder and Head Mentor at Airborne Aviation Academy. Over 15 years of aviation training experience. Known for concept-focused DGCA ground school instruction and personal mentoring of aspiring commercial pilots.',
+    'Co-founder and Head Mentor at Airborne Aviation Academy. Aviation training experience since 2009. Known for concept-focused DGCA ground school instruction and personal mentoring of aspiring commercial pilots.',
   imagePath: '/team/navrang_portrait.jpg',
   knowsAbout: [
     'DGCA CPL Ground School',

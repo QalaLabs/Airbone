@@ -166,7 +166,7 @@ const TICKER_ITEMS = [
   { name: 'Batch 2024', airline: 'Strong Pass Rate' },
   { name: 'DGCA CPL Ground School', airline: 'Dwarka, Delhi' },
   { name: 'Max 25 Students', airline: 'Per Batch' },
-  { name: '15+ Years', airline: 'Teaching Excellence' },
+  { name: 'Since 2009', airline: 'Teaching Excellence' },
 ]
 
 function AlumniTicker({ visible }) {
@@ -201,7 +201,7 @@ function Act1Overlay({ visible, onDemo, onApply }) {
         </h1>
         <p className="ov-body" style={{ marginTop: '1.5rem' }}>
           India's most trusted DGCA CPL ground school. Led by{' '}
-          <strong style={{ color: 'white' }}>Capt. Navrang Singh</strong> with 15+ years of teaching excellence.
+          <strong style={{ color: 'white' }}>Capt. Navrang Singh</strong> with teaching excellence since 2009.
           Real pilots. Real results.
         </p>
         <div className="ov-dream-actions">
@@ -232,7 +232,7 @@ function Act2Overlay({ visible }) {
           <em>Concept Clarity.</em>
         </h2>
         <p className="ov-body" style={{ marginTop: '1rem' }}>
-          15+ years of DGCA teaching expertise. You don't memorize.
+          DGCA teaching expertise since 2009. You don't memorize.
           You understand. That understanding is what separates a passing student
           from a commanding pilot.
         </p>
@@ -353,7 +353,7 @@ function Act6Overlay({ visible }) {
         </h2>
         <div style={{ display: 'flex', gap: '3rem', marginTop: '0.5rem', marginBottom: '1.5rem' }}>
           {[
-            { num: '15+ YRS', label: 'Teaching Excellence' },
+            { num: 'SINCE 2009', label: 'Teaching Excellence' },
             { num: 'STRONG', label: 'DGCA Results' },
             { num: '2009',    label: 'Since' },
           ].map(s => (

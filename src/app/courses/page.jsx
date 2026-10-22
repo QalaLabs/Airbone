@@ -9,8 +9,8 @@ import { fetchPublic } from '@/lib/adminApi'
 import { resolveCatalogItems, LEGACY_COURSE_ITEMS } from '@/lib/publicCourses'
 
 export const metadata = {
-  title: 'Pilot Training Courses in Delhi CPL, ATPL, Cabin Crew | Airborne',
-  description: 'Browse DGCA-aligned aviation courses at Airborne Aviation Academy, Dwarka Delhi. CPL ground school, ATPL, Cabin Crew, A320 SIM FBS, cadet prep. Compare fees and timelines.',
+  title: 'Pilot Training Courses in Delhi | Airborne Aviation',
+  description: 'Browse DGCA-aligned aviation courses at Airborne Aviation Academy, Dwarka Delhi. CPL ground school, ATPL, Cabin Crew & cadet prep. Compare fees.',
 }
 
 const coursesIndexGraph = buildCoursesIndexGraph(COURSES_INDEX_ITEMS)
@@ -22,7 +22,7 @@ export default async function CoursesPage() {
   // Canonical catalog = Admin PUBLISHED courses. If Admin is unreachable,
   // fall back to the documented offline copy so the page never empties.
   const apiCourses = await fetchPublic('/courses', { limit: 100 })
-  const courses = apiCourses == null ? LEGACY_COURSE_ITEMS : resolveCatalogItems(apiCourses)
+  const courses = resolveCatalogItems(apiCourses)
 
   return (
     <>
@@ -40,7 +40,7 @@ export default async function CoursesPage() {
             <em style={{ color: 'var(--gold)', fontStyle: 'normal' }}> Airborne Aviation Academy Dwarka, Delhi</em>
           </h1>
           <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(33,33,33,0.7)', fontSize: '1.02rem', lineHeight: '1.7', maxWidth: '100%' }}>
-            Airborne Aviation Academy, Dwarka, Delhi offers DGCA Complied pilot training programs — from CPL ground school and ATPL exam prep to A320 Simulator FBS and cadet selection coaching. Every course is mentor-led and structured for DGCA exam readiness.
+            Airborne Aviation Academy, Dwarka, Delhi offers DGCA-compliant pilot training programs — from CPL ground school and ATPL exam prep to A320 Simulator FBS and cadet selection coaching. Every course is mentor-led and structured for DGCA exam readiness.
           </p>
         </div>
 

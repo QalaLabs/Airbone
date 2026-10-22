@@ -1,4 +1,4 @@
-import { absUrl, ADDRESS, ORG } from './constants.js'
+﻿import { absUrl, ADDRESS, ORG } from './constants.js'
 import { id } from './ids.js'
 
 /**
@@ -19,7 +19,7 @@ export function sanitizeSchemaText(text = '') {
 /**
  * Extract a single reliable INR list price for Offer schema.
  * Rejects ranges, Lakh/K shorthand, scholarship copy, and multi-number strings
- * that would fabricate false Google Offer prices (e.g. "₹50K–1L" → 501).
+ * that would fabricate false Google Offer prices (e.g. "â‚¹50Kâ€“1L" â†’ 501).
  */
 export function parseInrPrice(price) {
   if (price == null || price === '') return null
@@ -32,14 +32,14 @@ export function parseInrPrice(price) {
 
   // Reject ambiguous marketing / band strings
   if (
-    /scholarship|lakh|lacs|\bK\b|onwards|\+|–|-|to\s+\d|\/\s*₹/i.test(raw) &&
-    !/^₹?[\d,]+$/.test(raw)
+    /scholarship|lakh|lacs|\bK\b|onwards|\+|â€“|-|to\s+\d|\/\s*â‚¹/i.test(raw) &&
+    !/^â‚¹?[\d,]+$/.test(raw)
   ) {
     return null
   }
 
-  // Accept only a single clean amount: 270000 | ₹2,70,000 | 2,70,000
-  const single = raw.match(/^₹?\s*([\d,]+)\s*$/)
+  // Accept only a single clean amount: 270000 | â‚¹2,70,000 | 2,70,000
+  const single = raw.match(/^â‚¹?\s*([\d,]+)\s*$/)
   if (!single) return null
 
   const digits = single[1].replace(/,/g, '')
@@ -50,14 +50,14 @@ export function parseInrPrice(price) {
 }
 
 /**
- * ISO-8601 duration helper — accepts "P3M", "3 months", "3–6 months", "12 weeks"
+ * ISO-8601 duration helper â€” accepts "P3M", "3 months", "3â€“6 months", "12 weeks"
  */
 export function toIsoDuration(duration) {
   if (!duration) return undefined
   const s = String(duration).trim()
   if (/^P[\dYMDWTHMS.]+$/i.test(s)) return s.toUpperCase()
 
-  const range = s.match(/(\d+)\s*[–-]\s*(\d+)\s*(month|week|day|hour)/i)
+  const range = s.match(/(\d+)\s*[â€“-]\s*(\d+)\s*(month|week|day|hour)/i)
   if (range) {
     const n = range[1]
     const unit = range[3].toLowerCase()
@@ -273,14 +273,18 @@ export function buildItemList({ name, description, path, items }) {
 }
 
 /** Reference stubs used when course is listed in catalog but not fully defined on homepage */
-export function buildCourseStub(slug, name, path) {
-  return {
+export function buildCourseStub(slug, name, path, description) {
+  const stub = {
     '@type': 'Course',
     '@id': id.course(slug),
     name,
     url: absUrl(path || `/courses/${slug}`),
     provider: { '@id': id.org() },
   }
+  if (description) {
+    stub.description = sanitizeSchemaText(description)
+  }
+  return stub
 }
 
 export { ADDRESS, ORG }

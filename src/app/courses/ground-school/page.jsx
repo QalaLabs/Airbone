@@ -8,19 +8,20 @@ import CourseReviews from '@/components/CourseReviews'
 import JsonLd from '@/components/JsonLd'
 import { buildCoursePageGraph } from '@/lib/schema'
 import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
+import CourseVideoTabs from '@/components/CourseVideoTabs'
 
 export const metadata = {
-  title: 'DGCA Complied Ground School Delhi | CPL & ATPL Classes | Airborne',
-  description: 'Pass your DGCA CPL & ATPL exams with Airborne\'s DGCA Complied ground school in Dwarka, Delhi. All subjects. Taught by airline pilots. 3–6 months. Enrol now.',
+  title: 'DGCA Ground School Delhi | CPL & ATPL | Airborne Aviation',
+  description: 'Pass your DGCA CPL & ATPL exams with Airborne\'s DGCA-compliant ground school in Dwarka, Delhi. All subjects. Taught by airline pilots. 3–6 months. Enrol now.',
   alternates: { canonical: '/courses/ground-school' },
   openGraph: {
-    title: 'DGCA Complied Ground School Delhi | CPL & ATPL Classes | Airborne',
-    description: 'Pass your DGCA CPL & ATPL exams with Airborne\'s DGCA Complied ground school in Dwarka, Delhi. All subjects. Taught by airline pilots. 3–6 months. Enrol now.',
+    title: 'DGCA Ground School Delhi | CPL & ATPL | Airborne Aviation',
+    description: 'Pass your DGCA CPL & ATPL exams with Airborne\'s DGCA-compliant ground school in Dwarka, Delhi. All subjects. Taught by airline pilots. 3–6 months. Enrol now.',
     url: 'https://www.airborneaviation.in/courses/ground-school',
   },
   twitter: {
-    title: 'DGCA Complied Ground School Delhi | CPL & ATPL Classes | Airborne',
-    description: 'Pass your DGCA CPL & ATPL exams with Airborne\'s DGCA Complied ground school in Dwarka, Delhi. All subjects. Taught by airline pilots. 3–6 months. Enrol now.',
+    title: 'DGCA Ground School Delhi | CPL & ATPL | Airborne Aviation',
+    description: 'Pass your DGCA CPL & ATPL exams with Airborne\'s DGCA-compliant ground school in Dwarka, Delhi. All subjects. Taught by airline pilots. 3–6 months. Enrol now.',
   },
 }
 
@@ -98,10 +99,10 @@ export default function GroundSchoolPage() {
                 📍 Dwarka, Delhi · 3–6 Months · ₹2,70,000
               </span>
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
-                DGCA Ground School Classes in Dwarka, Delhi - DGCA Complied
+                DGCA Ground School Classes in Dwarka, Delhi - DGCA-compliant
               </h1>
               <p className="ov-body" style={{ marginTop: '1.5rem', color: 'rgba(0, 39, 76, 0.75)', fontSize: '1.05rem', lineHeight: '1.75' }}>
-                Airborne Aviation Academy offers DGCA Complied ground school classes in Dwarka, New Delhi. All DGCA subjects covered by Capt. Navrang Singh - who has personally trained aviation aspirants since 2009. Duration: 3–6 months.
+                Airborne Aviation Academy offers DGCA-compliant ground school classes in Dwarka, New Delhi. All DGCA subjects covered by Capt. Navrang Singh - who has personally trained aviation aspirants since 2009. Duration: 3–6 months.
               </p>
             </div>
 
@@ -139,10 +140,10 @@ export default function GroundSchoolPage() {
               </h2>
               <div style={{ background: '#ffffff', border: '1px solid rgba(0, 39, 76, 0.08)', boxShadow: '0 4px 20px rgba(0, 39, 76, 0.02)', padding: '2rem', borderRadius: '4px' }}>
                 <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.8', margin: 0 }}>
-                  Capt. Navrang Singh is the co-founder of Airborne Aviation Academy and has been teaching DGCA ground school personally since 2009. With 15+ years of flight instruction experience, he strips DGCA syllabi down to first principles - Air Regulations, Technical General, Navigation, Meteorology, RTR - taught the way you will actually use them in the cockpit.
+                  Capt. Navrang Singh is the co-founder of Airborne Aviation Academy and has been teaching DGCA ground school personally since 2009. With flight instruction experience since 2009, he strips DGCA syllabi down to first principles - Air Regulations, Technical General, Navigation, Meteorology, RTR - taught the way you will actually use them in the cockpit.
                 </p>
                 <div style={{ marginTop: '1.5rem', display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
-                  {['15+ Years Teaching', 'Training Since 2009', 'Strong First-Attempt Pass Record', 'Personal Classes - No Substitutes'].map((stat, i) => (
+                  {[ 'Training Since 2009', 'Strong First-Attempt Pass Record', 'Personal Classes - No Substitutes'].map((stat, i) => (
                     <span key={i} style={{ fontSize: '0.75rem', fontFamily: 'var(--font-h)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--navy)', background: 'rgba(216,160,39,0.08)', border: '1px solid rgba(216,160,39,0.2)', padding: '0.35rem 0.85rem', borderRadius: '2px' }}>{stat}</span>
                   ))}
                 </div>
@@ -163,6 +164,11 @@ export default function GroundSchoolPage() {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Video Briefings & Shorts */}
+            <div className="course-section-divider">
+              <CourseVideoTabs slug="ground-school" courseName="DGCA Ground School" />
             </div>
 
             {/* FAQ */}

@@ -5,7 +5,7 @@ import JsonLd from '@/components/JsonLd'
 import { buildAboutGraph } from '@/lib/schema'
 
 export const metadata = {
-  title: 'About Airborne Aviation Academy DGCA Complied | Dwarka Delhi',
+  title: 'About Airborne Aviation Academy DGCA-compliant | Dwarka Delhi',
   description: 'Airborne Aviation Academy, Dwarka Delhi founded by Capt. Navrang Singh in 2009. DGCA-aligned ground school. Meet our mentors, faculty and placement pathways.',
   alternates: { canonical: '/about' },
 }
@@ -17,7 +17,7 @@ const FOUNDERS = [
     name: 'Captain Navrang Singh',
     role: 'Co-founder & Head Mentor',
     image: '/team/navrang_portrait.jpg',
-    bio: 'Capt. Navrang Singh is the guiding force behind Airborne Aviation Academy and the mentor at the heart of its training vision. With over 15 years of aviation training experience, he is known for simplifying complex concepts, mentoring students personally, and building a culture of clarity, discipline, and real-world readiness across the academy. His career has been a dedicated mission to bridge the gap for aspiring pilots, ensuring that every student learns directly from the visionary driving their success.',
+    bio: 'Capt. Navrang Singh is the guiding force behind Airborne Aviation Academy and the mentor at the heart of its training vision. With aviation training experience since 2009, he is known for simplifying complex concepts, mentoring students personally, and building a culture of clarity, discipline, and real-world readiness across the academy. His career has been a dedicated mission to bridge the gap for aspiring pilots, ensuring that every student learns directly from the visionary driving their success.',
     accent: 'Concept Clarity over rote learning'
   },
   {
@@ -58,9 +58,9 @@ const FOUNDERS = [
 ]
 
 const STATS = [
-  { value: '15+ Yrs', label: 'Teaching Legacy' },
+  { value: 'Since 2009', label: 'Teaching Legacy' },
   { value: 'Strong', label: 'DGCA Exam Results' },
-  { value: 'Since 2009', label: 'Aspirants Mentored' },
+  { value: '2,500+', label: 'Aspirants Mentored' },
   { value: 'Max 25', label: 'Student Batch Limit' }
 ]
 

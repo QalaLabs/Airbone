@@ -53,7 +53,7 @@ export function MentorOverlay({ visible }) {
           Guided by <span style={{color:'var(--gold)'}}>Capt. Navrang Singh</span>
         </h2>
         <p className="overlay-body" style={{ maxWidth: '500px' }}>
-          With 15+ years of teaching excellence, you are not just learning to fly. 
+          With teaching excellence since 2009, you are not just learning to fly. 
           You are learning to command. "Concept Clarity" is our absolute standard.
         </p>
       </div>

@@ -8,10 +8,11 @@ import CourseReviews from '@/components/CourseReviews'
 import JsonLd from '@/components/JsonLd'
 import { buildCoursePageGraph } from '@/lib/schema'
 import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
+import CourseVideoTabs from '@/components/CourseVideoTabs'
 
 export const metadata = {
   title: 'Cadet Pilot Program Prep IndiGo, Air India, Akasa | Airborne',
-  description: 'Prepare for IndiGo, Air India & Akasa cadet pilot programs at Airborne, Dwarka - structured training since 2009. Aptitude tests, GD-PI, simulator prep - join now.',
+  description: 'Prepare for IndiGo, Air India & Akasa cadet pilot programs at Airborne, Dwarka. Aptitude tests, GD-PI & simulator prep since 2009. Enrol today.',
   alternates: { canonical: '/courses/cadet-preparation' },
 }
 
@@ -125,6 +126,11 @@ export default function CadetPreparationPage() {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Video Briefings & Shorts */}
+            <div className="course-section-divider">
+              <CourseVideoTabs slug="cadet-preparation" courseName="Cadet Pilot Preparation" />
             </div>
 
             {/* FAQ */}

@@ -9,7 +9,7 @@
 export const COURSE_SCHEMA = {
   'ground-school': {
     slug: 'ground-school',
-    name: 'DGCA Complied Ground School',
+    name: 'DGCA-compliant Ground School',
     description:
       'DGCA-aligned ground school in Dwarka, Delhi covering CPL and ATPL theory subjects, taught with concept-focused instruction by Capt. Navrang Singh. Duration typically 3–6 months. Batches capped at 25 students.',
     path: '/courses/ground-school',
@@ -48,7 +48,7 @@ export const COURSE_SCHEMA = {
   },
   'commercial-pilot-license-cpl': {
     slug: 'commercial-pilot-license-cpl',
-    name: 'DGCA Complied CPL Ground School',
+    name: 'DGCA-compliant CPL Ground School',
     description:
       'DGCA CPL theory preparation: Air Navigation, Meteorology, Air Regulations, Technical General, Technical Specific, and RTR. DGCA-aligned training by Capt. Navrang Singh at Airborne Aviation Academy, Dwarka.',
     path: '/courses/commercial-pilot-license-cpl',
@@ -73,7 +73,7 @@ export const COURSE_SCHEMA = {
       },
       {
         q: 'How much does CPL cost in India?',
-        a: 'CPL training in India costs ₹55–65 lakh at DGCA-approved FTOs, covering 200 flying hours, ground school, DGCA exam fees, and medical. Education loans available via SBI, Bank of Baroda, PNB.',
+        a: 'CPL training in India costs ₹55–65 lakh at DGCA-compliant FTOs, covering 200 flying hours, ground school, DGCA exam fees, and medical. Education loans available via SBI, Bank of Baroda, PNB.',
       },
       {
         q: 'What is the DGCA CPL Ground School fee at Airborne?',
@@ -196,4 +196,5 @@ export const COURSES_INDEX_ITEMS = [
   { name: 'Airbus A320 Simulator FBS', path: '/courses/a320-simulator', courseSlug: 'a320-simulator' },
   { name: "Securing Your Child's Future in Aviation", path: '/courses/securing-your-childs-future-in-aviation', courseSlug: 'securing-your-childs-future-in-aviation' },
   { name: 'Cabin Crew Training', path: '/courses/cabin-crew-training', courseSlug: 'cabin-crew-training' },
+  { name: 'Private Pilot License (PPL)', path: '/courses/private-pilot-license', courseSlug: 'private-pilot-license' },
 ]

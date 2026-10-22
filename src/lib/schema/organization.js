@@ -124,7 +124,10 @@ export function buildOrganization({ includeCatalog = false, includeServices = fa
     priceRange: ORG.priceRange,
     sameAs: ORG.sameAs,
     foundingDate: ORG.foundingDate,
-    founder: { '@id': id.founder() },
+    founder: [
+      { '@id': id.founder() },
+      { '@id': id.person('deepak-aggarwal') }
+    ],
     employee: LEADERSHIP.map((p) => ({ '@id': id.person(p.id) })),
     areaServed: ORG.areaServed,
     knowsAbout: ORG.knowsAbout,

@@ -1,13 +1,6 @@
 import { fetchPublic } from '@/lib/adminApi'
 
-/**
- * Shared course page reviews (1–3) + optional parent testimonial block.
- *
- * Canonical source: Admin Testimonial (APPROVED, featured-first) via
- * /api/public/testimonials. DEFAULT_COURSE_REVIEWS / PARENT_TESTIMONIALS are
- * the documented OFFLINE-ONLY fallback (exact pre-Section-6 copy) — they are
- * never rendered when Admin is reachable.
- */
+
 export const DEFAULT_COURSE_REVIEWS = [
   {
     name: 'Arjun Mehta',

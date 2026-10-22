@@ -8,10 +8,11 @@ import CourseReviews from '@/components/CourseReviews'
 import JsonLd from '@/components/JsonLd'
 import { buildCoursePageGraph } from '@/lib/schema'
 import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
+import CourseVideoTabs from '@/components/CourseVideoTabs'
 
 export const metadata = {
   title: 'GD & PI Course Delhi | ₹30,000 | Airborne Aviation',
-  description: 'Foundational GD & PI course in Dwarka - group discussion, personal interview and personality development with Rajeet Khalsa (ex-Air India AGM). 3 months. ₹30,000.',
+  description: 'Foundational GD & PI course in Dwarka - group discussion, interview prep & personality development with Rajeet Khalsa (ex-Air India AGM). 3 months. ₹30,000.',
   alternates: { canonical: '/courses/gd-pi' },
 }
 
@@ -110,6 +111,11 @@ export default function GdPiCoursePage() {
               <p style={{ fontSize: '0.92rem', color: 'rgba(0, 39, 76, 0.75)', lineHeight: '1.7', margin: 0 }}>
                 Rajeet Khalsa retired as AGM (Training) at Air India after 37+ years. A certified soft skills trainer and image consultant who trained cabin crew and airline professionals for India&apos;s national carrier. At Airborne, Rajeet runs GD/PI and personality modules - sessions built on real airline selection formats.
               </p>
+            </div>
+
+            {/* Video Briefings & Shorts */}
+            <div className="course-section-divider">
+              <CourseVideoTabs slug="gd-pi" courseName="GD & PI Course" />
             </div>
 
             <div className="course-section-divider">

@@ -239,7 +239,8 @@ export function StatReveal({ value, label, prefix = '', suffix = '', decimals = 
   const inView = useInView(ref, { once: true, amount: 0.5 })
   const mv = useMotionValue(0)
   const spring = useSpring(mv, { duration: 1600, bounce: 0 })
-  const [display, setDisplay] = useState(prefix + '0' + suffix)
+  const finalStatic = prefix + (typeof value === 'number' ? (value >= 1000 ? value.toLocaleString('en-IN') : value.toFixed(decimals)) : value) + suffix
+  const [display, setDisplay] = useState(finalStatic)
 
   useEffect(() => {
     if (inView) mv.set(value)
@@ -247,7 +248,8 @@ export function StatReveal({ value, label, prefix = '', suffix = '', decimals = 
 
   useEffect(() => {
     return spring.on('change', (v) => {
-      setDisplay(prefix + v.toFixed(decimals) + suffix)
+      const formatted = v >= 1000 ? Math.round(v).toLocaleString('en-IN') : v.toFixed(decimals)
+      setDisplay(prefix + formatted + suffix)
     })
   }, [spring, prefix, suffix, decimals])
 
@@ -265,7 +267,7 @@ export function StatReveal({ value, label, prefix = '', suffix = '', decimals = 
  * AirlineMarquee — Two counter-scrolling rows of airline names
  * ===================================================================*/
 const AIRLINES = [
-  'IndiGo', 'Air India', 'Emirates', 'Qatar Airways', 'Vistara',
+  'IndiGo', 'Air India', 'Emirates', 'Qatar Airways', 
   'Etihad', 'SpiceJet', 'Akasa Air', 'Lufthansa', 'Singapore Airlines',
   'Air Arabia', 'Oman Air',
 ]
@@ -279,7 +281,7 @@ export function AirlineMarquee() {
       <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
         <div className="chapter-num" style={{ color: 'var(--red)' }}>The Roster</div>
         <p style={{ marginTop: '0.75rem', fontFamily: 'var(--font-h)', color: 'rgba(0,39,76,0.7)', fontSize: '0.8rem', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
-          Where our cockpits are
+          Our alumni fly with
         </p>
       </div>
 
@@ -567,7 +569,7 @@ export function SuccessMosaic({ image: fallbackImage }) {
           </div>
           <div className="mosaic-header-desc">
             <p style={{ color: 'rgba(33,33,33,0.7)', fontSize: '0.9375rem', lineHeight: 1.7, maxWidth: '28rem' }}>
-              Fifteen years. Hundreds of cockpits. A few of the captains, first officers and cadets who walked our corridors before they walked a jet bridge.
+              Since 2009. Hundreds of cockpits. A few of the captains, first officers and cadets who walked our corridors before they walked a jet bridge.
             </p>
           </div>
         </div>

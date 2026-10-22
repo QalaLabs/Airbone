@@ -283,7 +283,7 @@ export default function PremiumFooter({ onBookDemo }) {
             <a href="/privacy" className="pf-bottom-link">Privacy Policy</a>
             <a href="/refund-policy" className="pf-bottom-link">Refund Policy</a>
             <a href="/terms" className="pf-bottom-link">Terms &amp; Conditions</a>
-            <span className="pf-dgca-badge">DGCA Ground Standards Complied</span>
+            <span className="pf-dgca-badge">DGCA-Compliant Ground Training</span>
           </div>
         </div>
       </div>

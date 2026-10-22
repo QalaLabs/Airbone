@@ -7,6 +7,7 @@ import CourseReviews from '@/components/CourseReviews'
 import JsonLd from '@/components/JsonLd'
 import { buildCoursePageGraph } from '@/lib/schema'
 import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
+import CourseVideoTabs from '@/components/CourseVideoTabs'
 import { fetchPublic } from '@/lib/adminApi'
 import { displayCourseFee, courseFeeNumeric } from '@/lib/courseFees'
 
@@ -17,8 +18,8 @@ const OFFLINE_FEE_FALLBACK = '₹1,25,000' // matches canonical Admin seed; resi
 export const revalidate = 60
 
 export const metadata = {
-  title: 'Comprehensive Airline Preparation Program | DGCA + A320 + ADAPT + GD/PI | Airborne Delhi',
-  description: 'CPL to First Officer in 2.5 months. DGCA Ground Refresher, ADAPT Screening, A320 Systems & Sim Prep, and GD/PI - all in one program. 4 hrs/day. ₹1,25,000. Airborne Aviation Academy, Dwarka Delhi.',
+  title: 'Airline Preparation Program Delhi | Airborne Aviation',
+  description: 'CPL to First Officer in 2.5 months. DGCA refresher, ADAPT screening, A320 systems & GD/PI in one program. ₹1,25,000. Airborne Aviation Academy, Dwarka Delhi.',
   alternates: { canonical: '/courses/airline-preparation' },
 }
 
@@ -359,6 +360,11 @@ export default async function AirlinePreparationPage() {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Video Briefings & Shorts */}
+            <div className="course-section-divider">
+              <CourseVideoTabs slug="airline-preparation" courseName="Airline Preparation Program" />
             </div>
 
             {/* FAQs */}

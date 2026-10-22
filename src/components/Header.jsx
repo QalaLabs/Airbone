@@ -9,12 +9,11 @@ import { normalizeNavItems, isExternalHref } from '@/lib/cms/safeContent'
 const DEFAULT_LINKS = [
   { id: 'about', name: 'About', path: '/about', newTab: false, children: [] },
   { id: 'courses', name: 'Courses', path: '/courses', newTab: false, children: [] },
+  { id: 'blog', name: 'Blog', path: '/blog', newTab: false, children: [] },
+  { id: 'contact', name: 'Contact', path: '/contact', newTab: false, children: [] },
   { id: 'jobs', name: 'Jobs Portal', path: '/jobs', newTab: false, children: [] },
   { id: 'resources', name: 'Resources', path: '/resources', newTab: false, children: [] },
-  { id: 'contact', name: 'Contact', path: '/contact', newTab: false, children: [] },
 ]
-// The built-in menu shows four links on desktop (Contact is the CTA); a CMS menu shows every visible item.
-const DEFAULT_DESKTOP_COUNT = 4
 
 /** Internal links use next/link; external or new-tab links are plain anchors with a safe rel. */
 function NavAnchor({ link, className, style, children, onClick, testId }) {
@@ -57,7 +56,16 @@ export default function Header() {
         const headerMenu = payload?.data?.navMenus?.find?.(m => m.location === 'header')
         const mapped = normalizeNavItems(headerMenu?.items)
         if (mapped.length > 0) {
-          setLinks(mapped)
+          const hasBlog = mapped.some(l => l.path === '/blog' || l.id === 'blog' || l.name?.toLowerCase() === 'blog')
+          const hasContact = mapped.some(l => l.path === '/contact' || l.id === 'contact' || l.name?.toLowerCase() === 'contact')
+          const finalLinks = [...mapped]
+          if (!hasBlog) {
+            finalLinks.push({ id: 'blog', name: 'Blog', path: '/blog', newTab: false, children: [] })
+          }
+          if (!hasContact) {
+            finalLinks.push({ id: 'contact', name: 'Contact', path: '/contact', newTab: false, children: [] })
+          }
+          setLinks(finalLinks)
           setFromCms(true)
         }
       })
@@ -75,7 +83,7 @@ export default function Header() {
     return () => window.removeEventListener('keydown', onKey)
   }, [openSubmenu, hoverSubmenu])
 
-  const desktopLinks = fromCms ? links : links.slice(0, DEFAULT_DESKTOP_COUNT)
+  const desktopLinks = links
 
   return (
     <>
@@ -86,7 +94,7 @@ export default function Header() {
 
 
         {/* Desktop nav links */}
-        <ul className="nav-links desktop-only" role="list" data-testid="header-nav">
+        <ul className="nav-links desktop-only" role="list" data-testid="header-nav" style={{ gap: 'clamp(1rem, 1.8vw, 2rem)' }}>
           {desktopLinks.map(link => {
             const active = pathname === link.path || link.children.some(c => c.path === pathname)
             const linkStyle = {
@@ -139,10 +147,33 @@ export default function Header() {
           })}
         </ul>
 
-        {/* Desktop CTA */}
-        <Link href="/contact" className="nav-cta desktop-only" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
-          Book Demo
-        </Link>
+        {/* Desktop CTA & Phone */}
+        <div className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+          <a
+            href="tel:+919953777320"
+            className="nav-phone-link"
+            style={{
+              fontFamily: 'var(--font-h)',
+              fontSize: '0.82rem',
+              fontWeight: 800,
+              letterSpacing: '0.04em',
+              color: 'var(--navy)',
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              transition: 'color 0.2s',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <span style={{ fontSize: '0.9rem' }}>📞</span>
+            <span>+91 99537 77320</span>
+          </a>
+
+          <Link href="/contact" className="nav-cta" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+            Book Demo
+          </Link>
+        </div>
 
         {/* Hamburger Trigger */}
         <button

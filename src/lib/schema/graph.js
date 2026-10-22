@@ -51,15 +51,60 @@ export function coreEntities({
 /** Homepage knowledge graph */
 export function buildHomeGraph(faqs = []) {
   const stubs = [
-    buildCourseStub('commercial-pilot-license-cpl', 'DGCA Complied CPL Ground School', '/courses/commercial-pilot-license-cpl'),
-    buildCourseStub('ground-school', 'DGCA Complied Ground School', '/courses/ground-school'),
-    buildCourseStub('atpl', 'ATPL Ground School', '/courses/atpl'),
-    buildCourseStub('cadet-preparation', 'Cadet Pilot Program Preparation', '/courses/cadet-preparation'),
-    buildCourseStub('airline-preparation', 'Airline Interview Preparation', '/courses/airline-preparation'),
-    buildCourseStub('gd-pi', 'GD & PI Course', '/courses/gd-pi'),
-    buildCourseStub('cas-compass-adapt', 'CASS / Compass / ADAPT Prep', '/courses/cas-compass-adapt'),
-    buildCourseStub('a320-simulator', 'Airbus A320 Simulator FBS', '/courses/a320-simulator'),
-    buildCourseStub('cabin-crew-training', 'Cabin Crew Training', '/courses/cabin-crew-training'),
+    buildCourseStub(
+      'commercial-pilot-license-cpl',
+      'DGCA-compliant CPL Ground School',
+      '/courses/commercial-pilot-license-cpl',
+      'Comprehensive DGCA CPL theoretical knowledge training covering Air Navigation, Meteorology, Air Regulations, and Technical subjects.'
+    ),
+    buildCourseStub(
+      'ground-school',
+      'DGCA-compliant Ground School',
+      '/courses/ground-school',
+      'Intensive ground school training led by Capt. Navrang Singh for CPL and ATPL candidates in Dwarka, New Delhi.'
+    ),
+    buildCourseStub(
+      'atpl',
+      'ATPL Ground School',
+      '/courses/atpl',
+      'Advanced DGCA Airline Transport Pilot License ground school curriculum covering Radio Aids, General Navigation, and Flight Planning.'
+    ),
+    buildCourseStub(
+      'cadet-preparation',
+      'Cadet Pilot Program Preparation',
+      '/courses/cadet-preparation',
+      'Full-spectrum preparation for airline cadet pilot selection including psychometric, aptitude, and technical rounds.'
+    ),
+    buildCourseStub(
+      'airline-preparation',
+      'Airline Interview Preparation',
+      '/courses/airline-preparation',
+      'Targeted airline prep program covering A320 systems, CASS/ADAPT aptitude, and airline technical boards.'
+    ),
+    buildCourseStub(
+      'gd-pi',
+      'GD & PI Course',
+      '/courses/gd-pi',
+      'Group Discussion and Personal Interview coaching tailored for airline selection boards and cadet intakes.'
+    ),
+    buildCourseStub(
+      'cas-compass-adapt',
+      'CASS / Compass / ADAPT Prep',
+      '/courses/cas-compass-adapt',
+      'Psychomotor, spatial orientation, and multi-tasking pilot aptitude test preparation.'
+    ),
+    buildCourseStub(
+      'a320-simulator',
+      'Airbus A320 Simulator FBS',
+      '/courses/a320-simulator',
+      'Fixed-base procedural flight training device for jet transition, cockpit familiarization, and airline assessment readiness.'
+    ),
+    buildCourseStub(
+      'cabin-crew-training',
+      'Cabin Crew Training',
+      '/courses/cabin-crew-training',
+      'Professional aviation hospitality, in-flight safety, grooming, and interview preparation with Batch 1 scholarships.'
+    ),
   ]
 
   const image = buildPrimaryImage('/footage/hero-cockpit.jpg', `${ORG.name} - pilot training in Dwarka, Delhi`)

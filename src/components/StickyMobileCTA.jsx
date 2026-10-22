@@ -27,7 +27,6 @@ export default function StickyMobileCTA({ onBookDemo }) {
       left: 0,
       right: 0,
       zIndex: 800,
-      display: 'grid',
       gridTemplateColumns: '1fr 1fr 1fr',
       background: '#000f1e',
       borderTop: '1px solid rgba(255,255,255,0.08)',

@@ -11,7 +11,7 @@ export const metadata = {
 const DGCA_POINTS = [
   {
     title: 'DGCA CPL Examination Alignment',
-    desc: 'All CPL ground school subjects taught at Airborne Aviation Academy are structured in strict accordance with the DGCA-approved CPL syllabus under CAR Section 7, Series B. Our curriculum covers all 6 examination papers: Air Navigation, Meteorology, Air Regulations, Technical General, Technical Specific, and Radio Telephony.',
+    desc: 'All CPL ground school subjects taught at Airborne Aviation Academy are structured in strict accordance with the DGCA-compliant CPL syllabus under CAR Section 7, Series B. Our curriculum covers all 6 examination papers: Air Navigation, Meteorology, Air Regulations, Technical General, Technical Specific, and Radio Telephony.',
   },
   {
     title: 'DGCA ATPL Alignment',
@@ -19,11 +19,11 @@ const DGCA_POINTS = [
   },
   {
     title: 'Simulator - DGCA FTD Level 5',
-    desc: 'Our in-house Airbus A320 Flight Training Device (FTD) is used for familiarisation training, airline interview preparation, and cadet selection readiness. Students wishing to log FTD hours toward DGCA credit must do so under a DGCA-approved FTO using a licensed simulator.',
+    desc: 'Our in-house Airbus A320 Flight Training Device (FTD) is used for familiarisation training, airline interview preparation, and cadet selection readiness. Students wishing to log FTD hours toward DGCA credit must do so under a DGCA-compliant FTO using a licensed simulator.',
   },
   {
     title: 'Partner FTOs',
-    desc: 'Airborne Aviation Academy collaborates with DGCA-approved Flying Training Organisations (FTOs) in India, and internationally recognised flight schools in the United States, New Zealand, and South Africa for flying hour accumulation and license issuance.',
+    desc: 'Airborne Aviation Academy collaborates with DGCA-compliant Flying Training Organisations (FTOs) in India, and internationally recognised flight schools in the United States, New Zealand, and South Africa for flying hour accumulation and license issuance.',
   },
   {
     title: 'Medical Requirements',

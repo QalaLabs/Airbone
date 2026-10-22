@@ -782,7 +782,7 @@ img, video { display: block; max-width: 100%; }
   font-size: 0.85rem;
   font-weight: 800;
   text-transform: uppercase;
-  color: var(--navy);
+  color: #00274C; /* Navy on light background (14.2:1 contrast, WCAG AAA) */
   margin-bottom: 0.5rem;
   letter-spacing: 0.08em;
   line-height: 1.45;
@@ -2771,15 +2771,21 @@ html { scroll-behavior: smooth; }
 }
 
 /* ================================================================
-   STICKY MOBILE CTA BAR — hidden on desktop
+   STICKY MOBILE CTA BAR — hidden on desktop (>= 768px)
    ================================================================ */
 .sticky-mobile-cta {
-  display: none;
+  display: none !important;
 }
 
-@media (max-width: 768px) {
+@media (min-width: 768px) {
   .sticky-mobile-cta {
-    display: grid;
+    display: none !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .sticky-mobile-cta {
+    display: grid !important;
   }
 
   body {

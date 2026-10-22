@@ -187,6 +187,37 @@ export const LEGACY_COURSE_ITEMS = [
 ]
 
 /**
+ * Canonical course sequence aligned across Homepage, /courses, footer, and modals.
+ */
+export const REQUIRED_ORDER = [
+  'commercial-pilot-license-cpl', // DGCA CPL Ground Classes
+  'flying-training-india-abroad', // Commercial Pilot License (CPL)
+  'cadet-preparation', // Cadet Preparation
+  'airline-preparation', // Airline Preparation
+  'gd-pi', // GD & PI Course
+  'cas-compass-adapt', // CASS Compass Adapt
+  'atpl', // ATPL Ground School
+  'a320-simulator', // Airbus A320 Simulator FBS
+  'securing-your-childs-future-in-aviation', // Securing Your Child's Future in Aviation
+  'cabin-crew-training', // Cabin Crew Training
+  'private-pilot-license', // Private Pilot License (PPL)
+]
+
+export const CANONICAL_COURSE_OPTIONS = [
+  'DGCA CPL Ground Classes (₹2,70,000)',
+  'Commercial Pilot License (CPL)',
+  'Cadet Preparation (₹50,000)',
+  'Airline Preparation (₹1,25,000)',
+  'GD & PI Course (₹30,000)',
+  'CASS Compass Adapt (₹30,000)',
+  'ATPL Ground School (₹1,50,000)',
+  'Airbus A320 Simulator FBS (₹10,000)',
+  "Securing Your Child's Future in Aviation",
+  'Cabin Crew Training (₹54,000)',
+  'Private Pilot License (PPL)',
+]
+
+/**
  * Build the final catalog: Admin PUBLISHED courses first (their order), then
  * legacy static-only courses whose marketing slug has no Admin record. Returns
  * null-safe array. `apiCourses` is the raw /api/public/courses payload.
@@ -200,31 +231,19 @@ export function resolveCatalogItems(apiCourses) {
   
   const combined = [...items, ...legacy]
   
-  const REQUIRED_ORDER = [
-    'commercial-pilot-license-cpl', // Maps to DGCA CPL Ground
-    'flying-training-india-abroad', // Maps to CPL
-    'cadet-preparation',
-    'airline-preparation',
-    'gd-pi',
-    'cas-compass-adapt',
-    'atpl',
-    'a320-simulator',
-    'cabin-crew-training'
-  ];
-  
   combined.sort((a, b) => {
-    // Extract the slug from href
-    const slugA = a.href.replace('/courses/', '');
-    const slugB = b.href.replace('/courses/', '');
+    // Extract the slug from marketingSlug or href
+    const slugA = a.marketingSlug || a.href?.replace('/courses/', '') || ''
+    const slugB = b.marketingSlug || b.href?.replace('/courses/', '') || ''
     
-    let idxA = REQUIRED_ORDER.indexOf(slugA);
-    let idxB = REQUIRED_ORDER.indexOf(slugB);
+    let idxA = REQUIRED_ORDER.indexOf(slugA)
+    let idxB = REQUIRED_ORDER.indexOf(slugB)
     
-    if (idxA === -1) idxA = 999;
-    if (idxB === -1) idxB = 999;
+    if (idxA === -1) idxA = 999
+    if (idxB === -1) idxB = 999
     
-    return idxA - idxB;
-  });
+    return idxA - idxB
+  })
   
   return combined
 }

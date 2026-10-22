@@ -1,4 +1,6 @@
-'use client'
+﻿'use client'
+
+import GoogleReviewsWidget from '@/components/GoogleReviewsWidget'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import useFormValidation from '@/hooks/useFormValidation'
@@ -8,26 +10,25 @@ import SubmitButton from '@/components/SubmitButton'
 import Honeypot from '@/components/Honeypot'
 import { HONEYPOT_FIELD, readHoneypot } from '@/utils/honeypot'
 import { WHATSAPP_HREF } from '@/lib/whatsapp'
+import { submitLead, triggerClientDownload } from '@/lib/api'
+import { CANONICAL_COURSE_OPTIONS } from '@/lib/publicCourses'
 
-const COURSES = [
-  'DGCA CPL Ground Classes (₹2,70,000)',
-  'Commercial Pilot License (CPL)',
-  'Cadet Preparation (₹50,000)',
-  'Airline Preparation (₹1,25,000)',
-  'GD & PI Course (₹30,000)',
-  'CASS Compass Adapt (₹30,000)',
-  'ATPL Ground School (₹1,50,000)',
-  'Airbus A320 Simulator FBS (₹10,000)',
-  "Securing Your Child's Future in Aviation",
-  'Cabin Crew Training (₹54,000)',
-  'Private Pilot License (PPL)',
-]
+const COURSES = CANONICAL_COURSE_OPTIONS
 
-export default function Modal({ type = 'demo', isOpen, onClose }) {
+export default function Modal({
+  type = 'demo',
+  isOpen,
+  onClose,
+  downloadUrl = '/assets/downloads/cabin-crew-starter-kit.pdf',
+  course = 'Cabin Crew Training',
+  title,
+  subtitle,
+}) {
   const [submitted, setSubmitted] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const submitLock = useRef(false)
   const isDemo = type === 'demo'
+  const isStarterKit = type === 'starter-kit' || !!downloadUrl && type === 'download'
 
   const validators = {
     name: validateName,
@@ -38,7 +39,7 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
   }
 
   const { values, errors, touched, handleChange, handleBlur, validate, setValues } = useFormValidation(
-    { name: '', phone: '', email: '', pincode: '', course: '' },
+    { name: '', phone: '', email: '', pincode: '', course: course || '', persona: 'Student' },
     validators
   )
 
@@ -51,9 +52,9 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
     setSubmitted(false)
     setSubmitError('')
     submitLock.current = false
-    setValues({ name: '', phone: '', email: '', pincode: '', course: '' })
+    setValues({ name: '', phone: '', email: '', pincode: '', course: course || '', persona: 'Student' })
     onClose()
-  }, [onClose, setValues])
+  }, [onClose, setValues, course])
 
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault()
@@ -71,25 +72,28 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
     const landing_page = window.location.href || undefined
 
     try {
-      const res = await fetch('/api/lead', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: values.name,
-          phone: values.phone,
-          email: values.email || undefined,
-          pincode: values.pincode,
-          course: values.course || 'DGCA CPL Ground School',
-          source: 'Homepage Modal',
-          [HONEYPOT_FIELD]: hp,
-          utm_source, utm_medium, utm_campaign, utm_term, utm_content, referrer, landing_page,
-        }),
+      await submitLead({
+        name: values.name,
+        phone: values.phone,
+        email: values.email || undefined,
+        pincode: values.pincode,
+        course: values.course || course || 'DGCA CPL Ground School',
+        persona: values.persona || 'Student',
+        message: `Applicant: ${values.persona || 'Student'}`,
+        source: isStarterKit ? 'Starter Kit Download' : 'Homepage Modal',
+        [HONEYPOT_FIELD]: hp,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        utm_term,
+        utm_content,
+        referrer,
+        landing_page,
       })
-      if (!res.ok && res.status !== 409) {
-        // 409 = this phone already has an enquiry on file — treat as success,
-        // the admin API already has their details.
-        const data = await res.json().catch(() => ({}))
-        throw new Error(data.error || 'Lead submit failed')
+
+      // Trigger direct client-side PDF download upon successful submission
+      if (isStarterKit && downloadUrl) {
+        triggerClientDownload(downloadUrl, 'cabin-crew-starter-kit.pdf')
       }
     } catch (err) {
       setSubmitError(err.message === 'Lead submit failed' || !err.message
@@ -99,7 +103,7 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
       return
     }
     setSubmitted(true)
-  }, [values, validate])
+  }, [values, validate, isStarterKit, course, downloadUrl])
 
   return (
     <div
@@ -107,10 +111,10 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
       onClick={(e) => { if (e.target === e.currentTarget) handleClose() }}
       role="dialog"
       aria-modal="true"
-      aria-label={isDemo ? 'Book Free Demo Class' : 'Apply Now'}
+      aria-label={isStarterKit ? 'Download Starter Kit' : isDemo ? 'Book Free Demo Class' : 'Apply Now'}
     >
       <div className="modal">
-        <button className="modal-close" onClick={handleClose} aria-label="Close">×</button>
+        <button className="modal-close" onClick={handleClose} aria-label="Close">Ã—</button>
 
         {submitted ? (
           <div style={{ textAlign: 'center', padding: '2rem 0' }}>
@@ -122,15 +126,31 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               margin: '0 auto 1.5rem',
               fontSize: '1.75rem',
-            }}>✓</div>
+            }}>âœ“</div>
             <div className="modal-title" style={{ marginBottom: '0.75rem' }}>
-              {isDemo ? 'Demo Confirmed!' : 'Application Received!'}
+              {isStarterKit ? 'Download Started!' : isDemo ? 'Demo Confirmed!' : 'Application Received!'}
             </div>
             <p className="modal-sub" style={{ marginBottom: '1.5rem' }}>
-              {isDemo
+              {isStarterKit
+                ? 'Your Cabin Crew Starter Kit PDF has been downloaded to your device.'
+                : isDemo
                 ? 'We\'ll call you within 2 hours to confirm your free demo class. Capt. Navrang Singh will personally meet you.'
                 : 'Our team will contact you within 24 hours. Welcome to the journey from dream to cockpit.'}
             </p>
+
+            {isStarterKit && (
+              <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', marginBottom: '1.5rem' }}>
+                Didn&apos;t start automatically?{' '}
+                <a
+                  href={downloadUrl}
+                  download="cabin-crew-starter-kit.pdf"
+                  style={{ color: 'var(--gold)', textDecoration: 'underline', fontWeight: 700 }}
+                >
+                  Click here to download directly
+                </a>
+              </p>
+            )}
+
             <div style={{
               background: 'rgba(216,160,39,0.1)',
               border: '1px solid rgba(216,160,39,0.25)',
@@ -143,11 +163,11 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
               </p>
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
                 <a href="tel:+919953777320" style={{ fontFamily: 'var(--font-heading)', fontSize: '1rem', fontWeight: 900, color: 'var(--white)', textDecoration: 'none' }}>
-                  📞 +91 9953 777 320
+                  ðŸ“ž +91 9953 777 320
                 </a>
                 <span style={{ color: 'rgba(255,255,255,0.3)' }}>|</span>
                 <a href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer" style={{ fontFamily: 'var(--font-heading)', fontSize: '1rem', fontWeight: 900, color: '#25D366', textDecoration: 'none' }}>
-                  💬 WhatsApp
+                  ðŸ’¬ WhatsApp
                 </a>
               </div>
             </div>
@@ -169,20 +189,64 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
                 borderRadius: '1px',
                 marginBottom: '0.75rem',
               }}>
-                {isDemo ? '100% Free · No Obligation' : 'June 2026 Batch · Limited Seats'}
+                {isStarterKit
+                  ? 'Free PDF Download Â· Instant Access'
+                  : isDemo
+                  ? '100% Free Â· No Obligation'
+                  : 'June 2026 Batch Â· Limited Seats'}
               </div>
               <div className="modal-title">
-                {isDemo ? 'Book Free Demo Class' : 'Apply Now'}
+                {title || (isStarterKit ? 'Download: Cabin Crew Starter Kit' : isDemo ? 'Book Free Demo Class' : 'Apply Now')}
               </div>
               <p className="modal-sub">
-                {isDemo
-                  ? 'Experience Capt. Navrang Singh\'s teaching method firsthand. Max 25 students. Dwarka, New Delhi.'
-                  : 'Join the next batch of serious CPL aspirants. We\'ll review your profile and contact you within 24 hours.'}
+                {subtitle || (
+                  isStarterKit
+                    ? 'Enter your details below for instant access to the Cabin Crew Starter Kit PDF.'
+                    : isDemo
+                    ? 'Experience Capt. Navrang Singh\'s teaching method firsthand. Max 25 students. Dwarka, New Delhi.'
+                    : 'Join the next batch of serious CPL aspirants. We\'ll review your profile and contact you within 24 hours.'
+                )}
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="form-grid" noValidate>
               <Honeypot />
+              {/* I am a: Student / Parent selector */}
+              <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                <label className="form-label" style={{ marginBottom: '0.45rem' }}>I am a: *</label>
+                <div role="radiogroup" aria-label="I am a" style={{ display: 'flex', gap: '0.5rem' }}>
+                  {['Student', 'Parent'].map((opt) => {
+                    const selected = (values.persona || 'Student') === opt
+                    return (
+                      <button
+                        key={opt}
+                        type="button"
+                        role="radio"
+                        aria-checked={selected}
+                        onClick={() => handleChange('persona', opt)}
+                        style={{
+                          flex: 1,
+                          padding: '0.55rem 1rem',
+                          borderRadius: '2px',
+                          cursor: 'pointer',
+                          fontWeight: 700,
+                          fontFamily: 'var(--font-h)',
+                          fontSize: '0.75rem',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.06em',
+                          border: selected ? '1.5px solid var(--gold)' : '1px solid rgba(0, 39, 76, 0.15)',
+                          background: selected ? 'rgba(216, 160, 39, 0.12)' : '#ffffff',
+                          color: selected ? 'var(--navy)' : 'rgba(0, 39, 76, 0.65)',
+                          transition: 'all 0.2s',
+                        }}
+                      >
+                        {opt}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label" htmlFor="modal-name">Full Name *</label>
@@ -214,11 +278,11 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
               </div>
 
               <div className="form-group">
-                <label className="form-label" htmlFor="modal-email">Email Address</label>
+                <label className="form-label" htmlFor="modal-email">Email Address (Optional)</label>
                 <FormField
                   id="modal-email"
                   type="email"
-                  placeholder="you@email.com"
+                  placeholder="you@email.com (optional)"
                   value={values.email}
                   onChange={(v) => handleChange('email', v)}
                   onBlur={() => handleBlur('email')}
@@ -255,15 +319,18 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
                   {COURSES.map((c) => (
                     <option key={c} value={c}>{c}</option>
                   ))}
+                  {course && !COURSES.includes(course) && (
+                    <option value={course}>{course}</option>
+                  )}
                 </FormField>
               </div>
 
               <SubmitButton
                 className="btn btn-primary"
-                id={isDemo ? 'submit-demo-form' : 'submit-apply-form'}
+                id={isStarterKit ? 'submit-starter-kit-form' : isDemo ? 'submit-demo-form' : 'submit-apply-form'}
                 style={{ width: '100%', justifyContent: 'center', padding: '0.9rem' }}
               >
-                {isDemo ? 'Book My Free Demo →' : 'Submit Application →'}
+                {isStarterKit ? 'Download Starter Kit PDF â†’' : isDemo ? 'Book My Free Demo â†’' : 'Submit Application â†’'}
               </SubmitButton>
 
               {submitError && (
@@ -272,9 +339,11 @@ export default function Modal({ type = 'demo', isOpen, onClose }) {
                 </p>
               )}
 
+              <GoogleReviewsWidget dark={false} compact={true} />
+
               <p className="form-legal">
                 By submitting, you consent to being contacted by Airborne Aviation Academy
-                regarding your inquiry. Airborne Aviation Pvt. Ltd. · <span style={{ whiteSpace: 'nowrap' }}>CIN: U85306DL2026PTC465670</span>
+                regarding your inquiry. Airborne Aviation Pvt. Ltd. Â· <span style={{ whiteSpace: 'nowrap' }}>CIN: U85306DL2026PTC465670</span>
               </p>
             </form>
           </>
