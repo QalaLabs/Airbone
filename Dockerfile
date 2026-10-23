@@ -30,6 +30,7 @@ ENV HOSTNAME=0.0.0.0
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/public ./public
+COPY --from=build /app/content ./content
 
 # Run as an unprivileged user.
 RUN groupadd --system --gid 1001 nodejs \
