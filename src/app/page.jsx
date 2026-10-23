@@ -13,7 +13,7 @@ import { GlowCard } from '@/components/ui/spotlight-card'
 import PremiumFooter from '@/components/PremiumFooter'
 import GlobalRouteMap from '@/components/GlobalRouteMap'
 import ProgramGrid from '@/components/ProgramGrid'
-import MediaSection from '@/components/MediaSection'
+import CampusWalkthroughSection from '@/components/CampusWalkthroughSection'
 import useFormValidation from '@/hooks/useFormValidation'
 import { validateName, validatePhone, validateEmail, validateEmailRequired, validatePincode, validateRequired } from '@/utils/validation'
 import FormField from '@/components/FormField'
@@ -2155,122 +2155,6 @@ function PilotCareerOutlook() {
   )
 }
 
-/* ─────────────────────────────────────
-   CAMPUS & OFFICE GALLERY SECTION
-───────────────────────────────────── */
-function CampusGallerySection() {
-  const [activeTab, setActiveTab] = useState('ambience')
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768)
-    checkMobile()
-    window.addEventListener('resize', checkMobile, { passive: true })
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
-  const ambienceImages = [
-    { src: '/campus/reception.jpg', title: 'Admissions Desk & Reception' },
-    { src: '/campus/classroom_full.jpg', title: 'Main Classroom (Smart Screen)' },
-    { src: '/campus/classroom_navrang.jpg', title: 'Interactive Learning Bay' },
-    { src: '/campus/office_modern.jpg', title: 'Counselling Office & Lobby' },
-  ]
-
-  const trainingImages = [
-    { src: '/campus/office.jpg', title: 'Academy Entrance, Ramphal Chowk' },
-    { src: '/campus/campus_training.jpg', title: 'Student Interaction Wing' },
-    { src: '/campus/campus_facility.jpg', title: 'Modern Center Amenities' },
-  ]
-
-  const showcaseImages = [
-    { src: '/campus/campus_wide.jpg', title: 'Academy Building (Outside View)' },
-    { src: '/campus/a320_sim.jpg', title: 'A320 Simulator Training Room' },
-    { src: '/photos/classroom_mentor.jpg', title: 'Airborne Student Group Photo' },
-  ]
-
-  const currentImages = activeTab === 'ambience' 
-    ? ambienceImages 
-    : activeTab === 'training' 
-      ? trainingImages 
-      : showcaseImages
-
-  return (
-    <section id="gallery" style={{ position: 'relative', padding: 'clamp(2.5rem, 5vw, 4.5rem) clamp(1.5rem, 5vw, 4rem)', background: '#ffffff', color: 'var(--navy)', borderTop: '1px solid rgba(0,39,76,0.08)' }}>
-      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{ fontSize: '0.6875rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--red)', marginBottom: '1rem', fontWeight: 700 }}>Ambience Tour</div>
-          <h2 className="display-xl" style={{ fontSize: 'clamp(2rem, 5vw, 4.5rem)', color: 'var(--navy)', textTransform: 'uppercase' }}>
-            Dwarka Center <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>Gallery.</span>
-          </h2>
-          <p style={{ color: 'rgba(33,33,33,0.7)', fontSize: '0.9375rem', lineHeight: 1.7, maxWidth: '36rem', margin: '1rem auto 0', fontFamily: 'var(--font-b)' }}>
-            Step inside our 5,000 sq ft state-of-the-art training campus at Ramphal Chowk. Purpose-built infrastructure for modern aviators.
-          </p>
-        </div>
-
-        {/* Tab Selection */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '3rem' }}>
-          <button
-            onClick={() => setActiveTab('ambience')}
-            style={{
-              padding: '0.75rem 1.5rem', borderRadius: '999px', fontFamily: 'var(--font-h)', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-              background: activeTab === 'ambience' ? 'var(--navy)' : 'rgba(0,39,76,0.04)',
-              color: activeTab === 'ambience' ? '#ffffff' : 'var(--navy)',
-              border: 'none', cursor: 'pointer', transition: 'all 0.2s'
-            }}
-          >
-            Office Ambience
-          </button>
-          <button
-            onClick={() => setActiveTab('training')}
-            style={{
-              padding: '0.75rem 1.5rem', borderRadius: '999px', fontFamily: 'var(--font-h)', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-              background: activeTab === 'training' ? 'var(--navy)' : 'rgba(0,39,76,0.04)',
-              color: activeTab === 'training' ? '#ffffff' : 'var(--navy)',
-              border: 'none', cursor: 'pointer', transition: 'all 0.2s'
-            }}
-          >
-            Training Highlights
-          </button>
-          <button
-            onClick={() => setActiveTab('showcase')}
-            style={{
-              padding: '0.75rem 1.5rem', borderRadius: '999px', fontFamily: 'var(--font-h)', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-              background: activeTab === 'showcase' ? 'var(--navy)' : 'rgba(0,39,76,0.04)',
-              color: activeTab === 'showcase' ? '#ffffff' : 'var(--navy)',
-              border: 'none', cursor: 'pointer', transition: 'all 0.2s'
-            }}
-          >
-            Center Showcase
-          </button>
-        </div>
-
-        {/* Images Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
-          gap: '1.5rem'
-        }}>
-          {currentImages.map((img, i) => (
-            <div key={i} style={{ position: 'relative', overflow: 'hidden', borderRadius: '12px', aspectRatio: '16/10', boxShadow: '0 8px 30px rgba(0,39,76,0.06)' }}>
-              <img
-                src={img.src}
-                alt={img.title}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease' }}
-                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-              />
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,8,22,0.8) 0%, transparent 50%)', pointerEvents: 'none' }} />
-              <div style={{ position: 'absolute', bottom: '1.25rem', left: '1.25rem', color: '#ffffff', fontFamily: 'var(--font-h)', fontWeight: 700, fontSize: '0.9rem', letterSpacing: '0.02em', textTransform: 'uppercase' }}>
-                {img.title}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
 const COUNSELLING_COURSES = CANONICAL_COURSE_OPTIONS
 
 /* ─────────────────────────────────────
@@ -2748,9 +2632,6 @@ export default function HomePage() {
         {/* Global route map — Redesigned */}
         <GlobalRouteMap />
 
-        {/* Media Gallery Section */}
-        <MediaSection />
-
         {/* Program grid — Redesigned 4×2 */}
         <ProgramGrid />
 
@@ -2758,7 +2639,7 @@ export default function HomePage() {
         <CoursesCounsellingCall onBook={openBooking} />
 
         <AirborneAdvantage />
-        <CampusGallerySection />
+        <CampusWalkthroughSection onBookTour={openBooking} />
         <PilotCareerOutlook />
 
         {/* Founder */}

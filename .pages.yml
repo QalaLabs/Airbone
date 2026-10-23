@@ -1,0 +1,284 @@
+media:
+  input: public/media
+  output: /media
+
+content:
+  # ── Dynamic Landing Pages (Modular Block / Section Builder) ───────────────────
+  - name: pages
+    label: Landing Pages
+    type: collection
+    path: content/pages
+    format: yaml-frontmatter
+    filename: "{primary}.md"
+    view:
+      primary: title
+      fields: [slug, description]
+    fields:
+      - name: title
+        label: Page Title
+        type: string
+        required: true
+
+      - name: slug
+        label: URL Slug (e.g. cabin-crew-delhi)
+        type: string
+        required: true
+
+      - name: description
+        label: Meta Description / Intro
+        type: text
+
+      - name: ogImage
+        label: Social Share Image
+        type: image
+
+      # ── Flexible Section Blocks Builder ─────────────────────────────────────
+      # Allows non-technical editors to add, remove, and re-order page sections.
+      - name: sections
+        label: Page Sections
+        type: block
+        blocks:
+          # 1. Hero Banner
+          - name: hero
+            label: Hero Section
+            fields:
+              - name: heading
+                label: Main Headline
+                type: string
+                required: true
+              - name: subheading
+                label: Subheadline / Supporting Text
+                type: text
+              - name: badge
+                label: Top Badge (e.g. ✈️ Batch 1 Open)
+                type: string
+              - name: backgroundImage
+                label: Background Image
+                type: image
+              - name: ctaText
+                label: CTA Button Text
+                type: string
+              - name: ctaLink
+                label: CTA Button Link
+                type: string
+
+          # 2. Features / Value Highlights Grid
+          - name: features
+            label: Feature Grid
+            fields:
+              - name: title
+                label: Section Title
+                type: string
+              - name: subtitle
+                label: Section Subtitle
+                type: text
+              - name: items
+                label: Feature Cards
+                type: object
+                list: true
+                fields:
+                  - name: icon
+                    label: Emoji / Icon (e.g. 🎓, ✈️, 🛡️)
+                    type: string
+                  - name: title
+                    label: Feature Title
+                    type: string
+                    required: true
+                  - name: description
+                    label: Feature Description
+                    type: text
+
+          # 3. FAQ Accordion Section
+          - name: faq
+            label: FAQ Accordion
+            fields:
+              - name: title
+                label: FAQ Section Heading
+                type: string
+              - name: items
+                label: Questions & Answers
+                type: object
+                list: true
+                fields:
+                  - name: question
+                    label: Question
+                    type: string
+                    required: true
+                  - name: answer
+                    label: Answer
+                    type: text
+                    required: true
+
+          # 4. Key Metrics & Stats
+          - name: stats
+            label: Statistics / Metrics Bar
+            fields:
+              - name: title
+                label: Section Title
+                type: string
+              - name: items
+                label: Stat Counter Items
+                type: object
+                list: true
+                fields:
+                  - name: value
+                    label: Value (e.g. 15+, 98%, 25 Max)
+                    type: string
+                    required: true
+                  - name: label
+                    label: Metric Label
+                    type: string
+                    required: true
+
+          # 5. Lead Capture & Download Gate
+          - name: lead_magnet
+            label: Lead Magnet / Download Form
+            fields:
+              - name: heading
+                label: Form Heading
+                type: string
+              - name: description
+                label: Teaser Description
+                type: text
+              - name: downloadFile
+                label: Downloadable PDF
+                type: file
+              - name: buttonText
+                label: Submit Button Label
+                type: string
+
+          # 6. Call to Action Banner
+          - name: cta_banner
+            label: Call to Action Banner
+            fields:
+              - name: title
+                label: Banner Title
+                type: string
+                required: true
+              - name: description
+                label: Banner Description
+                type: text
+              - name: buttonText
+                label: Button Text
+                type: string
+              - name: buttonLink
+                label: Button URL
+                type: string
+
+          # 7. Rich Text / Article Body
+          - name: rich_text
+            label: Rich Text / Editorial
+            fields:
+              - name: content
+                label: Content Body
+                type: rich-text
+
+  # ── Blog & Public Announcements ─────────────────────────────────────────────
+  - name: blog
+    label: Blog & Articles
+    type: collection
+    path: content/blog
+    format: yaml-frontmatter
+    filename: "{primary}.md"
+    view:
+      primary: title
+      sort: date
+      order: desc
+    fields:
+      - name: title
+        label: Article Title
+        type: string
+        required: true
+      - name: slug
+        label: Slug
+        type: string
+        required: true
+      - name: date
+        label: Publish Date
+        type: date
+        required: true
+      - name: author
+        label: Author Name
+        type: string
+      - name: category
+        label: Category
+        type: select
+        options:
+          values:
+            - CPL Ground School
+            - Cabin Crew
+            - DGCA Regulations
+            - Airline Industry News
+            - Student Stories
+      - name: excerpt
+        label: Summary / Excerpt
+        type: text
+      - name: coverImage
+        label: Featured Image
+        type: image
+      - name: body
+        label: Article Content
+        type: rich-text
+
+  # ── Course Catalog ──────────────────────────────────────────────────────────
+  - name: courses
+    label: Course Registry
+    type: collection
+    path: content/courses
+    format: yaml-frontmatter
+    filename: "{primary}.md"
+    view:
+      primary: title
+    fields:
+      - name: title
+        label: Course Name
+        type: string
+        required: true
+      - name: slug
+        label: Course Slug
+        type: string
+        required: true
+      - name: fee
+        label: Standard Tuition (e.g. ₹54,000)
+        type: string
+      - name: duration
+        label: Duration (e.g. 3–6 Months)
+        type: string
+      - name: batchSize
+        label: Batch Size (e.g. Max 20 Students)
+        type: string
+      - name: location
+        label: Campus (e.g. Dwarka, Delhi)
+        type: string
+      - name: syllabusPdf
+        label: Course Syllabus PDF
+        type: file
+      - name: overview
+        label: Course Overview
+        type: text
+      - name: body
+        label: Full Curriculum & Syllabus Details
+        type: rich-text
+
+  # ── Global Academy Settings ─────────────────────────────────────────────────
+  - name: settings
+    label: Academy Contact & Info
+    type: file
+    path: content/settings.json
+    format: json
+    fields:
+      - name: phone
+        label: Admissions Phone
+        type: string
+      - name: whatsapp
+        label: WhatsApp Support Number
+        type: string
+      - name: email
+        label: Admissions Email
+        type: string
+      - name: address
+        label: Physical Address
+        type: text
+      - name: hours
+        label: Operating Hours
+        type: string

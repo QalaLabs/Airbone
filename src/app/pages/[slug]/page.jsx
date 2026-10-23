@@ -3,23 +3,33 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import Breadcrumb from '@/components/Breadcrumb'
 import CmsPageContent from '@/components/cms/CmsPageContent'
-import { fetchPublicWithStatus } from '@/lib/adminApi'
+import ModularSectionRenderer from '@/components/cms/ModularSectionRenderer'
+import { loadHybridPage, blendPageWithOperationalData } from '@/lib/cms/hybridContent'
 import { safeMediaSrc } from '@/lib/cms/safeContent'
+import { displayCourseFee, courseFeeNumeric } from '@/lib/courseFees'
 
 export const revalidate = 60
 
 const SLUG_RE = /^[a-z0-9-]{1,255}$/
 
 /**
- * Published CMS page by slug. The admin public API only returns PUBLISHED pages
- * of the public website organization; anything else is a 404. An unreachable
- * admin is an error (never a cached 404).
+ * Loads a CMS page using the Two-Tier Hybrid Blend:
+ * 1. Checks Git-based Pages CMS repository files (content/pages/*.md)
+ * 2. Falls back to the operational database / Payload API (/pages?slug=...)
  */
 async function loadPage(slug) {
   if (!SLUG_RE.test(slug)) return null
-  const { data, status } = await fetchPublicWithStatus('/pages', { slug })
-  if (status !== 200) throw new Error(`CMS pages unavailable (status ${status})`)
-  return data && typeof data === 'object' && !Array.isArray(data) ? data : null
+  const rawPage = await loadHybridPage(slug)
+  if (!rawPage) return null
+
+  // Hydrate live operational fees from backend
+  const feeResolver = (courseSlug) => {
+    const displayFee = displayCourseFee(courseSlug)
+    const numericFee = courseFeeNumeric(courseSlug)
+    return displayFee ? { displayFee, numericFee } : null
+  }
+
+  return blendPageWithOperationalData(rawPage, { feeResolver })
 }
 
 export async function generateMetadata({ params }) {
@@ -41,6 +51,8 @@ export default async function CmsPage({ params }) {
   const page = await loadPage(slug)
   if (!page) notFound()
 
+  const isModularGitPage = page.source === 'git' && Array.isArray(page.sections) && page.sections.length > 0
+
   return (
     <>
       <Header />
@@ -51,7 +63,13 @@ export default async function CmsPage({ params }) {
             {page.title}
           </h1>
           {page.description ? <p style={{ marginTop: '1rem', color: 'rgba(33,33,33,0.7)', lineHeight: 1.7 }}>{page.description}</p> : null}
-          <CmsPageContent page={page} />
+
+          {/* Render Modular Sections (Pages CMS) or Legacy CMS Blocks (Database) */}
+          {isModularGitPage ? (
+            <ModularSectionRenderer sections={page.sections} />
+          ) : (
+            <CmsPageContent page={page} />
+          )}
         </article>
       </main>
       <Footer />

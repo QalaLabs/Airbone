@@ -11,7 +11,7 @@ import {
   Globe, FileText, ImageIcon, Megaphone,
   Search, Plus, Eye, Edit2, Loader2, AlertCircle,
   MoreHorizontal, Archive, CalendarClock, Clock, Menu,
-  Sparkles, ExternalLink
+  Sparkles, ExternalLink, Settings2, GitBranch
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "@/components/ui/use-toast";
@@ -54,6 +54,13 @@ export default function CMSPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = React.useState("pages");
   const [payloadView, setPayloadView] = React.useState<"admin" | "preview">("admin");
+  const [customPayloadUrl, setCustomPayloadUrl] = React.useState<string>("");
+  const [showUrlSettings, setShowUrlSettings] = React.useState(false);
+
+  const activePayloadUrl = (customPayloadUrl.trim() || process.env.NEXT_PUBLIC_PAYLOAD_URL || "http://localhost:3101").replace(/\/+$/, "");
+  const payloadAdminUrl = `${activePayloadUrl}/admin`;
+  const payloadSiteUrl = activePayloadUrl;
+  const currentIframeSrc = payloadView === "admin" ? payloadAdminUrl : payloadSiteUrl;
   const [search, setSearch] = React.useState("");
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
   const [editItem, setEditItem] = React.useState<Partial<PageModel> | null>(null);
@@ -174,6 +181,7 @@ export default function CMSPage() {
         {[
           { id: "pages", label: "Core Web Pages", icon: Globe },
           { id: "payload", label: "Payload CMS Studio", icon: Sparkles },
+          { id: "pagescms", label: "Pages CMS (Git)", icon: GitBranch },
           { id: "nav", label: "Navigation Menus", icon: Menu },
           { id: "gallery", label: "Public Media Gallery", icon: ImageIcon },
           { id: "news", label: "News & Announcements", icon: Megaphone },
@@ -317,7 +325,7 @@ export default function CMSPage() {
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Connected to local studio at <code className="text-purple-300 font-mono">http://localhost:3101</code> &bull; Login: <code className="text-white font-mono">preview@local.test</code> / <code className="text-white font-mono">PreviewPass123!</code>
+                      Connected to local studio at <code className="text-purple-300 font-mono">{activePayloadUrl}</code> &bull; Login: <code className="text-white font-mono">preview@local.test</code> / <code className="text-white font-mono">PreviewPass123!</code>
                     </p>
                   </div>
                 </div>
@@ -345,7 +353,7 @@ export default function CMSPage() {
                   </div>
 
                   <Button asChild size="sm" variant="outline" className="border-white/10 hover:bg-white/5 text-xs font-bold gap-1.5">
-                    <a href={payloadView === "admin" ? "http://localhost:3101/admin" : "http://localhost:3101"} target="_blank" rel="noopener noreferrer">
+                    <a href={currentIframeSrc} target="_blank" rel="noopener noreferrer">
                       <span>Open in New Tab</span>
                       <ExternalLink className="h-3.5 w-3.5" />
                     </a>
@@ -353,10 +361,42 @@ export default function CMSPage() {
                 </div>
               </div>
 
+              {/* Dynamic Endpoint Configuration Bar */}
+              {showUrlSettings && (
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-3.5 rounded-xl bg-purple-950/30 border border-purple-500/20 text-xs">
+                  <span className="font-semibold text-purple-300 whitespace-nowrap">Engine Endpoint:</span>
+                  <input
+                    type="text"
+                    value={customPayloadUrl}
+                    onChange={(e) => setCustomPayloadUrl(e.target.value)}
+                    placeholder="e.g. http://localhost:3101 or https://payload-cms.your-domain.com"
+                    className="flex-1 px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-purple-400"
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => setCustomPayloadUrl("http://localhost:3101")}
+                      className="bg-white/5 hover:bg-white/10 text-[11px] font-bold h-7 px-2.5"
+                    >
+                      Reset Local (3101)
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => setShowUrlSettings(false)}
+                      className="bg-primary hover:bg-primary/90 text-white text-[11px] font-bold h-7 px-2.5"
+                    >
+                      Apply
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               {/* Embedded Live Studio / Preview Frame */}
               <div className="relative w-full rounded-xl overflow-hidden border border-white/10 bg-slate-950/80 shadow-2xl" style={{ height: "740px" }}>
                 <iframe
-                  src={payloadView === "admin" ? "http://localhost:3101/admin" : "http://localhost:3101"}
+                  src={currentIframeSrc}
                   title="Payload CMS Studio"
                   className="w-full h-full border-0"
                 />
