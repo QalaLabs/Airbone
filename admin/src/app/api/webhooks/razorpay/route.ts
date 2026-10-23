@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
       if (admissionId) {
         await tx.paymentTransaction.create({
           data: {
-            orgId: resolvedOrgId,
+            orgId: finalOrgId,
             admissionId,
             amount,
             currency: "INR",
@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
       if (leadId) {
         await tx.leadActivity.create({
           data: {
-            orgId: resolvedOrgId,
+            orgId: finalOrgId,
             leadId,
             activityType: "NOTE",
             title: `Payment Received: ₹${amount.toLocaleString("en-IN")}`,
