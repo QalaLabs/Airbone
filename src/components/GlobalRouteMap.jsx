@@ -19,6 +19,7 @@ import {
   ROUTE_CATEGORIES,
 } from '@/lib/routeMap'
 import { WORLD_LAND_PATH } from '@/lib/worldLand'
+import { whatsappHref } from '@/lib/whatsapp'
 
 if (typeof window !== 'undefined') gsap.registerPlugin(ScrollTrigger)
 
@@ -1168,7 +1169,7 @@ export default function GlobalRouteMap() {
                   Enrol in Pilot Training ➔
                 </a>
                 <a
-                  href={`https://wa.me/919810237785?text=${encodeURIComponent(`Hi Airborne Aviation, I saw alumni ${selectedCadet.alumni} flying with ${selectedCadet.airline}. I am interested in joining the pilot training program!`)}`}
+                  href={whatsappHref(`Hi Airborne Aviation, I saw alumni ${selectedCadet.alumni} flying with ${selectedCadet.airline}. I am interested in joining the pilot training program!`)}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{

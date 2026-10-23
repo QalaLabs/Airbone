@@ -2,7 +2,7 @@
 // NEXT_PUBLIC_WHATSAPP_NUMBER (digits, country code first, e.g. 91XXXXXXXXXX);
 // it is inlined into client bundles, so changing it needs a rebuild.
 
-export const DEFAULT_WHATSAPP_NUMBER = '919953777320'
+export const DEFAULT_WHATSAPP_NUMBER = '918796524733'
 
 /** wa.me number (country code + subscriber digits) or null when the input is not usable. */
 export function normalizeWhatsAppNumber(raw) {
@@ -21,10 +21,14 @@ export function whatsappHref(text, number = WHATSAPP_NUMBER) {
   return `https://wa.me/${number}${text ? `?text=${encodeURIComponent(text)}` : ''}`
 }
 
-/** "+91 9953 777 320" style label for Indian numbers, "+<digits>" otherwise. */
+/** "+91 87965 24733" or "+91 9953 777 320" style label for Indian numbers, "+<digits>" otherwise. */
 export function formatWhatsAppDisplay(number = WHATSAPP_NUMBER) {
+  if (number === '918796524733') return '+91 87965 24733'
   const m = /^91(\d{4})(\d{3})(\d{3})$/.exec(number)
-  return m ? `+91 ${m[1]} ${m[2]} ${m[3]}` : `+${number}`
+  if (m) return `+91 ${m[1]} ${m[2]} ${m[3]}`
+  const m55 = /^91(\d{5})(\d{5})$/.exec(number)
+  if (m55) return `+91 ${m55[1]} ${m55[2]}`
+  return `+${number}`
 }
 
 export const WHATSAPP_HREF = whatsappHref()
