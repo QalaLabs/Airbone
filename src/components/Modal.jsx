@@ -4,7 +4,7 @@ import GoogleReviewsWidget from '@/components/GoogleReviewsWidget'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import useFormValidation from '@/hooks/useFormValidation'
-import { validateName, validatePhone, validateEmail, validatePincode, validateRequired } from '@/utils/validation'
+import { validateName, validatePhone, validateEmail, validateEmailRequired, validatePincode, validateRequired } from '@/utils/validation'
 import FormField from '@/components/FormField'
 import SubmitButton from '@/components/SubmitButton'
 import Honeypot from '@/components/Honeypot'
@@ -33,7 +33,7 @@ export default function Modal({
   const validators = {
     name: validateName,
     phone: validatePhone,
-    email: validateEmail,
+    email: isStarterKit ? validateEmailRequired : validateEmail,
     pincode: validatePincode,
     course: validateRequired,
   }
@@ -78,6 +78,7 @@ export default function Modal({
         email: values.email || undefined,
         pincode: values.pincode,
         course: values.course || course || 'DGCA CPL Ground School',
+        tags: isStarterKit ? ['starter_kit_download'] : undefined,
         persona: values.persona || 'Student',
         message: `Applicant: ${values.persona || 'Student'}`,
         source: isStarterKit ? 'Starter Kit Download' : 'Homepage Modal',

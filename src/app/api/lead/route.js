@@ -206,6 +206,7 @@ export async function POST(req) {
       screening: (payload.screening && typeof payload.screening === 'object') ? payload.screening : undefined,
       // Course eligibility pre-check answers; the admin validates them per course.
       eligibility: boundEligibilityAnswers(payload.eligibility),
+      tags: Array.isArray(payload.tags) ? payload.tags : (rawSource === 'Starter Kit Download' ? ['starter_kit_download'] : undefined),
     }
 
     // Optional — set only by the multi-step OTP-gated form. Consumed once;
@@ -273,6 +274,7 @@ export async function POST(req) {
         utmContent: leadData.utmContent,
         referrerUrl: leadData.referrerUrl,
         landingPage: leadData.landingPage,
+        tags: leadData.tags,
         eligibility: leadData.eligibility,
       }),
       signal: controller.signal,

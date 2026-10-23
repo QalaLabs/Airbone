@@ -1,3 +1,4 @@
+import NextBatchBadge from '@/components/NextBatchBadge'
 import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
@@ -82,6 +83,7 @@ export default function SecuringChildFuturePage() {
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
                 Parent &amp; Aspirant Counseling — Airborne Aviation Academy
               </span>
+              <NextBatchBadge style={{ marginLeft: '0.5rem' }} />
               <h1 className="ov-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', textTransform: 'uppercase', marginTop: '1.5rem', lineHeight: '1.1', color: 'var(--navy)' }}>
                 Securing Your Child&apos;s Future in Aviation
               </h1>
