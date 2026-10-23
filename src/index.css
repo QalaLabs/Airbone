@@ -2771,48 +2771,41 @@ html { scroll-behavior: smooth; }
 }
 
 /* ================================================================
-   STICKY MOBILE CTA BAR — hidden on desktop (>= 768px)
+   HARDCODED BOTTOM CTA STRIP — Desktop Dock & Mobile Touch Bar
    ================================================================ */
 .sticky-mobile-cta {
-  display: none !important;
+  display: block;
 }
 
 @media (min-width: 768px) {
   .sticky-mobile-cta {
-    display: none !important;
+    display: block !important;
+  }
+
+  body {
+    padding-bottom: 56px !important;
+  }
+
+  .whatsapp-float {
+    bottom: calc(52px + 1.25rem) !important;
   }
 }
 
 @media (max-width: 767px) {
   .sticky-mobile-cta {
-    display: grid !important;
+    display: block !important;
   }
 
   body {
-    padding-bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 24px) !important;
+    padding-bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 20px) !important;
   }
 
   .pf-root, footer {
-    padding-bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 24px) !important;
+    padding-bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 20px) !important;
   }
 
   .grm-cta-bar {
-    margin-bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 24px) !important;
-  }
-
-  /* Homepage mobile overrides: hide CTA and remove bottom paddings/margins */
-  body.is-homepage {
-    padding-bottom: 0 !important;
-  }
-  body.is-homepage .sticky-mobile-cta {
-    display: none !important;
-  }
-  body.is-homepage .pf-root,
-  body.is-homepage footer {
-    padding-bottom: 0 !important;
-  }
-  body.is-homepage .grm-cta-bar {
-    margin-bottom: 0 !important;
+    margin-bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 20px) !important;
   }
 
   .pf-cta-block {

@@ -2536,6 +2536,14 @@ export default function HomePage() {
     setBookingCourse(null)
   }, [])
 
+  useEffect(() => {
+    const handleOpenBooking = (e) => {
+      openBooking(e?.detail?.course || 'Free Counselling Call')
+    }
+    window.addEventListener('airborne:open-booking', handleOpenBooking)
+    return () => window.removeEventListener('airborne:open-booking', handleOpenBooking)
+  }, [openBooking])
+
   // 3D mode preserved intact
   if (is3dMode) {
     return (
