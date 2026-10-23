@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
         await tx.paymentTransaction.create({
           data: {
             orgId: finalOrgId,
-            admissionId,
+            admissionId: admissionId as string,
             amount,
             currency: "INR",
             method: method as any,
