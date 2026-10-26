@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Parents' Webinar: Pilot Career | Airborne Aviation</title>
+<meta name="description" content="Live webinar for parents, 31 Oct 11 AM: pilot training cost by stage, timeline, jobs, cadet programmes and the A320 simulator. Register now for just ₹21.">
+<link rel="canonical" href="https://www.airborneaviation.in/parents-webinar">
+<meta name="robots" content="index,follow">
+<meta name="theme-color" content="#001a33">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Airborne Aviation Academy">
+<meta property="og:title" content="Parents' Webinar: Pilot Career, Cost and Jobs">
+<meta property="og:description" content="Sat 31 Oct, 11 AM. Straight answers on cost, timeline, jobs and cadet programmes. 20 min talk, 30 min live Q&A, 10 min next steps. Register for ₹21.">
+<meta property="og:url" content="https://www.airborneaviation.in/parents-webinar">
+<meta property="og:image" content="https://www.airborneaviation.in/campus/og_image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="assets/favicon-32x32.png" sizes="32x32">
+<link rel="preload" as="image" href="assets/a320-simulator.jpg" fetchpriority="high">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add("js")</script>
+
+<style>
+/* ===== Design direction: "Boarding pass" =====
+   Aviation-native, instrument-panel dark hero, warm paper ticket as the single focal point.
+   Brand: Captain's Navy #00274C, Ascend Red #DB241E, white, Obsidian #212121 (campaign README). */
+:root{
+  --night:#001a33; --navy:#00274C; --navy-2:#0a3a6b; --red:#DB241E; --red-d:#b81c17; --ink:#212121;
+  --paper:#fbf8f1; --paper-2:#f1ecdf; --muted:#4a5568; --line:#d9e1ec; --soft:#f3f6fb; --amber:#ffc24d;
+  --head:"Montserrat",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  --body:"Roboto",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  --mono:"Roboto Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --r:16px; --ease:cubic-bezier(0,0,.2,1);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;font:17px/1.6 var(--body);color:var(--ink);background:#fff;color-scheme:light;overflow-x:hidden}
+img{max-width:100%;height:auto;display:block}
+h1,h2,h3{font-family:var(--head);color:var(--navy);line-height:1.15;margin:0 0 .5em;letter-spacing:-.015em}
+h2{font-size:clamp(1.55rem,4.6vw,2.4rem);font-weight:800}
+h3{font-size:1.1rem;font-weight:700}
+p{margin:0 0 1em}
+.wrap{width:100%;max-width:1120px;margin:0 auto;padding:0 16px}
+.section{padding:60px 0}.soft{background:var(--soft)}
+.eyebrow{display:inline-block;font:700 .74rem/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--red);margin-bottom:12px}
+.lead{font-size:1.08rem;color:var(--muted);max-width:60ch}
+.center{text-align:center}.center .lead{margin-inline:auto}
+.skip{position:absolute;left:-999px;top:8px;background:#fff;color:var(--navy);padding:10px 14px;border-radius:8px;z-index:100}.skip:focus{left:8px}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:13px 26px;border-radius:12px;border:2px solid transparent;font:800 1rem var(--head);letter-spacing:.005em;cursor:pointer;text-decoration:none;transition:transform .18s var(--ease),background .18s,box-shadow .18s}
+.btn:active{transform:translateY(1px) scale(.99)}
+.btn-red{background:var(--red);color:#fff;box-shadow:0 8px 22px rgba(219,36,30,.38)}
+.btn-red:hover{background:var(--red-d);transform:translateY(-2px);box-shadow:0 12px 28px rgba(219,36,30,.46)}
+.btn-red[disabled]{opacity:.7;cursor:progress;transform:none}
+.btn-sm{min-height:42px;padding:8px 16px;font-size:.9rem;box-shadow:none}
+.btn-block{width:100%}
+.btn-line{background:#fff;color:var(--navy);border-color:var(--navy)}.btn-line:hover{background:var(--soft)}
+
+/* top bar (logo is not a link: no escape route) */
+.top{background:var(--night);position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(255,255,255,.1)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:60px}
+.top img{height:34px;width:auto}
+.top-meta{display:none;color:#b9cde3;font:500 .78rem var(--mono);letter-spacing:.08em;text-transform:uppercase}
+
+/* ===== hero ===== */
+.hero{position:relative;background:var(--night);color:#fff;overflow:hidden;isolation:isolate}
+.hero-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-3;opacity:.26}
+.hero::before{content:"";position:absolute;inset:0;z-index:-2;background:
+  radial-gradient(900px 420px at 85% 10%,rgba(10,58,107,.8),transparent 70%),
+  linear-gradient(180deg,rgba(0,26,51,.55),rgba(0,26,51,.96))}
+.runway{position:absolute;left:0;right:0;bottom:0;height:4px;z-index:-1;background:repeating-linear-gradient(90deg,var(--amber) 0 22px,transparent 22px 64px);box-shadow:0 0 18px 2px rgba(255,194,77,.55);opacity:.85}
+.hero .wrap{display:grid;gap:30px;padding-top:30px;padding-bottom:50px}
+.kicker{font:700 .74rem/1.5 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:#ffb3ae;margin:0 0 14px}
+.kicker i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#ff6a62;margin-right:8px;box-shadow:0 0 0 4px rgba(255,106,98,.28);animation:pulse 1.8s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(255,106,98,0)}}
+h1{font-size:clamp(2rem,6.6vw,3.55rem);font-weight:800;color:#fff;margin-bottom:16px}
+h1 em{font-style:normal;color:#ff837b}
+.sub{font-size:1.1rem;color:#d3e2f3;max-width:54ch}
+.creds{list-style:none;padding:0;margin:18px 0 22px;display:grid;gap:8px}
+.creds li{display:flex;gap:10px;align-items:center;font:600 .95rem var(--head);color:#eaf2fb}
+.creds li::before{content:"\2713";flex:none;width:22px;height:22px;border-radius:50%;background:var(--red);display:grid;place-items:center;font-size:.72rem}
+.cd-label{font:500 .7rem var(--mono);letter-spacing:.16em;text-transform:uppercase;color:#9fb9d6;margin:0 0 8px}
+.cd{display:flex;gap:8px}
+.cd div{min-width:62px;text-align:center;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:9px 6px 7px}
+.cd b{display:block;font:700 1.7rem/1.1 var(--mono);color:#fff;font-variant-numeric:tabular-nums}
+.cd span{font:500 .6rem var(--mono);letter-spacing:.16em;color:#9fb9d6}
+.hero-cta{margin-top:22px}
+.hero-cta small{display:block;margin-top:10px;color:#a9c0d9;font-size:.86rem}
+
+/* ===== boarding pass (the signature element) ===== */
+.pass{position:relative;background:var(--paper);color:var(--ink);border-radius:20px;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.45),0 2px 0 rgba(255,255,255,.2) inset;scroll-margin-top:76px}
+.pass-top{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--navy);color:#fff;padding:12px 18px}
+.pass-top img{height:26px;width:auto}
+.pass-top b{font:700 .68rem var(--mono);letter-spacing:.2em;text-transform:uppercase}
+.pass-top em{font:500 .64rem var(--mono);letter-spacing:.14em;color:#9fb9d6;font-style:normal;display:block;text-align:right}
+.pass-body{padding:20px 18px 6px}
+.pass h2{font-size:1.35rem;margin-bottom:2px}
+.pass .note{color:var(--muted);font-size:.92rem;margin-bottom:14px}
+.f{margin-bottom:13px}
+.k{display:block;font:500 .66rem var(--mono);letter-spacing:.16em;text-transform:uppercase;color:#6b7280;margin-bottom:5px}
+input[type=text],input[type=tel],input[type=email],select,textarea{width:100%;min-height:50px;padding:11px 13px;border:1.5px solid #b9c6d8;border-radius:10px;font:500 1rem var(--body);color:var(--ink);background:#fff}
+textarea{min-height:96px;resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:var(--navy-2);outline:3px solid rgba(10,58,107,.2)}
+.ph{display:flex}.ph span{display:flex;align-items:center;padding:0 12px;border:1.5px solid #b9c6d8;border-right:0;border-radius:10px 0 0 10px;background:var(--paper-2);font:700 .95rem var(--mono)}
+.ph input{border-radius:0 10px 10px 0}
+.seg{display:flex;gap:8px}.seg label{flex:1;margin:0}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg span{display:flex;align-items:center;justify-content:center;min-height:46px;border:1.5px solid #b9c6d8;border-radius:10px;font:700 .92rem var(--head);cursor:pointer;background:#fff;color:var(--navy);transition:background .15s,color .15s}
+.seg input:checked+span{background:var(--navy);border-color:var(--navy);color:#fff}
+.seg input:focus-visible+span{outline:3px solid var(--amber);outline-offset:2px}
+.info{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;margin:6px 0 14px;padding:14px;background:var(--paper-2);border-radius:12px}
+.info .v{font:800 1.05rem var(--head);color:var(--navy)}
+.info .v.big{color:var(--red);font-size:1.25rem}
+.more{margin:0 0 12px}
+.more summary{cursor:pointer;font:700 .88rem var(--head);color:var(--navy-2);list-style:none;padding:6px 0;min-height:36px}
+.more summary::-webkit-details-marker{display:none}
+.more summary::before{content:"+ "}.more[open] summary::before{content:"\2212  "}
+.consent{display:flex;gap:10px;align-items:flex-start;font-size:.84rem;color:var(--muted);margin:2px 0 14px}
+.consent input{width:22px;height:22px;margin-top:2px;flex:none;accent-color:var(--navy)}
+.err{display:none;color:#b3261e;font-size:.84rem;margin-top:4px}
+.f.bad .err{display:block}.f.bad input[type=text],.f.bad input[type=tel],.f.bad input[type=email]{border-color:#b3261e}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.fine{font-size:.8rem;color:var(--muted);text-align:center;margin:10px 0 0}
+.perf{position:relative;border-top:2px dashed #c4ccd8;margin:12px 0 0}
+.perf::before,.perf::after{content:"";position:absolute;top:-13px;width:24px;height:24px;border-radius:50%;background:var(--night)}
+.perf::before{left:-12px}.perf::after{right:-12px}
+.stub{display:flex;align-items:center;gap:14px;background:var(--paper-2);padding:14px 18px}
+.bars{flex:1;height:40px;background:repeating-linear-gradient(90deg,#222 0 2px,transparent 2px 4px,#222 4px 5px,transparent 5px 9px,#222 9px 12px,transparent 12px 14px,#222 14px 15px,transparent 15px 18px)}
+.stub code{font:700 .72rem var(--mono);letter-spacing:.14em;color:#444}
+.step{display:none;text-align:center;padding-bottom:14px}.step.show{display:block}
+.stamp{display:inline-block;transform:rotate(-6deg);border:3px solid #12804a;color:#12804a;border-radius:10px;padding:6px 16px;font:800 1.05rem var(--head);letter-spacing:.08em;text-transform:uppercase;margin:4px 0 12px}
+.stamp.due{border-color:#b45f00;color:#b45f00}
+.note-box{background:#fff7e0;border:1px dashed #d9a400;color:#6b5200;border-radius:10px;padding:10px 12px;font-size:.84rem;margin-top:12px;text-align:left}
+.qbox{text-align:left;margin-top:14px}
+.share{margin-top:12px}
+
+/* ===== sections ===== */
+.grid{display:grid;gap:16px}
+.worry{position:relative;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:22px 22px 22px 26px;overflow:hidden}
+.worry::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--red)}
+.worry p{color:var(--muted);margin:0 0 12px}
+.tag{display:inline-block;font:700 .66rem var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--navy-2);background:var(--soft);padding:4px 10px;border-radius:999px}
+
+.plan{list-style:none;margin:30px 0 0;padding:0;display:grid;gap:0;position:relative}
+.leg{position:relative;padding:0 0 28px 60px}
+.leg::before{content:"";position:absolute;left:21px;top:44px;bottom:0;border-left:3px dotted #9fb2c9}
+.leg:last-child{padding-bottom:0}.leg:last-child::before{display:none}
+.dot{position:absolute;left:0;top:0;width:44px;height:44px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center}
+.leg:nth-child(3) .dot{background:var(--red)}
+.dot svg{width:22px;height:22px}
+.leg .t{font:700 .72rem var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--red);margin-bottom:2px}
+.leg h3{margin-bottom:4px}.leg p{color:var(--muted);margin:0}
+
+.learn{list-style:none;margin:28px auto 0;padding:0;display:grid;gap:12px;max-width:900px}
+.learn li{display:flex;gap:14px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.learn b{font:800 1.25rem var(--head);color:var(--red);line-height:1.2;flex:none;width:28px}
+.learn h3{margin:0 0 2px;font-size:1.02rem}.learn p{margin:0;color:var(--muted);font-size:.96rem}
+
+.band{background:linear-gradient(135deg,var(--night),var(--navy-2));color:#fff;text-align:center;padding:48px 0;position:relative;overflow:hidden}
+.band h2{color:#fff}.band .cd{justify-content:center;margin:18px 0 22px}
+.band .runway{opacity:.6}
+.band p{color:#d3e2f3}
+
+.stages{list-style:none;margin:26px 0 0;padding:0;display:grid;gap:10px;counter-reset:s}
+.stages li{counter-increment:s;position:relative;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px 14px 58px}
+.stages li::before{content:counter(s);position:absolute;left:14px;top:12px;width:32px;height:32px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 .95rem var(--head)}
+.stages b{font-family:var(--head);color:var(--navy)}.stages small{display:block;color:var(--muted)}
+.callout{margin-top:16px;background:#fff;border:1px solid var(--line);border-left:6px solid var(--red);border-radius:12px;padding:16px 18px}
+
+.host{display:grid;gap:24px;align-items:center}
+.host img{border-radius:20px;box-shadow:0 18px 44px rgba(0,39,76,.22);width:100%;max-width:380px;aspect-ratio:560/611;object-fit:cover}
+.tags{list-style:none;padding:0;margin:14px 0 0;display:flex;flex-wrap:wrap;gap:8px}
+.tags li{background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font:700 .82rem var(--head);color:var(--navy)}
+
+details.q{background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:10px}
+details.q summary{cursor:pointer;list-style:none;padding:16px 48px 16px 18px;font:700 1.02rem var(--head);color:var(--navy);position:relative;min-height:54px}
+details.q summary::-webkit-details-marker{display:none}
+details.q summary::after{content:"+";position:absolute;right:18px;top:50%;transform:translateY(-50%);font:700 1.5rem var(--head);color:var(--red)}
+details.q[open] summary::after{content:"\2212"}
+details.q div{padding:0 18px 18px;color:var(--muted)}
+
+.photos{display:grid;gap:14px;margin-top:26px}
+.photos figure{margin:0;border-radius:var(--r);overflow:hidden;background:#fff;border:1px solid var(--line)}
+.photos img{width:100%;aspect-ratio:3/2;object-fit:cover}
+.photos figcaption{padding:12px 14px;font-size:.92rem;color:var(--muted)}
+.facts{list-style:none;padding:0;margin:20px auto 0;display:grid;gap:10px;max-width:640px}
+.facts li{display:flex;gap:10px;align-items:flex-start}
+.facts li::before{content:"\2713";flex:none;width:24px;height:24px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:.8rem;font-weight:700;margin-top:2px}
+.promise{background:var(--navy);color:#fff;border-radius:20px;padding:26px 22px;max-width:900px;margin:0 auto}
+.promise h2{color:#fff}.promise ul{list-style:none;padding:0;margin:0;display:grid;gap:12px}
+.promise li{padding-left:30px;position:relative;color:#d3e2f3}.promise li::before{content:"\2713";position:absolute;left:0;color:#ff8a84;font-weight:800}
+
+footer{background:#06111f;color:#9db0c6;padding:30px 0 100px;font-size:.9rem}
+footer a{color:#cfe0f3}
+
+.sticky{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;gap:12px;align-items:center;justify-content:space-between;box-shadow:0 -8px 24px rgba(0,0,0,.16);transform:translateY(110%);transition:transform .28s var(--ease)}
+.sticky.show{transform:none}
+.sticky p{margin:0;font:800 .9rem/1.25 var(--head);color:var(--navy)}
+.sticky small{display:block;font:500 .72rem var(--mono);letter-spacing:.06em;color:var(--red)}
+
+/* scroll reveal */
+.js .rv{opacity:0;transform:translateY(18px);transition:opacity .55s var(--ease),transform .55s var(--ease)}
+.js .rv.in{opacity:1;transform:none}
+
+@media (min-width:720px){
+  body{font-size:18px}.section{padding:84px 0}
+  .top-meta{display:block}
+  .grid.c3{grid-template-columns:repeat(3,1fr)}
+  .plan{grid-template-columns:repeat(3,1fr);gap:20px}
+  .leg{padding:64px 0 0 0;text-align:center}
+  .leg::before{left:calc(50% + 22px);right:calc(-20px - 50% + 22px);top:21px;bottom:auto;border-left:0;border-top:3px dotted #9fb2c9}
+  .leg:last-child::before{display:none}
+  .dot{left:50%;transform:translateX(-50%);top:0}
+  .learn{grid-template-columns:1fr 1fr}
+  .stages{grid-template-columns:repeat(4,1fr)}
+  .stages li{padding:62px 16px 16px;text-align:center}
+  .stages li::before{left:50%;transform:translateX(-50%);top:16px}
+  .photos{grid-template-columns:1fr 1fr}
+  .host{grid-template-columns:380px 1fr;gap:48px}
+  .sticky{display:none}
+}
+@media (min-width:980px){
+  .hero .wrap{grid-template-columns:1.05fr .95fr;align-items:center;gap:56px;padding-top:54px;padding-bottom:70px}
+  .hero-cta{display:none}
+}
+@media (max-width:979px){ .hero .pass{order:2} }
+@media (max-width:480px){ .pass-top img{display:none} .pass-top b,.pass-top em{white-space:nowrap} .pass-top b{letter-spacing:.14em} }
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}.js .rv{opacity:1;transform:none}}
+</style>
+
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@graph":[
+    {
+      "@type":"Event",
+      "name":"Parents' Webinar: Your Child's Pilot Career - Cost, Jobs and Next Steps",
+      "description":"A 60-minute live webinar for parents (registration fee INR 21): 20 minutes of talk, 30 minutes of live Q&A and 10 minutes on next steps, covering pilot training cost by stage, timeline, cadet programmes, airline preparation and the A320 simulator.",
+      "startDate":"2026-10-31T11:00:00+05:30",
+      "endDate":"2026-10-31T12:00:00+05:30",
+      "eventStatus":"https://schema.org/EventScheduled",
+      "eventAttendanceMode":"https://schema.org/OnlineEventAttendanceMode",
+      "location":{"@type":"VirtualLocation","url":"https://www.airborneaviation.in/parents-webinar"},
+      "image":["https://www.airborneaviation.in/campus/og_image.jpg"],
+      "organizer":{"@type":"EducationalOrganization","name":"Airborne Aviation Academy","url":"https://www.airborneaviation.in/"},
+      "performer":{"@type":"Person","name":"Capt. Navrang Singh"},
+      "offers":{"@type":"Offer","price":"21","priceCurrency":"INR","availability":"https://schema.org/InStock","url":"https://www.airborneaviation.in/parents-webinar"}
+    },
+    {
+      "@type":"EducationalOrganization",
+      "name":"Airborne Aviation Academy",
+      "url":"https://www.airborneaviation.in/",
+      "address":{"@type":"PostalAddress","streetAddress":"Ramphal Chowk, Dwarka","addressLocality":"New Delhi","addressCountry":"IN"}
+    },
+    {
+      "@type":"FAQPage",
+      "mainEntity":[
+        {"@type":"Question","name":"Is a pilot career worth the cost?","acceptedAnswer":{"@type":"Answer","text":"Pilot training is paid in stages: ground school, flying hours, licence and exams, and type rating after the licence. In the webinar we break down each stage so you can plan before you commit."}},
+        {"@type":"Question","name":"What if my child doesn't clear?","acceptedAnswer":{"@type":"Answer","text":"We walk through how the exams and selection stages work and what a second attempt looks like, honestly and in plain language."}},
+        {"@type":"Question","name":"Will there be a job in India?","acceptedAnswer":{"@type":"Answer","text":"A CPL is the start of the path, not the end. Type rating and airline selection follow. We explain the path and never promise a job."}},
+        {"@type":"Question","name":"How safe is a pilot career?","acceptedAnswer":{"@type":"Answer","text":"We cover the medical first, a realistic timeline and the risks, openly."}},
+        {"@type":"Question","name":"How do I choose the right academy?","acceptedAnswer":{"@type":"Answer","text":"Use one checklist at every academy: DGCA approval, batch size, who teaches, simulator access and fees in writing."}}
+      ]
+    }
+  ]
+}
+</script>
+</head>
+
+<body>
+<a class="skip" href="#register">Skip to registration</a>
+
+<header class="top">
+  <div class="wrap">
+    <img src="assets/logo-white.webp" width="82" height="34" alt="Airborne Aviation Academy">
+    <span class="top-meta">Parents' Webinar &middot; Sat 31 Oct &middot; 11:00 AM IST</span>
+    <a class="btn btn-red btn-sm" href="#register" data-track="header_cta">Reserve my seat</a>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ============ HERO ============ -->
+<section class="hero" aria-labelledby="h1">
+  <img class="hero-bg" src="assets/a320-simulator.jpg" width="1100" height="825" alt="" fetchpriority="high" decoding="async">
+  <div class="runway" aria-hidden="true"></div>
+  <div class="wrap">
+    <div>
+      <p class="kicker"><i></i>Parents' webinar &middot; Sat 31 Oct &middot; 11:00 AM IST</p>
+      <h1 id="h1">Before you spend a rupee on your child's <em>pilot training</em>, get straight answers.</h1>
+      <p class="sub">Cost? Exams? Jobs? Capt. Navrang Singh answers parents' real questions live. 20 minutes of talk, 30 minutes of your questions, 10 minutes of next steps.</p>
+      <ul class="creds">
+        <li>DGCA-complied training</li>
+        <li>Hosted by an active airline captain</li>
+        <li>Real A320 simulator on our Dwarka campus</li>
+      </ul>
+      <p class="cd-label">Webinar starts in</p>
+      <div class="cd" role="timer" aria-live="off" aria-label="Time until the webinar starts">
+        <div><b data-cd="d">--</b><span>DAYS</span></div>
+        <div><b data-cd="h">--</b><span>HRS</span></div>
+        <div><b data-cd="m">--</b><span>MIN</span></div>
+        <div><b data-cd="s">--</b><span>SEC</span></div>
+      </div>
+      <div class="hero-cta">
+        <a class="btn btn-red btn-block" href="#register" data-track="hero_cta">Reserve my seat &middot; ₹21</a>
+        <small>Takes under a minute. We'll only contact you about this webinar and your enquiry.</small>
+      </div>
+    </div>
+
+    <!-- ===== BOARDING PASS / REGISTRATION ===== -->
+    <div class="pass" id="register">
+      <div class="pass-top">
+        <img src="assets/logo-white.webp" width="62" height="26" alt="">
+        <b>Boarding pass</b>
+        <em>PARENTS' WEBINAR<br>FLIGHT AB-31OCT</em>
+      </div>
+
+      <div class="pass-body">
+        <div id="formWrap">
+          <h2>Reserve your seat</h2>
+          <p class="note">Two details, one tap, and your seat is held for ₹21.</p>
+          <form id="webinarForm" novalidate autocomplete="on">
+            <div class="f">
+              <label class="k" for="name">Passenger name</label>
+              <input id="name" name="name" type="text" autocomplete="name" required minlength="2" maxlength="120" placeholder="Your full name">
+              <div class="err">Please enter your name.</div>
+            </div>
+            <div class="f">
+              <label class="k" for="phone">WhatsApp number (for your join link)</label>
+              <div class="ph"><span aria-hidden="true">+91</span><input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" pattern="[6-9][0-9]{9}" maxlength="10" placeholder="10-digit mobile" required></div>
+              <div class="err">Enter a valid 10-digit mobile number.</div>
+            </div>
+            <div class="f">
+              <span class="k" id="roleLegend">I am a</span>
+              <div class="seg" role="radiogroup" aria-labelledby="roleLegend">
+                <label><input type="radio" name="role" value="parent" checked><span>Parent</span></label>
+                <label><input type="radio" name="role" value="student"><span>Student</span></label>
+              </div>
+            </div>
+
+            <div class="info" aria-label="Flight details">
+              <div><span class="k">Date</span><span class="v">31 OCT 2026</span></div>
+              <div><span class="k">Boarding</span><span class="v" data-webinar-time>11:00 AM IST</span></div>
+              <div><span class="k">Gate</span><span class="v">Live online</span></div>
+              <div><span class="k">Fare</span><span class="v big">₹21</span></div>
+            </div>
+
+            <details class="more">
+              <summary>Add email or course interest (optional)</summary>
+              <div class="f" style="margin-top:8px">
+                <label class="k" for="email">Email (backup join link)</label>
+                <input id="email" name="email" type="email" autocomplete="email" maxlength="200">
+                <div class="err">Please enter a valid email.</div>
+              </div>
+              <div class="f">
+                <label class="k" for="course">Interested in</label>
+                <select id="course" name="courseInterest">
+                  <option value="Not sure yet">Not sure yet</option>
+                  <option value="Commercial Pilot License (CPL)">Commercial Pilot Licence (CPL)</option>
+                  <option value="Cadet Pilot Preparation">Cadet pilot preparation</option>
+                  <option value="Airline Interview Preparation">Airline interview preparation</option>
+                  <option value="A320 Simulator">A320 simulator</option>
+                </select>
+              </div>
+            </details>
+
+            <div class="hp" aria-hidden="true"><label>Leave empty <input type="text" name="hp_ref_code" tabindex="-1" autocomplete="off"></label></div>
+
+            <div class="f" style="margin-bottom:0">
+              <label class="consent" for="consent">
+                <input id="consent" name="consent" type="checkbox" required>
+                <span>I agree to be contacted by Airborne Aviation Academy on WhatsApp, phone and email about this webinar and my enquiry.</span>
+              </label>
+              <div class="err">Please tick to continue.</div>
+            </div>
+            <button class="btn btn-red btn-block" type="submit" id="submitBtn">Reserve my seat &middot; ₹21</button>
+            <p class="fine">Your seat is confirmed once the ₹21 payment is received. No job guarantees, only honest guidance.</p>
+          </form>
+        </div>
+
+        <!-- step 2: pay -->
+        <div class="step" id="pay" role="status" tabindex="-1">
+          <span class="stamp due">Fare due</span>
+          <h2>One last step<span id="payName"></span></h2>
+          <p class="note">Pay the <b>₹21</b> registration fee to confirm your seat for <b>Sat 31 Oct, 11:00 AM IST</b>.</p>
+          <button class="btn btn-red btn-block" type="button" id="payBtn">Pay ₹21 securely</button>
+          <p class="fine">Your details are saved. We'll WhatsApp your join link once payment is confirmed.</p>
+          <div class="note-box" id="payPreview" hidden>Preview mode: no payment gateway is connected. Set <code>CONFIG.paymentUrl</code> to go live.<br><button class="btn btn-line btn-sm" type="button" id="fakePay" style="margin-top:8px">Preview: mark as paid</button></div>
+        </div>
+
+        <!-- step 3: confirmed -->
+        <div class="step" id="success" role="status" tabindex="-1">
+          <span class="stamp">Boarding confirmed</span>
+          <h2>You're in<span id="okName"></span></h2>
+          <p class="note">Your seat is confirmed for <b>Sat 31 Oct, 11:00 AM IST</b>. We'll WhatsApp your join link and reminders.</p>
+          <a class="btn btn-red btn-block" id="calBtn" href="#" hidden target="_blank" rel="noopener">Add to Google Calendar</a>
+          <div class="qbox" id="qWrap">
+            <label class="k" for="question">Your question for Capt. Navrang (optional)</label>
+            <textarea id="question" maxlength="500" placeholder="e.g. What happens if my child doesn't clear a paper?"></textarea>
+            <button class="btn btn-line btn-block" type="button" id="qSend" style="margin-top:8px">Send my question</button>
+          </div>
+          <p class="fine" id="qDone" hidden>Thank you. We'll answer it live, or reply personally within 24 hours.</p>
+          <a class="btn btn-line btn-block share" id="shareBtn" href="#" target="_blank" rel="noopener">Share with another parent on WhatsApp</a>
+          <div class="note-box" id="previewNote" hidden>Preview mode: nothing was sent. Set <code>CONFIG.endpoint</code> and <code>CONFIG.paymentUrl</code> to go live.</div>
+        </div>
+      </div>
+
+      <div class="perf" aria-hidden="true"></div>
+      <div class="stub" aria-hidden="true"><div class="bars"></div><code>AB 31OCT 1100</code></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRE-FLIGHT CHECK ============ -->
+<section class="section" aria-labelledby="worries">
+  <div class="wrap">
+    <div class="center rv">
+      <span class="eyebrow">Pre-flight check</span>
+      <h2 id="worries">The three questions every parent asks</h2>
+      <p class="lead">A big decision for a family deserves the full picture before you pay anything, not after.</p>
+    </div>
+    <div class="grid c3 rv" style="margin-top:28px">
+      <article class="worry"><h3>What will it really cost?</h3><p>Pilot training is paid in stages, not as one fee. Without the full picture, the first number you hear is rarely the last.</p><span class="tag">Answered live</span></article>
+      <article class="worry"><h3>What if my child doesn't clear?</h3><p>Exams, medicals and selection are real hurdles. You should know about them before you commit.</p><span class="tag">Answered live</span></article>
+      <article class="worry"><h3>Will there be a job?</h3><p>A licence is the start of the path, not the end. We'll explain what comes next, honestly, with no promises we can't keep.</p><span class="tag">Answered live</span></article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FLIGHT PLAN ============ -->
+<section class="section soft" aria-labelledby="planH">
+  <div class="wrap">
+    <div class="center rv">
+      <span class="eyebrow">60 minutes, live</span>
+      <h2 id="planH">Your flight plan</h2>
+      <p class="lead">A short talk and a long Q&amp;A. Most of the session is your questions.</p>
+    </div>
+    <ol class="plan rv">
+      <li class="leg">
+        <span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg></span>
+        <div class="t">Takeoff &middot; 20 min</div><h3>The talk</h3><p>Cost by stage, the timeline, and the path after your child's licence.</p>
+      </li>
+      <li class="leg">
+        <span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+        <div class="t">Cruise &middot; 30 min</div><h3>Live Q&amp;A with Capt. Navrang</h3><p>Ask anything about cost, exams, jobs or choosing an academy.</p>
+      </li>
+      <li class="leg">
+        <span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        <div class="t">Landing &middot; 10 min</div><h3>Next steps</h3><p>A stage-wise fee guide, a counselling call and campus-visit slots, if you want them.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ WHAT YOU'LL KNOW ============ -->
+<section class="section" aria-labelledby="learnH">
+  <div class="wrap">
+    <div class="center rv">
+      <span class="eyebrow">What you'll walk away knowing</span>
+      <h2 id="learnH">Plain-language answers, in one session</h2>
+    </div>
+    <ul class="learn rv">
+      <li><b>1</b><div><h3>Cost, stage by stage</h3><p>Ground school, flying hours, licence and exams, and type rating, and why each is priced separately.</p></div></li>
+      <li><b>2</b><div><h3>Eligibility and timeline</h3><p>Who can apply, why the medical comes first, and how long each stage typically takes.</p></div></li>
+      <li><b>3</b><div><h3>Cadet pilot programmes</h3><p>How selection works (software tests, group discussion, personal interview) and how students prepare.</p></div></li>
+      <li><b>4</b><div><h3>After the licence</h3><p>Why a CPL is the start, not the finish: type rating, airline assessments and interviews.</p></div></li>
+      <li><b>5</b><div><h3>The A320 simulator</h3><p>What a first simulator session looks like and who it is for.</p></div></li>
+      <li><b>6</b><div><h3>Choosing an academy</h3><p>A checklist for any academy: DGCA approval, batch size, who teaches, simulator access, fees in writing.</p></div></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ MID CTA ============ -->
+<section class="band" aria-labelledby="bandH">
+  <div class="runway" aria-hidden="true"></div>
+  <div class="wrap">
+    <span class="eyebrow" style="color:#ffb3ae">Saturday 31 October &middot; 11:00 AM IST</span>
+    <h2 id="bandH">Your seat is one tap away</h2>
+    <div class="cd" role="timer" aria-live="off" aria-label="Time until the webinar starts">
+      <div><b data-cd="d">--</b><span>DAYS</span></div>
+      <div><b data-cd="h">--</b><span>HRS</span></div>
+      <div><b data-cd="m">--</b><span>MIN</span></div>
+      <div><b data-cd="s">--</b><span>SEC</span></div>
+    </div>
+    <a class="btn btn-red" href="#register" data-track="mid_cta">Reserve my seat &middot; ₹21</a>
+    <p style="margin:14px 0 0;font-size:.9rem">Registration is just ₹21. We'll WhatsApp your join link and reminders.</p>
+  </div>
+</section>
+
+<!-- ============ COST STAGES ============ -->
+<section class="section soft" aria-labelledby="costH">
+  <div class="wrap" style="max-width:980px">
+    <div class="center rv">
+      <span class="eyebrow">No surprises</span>
+      <h2 id="costH">Four stages, each priced separately</h2>
+      <p class="lead">Pilot training is not one fee. We'll walk through every stage so you can plan before you commit.</p>
+    </div>
+    <ol class="stages rv">
+      <li><b>DGCA ground school</b><small>The theory subjects you must pass.</small></li>
+      <li><b>Flying hours</b><small>Hands-on training in the aircraft.</small></li>
+      <li><b>Licence, exams, medical</b><small>The paperwork and approvals.</small></li>
+      <li><b>Type rating</b><small>After the CPL; usually needed before airline flying.</small></li>
+    </ol>
+    <!-- APPROVAL FLAG: the Rs 2.7L figure is marked [APPROVE] in the social calendar Verify List. Remove this callout until approved. -->
+    <div class="callout rv"><b>At Airborne,</b> DGCA ground school (all subjects) is <b>&#8377;2.7 lakh</b>. That is the ground-school fee only. Flying hours, licence and exams, and type rating are separate stages, and we'll go through each one.</div>
+  </div>
+</section>
+
+<!-- ============ HOST ============ -->
+<section class="section" aria-labelledby="hostH">
+  <div class="wrap host">
+    <img class="rv" src="assets/capt-navrang-singh.jpg" width="560" height="611" loading="lazy" alt="Capt. Navrang Singh, founder of Airborne Aviation Academy">
+    <div class="rv">
+      <span class="eyebrow">Your host</span>
+      <h2 id="hostH">You ask. Capt. Navrang answers.</h2>
+      <p class="lead">Capt. Navrang Singh is the founder of Airborne Aviation Academy and an active airline captain. He teaches Navigation and Meteorology at the academy; the other subjects are taught by our instructors.</p>
+      <p>He'll take your questions live. Anything we can't fit into the session gets a personal reply within 24 hours.</p>
+      <ul class="tags"><li>Active airline captain</li><li>Founder, Airborne Aviation Academy</li><li>Teaches Navigation &amp; Meteorology</li></ul>
+      <p style="margin-top:22px"><a class="btn btn-red" href="#register" data-track="host_cta">Send my question &middot; ₹21</a></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ QUESTIONS ============ -->
+<section class="section soft" aria-labelledby="faqH">
+  <div class="wrap" style="max-width:820px">
+    <div class="center rv">
+      <span class="eyebrow">Live on 31 Oct</span>
+      <h2 id="faqH">5 questions parents ask us most</h2>
+      <p class="lead">A preview of what we'll answer. Add your own after you reserve your seat.</p>
+    </div>
+    <div style="margin-top:26px" class="rv">
+      <details class="q" open><summary>Is it worth the cost?</summary><div>We'll break the cost down stage by stage (ground school, flying hours, licence and exams, type rating) so you can plan before you commit.</div></details>
+      <details class="q"><summary>What if my child doesn't clear?</summary><div>We'll explain how the exams and selection stages work and what a second attempt looks like, honestly and in plain language.</div></details>
+      <details class="q"><summary>Will there be a job in India?</summary><div>A CPL is the start of the path, not the end. Type rating and airline selection follow. We'll explain the path, and we never promise a job.</div></details>
+      <details class="q"><summary>How safe is the career?</summary><div>We'll cover the medical first, a realistic timeline and the risks, openly.</div></details>
+      <details class="q"><summary>How do I choose the right academy?</summary><div>One checklist that works at any academy: DGCA approval, batch size, who teaches, simulator access and fees in writing.</div></details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROOF ============ -->
+<section class="section" aria-labelledby="seeH">
+  <div class="wrap">
+    <div class="center rv">
+      <span class="eyebrow">See where it happens</span>
+      <h2 id="seeH">A real classroom. A real A320 simulator.</h2>
+      <p class="lead">Airborne Aviation Academy is at Ramphal Chowk, Dwarka, Delhi. After the webinar, bring your child to see it for yourself.</p>
+    </div>
+    <div class="photos rv">
+      <figure><img src="assets/classroom.jpg" width="900" height="600" loading="lazy" alt="A live ground-school class at the Airborne Aviation Academy campus in Dwarka"><figcaption>A live ground-school class at our Dwarka campus.</figcaption></figure>
+      <figure><img src="assets/a320-simulator.jpg" width="1100" height="825" loading="lazy" alt="The A320 simulator cockpit at Airborne Aviation Academy"><figcaption>Our A320 simulator at the Dwarka campus.</figcaption></figure>
+    </div>
+    <ul class="facts rv">
+      <li>DGCA-complied training at Ramphal Chowk, Dwarka, Delhi.</li>
+      <li>1.4 km from Palam metro and 1.9 km from Dwarka Sector 9 metro.</li>
+      <li>At the end of the webinar we'll share November campus-visit and simulator-session slots.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="section soft">
+  <div class="wrap">
+    <div class="promise rv">
+      <h2>What you can expect from us</h2>
+      <ul>
+        <li>Fees explained in writing, stage by stage.</li>
+        <li>No job guarantees: only an honest picture of the path.</li>
+        <li>Your questions answered live, or personally within 24 hours.</li>
+        <li>No pressure. Counselling calls and campus visits only if you want them.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="band" aria-labelledby="finalH" style="padding:64px 0">
+  <div class="runway" aria-hidden="true"></div>
+  <div class="wrap">
+    <span class="eyebrow" style="color:#ffb3ae">Saturday 31 October 2026 &middot; 11:00 AM IST</span>
+    <h2 id="finalH">One hour. Your questions. Straight answers.</h2>
+    <div class="cd" role="timer" aria-live="off" aria-label="Time until the webinar starts">
+      <div><b data-cd="d">--</b><span>DAYS</span></div>
+      <div><b data-cd="h">--</b><span>HRS</span></div>
+      <div><b data-cd="m">--</b><span>MIN</span></div>
+      <div><b data-cd="s">--</b><span>SEC</span></div>
+    </div>
+    <a class="btn btn-red" href="#register" data-track="final_cta">Reserve my seat &middot; ₹21</a>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <b style="color:#fff">Airborne Aviation Academy</b> &middot; Ramphal Chowk, Dwarka, Delhi &middot; <a href="https://www.airborneaviation.in/courses">Our courses</a><br>
+    <small>&copy; 2026 Airborne Aviation Academy. We do not guarantee employment. Course details are subject to DGCA requirements.</small>
+  </div>
+</footer>
+
+<div class="sticky" id="stickyCta" role="region" aria-label="Register">
+  <p>Parents' Webinar &middot; ₹21<small id="stickyCd">Sat 31 Oct, 11 AM</small></p>
+  <a class="btn btn-red btn-sm" href="#register" data-track="sticky_cta">Reserve my seat</a>
+</div>
+
+<script>
+/* ---------- CONFIG: edit when details change ---------- */
+var CONFIG = {
+  webinarDate: "2026-10-31",
+  timeLabel: "11:00 AM IST",
+  startISO: "2026-10-31T11:00:00+05:30",
+  durationMin: 60,
+  fee: 21,                            // INR registration fee
+  paymentUrl: "",                     // Payment Link / checkout URL. Empty = preview mode (no payment).
+  endpoint: "",                       // Website's own lead handler. Empty = preview mode (nothing is sent).
+  questionEndpoint: "",               // Optional: where the post-payment question goes (defaults to endpoint).
+  formName: "parents_webinar_2026_10_31",
+  source: "webinar"                   // not yet in the lead API SOURCE_MAP (see HANDOFF.md)
+};
+
+(function(){
+  "use strict";
+  var $ = function(s,c){return (c||document).querySelector(s)};
+  var $$ = function(s,c){return Array.prototype.slice.call((c||document).querySelectorAll(s))};
+  function push(o){ window.dataLayer = window.dataLayer || []; window.dataLayer.push(o); }
+
+  if (CONFIG.timeLabel) $$("[data-webinar-time]").forEach(function(el){el.textContent = CONFIG.timeLabel});
+
+  /* ---- live countdown to the real start time ---- */
+  var start = new Date(CONFIG.startISO).getTime();
+  function pad(n){ return (n<10?"0":"") + n; }
+  function tick(){
+    var ms = start - Date.now(), live = ms <= 0;
+    var s = Math.max(0, Math.floor(ms/1000)), d = Math.floor(s/86400), h = Math.floor(s%86400/3600), m = Math.floor(s%3600/60), sec = s%60;
+    var v = {d:pad(d), h:pad(h), m:pad(m), s:pad(sec)};
+    $$("[data-cd]").forEach(function(el){ el.textContent = v[el.getAttribute("data-cd")]; });
+    var sc = $("#stickyCd"); if (sc) sc.textContent = live ? "Live now" : "Starts in " + d + "d " + h + "h " + m + "m";
+  }
+  tick(); setInterval(tick, 1000);
+
+  /* ---- attribution (UTMs + click ids), kept for the session ---- */
+  var KEYS = ["utm_source","utm_medium","utm_campaign","utm_id","utm_term","utm_content","gclid","fbclid"];
+  var attrib = {};
+  try { attrib = JSON.parse(sessionStorage.getItem("aaa_attrib") || "{}"); } catch(e){}
+  var qs = new URLSearchParams(location.search);
+  KEYS.forEach(function(k){ if (qs.get(k)) attrib[k] = qs.get(k); });
+  try { sessionStorage.setItem("aaa_attrib", JSON.stringify(attrib)); } catch(e){}
+
+  /* ---- scroll reveal ---- */
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } }); }, {rootMargin:"0px 0px -8% 0px"});
+    $$(".rv").forEach(function(el){ io.observe(el); });
+  } else { $$(".rv").forEach(function(el){ el.classList.add("in"); }); }
+
+  /* ---- sticky mobile CTA: only when the ticket is off-screen ---- */
+  var sticky = $("#stickyCta"), reg = $("#register");
+  if ("IntersectionObserver" in window && sticky && reg) {
+    new IntersectionObserver(function(es){ sticky.classList.toggle("show", !es[0].isIntersecting && scrollY > 200); }, {threshold:.12}).observe(reg);
+  }
+
+  /* ---- registration flow: details -> pay -> confirmed ---- */
+  var form = $("#webinarForm"), wrap = $("#formWrap"), pay = $("#pay"), success = $("#success");
+  function bad(field, on){ field.classList.toggle("bad", !!on); }
+  function validate(){
+    var ok = true, first = null;
+    var checks = [
+      [form.name,   form.name.value.trim().length >= 2],
+      [form.phone,  /^[6-9]\d{9}$/.test(form.phone.value.replace(/\D/g,""))],
+      [form.email,  !form.email.value.trim() || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email.value.trim())],
+      [form.consent, form.consent.checked]
+    ];
+    checks.forEach(function(c){
+      var f = c[0].closest(".f"); bad(f, !c[1]);
+      if (!c[1]) { ok = false; first = first || c[0]; if (c[0] === form.email) $(".more").open = true; }
+    });
+    if (first) first.focus();
+    return ok;
+  }
+  $$("input,select,textarea", form).forEach(function(i){ i.addEventListener("input", function(){ var f=i.closest(".f"); if(f) bad(f,false); }); });
+
+  var lead = {uuid:null, first:""};
+
+  function showConfirmed(first){
+    $("#okName").textContent = first ? ", " + first : "";
+    pay.classList.remove("show"); wrap.hidden = true; success.classList.add("show");
+    $("#previewNote").hidden = !!CONFIG.paymentUrl;
+    var cal = $("#calBtn");
+    if (CONFIG.startISO) {
+      var s = new Date(CONFIG.startISO), e = new Date(s.getTime() + CONFIG.durationMin*60000);
+      var f = function(d){ return d.toISOString().replace(/[-:]|\.\d{3}/g,""); };
+      cal.href = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent("Parents' Webinar - Airborne Aviation Academy") +
+                 "&dates=" + f(s) + "/" + f(e) + "&details=" + encodeURIComponent("Live Q&A with Capt. Navrang Singh. Join link will be sent on WhatsApp.");
+      cal.hidden = false;
+    }
+    var shareUrl = location.origin + location.pathname + "?utm_source=whatsapp&utm_medium=share&utm_campaign=parents-webinar-referral";
+    $("#shareBtn").href = "https://wa.me/?text=" + encodeURIComponent("Parents: a live webinar on your child's pilot career with Capt. Navrang Singh, Sat 31 Oct, 11 AM. Real answers on cost, exams and jobs. Register for ₹" + CONFIG.fee + ": " + shareUrl);
+    success.focus();
+    push({event:"webinar_registration_paid", form: CONFIG.formName, value: CONFIG.fee, currency: "INR"});
+  }
+
+  function askPayment(payload, uuid){
+    lead.uuid = uuid; lead.first = payload.name.split(" ")[0];
+    $("#payName").textContent = ", " + lead.first;
+    wrap.hidden = true; pay.classList.add("show"); pay.focus();
+    push({event:"webinar_lead_saved", form: CONFIG.formName, course: payload.courseInterest, role: payload.webinar.role});
+    $("#payBtn").onclick = function(){
+      push({event:"webinar_pay_click", form: CONFIG.formName, value: CONFIG.fee, currency: "INR"});
+      if (CONFIG.paymentUrl) {                                    // LIVE: pass only the lead id (no personal data in the URL)
+        window.location.href = CONFIG.paymentUrl + (CONFIG.paymentUrl.indexOf("?") > -1 ? "&" : "?") + "ref=" + encodeURIComponent(uuid);
+      } else { $("#payPreview").hidden = false; }                 // PREVIEW: no gateway connected
+    };
+    $("#fakePay").onclick = function(){ showConfirmed(lead.first); };
+  }
+
+  if (qs.get("paid") === "1") showConfirmed("");                  // return from gateway (display only; verify via webhook)
+
+  form.addEventListener("submit", function(ev){
+    ev.preventDefault();
+    if (form.hp_ref_code.value) return;                          // honeypot
+    if (!validate()) return;
+    var uuid = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
+    var payload = {
+      name: form.name.value.trim(),
+      phone: "+91" + form.phone.value.replace(/\D/g,""),
+      email: form.email.value.trim() || null,
+      courseInterest: form.courseInterest.value,
+      source: CONFIG.source,
+      utmSource: attrib.utm_source || null, utmMedium: attrib.utm_medium || null, utmCampaign: attrib.utm_campaign || null,
+      utmTerm: attrib.utm_term || null, utmContent: attrib.utm_content || null,
+      referrerUrl: document.referrer || null, landingPage: location.href, leadUuid: uuid,
+      webinar: {                                                  // needs backend support to be stored
+        form: CONFIG.formName, date: CONFIG.webinarDate, role: form.role.value || "",
+        consentContact: true, consentAt: new Date().toISOString(),
+        utmId: attrib.utm_id || null, gclid: attrib.gclid || null, fbclid: attrib.fbclid || null
+      },
+      hp_ref_code: ""
+    };
+    var btn = $("#submitBtn"); btn.disabled = true; btn.textContent = "Saving your seat...";
+    if (!CONFIG.endpoint) {                                       // PREVIEW MODE
+      console.info("[preview] webinar registration payload (not sent):", payload);
+      setTimeout(function(){ askPayment(payload, uuid); }, 350);
+      return;
+    }
+    fetch(CONFIG.endpoint, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(payload)})
+      .then(function(r){ if(!r.ok) throw new Error(r.status); askPayment(payload, uuid); })
+      .catch(function(){ btn.disabled = false; btn.textContent = "Reserve my seat · ₹" + CONFIG.fee; alert("Sorry, we couldn't save your details just now. Please try again, or WhatsApp us."); });
+  });
+
+  /* question after payment (keeps the first form short) */
+  $("#qSend").addEventListener("click", function(){
+    var q = $("#question").value.trim(); if (!q) { $("#question").focus(); return; }
+    var body = {leadUuid: lead.uuid, question: q, form: CONFIG.formName};
+    var url = CONFIG.questionEndpoint || CONFIG.endpoint;
+    if (!url) console.info("[preview] question payload (not sent):", body);
+    else fetch(url, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)}).catch(function(){});
+    $("#qWrap").hidden = true; $("#qDone").hidden = false;
+    push({event:"webinar_question_sent", form: CONFIG.formName});
+  });
+
+  $$("[data-track]").forEach(function(a){ a.addEventListener("click", function(){
+    push({event:"webinar_cta_click", cta:a.getAttribute("data-track")});
+  }); });
+})();
+</script>
+</body>
+</html>

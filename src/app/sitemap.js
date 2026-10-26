@@ -38,6 +38,7 @@ const STATIC_ROUTE_DEFS = [
   { route: '/dgca-compliance', file: 'src/app/dgca-compliance/page.jsx', priority: 0.8 },
   { route: '/refund-policy', file: 'src/app/refund-policy/page.jsx', priority: 0.8 },
   { route: '/blog', file: 'src/app/blog/page.jsx', priority: 0.8 },
+  { route: '/webinar', file: 'public/webinar/page.html', priority: 0.85 },
 ]
 
 const DATE_CACHE = new Map()

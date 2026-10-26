@@ -5,7 +5,7 @@ import { sendLeadToCRM } from '@/lib/crm'
 import { consumeVerifyToken } from '@/utils/otp-store'
 import { resolveAdminApiUrl, resolveIntakeKey, LeadConfigError } from '@/lib/upstream'
 import { isHoneypotTripped } from '@/utils/honeypot'
-import { boundEligibilityAnswers, eligibilitySummary } from '@/lib/eligibility'
+import { boundEligibilityAnswers, eligibilitySummary } from '@/lib/eligibility';
 
 const UPSTREAM_FETCH_TIMEOUT = parseInt(process.env.UPSTREAM_FETCH_TIMEOUT || '10000', 10)
 
