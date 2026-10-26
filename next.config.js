@@ -51,6 +51,11 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/parents-webinar',
+        destination: '/webinar',
+        permanent: true,
+      },
+      {
         source: '/courses/cpl-ground-classes',
         destination: '/courses/commercial-pilot-license-cpl',
         permanent: true,
