@@ -118,6 +118,33 @@ export class PageService {
       ]);
     }
 
+    // Synchronize draft sections to relational tables upon publish
+    const studioDraft = (existing.metadata as Record<string, any>)?.studioDraft;
+    if (toStatus === "PUBLISHED" && studioDraft?.sections && Array.isArray(studioDraft.sections)) {
+      const draftSnapshot: PageSnapshot = {
+        title: existing.title,
+        slug: existing.slug,
+        seo: {
+          title: existing.seoTitle ?? undefined,
+          desc: existing.seoDesc ?? undefined,
+          keywords: existing.seoKeywords,
+        },
+        sections: studioDraft.sections.map((s: any, sIdx: number) => ({
+          name: s.name ?? `Section ${sIdx + 1}`,
+          order: s.order ?? sIdx,
+          isVisible: s.isVisible !== false,
+          settings: s.settings ?? {},
+          blocks: (s.blocks ?? []).map((b: any, bIdx: number) => ({
+            blockType: b.blockType?.type || b.blockTypeId || b.type || "text",
+            order: b.order ?? bIdx,
+            props: b.props ?? {},
+            isVisible: b.isVisible !== false,
+          })),
+        })),
+      };
+      await PageRepository.applySnapshot(ctx.orgId, id, draftSnapshot);
+    }
+
     const scheduledAt = input.scheduledAt ? new Date(input.scheduledAt) : null;
     const page = await PageRepository.updateStatus(ctx.orgId, id, toStatus, ctx.user.id, scheduledAt);
 

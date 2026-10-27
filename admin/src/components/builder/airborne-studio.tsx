@@ -493,18 +493,17 @@ export function AirborneStudio({ pageId }: AirborneStudioProps) {
     },
   });
 
-  const handleRollbackVersion = async (version: number) => {
+  const handleRollbackVersion = async (versionId: string, versionNumber: number) => {
     try {
-      await apiFetch(`/pages/${pageId}/rollback`, {
+      await apiFetch(`/pages/${pageId}/versions/${versionId}/rollback`, {
         method: "POST",
-        body: JSON.stringify({ version }),
       });
       queryClient.invalidateQueries({ queryKey: ["cms-studio-page", pageId] });
       refetch();
       setVersionsDrawerOpen(false);
       toast({
         title: "Version Restored",
-        description: `Restored version ${version} successfully.`,
+        description: `Restored version ${versionNumber} successfully.`,
       });
     } catch (err: any) {
       toast({
@@ -1077,7 +1076,7 @@ export function AirborneStudio({ pageId }: AirborneStudioProps) {
                     variant="outline"
                     size="sm"
                     className="h-7 text-xs font-semibold border-white/10"
-                    onClick={() => handleRollbackVersion(ver.version)}
+                    onClick={() => handleRollbackVersion(ver.id, ver.version)}
                   >
                     Restore
                   </Button>

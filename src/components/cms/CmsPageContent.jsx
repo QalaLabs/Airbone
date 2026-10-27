@@ -1,5 +1,6 @@
 import { createElement } from 'react'
 import { parseRichText, safeHref, safeMediaSrc, videoEmbedUrl } from '@/lib/cms/safeContent'
+import ModularSectionRenderer from './ModularSectionRenderer'
 
 const ALIGN = { left: 'left', center: 'center', right: 'right' }
 const BODY = { margin: 0, color: 'rgba(33,33,33,0.8)', lineHeight: 1.75 }
@@ -89,8 +90,13 @@ function Block({ block }) {
       const height = Number(props.height ?? 48)
       return <div aria-hidden="true" style={{ height: Number.isFinite(height) ? Math.min(Math.max(height, 0), 400) : 48 }} />
     }
-    default:
+    default: {
+      const type = block.blockType?.type
+      if (type) {
+        return <ModularSectionRenderer sections={[{ type, id: block.id, ...props }]} />
+      }
       return null
+    }
   }
 }
 

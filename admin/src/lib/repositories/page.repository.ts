@@ -352,11 +352,24 @@ export class PageRepository {
           });
 
           for (const blk of sec.blocks ?? []) {
-            const blockType = await tx.contentBlock.findFirst({
+            let blockType = await tx.contentBlock.findFirst({
               where: { type: blk.blockType, orgId },
               select: { id: true },
             });
-            if (!blockType) continue;
+            if (!blockType) {
+              const createdBlock = await tx.contentBlock.create({
+                data: {
+                  orgId,
+                  type: blk.blockType,
+                  name: blk.blockType.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+                  schema: {},
+                  defaultProps: {},
+                  isGlobal: false,
+                },
+                select: { id: true },
+              });
+              blockType = createdBlock;
+            }
 
             await tx.pageBlock.create({
               data: {

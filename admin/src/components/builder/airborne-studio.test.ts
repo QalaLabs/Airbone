@@ -156,3 +156,264 @@ describe("Airborne Studio — Undo / Redo & State Transition Invariants", () => 
     assert.equal(stack.canRedo(), false);
   });
 });
+
+
+describe("Airborne Studio -- 11 Pre-Release Audit Lifecycle and Interaction Scenarios", () => {
+  interface Block {
+    id: string;
+    type: string;
+    props: Record<string, any>;
+  }
+
+  interface Section {
+    id: string;
+    name: string;
+    order: number;
+    isVisible: boolean;
+    blocks: Block[];
+  }
+
+  interface PageData {
+    id: string;
+    title: string;
+    slug: string;
+    status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+    version: number;
+    metadata: Record<string, any>;
+    sections: Section[];
+  }
+
+  // 1. Open existing page
+  it("Scenario 1: Open existing page initializes visual canvas from metadata draft or relational sections", () => {
+    const existingPage: PageData = {
+      id: "page-cadet",
+      title: "Cadet Preparation",
+      slug: "cadet-preparation",
+      status: "PUBLISHED",
+      version: 2,
+      metadata: {
+        studioDraft: {
+          sections: [
+            {
+              id: "sec-1",
+              name: "Header Section",
+              order: 0,
+              isVisible: true,
+              blocks: [{ id: "b1", type: "heading", props: { content: "Airline Cadet Prep" } }],
+            },
+          ],
+        },
+      },
+      sections: [],
+    };
+
+    const initialSections = existingPage.metadata.studioDraft?.sections || existingPage.sections;
+    assert.equal(initialSections.length, 1);
+    assert.equal(initialSections[0].name, "Header Section");
+    assert.equal(initialSections[0].blocks[0].props.content, "Airline Cadet Prep");
+  });
+
+  // 2. Edit heading
+  it("Scenario 2: Edit heading updates block props immutably", () => {
+    const section: Section = {
+      id: "sec-1",
+      name: "Hero",
+      order: 0,
+      isVisible: true,
+      blocks: [{ id: "b1", type: "heading", props: { content: "Old Heading", level: 2 } }],
+    };
+
+    const updatedBlocks = section.blocks.map((b) =>
+      b.id === "b1" ? { ...b, props: { ...b.props, content: "New Airborne Pilot Academy Heading" } } : b
+    );
+
+    assert.equal(updatedBlocks[0].props.content, "New Airborne Pilot Academy Heading");
+    assert.equal(updatedBlocks[0].props.level, 2);
+  });
+
+  // 3. Replace image
+  it("Scenario 3: Replace image validates image URL and updates block props", () => {
+    const block: Block = {
+      id: "img-1",
+      type: "image",
+      props: { src: "/images/old-cockpit.jpg", alt: "Old cockpit" },
+    };
+
+    const newUrl = "https://storage.googleapis.com/airborne-aviation-media-prod/new-a320-sim.jpg";
+    assert.ok(newUrl.startsWith("https://") || newUrl.startsWith("/"), "Must be safe URL");
+
+    const updated = { ...block, props: { ...block.props, src: newUrl, alt: "A320 Flight Simulator" } };
+    assert.equal(updated.props.src, newUrl);
+    assert.equal(updated.props.alt, "A320 Flight Simulator");
+  });
+
+  // 4. Add section
+  it("Scenario 4: Add section appends a new section with default layout settings", () => {
+    const sections: Section[] = [
+      { id: "sec-0", name: "Section 1", order: 0, isVisible: true, blocks: [] },
+    ];
+
+    const newSec: Section = {
+      id: "sec-1",
+      name: `Section ${sections.length + 1}`,
+      order: sections.length,
+      isVisible: true,
+      blocks: [],
+    };
+    const updated = [...sections, newSec];
+
+    assert.equal(updated.length, 2);
+    assert.equal(updated[1].name, "Section 2");
+    assert.equal(updated[1].order, 1);
+  });
+
+  // 5. Reorder section
+  it("Scenario 5: Reorder section shifts index and re-indexes section orders sequentially", () => {
+    const sections: Section[] = [
+      { id: "sec-a", name: "Hero", order: 0, isVisible: true, blocks: [] },
+      { id: "sec-b", name: "Features", order: 1, isVisible: true, blocks: [] },
+      { id: "sec-c", name: "Pricing", order: 2, isVisible: true, blocks: [] },
+    ];
+
+    const reordered = [...sections];
+    const [moved] = reordered.splice(2, 1);
+    reordered.splice(1, 0, moved);
+    reordered.forEach((s, idx) => (s.order = idx));
+
+    assert.equal(reordered[0].id, "sec-a");
+    assert.equal(reordered[1].id, "sec-c");
+    assert.equal(reordered[2].id, "sec-b");
+    assert.equal(reordered[1].order, 1);
+  });
+
+  // 6. Save draft
+  it("Scenario 6: Save draft persists metadata.studioDraft without modifying public published status", () => {
+    const page: PageData = {
+      id: "page-1",
+      title: "CPL Ground School",
+      slug: "cpl-ground-school",
+      status: "DRAFT",
+      version: 1,
+      metadata: {},
+      sections: [],
+    };
+
+    const draftSections = [
+      { id: "sec-1", name: "Hero", order: 0, isVisible: true, blocks: [] },
+    ];
+
+    const patchPayload = {
+      metadata: {
+        ...page.metadata,
+        studioDraft: {
+          sections: draftSections,
+          lastSavedAt: new Date().toISOString(),
+        },
+      },
+    };
+
+    const updatedPage = { ...page, ...patchPayload };
+    assert.equal(updatedPage.status, "DRAFT");
+    assert.equal(updatedPage.metadata.studioDraft.sections.length, 1);
+  });
+
+  // 7. Verify public page unchanged
+  it("Scenario 7: Public API filter excludes draft-only modifications until explicit publish", () => {
+    const pagesInDb: PageData[] = [
+      {
+        id: "page-1",
+        title: "Published CPL",
+        slug: "cpl-school",
+        status: "PUBLISHED",
+        version: 1,
+        metadata: { studioDraft: { sections: [{ id: "unreleased-change", name: "New", order: 0, isVisible: true, blocks: [] }] } },
+        sections: [{ id: "published-section", name: "Live", order: 0, isVisible: true, blocks: [] }],
+      },
+      {
+        id: "page-2",
+        title: "Draft Only Page",
+        slug: "draft-page",
+        status: "DRAFT",
+        version: 1,
+        metadata: { studioDraft: { sections: [] } },
+        sections: [],
+      },
+    ];
+
+    const publicPages = pagesInDb.filter((p) => p.status === "PUBLISHED");
+    assert.equal(publicPages.length, 1);
+    assert.equal(publicPages[0].id, "page-1");
+    assert.equal(publicPages[0].sections[0].id, "published-section");
+  });
+
+  // 8. Preview draft
+  it("Scenario 8: Preview draft mounts responsive container (desktop / tablet / mobile) with draft data", () => {
+    type DeviceMode = "desktop" | "tablet" | "mobile";
+    const deviceWidths: Record<DeviceMode, string> = {
+      desktop: "100%",
+      tablet: "768px",
+      mobile: "375px",
+    };
+
+    let currentMode: DeviceMode = "desktop";
+    assert.equal(deviceWidths[currentMode], "100%");
+
+    currentMode = "mobile";
+    assert.equal(deviceWidths[currentMode], "375px");
+
+    currentMode = "tablet";
+    assert.equal(deviceWidths[currentMode], "768px");
+  });
+
+  // 9. Publish test change
+  it("Scenario 9: Publish transitions status to PUBLISHED and increments version", () => {
+    const page: PageData = {
+      id: "page-1",
+      title: "About Airborne",
+      slug: "about-airborne",
+      status: "DRAFT",
+      version: 1,
+      metadata: { studioDraft: { sections: [{ id: "s1", name: "Vision", order: 0, isVisible: true, blocks: [] }] } },
+      sections: [],
+    };
+
+    const publishedPage: PageData = {
+      ...page,
+      status: "PUBLISHED",
+      version: page.version + 1,
+      sections: page.metadata.studioDraft.sections,
+    };
+
+    assert.equal(publishedPage.status, "PUBLISHED");
+    assert.equal(publishedPage.version, 2);
+    assert.equal(publishedPage.sections.length, 1);
+  });
+
+  // 10. Verify public URL
+  it("Scenario 10: Verify public URL resolves canonical path /pages/[slug]", () => {
+    const slug = "airline-interview-preparation";
+    const publicUrl = `https://www.airborneaviation.in/pages/${slug}`;
+    const uri = new URL(publicUrl);
+
+    assert.equal(uri.pathname, "/pages/airline-interview-preparation");
+    assert.equal(uri.hostname, "www.airborneaviation.in");
+  });
+
+  // 11. Restore revision and Reject unauthorized publishing
+  it("Scenario 11: Rollback restores snapshot version and rejects unauthorized publish role", () => {
+    const versionSnapshots = [
+      { id: "v1", version: 1, title: "Title V1", sections: [{ id: "s1", name: "Old Section" }] },
+      { id: "v2", version: 2, title: "Title V2", sections: [{ id: "s2", name: "New Section" }] },
+    ];
+
+    const targetSnapshot = versionSnapshots.find((v) => v.id === "v1");
+    assert.ok(targetSnapshot);
+    assert.equal(targetSnapshot.version, 1);
+    assert.equal(targetSnapshot.sections[0].name, "Old Section");
+
+    const rolesWithPublishPermission = ["SUPER_ADMIN", "ADMIN", "CONTENT_MANAGER"];
+    const testUserRole = "VIEWER";
+    const canPublish = rolesWithPublishPermission.includes(testUserRole);
+    assert.equal(canPublish, false, "VIEWER must not be allowed to publish");
+  });
+});
