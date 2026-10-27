@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { 
-  Globe, FileText, ImageIcon, Megaphone,
+  Globe, FileText, ImageIcon, Megaphone, LayoutTemplate,
   Search, Plus, Eye, Edit2, Loader2, AlertCircle,
   MoreHorizontal, Archive, CalendarClock, Clock, Menu,
   Sparkles, ExternalLink, Settings2, GitBranch,
@@ -294,6 +294,13 @@ export default function CMSPage() {
         action={
           <div className="flex items-center gap-3">
             <Button 
+              onClick={() => router.push("/cms/builder")} 
+              className="bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20 text-xs font-bold gap-1.5"
+            >
+              <LayoutTemplate className="h-4 w-4 mr-1" />
+              Airborne Studio
+            </Button>
+            <Button 
               variant="outline" 
               onClick={() => { setActiveTab("preview"); setPreviewPath("/pages/cabin-crew-overview"); }} 
               className="border-white/10 hover:bg-white/5 text-xs font-bold gap-1.5"
@@ -316,6 +323,7 @@ export default function CMSPage() {
       <div className="flex border-b border-white/10 gap-2 overflow-x-auto pb-1">
         {[
           { id: "pagescms", label: "Pages CMS (Git)", icon: GitBranch, badge: "Modular" },
+          { id: "builder", label: "Airborne Studio", icon: LayoutTemplate, badge: "Visual" },
           { id: "preview", label: "Website Live Preview", icon: Eye, badge: "Interactive" },
           { id: "payload", label: "Payload CMS Studio", icon: Sparkles, badge: "Engine" },
           { id: "pages", label: "Core Web Pages", icon: Globe },
@@ -328,7 +336,13 @@ export default function CMSPage() {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => {
+                if (tab.id === "builder") {
+                  router.push("/cms/builder");
+                } else {
+                  setActiveTab(tab.id);
+                }
+              }}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap border ${
                 isActive 
                   ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" 
@@ -895,8 +909,11 @@ export default function CMSPage() {
                       </div>
 
                       <div className="flex items-center gap-3 shrink-0">
+                        <Button size="sm" onClick={() => router.push(`/cms/builder/${pg.id}`)} className="bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/30 text-xs font-bold py-1 px-3 h-8">
+                          <Sparkles className="h-3 w-3 mr-1.5 text-emerald-400" /> Airborne Studio
+                        </Button>
                         <Button size="sm" onClick={() => router.push(`/cms/pages/${pg.id}`)} className="bg-primary/20 hover:bg-primary/30 text-white border border-primary/30 text-xs font-bold py-1 px-3 h-8">
-                          <Edit2 className="h-3 w-3 mr-1.5" /> Open Editor
+                          <Edit2 className="h-3 w-3 mr-1.5" /> Block Editor
                         </Button>
                         <Button size="sm" variant="ghost" className="h-8 w-8 border border-white/10" aria-label="Preview page" onClick={() => router.push(`/cms/pages/${pg.id}/preview`)}>
                           <Eye className="h-4 w-4" />

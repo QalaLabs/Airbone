@@ -31,6 +31,7 @@ import {
   Eye,
   EyeOff,
   History,
+  Sparkles,
   Plus,
   Settings2,
   ChevronDown,
@@ -521,6 +522,12 @@ export default function PageEditor({ pageId }: { pageId: string }) {
           </div>
 
           <div className="flex items-center gap-2">
+            <a
+              href={`/cms/builder/${pageId}`}
+              className="inline-flex h-8 items-center gap-1.5 rounded-md bg-emerald-600/30 border border-emerald-500/40 px-3 text-xs font-bold text-emerald-300 hover:bg-emerald-600/50"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-emerald-400" /> Airborne Studio
+            </a>
             {dirty ? (
               <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[10px] font-extrabold text-amber-400">
                 {ops.length} unsaved change{ops.length === 1 ? "" : "s"}

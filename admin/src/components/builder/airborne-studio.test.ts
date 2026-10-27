@@ -227,8 +227,8 @@ describe("Airborne Studio -- 11 Pre-Release Audit Lifecycle and Interaction Scen
       b.id === "b1" ? { ...b, props: { ...b.props, content: "New Airborne Pilot Academy Heading" } } : b
     );
 
-    assert.equal(updatedBlocks[0].props.content, "New Airborne Pilot Academy Heading");
-    assert.equal(updatedBlocks[0].props.level, 2);
+    assert.equal(updatedBlocks[0]?.props.content, "New Airborne Pilot Academy Heading");
+    assert.equal(updatedBlocks[0]?.props.level, 2);
   });
 
   // 3. Replace image
@@ -263,8 +263,8 @@ describe("Airborne Studio -- 11 Pre-Release Audit Lifecycle and Interaction Scen
     const updated = [...sections, newSec];
 
     assert.equal(updated.length, 2);
-    assert.equal(updated[1].name, "Section 2");
-    assert.equal(updated[1].order, 1);
+    assert.equal(updated[1]?.name, "Section 2");
+    assert.equal(updated[1]?.order, 1);
   });
 
   // 5. Reorder section
@@ -277,13 +277,14 @@ describe("Airborne Studio -- 11 Pre-Release Audit Lifecycle and Interaction Scen
 
     const reordered = [...sections];
     const [moved] = reordered.splice(2, 1);
+    if (!moved) throw new Error("No item moved");
     reordered.splice(1, 0, moved);
     reordered.forEach((s, idx) => (s.order = idx));
 
-    assert.equal(reordered[0].id, "sec-a");
-    assert.equal(reordered[1].id, "sec-c");
-    assert.equal(reordered[2].id, "sec-b");
-    assert.equal(reordered[1].order, 1);
+    assert.equal(reordered[0]?.id, "sec-a");
+    assert.equal(reordered[1]?.id, "sec-c");
+    assert.equal(reordered[2]?.id, "sec-b");
+    assert.equal(reordered[1]?.order, 1);
   });
 
   // 6. Save draft
@@ -342,8 +343,8 @@ describe("Airborne Studio -- 11 Pre-Release Audit Lifecycle and Interaction Scen
 
     const publicPages = pagesInDb.filter((p) => p.status === "PUBLISHED");
     assert.equal(publicPages.length, 1);
-    assert.equal(publicPages[0].id, "page-1");
-    assert.equal(publicPages[0].sections[0].id, "published-section");
+    assert.equal(publicPages[0]?.id, "page-1");
+    assert.equal(publicPages[0]?.sections[0]?.id, "published-section");
   });
 
   // 8. Preview draft
@@ -409,7 +410,7 @@ describe("Airborne Studio -- 11 Pre-Release Audit Lifecycle and Interaction Scen
     const targetSnapshot = versionSnapshots.find((v) => v.id === "v1");
     assert.ok(targetSnapshot);
     assert.equal(targetSnapshot.version, 1);
-    assert.equal(targetSnapshot.sections[0].name, "Old Section");
+    assert.equal(targetSnapshot?.sections[0]?.name, "Old Section");
 
     const rolesWithPublishPermission = ["SUPER_ADMIN", "ADMIN", "CONTENT_MANAGER"];
     const testUserRole = "VIEWER";
