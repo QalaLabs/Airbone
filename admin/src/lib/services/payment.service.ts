@@ -12,7 +12,13 @@ import {
   type PaymentCashflow,
 } from "@/lib/services/fee-calculation.service";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/utils/errors";
-import type { CreatePaymentInput, UpdatePaymentInput, RefundPaymentInput, PaymentFilters } from "@/lib/validations/payment.schema";
+import {
+  canDeletePayment,
+  canDeletePaymentAs,
+  canRefundPayment,
+  canVoidPayment,
+} from "@/lib/payments/reversal-policy";
+import type { CreatePaymentInput, UpdatePaymentInput, RefundPaymentInput, VoidPaymentInput, PaymentFilters } from "@/lib/validations/payment.schema";
 import type { PaymentStatus } from "@prisma/client";
 import type { RequestContext } from "@/types";
 
@@ -70,7 +76,7 @@ export class PaymentService {
       deriveIdempotencyKey({ referenceNo: input.referenceNo, amount: input.amount, method: input.method });
 
     try {
-      const { payment, created } = await prisma.$transaction(async (tx) => {
+      const { payment, created, leadId, courseName } = await prisma.$transaction(async (tx) => {
         // Serialize payments for this admission; blocks until a concurrent
         // payment's transaction (which updates feePaid/feeBalance) commits.
         const [locked] = await tx.$queryRaw<{ id: string }[]>`
@@ -91,14 +97,14 @@ export class PaymentService {
           });
           if (existing) {
             const payment = await PaymentRepository.findById(ctx.orgId, existing.id);
-            if (payment) return { payment, created: false };
+            if (payment) return { payment, created: false, leadId: null, courseName: null };
           }
         }
 
         // Authoritative balance from the live cashflow (unclamped — credits shown negative).
         const admission = await tx.admission.findFirst({
           where: { id: admissionId, orgId: ctx.orgId },
-          select: { id: true, feeFinal: true, studentId: true, campusId: true },
+          select: { id: true, feeFinal: true, studentId: true, campusId: true, leadId: true, courseName: true },
         });
         if (!admission) throw new NotFoundError("Admission", admissionId);
 
@@ -157,7 +163,7 @@ export class PaymentService {
           tx,
         );
 
-        return { payment, created: true };
+        return { payment, created: true, leadId: admission.leadId, courseName: admission.courseName };
       });
 
       if (created) {
@@ -189,6 +195,25 @@ export class PaymentService {
             receiptNo: payment.receiptNo ?? undefined,
           },
         });
+
+        // SMS-01: fee-payment confirmation / tax-receipt email.
+        if (payment.status === "COMPLETED" && leadId) {
+          void (async () => {
+            try {
+              const { StageEmailService } = await import("@/lib/services/stage-email.service");
+              await StageEmailService.triggerStageEmail({
+                orgId: ctx.orgId,
+                stage: "FEE_PAYMENT",
+                leadId,
+                admissionId,
+                courseName,
+                performedBy: ctx.user.id,
+              });
+            } catch (e) {
+              console.error("StageEmailService failed for payment:", e);
+            }
+          })();
+        }
       }
 
       return payment;
@@ -249,7 +274,8 @@ export class PaymentService {
    * row is kept in the audit log.
    */
   static async remove(ctx: RequestContext, id: string) {
-    if (ctx.user.role !== "SUPER_ADMIN") {
+    const rolePolicy = canDeletePaymentAs(ctx.user.role);
+    if (!rolePolicy.allowed) {
       throw new ForbiddenError("delete", "payment ledger entries");
     }
 
@@ -263,6 +289,13 @@ export class PaymentService {
 
       const row = await tx.paymentTransaction.findFirst({ where: { id, orgId: ctx.orgId } });
       if (!row) throw new NotFoundError("Payment", id);
+
+      // CRM-11: a completed receipt is a financial document. It may only be
+      // reversed through void(), never purged from the ledger.
+      const deletePolicy = canDeletePayment(row.status);
+      if (!deletePolicy.allowed) {
+        throw new ValidationError([{ message: deletePolicy.reason! }]);
+      }
 
       await tx.paymentTransaction.delete({ where: { id } });
       await AdmissionRepository.updateFeeBalance(ctx.orgId, row.admissionId, tx);
@@ -311,17 +344,98 @@ export class PaymentService {
     return { id, admissionId: deleted.admissionId };
   }
 
+  /**
+   * CRM-11 — Void / reverse a receipt.
+   *
+   * The row is never deleted: status becomes VOIDED, the reason/actor/timestamp
+   * are stored, the admission balance is re-derived in the same transaction and
+   * both the audit log and the activity feed record the reversal.
+   */
+  static async void(ctx: RequestContext, id: string, input: VoidPaymentInput) {
+    const reason = input.reason.trim();
+    if (!reason) {
+      throw new ValidationError([{ message: "A void reason is required" }]);
+    }
+
+    const voided = await prisma.$transaction(async (tx) => {
+      const [locked] = await tx.$queryRaw<{ id: string }[]>`
+        SELECT "id" FROM "payment_transactions"
+        WHERE "id" = ${id}::uuid AND "orgId" = ${ctx.orgId}::uuid
+        FOR UPDATE
+      `;
+      if (!locked) throw new NotFoundError("Payment", id);
+
+      const row = await tx.paymentTransaction.findFirst({ where: { id, orgId: ctx.orgId } });
+      if (!row) throw new NotFoundError("Payment", id);
+      // CRM-11: terminal-state rules come from the shared reversal policy.
+      const voidPolicy = canVoidPayment(row.status);
+      if (!voidPolicy.allowed) {
+        throw new ValidationError([{ message: voidPolicy.reason! }]);
+      }
+
+      const payment = await PaymentRepository.applyVoid(
+        ctx.orgId,
+        id,
+        { voidedAt: new Date(), voidedBy: ctx.user.id, voidReason: reason },
+        tx,
+      );
+
+      await AdmissionRepository.updateFeeBalance(ctx.orgId, row.admissionId, tx);
+
+      await AuditService.write(
+        {
+          orgId: ctx.orgId,
+          userId: ctx.user.id,
+          requestId: ctx.requestId,
+          ipAddress: ctx.ipAddress,
+          action: "payment.voided",
+          entityType: "payment",
+          entityId: id,
+          oldValue: {
+            status: row.status,
+            amount: String(row.amount),
+            refundedAmount: String(row.refundedAmount),
+            receiptNo: row.receiptNo,
+          },
+          newValue: {
+            status: "VOIDED",
+            voidReason: reason,
+            admissionId: row.admissionId,
+          },
+        },
+        tx,
+      );
+
+      return { payment, admissionId: row.admissionId, amount: row.amount, receiptNo: row.receiptNo };
+    });
+
+    await ActivityFeedService.write({
+      orgId: ctx.orgId,
+      actorId: ctx.user.id,
+      verb: "voided_payment",
+      objectType: "payment",
+      objectId: id,
+      objectSnapshot: {
+        amount: String(voided.amount),
+        receiptNo: voided.receiptNo,
+        reason,
+      },
+      targetType: "admission",
+      targetId: voided.admissionId,
+      context: { actorName: ctx.user.name },
+    });
+
+    return voided.payment;
+  }
+
   /** Refund all or part of a payment. Full refund → REFUNDED, else PARTIALLY_REFUNDED. */
   static async refund(ctx: RequestContext, id: string, input: RefundPaymentInput) {
     const existing = await this.getById(ctx, id);
 
-    if (existing.status === "REFUNDED") {
-      throw new ValidationError([{ message: "This payment is already fully refunded" }]);
-    }
-    if (existing.status === "PENDING" || existing.status === "FAILED") {
-      throw new ValidationError([
-        { message: `Cannot refund a ${existing.status} payment` },
-      ]);
+    // CRM-11: terminal-state rules come from the shared reversal policy.
+    const refundPolicy = canRefundPayment(existing.status);
+    if (!refundPolicy.allowed) {
+      throw new ValidationError([{ message: refundPolicy.reason! }]);
     }
 
     const refundedSoFar = Number(existing.refundedAmount ?? 0);

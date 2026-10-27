@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { type ColumnDef, type PaginationState, type SortingState } from "@tanstack/react-table";
-import { Plus, Search, Filter, MoreHorizontal, Eye, CheckSquare, UserCheck, Sparkles, SlidersHorizontal, ChevronDown, AlertCircle, Trash2, Upload, Download, Radio } from "lucide-react";
+import { Plus, Search, Filter, MoreHorizontal, Eye, CheckSquare, UserCheck, Sparkles, SlidersHorizontal, ChevronDown, AlertCircle, Trash2, Upload, Download, Radio, Video } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
@@ -53,6 +53,21 @@ interface Lead {
   admissions?: { id: string }[];
   createdAt: string;
   lastActivityAt?: string;
+  tags?: string[];
+  customFields?: {
+    webinar?: {
+      eventDate?: string;
+      eventTime?: string;
+      eventDateTime?: string;
+      paymentStatus?: "UNPAID" | "PAID" | "FAILED" | "PENDING" | string;
+      eligibility?: "ELIGIBLE" | "NOT_ELIGIBLE" | string;
+      fee?: number;
+      paymentId?: string;
+      receiptNo?: string;
+      question?: string;
+      registeredAt?: string;
+    };
+  } | null;
 }
 
 const createLeadSchema = z.object({
@@ -96,6 +111,7 @@ export default function LeadsPage() {
   const [counsellorFilter, setCounsellorFilter] = React.useState("all");
   const [overdueOnly, setOverdueOnly] = React.useState(false);
   const [sourceFilter, setSourceFilter] = React.useState("all");
+  const [webinarFilter, setWebinarFilter] = React.useState("all");
   const [dateDraft, setDateDraft] = React.useState({ from: "", to: "" });
   const [dateRange, setDateRange] = React.useState({ from: "", to: "" });
   const [dateError, setDateError] = React.useState<string | null>(null);
@@ -119,23 +135,30 @@ export default function LeadsPage() {
   const filterParams = React.useMemo(
     () =>
       new URLSearchParams({
-        ...(sorting.length > 0 && sorting[0] ? { sortBy: sorting[0].id, sortDir: sorting[0].desc ? "desc" : "asc" } : {}),
+        ...(sorting.length > 0 && sorting[0]
+          ? {
+              sortBy: webinarFilter !== "all" && sorting[0].id === "createdAt" ? "lastActivityAt" : sorting[0].id,
+              sortDir: sorting[0].desc ? "desc" : "asc",
+            }
+          : {}),
         ...(debouncedSearch ? { search: debouncedSearch } : {}),
-        ...(statusFilter === "active" ? { isActive: "true" } : {}),
+        ...(statusFilter === "active" && webinarFilter === "all" ? { isActive: "true" } : {}),
         ...(statusFilter && statusFilter !== "all" && statusFilter !== "active" ? { status: statusFilter } : {}),
         ...(priorityFilter && priorityFilter !== "all" ? { priority: priorityFilter } : {}),
         ...(counsellorFilter && counsellorFilter !== "all" ? { assignedTo: counsellorFilter } : {}),
         ...(sourceFilter && sourceFilter !== "all" ? { source: sourceFilter } : {}),
+        ...(webinarFilter === "all_webinar" ? { tag: "webinar" } : {}),
+        ...(webinarFilter && webinarFilter !== "all" && webinarFilter !== "all_webinar" ? { tag: "webinar", webinarStatus: webinarFilter } : {}),
         ...(overdueOnly ? { followUpOverdue: "true" } : {}),
         ...(dateRange.from ? { dateFrom: dateRange.from } : {}),
         ...(dateRange.to ? { dateTo: dateRange.to } : {}),
       }),
-    [sorting, debouncedSearch, statusFilter, priorityFilter, counsellorFilter, sourceFilter, overdueOnly, dateRange],
+    [sorting, debouncedSearch, statusFilter, priorityFilter, counsellorFilter, sourceFilter, webinarFilter, overdueOnly, dateRange],
   );
 
   React.useEffect(() => {
     setPagination((p) => (p.pageIndex === 0 ? p : { ...p, pageIndex: 0 }));
-  }, [debouncedSearch, statusFilter, priorityFilter, counsellorFilter, sourceFilter, overdueOnly, dateRange]);
+  }, [debouncedSearch, statusFilter, priorityFilter, counsellorFilter, sourceFilter, webinarFilter, overdueOnly, dateRange]);
 
   const applyDateRange = () => {
     if (dateDraft.from && dateDraft.to && dateDraft.from > dateDraft.to) {
@@ -332,12 +355,44 @@ export default function LeadsPage() {
     },
     {
       accessorKey: "source",
-      header: "Source Channel",
-      cell: ({ row }) => (
-        <span className="text-xs font-medium text-muted-foreground bg-secondary/60 px-2 py-1 rounded-md border border-white/5">
-          {leadSourceLabel(row.original.source)}
-        </span>
-      ),
+      header: "Source & Category",
+      cell: ({ row }) => {
+        const webinar = row.original.customFields?.webinar;
+        const hasWebinarTag = row.original.tags?.includes("webinar") || row.original.tags?.includes("parents_webinar") || !!webinar;
+        const payStatus = webinar?.paymentStatus?.toUpperCase() || (hasWebinarTag ? "UNPAID" : null);
+
+        return (
+          <div className="flex flex-col gap-1 items-start">
+            <span className="text-xs font-medium text-muted-foreground bg-secondary/60 px-2 py-0.5 rounded-md border border-white/5">
+              {hasWebinarTag ? "Webinar Registration" : leadSourceLabel(row.original.source)}
+            </span>
+            {hasWebinarTag && (
+              <div className="flex flex-wrap items-center gap-1">
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center gap-1">
+                  <Video className="h-2.5 w-2.5" /> Parents&apos; Webinar
+                </span>
+                {payStatus === "PAID" ? (
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    PAID · ELIGIBLE
+                  </span>
+                ) : payStatus === "FAILED" ? (
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                    FAILED · NOT ELIGIBLE
+                  </span>
+                ) : payStatus === "PENDING" ? (
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    PENDING · UNVERIFIED
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    UNPAID · NOT ELIGIBLE
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "courseInterest",
@@ -540,6 +595,21 @@ export default function LeadsPage() {
                 {LEAD_SOURCE_OPTIONS.map((s) => (
                   <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={webinarFilter} onValueChange={setWebinarFilter}>
+              <SelectTrigger aria-label="Webinar filter" className="w-44 bg-secondary/40 border-white/10 text-xs font-semibold">
+                <Video className="mr-2 h-3.5 w-3.5 text-indigo-400" />
+                <SelectValue placeholder="Webinar" />
+              </SelectTrigger>
+              <SelectContent className="glass-panel border-white/10 text-xs">
+                <SelectItem value="all">All (Webinar & Regular)</SelectItem>
+                <SelectItem value="all_webinar">All Webinar Leads</SelectItem>
+                <SelectItem value="unpaid">Webinar — Unpaid</SelectItem>
+                <SelectItem value="paid">Webinar — Paid / Eligible</SelectItem>
+                <SelectItem value="failed">Webinar — Failed / Cancelled</SelectItem>
+                <SelectItem value="pending">Webinar — Verification Pending</SelectItem>
               </SelectContent>
             </Select>
 

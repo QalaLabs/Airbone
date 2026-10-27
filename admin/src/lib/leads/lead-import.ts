@@ -27,6 +27,10 @@ export interface PreparedImportRow {
 export interface ImportRowError {
   rowNumber: number;
   reason: string;
+  /** CRM-02: this row duplicates an existing lead. */
+  isDuplicate?: boolean;
+  /** CRM-02: id of the existing live lead this row duplicates (when known). */
+  duplicateOf?: string;
 }
 
 /**

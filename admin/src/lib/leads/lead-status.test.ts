@@ -15,6 +15,7 @@ import {
   statusLabel,
   canTransitionLeadStatus,
   getAllowedLeadStatuses,
+  pendingFollowUpWhere,
 } from "./lead-status";
 import { createLeadSchema, leadFiltersSchema } from "../validations/lead.schema";
 
@@ -205,4 +206,34 @@ test("SECTION3: does not transition a lead to WON/CONVERTED via the generic path
       `${target} must not be reachable via generic status change`,
     );
   }
+});
+
+// ---------------------------------------------------------------- CRM-08 ----
+test("CRM-08: shared pending-follow-up predicate includes explicit FOLLOW_UP", () => {
+  const where = pendingFollowUpWhere(new Date("2026-10-27T18:29:59.999Z")) as {
+    OR: Array<Record<string, unknown>>;
+  };
+  const statusOnly = where.OR.find((clause) => "status" in clause && !("nextFollowUp" in clause));
+  assert.ok(statusOnly, "predicate must keep the explicit FOLLOW_UP branch");
+  assert.equal(statusOnly?.status, LeadStatus.FOLLOW_UP);
+});
+
+test("CRM-08: due-date branch only counts open, non-terminal statuses", () => {
+  const where = pendingFollowUpWhere(new Date("2026-10-27T18:29:59.999Z")) as {
+    OR: Array<{ nextFollowUp?: { lte: Date }; status?: { in: LeadStatus[] } }>;
+  };
+  const branch = where.OR.find((clause) => "nextFollowUp" in clause);
+  assert.ok(branch, "predicate must have a nextFollowUp branch");
+  assert.ok(branch?.nextFollowUp?.lte instanceof Date);
+  const statuses = branch?.status?.in ?? [];
+  assert.ok(!statuses.includes(LeadStatus.WON), "won leads are not pending follow-ups");
+  assert.ok(!statuses.includes(LeadStatus.CONVERTED), "converted leads are not pending follow-ups");
+  for (const lost of LOST_STATUSES) {
+    // NOT_CONTACTABLE is deliberately kept actionable: the lead still needs a
+    // follow-up attempt. Every other lost reason is terminal.
+    if (lost === LeadStatus.NOT_CONTACTABLE) continue;
+    assert.ok(!statuses.includes(lost), `${lost} is terminal and must not be pending`);
+  }
+  assert.ok(statuses.includes(LeadStatus.NEW));
+  assert.ok(statuses.includes(LeadStatus.CALL_BACK));
 });

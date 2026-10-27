@@ -4,6 +4,7 @@ import { getRequestContext } from "@/lib/middleware/context";
 import { ok, handleError } from "@/lib/utils/response";
 import { buildAnalyticsScope } from "@/lib/analytics/scope";
 import { startOfISTDay, startOfISTMonth, endOfISTDay } from "@/lib/time/ist";
+import { pendingFollowUpWhere } from "@/lib/leads/lead-status";
 
 export async function GET() {
   try {
@@ -35,10 +36,7 @@ export async function GET() {
       prisma.lead.count({
         where: {
           ...scope.leadWhere,
-          OR: [
-            { status: "FOLLOW_UP" },
-            { nextFollowUp: { lte: endOfISTDay() }, status: { in: ["NEW", "INTERESTED", "PROSPECT"] } },
-          ],
+          ...pendingFollowUpWhere(endOfISTDay()),
         },
       }),
       prisma.student.count({ where: scope.studentWhere }),

@@ -74,14 +74,14 @@ const STATIONS = [
     title: 'Aviation Library & Question-Bank Drill Zone',
     location: 'Study & Research Pods · Dwarka',
     description:
-      'A quiet, focused environment dedicated to intensive exam preparation. The library hosts 15+ years of archived DGCA past exam papers, Oxford Aviation training manuals, Jeppesen route charts, and quiet study desks for daily timed mock examinations.',
+      'A quiet, focused environment dedicated to intensive exam preparation. The library hosts archived DGCA past exam papers (maintained since 2009), Oxford Aviation training manuals, Jeppesen route charts, and quiet study desks for daily timed mock examinations.',
     highlights: [
-      '15+ years of verified DGCA question bank archives',
+      'DGCA question bank archives maintained since 2009',
       'Official Jeppesen airway manuals and navigation charts',
       'Daily timed mock tests under simulated exam pressure',
       'Quiet individual study pods with faculty doubt clearing',
     ],
-    metric: '15+ Years',
+    metric: 'Since 2009',
     metricLabel: 'DGCA Question Archives',
     primaryImage: '/images/media/library.webp',
     secondaryImage: '/campus/campus_facility.jpg',
@@ -142,6 +142,9 @@ export default function CampusWalkthroughSection({ onBookTour }) {
   // Auto-play walkthrough effect
   useEffect(() => {
     if (!isAutoPlaying) {
+      // Resetting the progress bar when the viewer stops auto-play is the point
+      // of this branch; it is not derived render state.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setProgress(0)
       if (timerRef.current) clearInterval(timerRef.current)
       return

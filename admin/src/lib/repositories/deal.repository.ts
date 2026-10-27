@@ -127,11 +127,12 @@ export class DealRepository {
         where: { leadId, orgId, isActive: true, deletedAt: null },
         select: DEAL_SELECT,
       });
-      const match = deals.find(d => {
+      // CRM-03: a course-specific lookup must NEVER fall back to an unrelated
+      // active deal, otherwise a second course can never get its own deal.
+      return deals.find((d) => {
         const meta = (d.metadata ?? {}) as Record<string, unknown>;
-        return meta.courseId === courseId || (title && d.title === title);
+        return meta.courseId === courseId || (title ? d.title === title : false);
       });
-      if (match) return match;
     }
     return prisma.deal.findFirst({
       where: { leadId, orgId, isActive: true, deletedAt: null },

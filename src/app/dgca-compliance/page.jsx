@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 export const metadata = {
   title: 'DGCA Compliance | Airborne Aviation Academy',
-  description: 'Airborne Aviation Academy\'s DGCA compliance status. Our courses are aligned to DGCA CPL and ATPL ground school requirements. Regulatory information for aviation aspirants.',
+  description: 'Airborne Aviation Academy\'s DGCA compliance status. Our courses align to DGCA CPL and ATPL ground school requirements for aviation aspirants.',
   alternates: { canonical: '/dgca-compliance' },
 }
 

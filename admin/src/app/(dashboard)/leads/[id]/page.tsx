@@ -9,7 +9,7 @@ import {
   ArrowLeft, Mail, Phone, Calendar, User, MessageSquare,
   PhoneCall, Clock, FileText, Sparkles, Plus, CheckCircle2,
   UserPlus, GraduationCap, Send, Workflow, ChevronLeft, ChevronRight, X, Pencil,
-  Bot, Volume2, Download, Loader2,
+  Bot, Volume2, Download, Loader2, Video, ShieldCheck, AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -20,6 +20,7 @@ import { formatDate, formatDateTime } from "@/lib/utils";
 import { toISTInput, fromISTInput } from "@/lib/time/ist";
 import { statusLabel } from "@/lib/leads/lead-status";
 import { LEAD_SOURCE_OPTIONS, leadSourceLabel } from "@/lib/leads/lead-source";
+import { CALL_DISPOSITIONS, CALL_DISPOSITION_LABELS } from "@/lib/leads/dispositions";
 import { roleCan } from "@/lib/utils/permissions";
 import { toast } from "@/components/ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -91,7 +92,26 @@ interface Lead {
   admissions?: LeadAdmission[];
   deals?: LeadDeal[];
   scoreHistory?: { id: string; score: number; reason?: string | null; createdAt: string }[];
-  customFields?: { eligibility?: { course?: string | null; result?: string; answers?: Record<string, string> } } | null;
+  tags?: string[];
+  customFields?: {
+    eligibility?: { course?: string | null; result?: string; answers?: Record<string, string> };
+    webinar?: {
+      eventDate?: string;
+      eventTitle?: string;
+      eventTime?: string;
+      eventDateTime?: string;
+      paymentStatus?: "UNPAID" | "PAID" | "FAILED" | "PENDING" | string;
+      eligibility?: "ELIGIBLE" | "NOT_ELIGIBLE" | string;
+      fee?: number;
+      paymentId?: string;
+      receiptNo?: string;
+      question?: string;
+      registeredAt?: string;
+      verifiedAt?: string;
+      lastPaymentId?: string;
+      failedAt?: string;
+    };
+  } | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -355,6 +375,7 @@ export default function LeadDetailPage() {
   const [counselorId, setCounselorId] = React.useState("");
   const [followUp, setFollowUp] = React.useState("");
   const [lostReason, setLostReason] = React.useState("");
+  const [disposition, setDisposition] = React.useState<(typeof CALL_DISPOSITIONS)[number]>("CONNECTED");
   const [editingStatus, setEditingStatus] = React.useState(false);
   const [pendingStatus, setPendingStatus] = React.useState<string | null>(null);
   const [followUpNote, setFollowUpNote] = React.useState("");
@@ -404,8 +425,26 @@ export default function LeadDetailPage() {
     },
   });
 
-  const triggerInteraktMutation = useMutation({
-    mutationFn: () => apiFetch(`/leads/${id}/interakt`, { method: "POST" }),
+  // CRM-04: logging a contact outcome writes lastDisposition/dispositionAt and
+  // the timeline only. The commercial status is intentionally untouched.
+  const dispositionMutation = useMutation({
+    mutationFn: (body: { disposition: string }) =>
+      apiFetch(`/leads/${id}/disposition`, { method: "POST", body: JSON.stringify(body) }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["lead", id] });
+      queryClient.invalidateQueries({ queryKey: ["lead", id, "activities"] });
+      queryClient.invalidateQueries({ queryKey: ["lead", id, "timeline"] });
+      toast({
+        title: "Call disposition logged",
+        description: "The commercial pipeline stage was not changed.",
+      });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Failed to log disposition", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const triggerInteraktMutation = useMutation({    mutationFn: () => apiFetch(`/leads/${id}/interakt`, { method: "POST" }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lead", id, "interakt"] });
       queryClient.invalidateQueries({ queryKey: ["lead", id, "timeline"] });
@@ -1027,6 +1066,93 @@ export default function LeadDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
+          {((lead.tags && (lead.tags.includes("webinar") || lead.tags.includes("parents_webinar"))) || !!lead.customFields?.webinar) && (
+            <div className="glass-card rounded-2xl p-6 border border-indigo-500/30 bg-gradient-to-br from-indigo-950/40 via-slate-900/80 to-slate-900/80 backdrop-blur-xl space-y-5">
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-indigo-500/20 pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-indigo-500/20 border border-indigo-500/30 text-indigo-400">
+                    <Video className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-white tracking-tight">Parents&apos; Webinar Registration</h2>
+                    <p className="text-xs text-indigo-300/80 font-medium">Airborne Aviation Official Webinar Lifecycle</p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  {lead.customFields?.webinar?.paymentStatus === "PAID" ? (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" /> PAID · SEAT CONFIRMED
+                    </span>
+                  ) : lead.customFields?.webinar?.paymentStatus === "FAILED" ? (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                      <AlertTriangle className="h-3.5 w-3.5 text-rose-400" /> PAYMENT FAILED · NOT ELIGIBLE
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                      <Clock className="h-3.5 w-3.5 text-amber-400" /> UNPAID · NOT ELIGIBLE (FEE PENDING)
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Info
+                  label="Webinar Event Schedule"
+                  value={lead.customFields?.webinar?.eventDateTime || "Saturday 31 Oct 2026, 11:00 AM IST · Live online"}
+                  icon={Calendar}
+                />
+                <Info
+                  label="Registration Fee"
+                  value={lead.customFields?.webinar?.fee ? `₹${lead.customFields.webinar.fee}` : "₹21"}
+                />
+                <Info
+                  label="Payment Status"
+                  value={lead.customFields?.webinar?.paymentStatus ?? "UNPAID"}
+                />
+                <Info
+                  label="Webinar Eligibility"
+                  value={lead.customFields?.webinar?.eligibility === "ELIGIBLE" ? "ELIGIBLE / SEAT CONFIRMED" : "NOT ELIGIBLE — PAYMENT REQUIRED"}
+                />
+                {lead.customFields?.webinar?.paymentId ? (
+                  <Info
+                    label="Razorpay Payment ID"
+                    value={lead.customFields.webinar.paymentId}
+                    mono
+                  />
+                ) : null}
+                {lead.customFields?.webinar?.receiptNo ? (
+                  <Info
+                    label="Receipt Reference"
+                    value={lead.customFields.webinar.receiptNo}
+                    mono
+                  />
+                ) : null}
+                {lead.customFields?.webinar?.verifiedAt ? (
+                  <Info
+                    label="Payment Verified At"
+                    value={formatDateTime(lead.customFields.webinar.verifiedAt)}
+                  />
+                ) : null}
+                {lead.customFields?.webinar?.registeredAt ? (
+                  <Info
+                    label="Webinar Form Registered At"
+                    value={formatDateTime(lead.customFields.webinar.registeredAt)}
+                  />
+                ) : null}
+              </div>
+
+              {lead.customFields?.webinar?.question && (
+                <div className="pt-3 border-t border-indigo-500/20">
+                  <span className="text-xs font-bold uppercase tracking-wider text-indigo-300 block mb-1">
+                    Attendee&apos;s Submitted Question for Capt. Navrang
+                  </span>
+                  <div className="p-3.5 rounded-xl bg-slate-900/90 border border-indigo-500/20 text-xs text-white leading-relaxed whitespace-pre-wrap">
+                    &ldquo;{lead.customFields.webinar.question}&rdquo;
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-6">
             <h2 className="text-base font-bold text-white flex items-center justify-between border-b border-white/10 pb-3">
               <div className="flex items-center gap-2">
@@ -1069,14 +1195,49 @@ export default function LeadDetailPage() {
               ) : null}
               {lead.lastDisposition ? (
                 <Info
-                  label="Last disposition"
-                  value={`${lead.lastDisposition}${lead.dispositionAt ? ` · ${formatDate(lead.dispositionAt)}` : ""}`}
+                  label="Last call disposition"
+                  value={`${
+                    CALL_DISPOSITION_LABELS[lead.lastDisposition as keyof typeof CALL_DISPOSITION_LABELS] ??
+                    lead.lastDisposition
+                  }${lead.dispositionAt ? ` · ${formatDate(lead.dispositionAt)}` : ""}`}
                 />
               ) : null}
               <Info
                 label="Last activity"
                 value={lead.lastActivityAt ? formatDateTime(lead.lastActivityAt) : "-"}
               />
+            </div>
+
+            <div className="flex flex-wrap items-end gap-2 pt-2 border-t border-white/10">
+              <div className="flex flex-col gap-1">
+                <span className="text-xs text-muted-foreground font-semibold">Log call disposition</span>
+                <select
+                  aria-label="Call disposition"
+                  data-testid="call-disposition"
+                  value={disposition}
+                  onChange={(e) => setDisposition(e.target.value as (typeof CALL_DISPOSITIONS)[number])}
+                  className="h-9 rounded-lg border border-white/10 bg-secondary/40 px-2 text-xs font-semibold text-foreground"
+                >
+                  {CALL_DISPOSITIONS.map((d) => (
+                    <option key={d} value={d} className="bg-slate-900">
+                      {CALL_DISPOSITION_LABELS[d]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-9 border-white/10 text-xs font-bold"
+                data-testid="log-disposition"
+                disabled={dispositionMutation.isPending}
+                onClick={() => dispositionMutation.mutate({ disposition })}
+              >
+                {dispositionMutation.isPending ? "Logging..." : "Log call"}
+              </Button>
+              <p className="text-[10px] text-muted-foreground pb-2">
+                Records the contact outcome only — the pipeline stage stays unchanged.
+              </p>
             </div>
 
             <div className="space-y-3 pt-2 border-t border-white/10">

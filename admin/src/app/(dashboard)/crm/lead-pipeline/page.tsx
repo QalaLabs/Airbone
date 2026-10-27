@@ -70,6 +70,7 @@ import {
 import { apiFetch } from "@/lib/api";
 import { formatDate, formatDateTime, cn } from "@/lib/utils";
 import { isLostStatus } from "@/lib/leads/lead-status";
+import { collectAllPages } from "@/lib/leads/paginate";
 import type { LeadStatus } from "@prisma/client";
 import { readMeetingMode, MEETING_MODE_LABELS, type MeetingMode } from "@/lib/crm/meeting-mode";
 import { toast } from "@/components/ui/use-toast";
@@ -458,8 +459,21 @@ export default function LeadPipelinePage() {
 
   const fetchLeads = React.useCallback(async () => {
     try {
-      const res = await apiFetch<LeadRecord[]>("/leads?limit=100&sortBy=updatedAt&sortDir=desc");
-      setLeads(Array.isArray(res) ? res : []);
+      // CRM-07: the pipeline must show every open lead. The API caps a page at
+      // 100 rows, so walk pages until a short page is returned (hard-capped to
+      // avoid an unbounded loop if the server misbehaves).
+      const collected = await collectAllPages<LeadRecord>((page, limit) =>
+        apiFetch<LeadRecord[]>(
+          `/leads?limit=${limit}&page=${page}&sortBy=updatedAt&sortDir=desc`,
+        ),
+      );
+      const seen = new Set<string>();
+      const deduped = collected.filter((lead) => {
+        if (!lead?.id || seen.has(lead.id)) return false;
+        seen.add(lead.id);
+        return true;
+      });
+      setLeads(deduped);
     } catch (e) {
       toast({ title: "Failed to load leads", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
     } finally {

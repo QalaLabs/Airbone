@@ -12,8 +12,8 @@ export async function generateMetadata() {
   // Canonical: Admin Resource (PUBLISHED) SEO fields; static fallback when Admin offline.
   const blog = await fetchPublic('/blogs', { slug: 'dgca-ground-school-guide' })
   return {
-    title: blog?.seoTitle ?? 'DGCA Ground School Guide - All Subjects, Exams & Prep Strategy 2026',
-    description: blog?.seoDesc ?? blog?.description ?? 'Complete DGCA ground school guide for CPL and ATPL aspirants. Covers all 6 exam subjects, exam schedule, pass criteria, preparation strategies, and common mistakes. By Airborne Aviation Academy.',
+    title: blog?.seoTitle ?? 'DGCA Ground School Guide 2026 | Airborne Aviation',
+    description: blog?.seoDesc ?? blog?.description ?? 'Complete DGCA ground school guide for CPL and ATPL aspirants: all 6 subjects, exam schedule, pass criteria, and preparation strategy.',
     alternates: { canonical: '/blog/dgca-ground-school-guide' },
   }
 }

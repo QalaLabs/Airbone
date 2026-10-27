@@ -2,6 +2,7 @@ import { z } from "zod";
 import { LeadSource, LeadStatus, ActivityType } from "@prisma/client";
 import { MEETING_MODES, isMeetingMode } from "@/lib/crm/meeting-mode";
 import { INITIAL_LEAD_STATUSES, isInitialLeadStatus } from "@/lib/leads/lead-status";
+import { CALL_DISPOSITIONS } from "@/lib/leads/dispositions";
 import { parseISTWallClock } from "@/lib/analytics/date-range";
 
 export const createLeadSchema = z.object({
@@ -105,6 +106,8 @@ const leadFiltersObject = z.object({
   courseInterest: z.string().optional(),
   priority: z.enum(["HIGH", "MEDIUM", "LOW"]).optional(),
   lostReason: z.string().optional(),
+  tag: z.string().optional(),
+  webinarStatus: z.enum(["all", "unpaid", "paid", "failed", "pending"]).optional(),
   search: z.string().max(255).optional(),
   dateFrom: leadDateBound("start").optional(),
   dateTo: leadDateBound("end").optional(),
@@ -119,6 +122,7 @@ const leadFiltersObject = z.object({
     .enum([
       "createdAt",
       "updatedAt",
+      "lastActivityAt",
       "score",
       "name",
       "status",
@@ -178,15 +182,44 @@ export const scheduleMeetingSchema = z.object({
   metadata: meetingMetadataSchema.optional(),
 });
 
-export const updateMeetingSchema = z.object({
-  title: z.string().max(500).optional(),
-  dueAt: z.string().datetime().optional(),
-  durationMins: z.number().int().min(0).max(1440).optional(),
-  mode: meetingModeSchema.optional(),
-  notes: z.string().max(5000).optional(),
-  outcome: z.string().max(255).optional(),
-  metadata: meetingMetadataSchema.optional(),
-});
+export const updateMeetingSchema = z
+  .object({
+    title: z.string().max(500).optional(),
+    dueAt: z.string().datetime().optional(),
+    durationMins: z.number().int().min(0).max(1440).optional(),
+    mode: meetingModeSchema.optional(),
+    notes: z.string().max(5000).optional(),
+    outcome: z.string().max(255).optional(),
+    metadata: meetingMetadataSchema.optional(),
+    // CRM-13: completing a meeting is an explicit action. When `complete` is
+    // true the resolution fields (mode, duration, outcome) are all mandatory so
+    // a "completed" meeting can never be stored without a real resolution.
+    complete: z.boolean().optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (!value.complete) return;
+    if (!value.mode) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["mode"],
+        message: "Meeting mode is required to complete a meeting",
+      });
+    }
+    if (value.durationMins === undefined || value.durationMins <= 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["durationMins"],
+        message: "A duration greater than 0 minutes is required to complete a meeting",
+      });
+    }
+    if (!value.outcome || value.outcome.trim().length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["outcome"],
+        message: "An outcome is required to complete a meeting",
+      });
+    }
+  });
 
 // Meeting completion / cancellation action for the dedicated route.
 export const meetingActionSchema = z.object({
@@ -217,7 +250,9 @@ export type ConvertLeadInput = z.infer<typeof convertLeadSchema>;
 export type ScheduleMeetingInput = z.infer<typeof scheduleMeetingSchema>;
 
 export const recordDispositionSchema = z.object({
-  disposition: z.string().min(1).max(50),
+  // CRM-04: only canonical call dispositions are accepted. Pipeline stages are
+  // NOT valid dispositions and cannot be written through this endpoint.
+  disposition: z.enum(CALL_DISPOSITIONS),
   remarks: z.string().max(1000).optional(),
   nextFollowUp: z.union([z.string(), z.date()]).nullable().optional(),
 });

@@ -4,6 +4,7 @@ import {
   createPaymentSchema,
   updatePaymentSchema,
   refundPaymentSchema,
+  voidPaymentSchema,
   paymentFiltersSchema,
 } from "@/lib/validations/payment.schema";
 
@@ -80,4 +81,24 @@ test("paymentFiltersSchema parses ledger filters with sensible defaults", () => 
   assert.equal(r.page, 3);
   assert.equal(r.limit, 20);
   assert.equal(paymentFiltersSchema.parse({}).sortBy, "createdAt");
+});
+// ---------------------------------------------------------------- CRM-11 ----
+test("CRM-11: void requires a real, trimmed reason", () => {
+  assert.equal(voidPaymentSchema.safeParse({ reason: "Duplicate receipt" }).success, true);
+  assert.equal(voidPaymentSchema.safeParse({ reason: "" }).success, false);
+  assert.equal(voidPaymentSchema.safeParse({ reason: "ab" }).success, false);
+  assert.equal(voidPaymentSchema.safeParse({}).success, false);
+});
+
+test("CRM-11: void reason is trimmed and length-bounded", () => {
+  const parsed = voidPaymentSchema.parse({ reason: "  cancelled by accounts  " });
+  assert.equal(parsed.reason, "cancelled by accounts");
+  assert.equal(voidPaymentSchema.safeParse({ reason: "x".repeat(2001) }).success, false);
+});
+
+test("CRM-11: refund/void statuses cannot be written through the generic update", () => {
+  for (const status of ["REFUNDED", "PARTIALLY_REFUNDED", "VOIDED"]) {
+    assert.equal(updatePaymentSchema.safeParse({ status }).success, false, `${status} must be rejected`);
+  }
+  assert.equal(updatePaymentSchema.safeParse({ status: "COMPLETED" }).success, true);
 });

@@ -40,11 +40,17 @@ export class LeadImportService {
     for (const row of valid) {
       const match = contactCandidates(row.phone).find((c) => existingPhones.has(c));
       if (match) {
+        const existing = existingPhones.get(match)!;
+        // CRM-02: report the duplicate AND link the existing canonical lead id.
+        // CRM-05's active-phone uniqueness means a second live row must not be
+        // created; the existing lead is the deduplicated target.
         duplicates.push({
           rowNumber: row.rowNumber,
-          reason: existingPhones.get(match)
+          isDuplicate: true,
+          duplicateOf: existing.id,
+          reason: existing.trashed
             ? `Phone ${row.phone} is in the Recycle Bin — restore it there`
-            : `Phone ${row.phone} already exists in CRM`,
+            : `Phone ${row.phone} already exists in CRM (lead ${existing.id.slice(0, 8)})`,
         });
         continue;
       }
@@ -131,16 +137,30 @@ export class LeadImportService {
   }
 
   // unique(orgId, phone) spans soft-deleted rows too, so they count as existing.
-  // Value = true when the matching lead is in the Recycle Bin.
-  private static async findExistingPhones(orgId: string, rows: PreparedImportRow[]): Promise<Map<string, boolean>> {
+  // Value carries the existing lead id (CRM-02 duplicate link) and whether the
+  // match is in the Recycle Bin.
+  private static async findExistingPhones(
+    orgId: string,
+    rows: PreparedImportRow[],
+  ): Promise<Map<string, { id: string; trashed: boolean }>> {
     const candidates = [...new Set(rows.flatMap((r) => contactCandidates(r.phone)))];
-    const found = new Map<string, boolean>();
+    const found = new Map<string, { id: string; trashed: boolean }>();
     for (let i = 0; i < candidates.length; i += 5000) {
       const existing = await prisma.lead.findMany({
         where: { orgId, phone: { in: candidates.slice(i, i + 5000) } },
-        select: { phone: true, deletedAt: true },
+        select: { id: true, phone: true, deletedAt: true },
       });
-      for (const l of existing) found.set(l.phone, l.deletedAt !== null);
+      for (const l of existing) {
+        const previous = found.get(l.phone);
+        // CRM-02/CRM-05: the same phone can exist more than once when a live
+        // lead and a Recycle Bin row share it (the partial unique index only
+        // covers live rows). Always report the live lead as the duplicate
+        // target; never point a CSV row at a trashed record when a live one
+        // exists.
+        if (!previous || (previous.trashed && l.deletedAt === null)) {
+          found.set(l.phone, { id: l.id, trashed: l.deletedAt !== null });
+        }
+      }
     }
     return found;
   }

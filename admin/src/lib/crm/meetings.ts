@@ -69,6 +69,7 @@ export async function completeMeeting(id: string, input: CompleteMeetingInput): 
       notes: input.notes,
       outcome: input.outcome,
       metadata: { meetingMode: input.mode },
+      complete: true,
     }),
   });
 }

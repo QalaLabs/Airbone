@@ -189,6 +189,21 @@ export function buildLeadWhere(orgId: string, filters: LeadWhereFilters, now: Da
   if (filters.priority) {
     where.score = scoreRangeForPriority(filters.priority);
   }
+  if (filters.tag) {
+    where.tags = { has: filters.tag };
+  }
+  if (filters.webinarStatus && filters.webinarStatus !== "all") {
+    const statusUpper = filters.webinarStatus.toUpperCase();
+    if (statusUpper === "PAID") {
+      where.customFields = { path: ["webinar", "paymentStatus"], equals: "PAID" };
+    } else if (statusUpper === "UNPAID") {
+      where.customFields = { path: ["webinar", "paymentStatus"], equals: "UNPAID" };
+    } else if (statusUpper === "FAILED") {
+      where.customFields = { path: ["webinar", "paymentStatus"], equals: "FAILED" };
+    } else if (statusUpper === "PENDING") {
+      where.customFields = { path: ["webinar", "paymentStatus"], equals: "PENDING" };
+    }
+  }
   return where;
 }
 
@@ -235,7 +250,9 @@ export class LeadRepository {
       prisma.lead.findMany({
         where,
         select: LEAD_LIST_SELECT,
-        orderBy: { [filters.sortBy]: filters.sortDir },
+        // CRM-07: `id` breaks ties so offset pagination never duplicates or
+        // skips rows that share the same updatedAt/createdAt timestamp.
+        orderBy: [{ [filters.sortBy]: filters.sortDir }, { id: filters.sortDir }],
         skip,
         take: filters.limit,
       }),

@@ -6,7 +6,7 @@ import ProgramCard from '@/components/ProgramCard'
 import { buildCoursesIndexGraph } from '@/lib/schema'
 import { COURSES_INDEX_ITEMS } from '@/lib/schema/courseRegistry'
 import { fetchPublic } from '@/lib/adminApi'
-import { resolveCatalogItems, LEGACY_COURSE_ITEMS } from '@/lib/publicCourses'
+import { resolveCatalogItems } from '@/lib/publicCourses'
 
 export const metadata = {
   title: 'Pilot Training Courses in Delhi | Airborne Aviation',

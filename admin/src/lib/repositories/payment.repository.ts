@@ -33,6 +33,9 @@ const PAYMENT_SELECT = {
   refundedAmount: true,
   refundedAt: true,
   refundedBy: true,
+  voidedAt: true,
+  voidedBy: true,
+  voidReason: true,
   metadata: true,
   createdAt: true,
   updatedAt: true,
@@ -40,6 +43,7 @@ const PAYMENT_SELECT = {
   student: { select: { id: true, studentCode: true, firstName: true, lastName: true } },
   collector: { select: { id: true, name: true } },
   refunder: { select: { id: true, name: true } },
+  voider: { select: { id: true, name: true } },
 } satisfies Prisma.PaymentTransactionSelect;
 
 /** A counselor owns a payment when they are the admission counselor or the lead assignee. */
@@ -54,7 +58,7 @@ export class PaymentRepository {
       ...(assignedTo !== undefined && paymentCounselorWhere(assignedTo)),
       ...(filters.status && { status: filters.status }),
       ...(filters.method && { method: filters.method }),
-      ...(filters.feeType && { feeType: filters.feeType }),
+      ...(filters.feeType && { feeType: { equals: filters.feeType, mode: "insensitive" } }),
       ...(filters.admissionId && { admissionId: filters.admissionId }),
       ...(filters.studentId && { studentId: filters.studentId }),
       ...(filters.campusId && { campusId: filters.campusId }),
@@ -196,6 +200,25 @@ export class PaymentRepository {
         refundedAt: refund.refundedAt,
         refundedBy: refund.refundedBy,
         status: refund.status,
+      },
+      select: PAYMENT_SELECT,
+    });
+  }
+
+  /** CRM-11: reverse a receipt without deleting the row. */
+  static async applyVoid(
+    orgId: string,
+    id: string,
+    voided: { voidedAt: Date; voidedBy: string; voidReason: string },
+    db: Db = prisma,
+  ) {
+    return db.paymentTransaction.update({
+      where: { id, orgId },
+      data: {
+        status: "VOIDED",
+        voidedAt: voided.voidedAt,
+        voidedBy: voided.voidedBy,
+        voidReason: voided.voidReason,
       },
       select: PAYMENT_SELECT,
     });

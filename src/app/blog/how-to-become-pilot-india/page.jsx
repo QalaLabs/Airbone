@@ -12,8 +12,8 @@ export async function generateMetadata() {
   // Canonical: Admin Resource (PUBLISHED) SEO fields; static fallback when Admin offline.
   const blog = await fetchPublic('/blogs', { slug: 'how-to-become-pilot-india' })
   return {
-    title: blog?.seoTitle ?? 'How to Become a Pilot in India After 12th - Step-by-Step 2026',
-    description: blog?.seoDesc ?? blog?.description ?? 'Complete guide to becoming a commercial pilot in India after 12th. CPL eligibility, DGCA exams, flying hours, costs, and airline placement tips from Airborne Aviation Academy, Dwarka.',
+    title: blog?.seoTitle ?? 'How to Become a Pilot in India After 12th | 2026',
+    description: blog?.seoDesc ?? blog?.description ?? 'Complete guide to becoming a commercial pilot in India after 12th: CPL eligibility, DGCA exams, flying hours, costs, and airline placement.',
     alternates: { canonical: '/blog/how-to-become-pilot-india' },
   }
 }

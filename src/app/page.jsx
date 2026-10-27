@@ -15,7 +15,7 @@ import GlobalRouteMap from '@/components/GlobalRouteMap'
 import ProgramGrid from '@/components/ProgramGrid'
 import CampusWalkthroughSection from '@/components/CampusWalkthroughSection'
 import useFormValidation from '@/hooks/useFormValidation'
-import { validateName, validatePhone, validateEmail, validateEmailRequired, validatePincode, validateRequired } from '@/utils/validation'
+import { validateName, validatePhone, validateEmailRequired, validatePincode, validateRequired } from '@/utils/validation'
 import FormField from '@/components/FormField'
 import SubmitButton from '@/components/SubmitButton'
 import Honeypot from '@/components/Honeypot'
@@ -71,6 +71,8 @@ function FloatingNav({ onBook }) {
     { label: 'Mentor', href: '#founder' },
     { label: 'Stories', href: '#stories' },
     { label: 'About', href: '/about' },
+    { label: 'Blog', href: '/blog' },
+    { label: 'Contact', href: '/contact' },
   ]
 
   return (
@@ -119,6 +121,23 @@ function FloatingNav({ onBook }) {
               </Link>
             ))}
           </div>
+
+          {/* Desktop phone (FE-16) */}
+          <a
+            href="tel:+919953777320"
+            className="desktop-only-flex"
+            style={{
+              alignItems: 'center', gap: '0.375rem', textDecoration: 'none',
+              fontSize: '0.8125rem', fontWeight: 600, color: 'var(--navy)',
+              fontFamily: 'var(--font-h)', whiteSpace: 'nowrap',
+            }}
+            aria-label="Call Airborne Aviation Academy on +91 99537 77320"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
+            </svg>
+            +91 99537 77320
+          </a>
 
           {/* CTA */}
           <button
@@ -219,6 +238,8 @@ function FloatingNav({ onBook }) {
                 { label: 'Mentor', sub: 'Capt. Navrang Singh', href: '#founder', prefix: '02' },
                 { label: 'Stories', sub: 'Our success roster', href: '#stories', prefix: '03' },
                 { label: 'About', sub: 'Dwarka Centre details', href: '/about', prefix: '04' },
+                { label: 'Blog', sub: 'Guides & insights', href: '/blog', prefix: '05' },
+                { label: 'Contact', sub: '+91 99537 77320', href: '/contact', prefix: '06' },
               ].map((l) => (
                 <motion.div
                   key={l.href}
@@ -425,7 +446,7 @@ function HeroChapter({ onBook }) {
 ───────────────────────────────────── */
 function BoardingStrip() {
   const stats = [
-    { value: 15, suffix: '+', label: 'Years mentoring pilots' },
+    { value: 2009, prefix: 'Since ', label: 'DGCA-Compliant ground school' },
     { value: 5, suffix: '/5', label: 'DGCA papers cleared in 3 months' },
     { value: 2500, suffix: '+', label: 'Students sent to the cockpit' },
     { value: 100, suffix: '%', label: 'Mentor-led batches' },

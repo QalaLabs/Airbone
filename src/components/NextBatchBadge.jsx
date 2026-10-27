@@ -1,37 +1,45 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { getUpcomingBatchDate } from '@/lib/batchDate'
 
-export function getUpcomingBatchDate(customDate) {
-  if (customDate) {
-    const d = new Date(customDate)
-    if (!Number.isNaN(d.getTime())) {
-      const day = d.getDate()
-      const s = day === 1 ? 'st' : day === 2 ? 'nd' : day === 3 ? 'rd' : 'th'
-      return `${day}${s} ${d.toLocaleDateString('en-IN', { month: 'short' })} ${d.getFullYear()}`
+/**
+ * CMS-08 — format a real batch date. There is NO heuristic fallback: an unknown
+ * date returns null so callers can hide the badge instead of advertising an
+ * invented "1st / 15th of the month" batch.
+ */
+export { getUpcomingBatchDate } from '@/lib/batchDate'
+
+export default function NextBatchBadge({ customDate, courseSlug, style = {} }) {
+  const pathname = usePathname()
+  const [liveDate, setLiveDate] = useState(null)
+
+  const slug = useMemo(() => {
+    if (courseSlug) return courseSlug
+    const parts = (pathname ?? '').split('/').filter(Boolean)
+    return parts[0] === 'courses' && parts[1] ? parts[1] : null
+  }, [courseSlug, pathname])
+
+  useEffect(() => {
+    if (customDate || !slug) return
+    let cancelled = false
+    fetch(`/api/next-batch?courseSlug=${encodeURIComponent(slug)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => {
+        if (!cancelled) setLiveDate(json?.data?.startDate ?? null)
+      })
+      .catch(() => {
+        if (!cancelled) setLiveDate(null)
+      })
+    return () => {
+      cancelled = true
     }
-  }
-  const now = new Date()
-  const day = now.getDate()
-  const month = now.getMonth()
-  const year = now.getFullYear()
+  }, [customDate, slug])
 
-  let targetDate
-  if (day < 15) {
-    targetDate = new Date(year, month, 15)
-  } else {
-    targetDate = new Date(year, month + 1, 1)
-  }
-
-  const d = targetDate.getDate()
-  const suffix = d === 1 ? 'st' : d === 2 ? 'nd' : d === 3 ? 'rd' : 'th'
-  const monthName = targetDate.toLocaleDateString('en-IN', { month: 'short' })
-  const yr = targetDate.getFullYear()
-  return `${d}${suffix} ${monthName} ${yr}`
-}
-
-export default function NextBatchBadge({ customDate, style = {} }) {
-  const batchDate = useMemo(() => getUpcomingBatchDate(customDate), [customDate])
+  const batchDate = getUpcomingBatchDate(customDate ?? liveDate)
+  // Honest rendering: no verified batch date → no badge.
+  if (!batchDate) return null
 
   return (
     <span

@@ -104,6 +104,42 @@ export default function CRMMeetingsPage() {
       .finally(() => setCancelling(null));
   }, [load]);
 
+  // CRM-13: completion requires mode + duration + outcome. The fields are
+  // validated again on the server, so the UI is a convenience not the guard.
+  const handleComplete = React.useCallback(() => {
+    if (!completingMeeting) return;
+    const outcome = completionForm.outcome.trim();
+    const durationMins = Number(completionForm.durationMins);
+    if (!outcome) {
+      toast({ title: "An outcome is required to complete the meeting", variant: "destructive" });
+      return;
+    }
+    if (!Number.isFinite(durationMins) || durationMins <= 0) {
+      toast({ title: "A duration greater than 0 minutes is required", variant: "destructive" });
+      return;
+    }
+    setIsCompleting(true);
+    completeMeeting(completingMeeting.id, {
+      mode: completionForm.mode,
+      durationMins,
+      outcome,
+      notes: completionForm.notes.trim() || undefined,
+    })
+      .then(() => {
+        toast({ title: "Meeting completed" });
+        setCompletingMeeting(null);
+        load();
+      })
+      .catch((err: unknown) =>
+        toast({
+          title: "Failed to complete meeting",
+          description: err instanceof Error ? err.message : String(err),
+          variant: "destructive",
+        }),
+      )
+      .finally(() => setIsCompleting(false));
+  }, [completingMeeting, completionForm, load]);
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -305,6 +341,112 @@ export default function CRMMeetingsPage() {
           )}
         </CardContent>
       </Card>
+
+      {completingMeeting && (
+        <Dialog open onOpenChange={(o) => !o && !isCompleting && setCompletingMeeting(null)}>
+          <DialogContent className="bg-card border-white/10">
+            <DialogHeader>
+              <DialogTitle className="text-white text-base">
+                Complete meeting — {completingMeeting.lead.name}
+              </DialogTitle>
+            </DialogHeader>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleComplete();
+              }}
+              className="space-y-3"
+            >
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground" id="complete-mode-label">
+                  Mode <span className="text-rose-400">*</span>
+                </Label>
+                <div role="radiogroup" aria-labelledby="complete-mode-label" className="grid grid-cols-3 gap-2">
+                  {MEETING_MODES.map((m) => (
+                    <Button
+                      key={m}
+                      type="button"
+                      role="radio"
+                      aria-checked={completionForm.mode === m}
+                      size="sm"
+                      variant={completionForm.mode === m ? "default" : "outline"}
+                      className="h-8 text-xs border-white/10"
+                      onClick={() => setCompletionForm((f) => ({ ...f, mode: m }))}
+                    >
+                      {MEETING_MODE_LABELS[m]}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground" htmlFor="complete-duration">
+                  Duration (minutes) <span className="text-rose-400">*</span>
+                </Label>
+                <Input
+                  id="complete-duration"
+                  data-testid="meeting-complete-duration"
+                  type="number"
+                  min={1}
+                  max={1440}
+                  value={completionForm.durationMins}
+                  onChange={(e) =>
+                    setCompletionForm((f) => ({ ...f, durationMins: parseInt(e.target.value, 10) || 0 }))
+                  }
+                  className="h-9 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground" htmlFor="complete-outcome">
+                  Outcome <span className="text-rose-400">*</span>
+                </Label>
+                <Input
+                  id="complete-outcome"
+                  data-testid="meeting-complete-outcome"
+                  value={completionForm.outcome}
+                  onChange={(e) => setCompletionForm((f) => ({ ...f, outcome: e.target.value }))}
+                  placeholder="e.g. Interested — requested fee structure"
+                  maxLength={255}
+                  className="h-9 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground" htmlFor="complete-notes">
+                  Notes
+                </Label>
+                <Textarea
+                  id="complete-notes"
+                  value={completionForm.notes}
+                  onChange={(e) => setCompletionForm((f) => ({ ...f, notes: e.target.value }))}
+                  rows={3}
+                  maxLength={5000}
+                  className="text-xs"
+                />
+              </div>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="h-8 text-xs border-white/10"
+                  onClick={() => setCompletingMeeting(null)}
+                  disabled={isCompleting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="h-8 text-xs"
+                  data-testid="meeting-complete-submit"
+                  disabled={isCompleting || !completionForm.outcome.trim() || completionForm.durationMins <= 0}
+                >
+                  {isCompleting ? "Completing..." : "Mark completed"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {showSchedule && (
         <ScheduleMeetingDialog

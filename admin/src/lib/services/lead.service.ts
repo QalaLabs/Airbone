@@ -485,6 +485,23 @@ export class LeadService {
         },
       });
 
+      // SMS-01: lead-stage transactional email (brochure / syllabus / offer).
+      // Fire-and-forget so an email provider outage can never fail the update.
+      void (async () => {
+        try {
+          const { StageEmailService } = await import("@/lib/services/stage-email.service");
+          await StageEmailService.triggerStageEmail({
+            orgId: ctx.orgId,
+            stage: input.status as string,
+            leadId: id,
+            courseName: updated.courseInterest,
+            performedBy: ctx.user.id,
+          });
+        } catch (e) {
+          console.error("StageEmailService failed for lead:", e);
+        }
+      })();
+
       await this.recalculateScore(ctx, id, `status:${input.status}`);
       return LeadRepository.findById(ctx.orgId, id);
     } else {
@@ -983,6 +1000,7 @@ export class LeadService {
       notes?: string;
       outcome?: string;
       metadata?: Record<string, unknown>;
+      complete?: boolean;
     },
   ) {
     await this.getById(ctx, leadId);
@@ -990,6 +1008,24 @@ export class LeadService {
       where: { id: meetingId, leadId, orgId: ctx.orgId, activityType: "MEETING" },
     });
     if (!existing) throw new NotFoundError("Meeting", meetingId);
+
+    // CRM-13: server-side enforcement, independent of the client. Completing a
+    // meeting requires mode, a positive duration and a non-empty outcome.
+    if (input.complete) {
+      const { ValidationError } = await import("@/lib/utils/errors");
+      const issues: { path: string[]; message: string }[] = [];
+      if (!input.mode) issues.push({ path: ["mode"], message: "Meeting mode is required to complete a meeting" });
+      if (input.durationMins === undefined || input.durationMins <= 0) {
+        issues.push({ path: ["durationMins"], message: "A duration greater than 0 minutes is required to complete a meeting" });
+      }
+      if (!input.outcome || input.outcome.trim().length === 0) {
+        issues.push({ path: ["outcome"], message: "An outcome is required to complete a meeting" });
+      }
+      if (issues.length > 0) throw new ValidationError(issues);
+      if (existing.completedAt) {
+        throw new ValidationError([{ message: "This meeting is already completed" }]);
+      }
+    }
 
     const dueAt = input.dueAt ? new Date(input.dueAt) : undefined;
     if (dueAt && Number.isNaN(dueAt.getTime())) {
@@ -1004,7 +1040,8 @@ export class LeadService {
         ...(dueAt ? { dueAt } : {}),
         ...(input.durationMins !== undefined ? { durationMins: input.durationMins } : {}),
         ...(input.notes !== undefined ? { notes: input.notes } : {}),
-        ...(input.outcome !== undefined ? { outcome: input.outcome } : {}),
+        ...(input.outcome !== undefined ? { outcome: input.outcome.trim() } : {}),
+        ...(input.complete ? { completedAt: new Date() } : {}),
         ...(input.metadata !== undefined || input.mode !== undefined
           ? {
               metadata: withMeetingMode(

@@ -37,7 +37,7 @@ function paymentHarness() {
         amount: "5000",
         refundedAmount: "0",
         method: "UPI",
-        status: "COMPLETED",
+        status: "PENDING",
         receiptNo: "RCP-0001",
         referenceNo: "UTR1",
         feeType: "tuition",
@@ -185,6 +185,21 @@ test("non super admins cannot delete fee plans; unknown plan is 404", async () =
       FeePlanService.remove(ctxAs("SUPER_ADMIN"), "00000000-0000-4000-8000-0000000000ff"),
       (e: unknown) => e instanceof AppError && e.statusCode === 404,
     );
+    assert.equal(h.state.audits.length, 0);
+  } finally {
+    h.restore();
+  }
+});
+
+test("CRM-11: a completed receipt cannot be deleted from the ledger", async () => {
+  const h = paymentHarness();
+  try {
+    h.state.rows[0].status = "COMPLETED";
+    await assert.rejects(
+      PaymentService.remove(ctxAs("SUPER_ADMIN"), PAYMENT),
+      (e: unknown) => e instanceof AppError && e.statusCode === 400,
+    );
+    assert.equal(h.state.rows.length, 1, "the completed receipt must be retained");
     assert.equal(h.state.audits.length, 0);
   } finally {
     h.restore();

@@ -33,8 +33,8 @@ const OFF_FRAME_ON_MOBILE = DESTINATIONS.filter((d) => d.region === 'North Ameri
 /* ─── Metrics data ─── */
 const STATS = [
   {
-    value: '15+',
-    label: 'YEARS OF LEGACY',
+    value: 'Since',
+    label: '2009',
     desc1: 'Building pilots.',
     desc2: 'Building futures.',
     color: '#DB241E',
@@ -1087,7 +1087,7 @@ export default function GlobalRouteMap() {
 
               {/* Cadet Header Badge */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-                <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.55rem', borderRadius: '4px', background: `${REGION[selectedCadet.region]?.color || '#D8A027'}25`, border: `1px solid ${REGION[selectedCadet.region]?.color || '#D8A027'}50`, color: REGION[selectedCadet.region]?.color, fontFamily: 'var(--font-h)', fontWeight: 800, fontSize: '0.58rem', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                <span style={{ padding: '0.2rem 0.55rem', borderRadius: '4px', background: `${REGION[selectedCadet.region]?.color || '#D8A027'}25`, border: `1px solid ${REGION[selectedCadet.region]?.color || '#D8A027'}50`, color: REGION[selectedCadet.region]?.color, fontFamily: 'var(--font-h)', fontWeight: 800, fontSize: '0.58rem', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
                   {selectedCadet.airline}
                 </span>
                 <span style={{ fontSize: '0.58rem', fontFamily: 'var(--font-h)', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em' }}>

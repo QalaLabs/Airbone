@@ -77,6 +77,9 @@ export class LeadTrashService {
     const lead = await this.findTrashed(ctx.orgId, id);
     await prisma.lead.update({ where: { id: lead.id }, data: { deletedAt: null, deletedBy: null } });
     await prisma.student.updateMany({ where: { leadId: lead.id, orgId: ctx.orgId }, data: { deletedAt: null, deletedBy: null } });
+    // CRM-05: a lead soft-delete cascades to its admissions, so a restore must
+    // bring the whole dossier back instead of leaving orphaned trashed rows.
+    await prisma.admission.updateMany({ where: { leadId: lead.id, orgId: ctx.orgId }, data: { deletedAt: null, deletedBy: null } });
     await AuditService.write({
       orgId: ctx.orgId,
       userId: ctx.user.id,

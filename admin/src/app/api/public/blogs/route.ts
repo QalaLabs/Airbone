@@ -38,9 +38,24 @@ export async function GET(req: NextRequest) {
           downloadCount: true,
           createdAt: true,
           publishedAt: true,
+          thumbnailId: true,
         },
       });
-      return NextResponse.json({ data: blog });
+      const thumbnail = blog?.thumbnailId
+        ? await prisma.mediaAsset.findFirst({
+            where: { id: blog.thumbnailId, orgId: org.id, isActive: true },
+            select: { fileUrl: true, altText: true },
+          })
+        : null;
+      return NextResponse.json({
+        data: blog
+          ? {
+              ...blog,
+              thumbnailUrl: thumbnail?.fileUrl ?? null,
+              thumbnailAlt: thumbnail?.altText ?? null,
+            }
+          : null,
+      });
     }
 
     const blogs = await prisma.resource.findMany({
@@ -68,10 +83,29 @@ export async function GET(req: NextRequest) {
         downloadCount: true,
         createdAt: true,
         publishedAt: true,
+        thumbnailId: true,
       },
     });
 
-    return NextResponse.json({ data: blogs });
+    const thumbnailIds = [...new Set(blogs.map((b) => b.thumbnailId).filter((id): id is string => !!id))];
+    const thumbnails = thumbnailIds.length
+      ? await prisma.mediaAsset.findMany({
+          where: { id: { in: thumbnailIds }, orgId: org.id, isActive: true },
+          select: { id: true, fileUrl: true, altText: true },
+        })
+      : [];
+    const byId = new Map(thumbnails.map((t) => [t.id, t]));
+
+    return NextResponse.json({
+      data: blogs.map((blog) => {
+        const thumbnail = blog.thumbnailId ? byId.get(blog.thumbnailId) : null;
+        return {
+          ...blog,
+          thumbnailUrl: thumbnail?.fileUrl ?? null,
+          thumbnailAlt: thumbnail?.altText ?? null,
+        };
+      }),
+    });
   } catch (err) {
     return handleError(err);
   }

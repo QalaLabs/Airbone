@@ -11,7 +11,7 @@ import { buildArticlePageGraph } from '@/lib/schema'
 
 export const metadata = {
   title: "Securing Your Child's Aviation Career | Airborne Aviation",
-  description: 'CPL flight training guidance & DGCA conversion support for parents and aspirants. Evaluate pilot training options, total costs, and timelines.',
+  description: 'CPL flight training guidance & DGCA conversion support for parents and aspirants. Evaluate pilot training options, costs, and timelines.',
   alternates: { canonical: '/courses/securing-your-childs-future-in-aviation' },
 }
 

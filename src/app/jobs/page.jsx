@@ -2,7 +2,7 @@ import JobsClient from './JobsClient'
 
 export async function generateMetadata() {
   return {
-    title: 'Aviation Jobs in India 2026 Pilot, Cabin Crew & Ground Staff | Airborne',
+    title: 'Aviation Jobs in India 2026 | Airborne Aviation',
     description: 'Browse aviation job opportunities in India. Pilots, cabin crew, ground staff. Updated weekly.',
     alternates: { canonical: '/jobs' },
   }

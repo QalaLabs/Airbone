@@ -5,7 +5,7 @@ import JsonLd from '@/components/JsonLd'
 import { buildAboutGraph } from '@/lib/schema'
 
 export const metadata = {
-  title: 'About Airborne Aviation Academy DGCA-compliant | Dwarka Delhi',
+  title: 'About Airborne Aviation Academy | Dwarka Delhi',
   description: 'Airborne Aviation Academy, Dwarka Delhi founded by Capt. Navrang Singh in 2009. DGCA-aligned ground school. Meet our mentors, faculty and placement pathways.',
   alternates: { canonical: '/about' },
 }

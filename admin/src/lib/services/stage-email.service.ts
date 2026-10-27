@@ -10,29 +10,99 @@ export interface StageEmailParams {
   performedBy?: string | null;
 }
 
+/** Injection seam so SMS-01 behaviour is unit-testable without SMTP or a DB. */
+export interface StageEmailDeps {
+  findLead: (leadId: string) => Promise<{
+    id: string;
+    name: string | null;
+    email: string | null;
+    phone: string | null;
+    courseInterest: string | null;
+  } | null>;
+  hasSent: (leadId: string, idempotencyKey: string) => Promise<boolean>;
+  isConfigured: () => boolean;
+  send: (message: { to: string; subject: string; body: string; html: string }) => Promise<unknown>;
+  logActivity: (input: {
+    orgId: string;
+    leadId: string;
+    performedBy?: string;
+    stage: string;
+    title: string;
+    subject: string;
+    email: string;
+    program: string;
+    idempotencyKey: string;
+  }) => Promise<unknown>;
+}
+
 export class StageEmailService {
-  static async triggerStageEmail({
-    orgId,
-    stage,
-    leadId,
-    admissionId,
-    courseName,
-    performedBy,
-  }: StageEmailParams): Promise<boolean> {
+  static async triggerStageEmail(
+    {
+      orgId,
+      stage,
+      leadId,
+      admissionId,
+      courseName,
+      performedBy,
+    }: StageEmailParams,
+    overrides: Partial<StageEmailDeps> = {},
+  ): Promise<boolean> {
+    const deps: StageEmailDeps = {
+      findLead: (id) =>
+        prisma.lead.findUnique({
+          where: { id },
+          select: { id: true, name: true, email: true, phone: true, courseInterest: true },
+        }),
+      hasSent: async (id, idempotencyKey) =>
+        Boolean(
+          await prisma.leadActivity.findFirst({
+            where: {
+              leadId: id,
+              orgId,
+              activityType: "EMAIL",
+              metadata: { path: ["idempotencyKey"], equals: idempotencyKey },
+            },
+            select: { id: true },
+          }),
+        ),
+      isConfigured: () => getProvider("EMAIL").isConfigured(),
+      send: (message) => getProvider("EMAIL").send(message),
+      logActivity: (input) =>
+        prisma.leadActivity.create({
+          data: {
+            orgId: input.orgId,
+            leadId: input.leadId,
+            activityType: "EMAIL",
+            title: `Transactional Email Sent: ${input.title}`,
+            notes: `Sent "${input.subject}" to ${input.email} on stage update (${input.stage}).`,
+            performedBy: input.performedBy ?? undefined,
+            metadata: {
+              stage: input.stage,
+              recipient: input.email,
+              subject: input.subject,
+              courseName: input.program,
+              idempotencyKey: input.idempotencyKey,
+            },
+          },
+        }),
+      ...overrides,
+    };
+
     try {
-      const lead = await prisma.lead.findUnique({
-        where: { id: leadId },
-        select: { id: true, name: true, email: true, phone: true, courseInterest: true },
-      });
+      const lead = await deps.findLead(leadId);
 
       if (!lead?.email) return false;
+
+      // SMS-01: a stage email is keyed to the admission + stage, so a retried
+      // stage change (or a duplicate event) cannot send the same mail twice.
+      const idempotencyKey = `stage-email:${orgId}:${admissionId ?? leadId}:${stage}`;
+      if (await deps.hasSent(leadId, idempotencyKey)) return false;
 
       const program = courseName || lead.courseInterest || "DGCA CPL Ground School";
       const name = lead.name || "Aviation Aspirant";
       const email = lead.email.trim();
 
-      const provider = getProvider("EMAIL");
-      if (!provider.isConfigured()) {
+      if (!deps.isConfigured()) {
         console.warn("[StageEmailService] Email provider not configured, skipping stage email.");
         return false;
       }
@@ -141,29 +211,25 @@ export class StageEmailService {
         </div>
       `;
 
-      await provider.send({
+      await deps.send({
         to: email,
         subject,
         body: `${bodyText}\n\nCourse: ${program}\nAirborne Aviation Academy`,
         html,
       });
 
-      // Persistent Timeline Invariant: Log activity on the lead record
-      await prisma.leadActivity.create({
-        data: {
-          orgId,
-          leadId,
-          activityType: "EMAIL",
-          title: `Transactional Email Sent: ${title}`,
-          notes: `Sent "${subject}" to ${email} on stage update (${stage}).`,
-          performedBy: performedBy ?? undefined,
-          metadata: {
-            stage,
-            recipient: email,
-            subject,
-            courseName: program,
-          },
-        },
+      // Persistent Timeline Invariant: log exactly one activity per delivered
+      // stage email, carrying the idempotency key used by hasSent().
+      await deps.logActivity({
+        orgId,
+        leadId,
+        performedBy: performedBy ?? undefined,
+        stage,
+        title,
+        subject,
+        email,
+        program,
+        idempotencyKey,
       });
 
       return true;

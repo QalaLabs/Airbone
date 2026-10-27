@@ -89,6 +89,6 @@ export const config = {
      * (CRON_SECRET in the route handler), and inbound webhooks. Webhooks are
      * excluded so NextAuth does not clone/buffer the raw body used for HMAC.
      */
-    "/((?!_next/static|_next/image|favicon.ico|api/cron/automation|api/webhooks).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api/cron/automation|api/cron/cpl-campaigns|api/webhooks).*)",
   ],
 };

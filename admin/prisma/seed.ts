@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { hash } from "argon2";
 import { randomUUID } from "node:crypto";
 
@@ -294,11 +294,27 @@ async function main() {
     },
   ];
 
+  // CRM-05 removed the blanket unique(orgId, phone) in favour of a partial
+  // index over live rows, so seeding resolves an existing live lead by phone
+  // first instead of relying on a compound unique that Prisma no longer exposes.
+  const upsertLeadByPhone = async (
+    phone: string,
+    update: Prisma.LeadUpdateInput,
+    create: Omit<Prisma.LeadUncheckedCreateInput, "phone">,
+  ) => {
+    const existing = await prisma.lead.findFirst({
+      where: { orgId: org.id, phone, deletedAt: null },
+      select: { id: true },
+    });
+    if (existing) return prisma.lead.update({ where: { id: existing.id }, data: update });
+    return prisma.lead.create({ data: { ...create, phone } });
+  };
+
   for (const leadData of leadsData) {
-    await prisma.lead.upsert({
-      where: { orgId_phone: { orgId: org.id, phone: leadData.phone } },
-      update: {},
-      create: {
+    await upsertLeadByPhone(
+      leadData.phone,
+      {},
+      {
         orgId: org.id,
         createdBy: counselor?.id ?? createdUsers[0]!.id,
         assignedTo: counselor?.id,
@@ -309,7 +325,7 @@ async function main() {
         customFields: {},
         lastActivityAt: new Date(),
       },
-    });
+    );
   }
 
   console.log(`✅ Leads: ${leadsData.length} sample leads created`);
@@ -320,19 +336,18 @@ async function main() {
   const dealCounselor = counselor ?? dealAcademy;
 
   const demoteToProspect = async (phone: string): Promise<string> => {
-    const lead = await prisma.lead.upsert({
-      where: { orgId_phone: { orgId: org.id, phone } },
-      update: { status: "PROSPECT", convertedAt: null, lostReason: null },
-      create: {
+    const lead = await upsertLeadByPhone(
+      phone,
+      { status: "PROSPECT", convertedAt: null, lostReason: null },
+      {
         orgId: org.id,
         name: "Deal Demo Lead",
-        phone,
         status: "PROSPECT",
         score: 50,
         createdBy: dealAcademy.id,
         customFields: {},
       },
-    });
+    );
     return lead.id;
   };
 
@@ -396,19 +411,18 @@ async function main() {
   await ensureDeal(leadC, { stage: "ENQUIRY", title: "Karan Mehta — CPL (Commercial Pilot License)", value: 1650000 });
 
   // Lead D — WON deal with a linked, enrolled Admission (drives dashboard).
-  const wonLead = await prisma.lead.upsert({
-    where: { orgId_phone: { orgId: org.id, phone: "+919845678004" } },
-    update: { status: "WON", convertedAt: new Date(), lostReason: null },
-    create: {
+  const wonLead = await upsertLeadByPhone(
+    "+919845678004",
+    { status: "WON", convertedAt: new Date(), lostReason: null },
+    {
       orgId: org.id,
       name: "Pooja Nair",
-      phone: "+919845678004",
       status: "PROSPECT",
       score: 75,
       createdBy: dealAcademy.id,
       customFields: {},
     },
-  });
+  );
   const wonAdmission = await prisma.admission.upsert({
     where: { orgId_applicationNo: { orgId: org.id, applicationNo: "APP-DEMO-0001" } },
     update: { stage: "ENROLLED", studentId: null },
@@ -520,14 +534,13 @@ async function main() {
   }
 
   // Student chain (idempotent by org+email).
-  const lifecycleLead = await prisma.lead.upsert({
-    where: { orgId_phone: { orgId: org.id, phone: "+919866770001" } },
-    update: { status: "WON", convertedAt: new Date(), lostReason: null },
-    create: {
+  const lifecycleLead = await upsertLeadByPhone(
+    "+919866770001",
+    { status: "WON", convertedAt: new Date(), lostReason: null },
+    {
       orgId: org.id,
       name: "Rohan Malhotra",
       email: "rohan.m@airborne.academy",
-      phone: "+919866770001",
       city: "Delhi",
       state: "Delhi",
       courseInterest: course.title,
@@ -541,7 +554,7 @@ async function main() {
       customFields: {},
       lastActivityAt: new Date(),
     },
-  });
+  );
 
   let student = await prisma.student.findFirst({
     where: { orgId: org.id, email: "rohan.m@airborne.academy" },

@@ -12,6 +12,8 @@
     "typecheck": "tsc --noEmit",
     "test:otp": "node --test src/utils/otp-store.test.mjs",
     "test": "node --test \"src/**/*.test.mjs\"",
+    "validate:seo": "node scripts/validate-seo-metadata.mjs",
+    "validate:compliance": "node scripts/validate-compliance-copy.mjs",
     "e2e": "playwright test",
     "e2e:admin": "playwright test -c playwright.admin.config.mjs"
   },

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/client";
 import { buildAnalyticsScope, type AnalyticsUser } from "@/lib/analytics/scope";
+import { pendingFollowUpWhere } from "@/lib/leads/lead-status";
 import {
   ANALYTICS_TIMEZONE,
   istMonthKey,
@@ -9,10 +10,9 @@ import {
 } from "@/lib/analytics/date-range";
 import {
   ACTIVE_LEAD_STATUSES,
-  TODAY_FOLLOW_UP_STATUSES,
   LOST_STATUSES,
 } from "@/lib/leads/lead-status";
-import { startOfISTDay } from "@/lib/time/ist";
+import { startOfISTDay, endOfISTDay } from "@/lib/time/ist";
 
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -244,7 +244,10 @@ export async function buildAnalyticsReport(
     where: { ...leadWhere, createdAt: inPeriod },
   });
   const todayFollowUps = await prisma.lead.count({
-    where: { ...leadWhere, status: { in: TODAY_FOLLOW_UP_STATUSES } },
+    where: {
+      ...leadWhere,
+      ...pendingFollowUpWhere(periodEnd ?? endOfISTDay(now)),
+    },
   });
 
   // Deals won / deal-linked collections use the base deal scope: a deal created

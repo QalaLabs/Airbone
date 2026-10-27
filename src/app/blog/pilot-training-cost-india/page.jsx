@@ -12,18 +12,18 @@ export async function generateMetadata() {
   // Canonical: Admin Resource (PUBLISHED) SEO fields; static fallback when Admin offline.
   const blog = await fetchPublic('/blogs', { slug: 'pilot-training-cost-india' })
   return {
-    title: blog?.seoTitle ?? 'Pilot Training Cost in India 2026 - Complete CPL Fee Breakdown',
-    description: blog?.seoDesc ?? blog?.description ?? 'Complete breakdown of pilot training cost in India for 2026 - CPL ground school, flying hours, DGCA exam fees, medical, and total investment compared to training abroad.',
+    title: blog?.seoTitle ?? 'Pilot Training Cost India 2026 | CPL Fee Breakdown',
+    description: blog?.seoDesc ?? blog?.description ?? 'Complete pilot training cost breakdown for India in 2026 - CPL ground school, flying hours, DGCA fees, medical, and total investment.',
     alternates: { canonical: '/blog/pilot-training-cost-india' },
     openGraph: {
-      title: blog?.seoTitle ?? 'Pilot Training Cost in India 2026 - Complete CPL Fee Breakdown',
+      title: blog?.seoTitle ?? 'Pilot Training Cost India 2026 | CPL Fee Breakdown',
       description: blog?.description ?? 'Full cost breakdown for becoming a commercial pilot in India - ground school, flying hours, exam fees, and total investment.',
       url: 'https://www.airborneaviation.in/blog/pilot-training-cost-india',
       type: 'article',
     },
     twitter: {
       card: 'summary_large_image',
-      title: blog?.seoTitle ?? 'Pilot Training Cost in India 2026 - Complete CPL Fee Breakdown',
+      title: blog?.seoTitle ?? 'Pilot Training Cost India 2026 | CPL Fee Breakdown',
       description: blog?.description ?? 'Full cost breakdown for becoming a commercial pilot in India - ground school, flying hours, exam fees, and total investment.',
     },
   }

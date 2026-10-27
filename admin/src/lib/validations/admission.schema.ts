@@ -72,13 +72,21 @@ export const admissionFiltersSchema = z.object({
   sortDir: z.enum(["asc", "desc"]).default("desc"),
 });
 
-// Valid stage transitions — enforced in service
+// Valid stage transitions — enforced in service.
+//
+// The operational admissions board exposes six canonical columns
+// (ENQUIRY → FEE_PAYMENT "Admission" → VERIFICATION → ENROLLED, plus
+// CANCELLED / DROPPED) and sends the canonical stage directly on drag/drop.
+// The older DOCUMENT_COLLECTION / OFFER_LETTER values are legacy aliases of
+// "Admission" that still exist on historical rows, so both the canonical and
+// the legacy paths must remain traversable. Pre-enrolment stages can be
+// corrected in either direction; terminal stages stay terminal.
 export const STAGE_TRANSITIONS: Record<AdmissionStage, AdmissionStage[]> = {
-  ENQUIRY: ["DOCUMENT_COLLECTION", "CANCELLED"],
-  DOCUMENT_COLLECTION: ["VERIFICATION", "ENQUIRY", "CANCELLED"],
-  VERIFICATION: ["OFFER_LETTER", "DOCUMENT_COLLECTION", "CANCELLED"],
-  OFFER_LETTER: ["FEE_PAYMENT", "VERIFICATION", "CANCELLED"],
-  FEE_PAYMENT: ["ENROLLED", "OFFER_LETTER", "CANCELLED"],
+  ENQUIRY: ["DOCUMENT_COLLECTION", "FEE_PAYMENT", "VERIFICATION", "CANCELLED", "DROPPED"],
+  DOCUMENT_COLLECTION: ["ENQUIRY", "FEE_PAYMENT", "VERIFICATION", "OFFER_LETTER", "CANCELLED", "DROPPED"],
+  FEE_PAYMENT: ["ENQUIRY", "DOCUMENT_COLLECTION", "VERIFICATION", "OFFER_LETTER", "ENROLLED", "CANCELLED", "DROPPED"],
+  VERIFICATION: ["ENQUIRY", "DOCUMENT_COLLECTION", "FEE_PAYMENT", "OFFER_LETTER", "ENROLLED", "CANCELLED", "DROPPED"],
+  OFFER_LETTER: ["ENQUIRY", "DOCUMENT_COLLECTION", "FEE_PAYMENT", "VERIFICATION", "ENROLLED", "CANCELLED", "DROPPED"],
   ENROLLED: ["DROPPED"],
   DROPPED: [],
   CANCELLED: [],

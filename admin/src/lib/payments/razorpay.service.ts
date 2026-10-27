@@ -42,6 +42,14 @@ export class RazorpayService {
     let result: PaymentLinkResult;
 
     if (!keyId || !keySecret) {
+      // CRM-12: a mock link looks like a real Razorpay checkout but cannot
+      // collect money. Never emit one in production — fail closed instead of
+      // presenting a payable-looking URL to a student.
+      if (process.env.NODE_ENV === "production") {
+        throw new Error(
+          "Razorpay is not configured (RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET); refusing to create a fake payment link",
+        );
+      }
       console.warn("[Razorpay] Keys not configured, generating mock payment link.");
       result = {
         id: `plink_mock_${Date.now()}`,

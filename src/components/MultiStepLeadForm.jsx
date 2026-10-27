@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo, useRef } from 'react'
 import { triggerToast } from '@/components/Toast'
 import useFormValidation from '@/hooks/useFormValidation'
-import { validateName, validatePhone, validateEmailRequired, validatePincode, validateRequired } from '@/utils/validation'
+import { validateName, validatePhone, validateEmail, validatePincode, validateRequired } from '@/utils/validation'
 import FormField from '@/components/FormField'
 import SubmitButton from '@/components/SubmitButton'
 import LeadEligibilityPrompt from '@/components/LeadEligibilityPrompt'
@@ -11,7 +11,7 @@ import Honeypot from '@/components/Honeypot'
 import { HONEYPOT_FIELD } from '@/utils/honeypot'
 import { WHATSAPP_HREF } from '@/lib/whatsapp'
 
-const validators = { name: validateName, phone: validatePhone, email: validateEmailRequired, pincode: validatePincode, course: validateRequired }
+const validators = { name: validateName, phone: validatePhone, email: validateEmail, pincode: validatePincode, course: validateRequired }
 
 function genUuid() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
@@ -274,7 +274,7 @@ export default function MultiStepLeadForm({ courseName = '', source = 'Multi-Ste
         <>
           <FormField id="msf-name" label="Full Name" type="text" placeholder="Full Name" dark value={values.name} onChange={(v) => handleChange('name', v)} onBlur={() => handleBlur('name')} error={touched.name ? errors.name : null} required />
           <FormField id="msf-phone" label="Phone Number" type="tel" placeholder="Contact Number (10 digits)" dark value={values.phone} onChange={(v) => handleChange('phone', v)} onBlur={() => handleBlur('phone')} error={touched.phone ? errors.phone : null} required maxLength={10} />
-          <FormField id="msf-email" label="Email" type="email" placeholder="Email Address" dark value={values.email} onChange={(v) => handleChange('email', v)} onBlur={() => handleBlur('email')} error={touched.email ? errors.email : null} required />
+          <FormField id="msf-email" label="Email (Optional)" type="email" placeholder="Email Address (Optional)" dark value={values.email} onChange={(v) => handleChange('email', v)} onBlur={() => handleBlur('email')} error={touched.email ? errors.email : null} />
           <FormField id="msf-pincode" label="PIN Code" type="text" placeholder="PIN Code" dark value={values.pincode} onChange={(v) => handleChange('pincode', v)} onBlur={() => handleBlur('pincode')} error={touched.pincode ? errors.pincode : null} required maxLength={6} />
           <SubmitButton id="msf-next-0" type="button" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={goNext}>
             Continue →

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ColumnDef, type PaginationState, type SortingState } from "@tanstack/react-table";
-import { Search, MoreHorizontal, ExternalLink, Plus, Globe, Archive, Trash2, Pencil, AlertCircle, Upload } from "lucide-react";
+import { Search, MoreHorizontal, ExternalLink, Plus, Globe, Archive, Trash2, Pencil, AlertCircle, Upload, Bold, Italic, List, Link2, Heading2 } from "lucide-react";
 import { DataTable } from "@/components/shared/data-table";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PageHeader } from "@/components/shared/page-header";
@@ -36,6 +36,8 @@ interface Resource {
   tags?: string[];
   seoTitle?: string;
   seoDesc?: string;
+  /** CMS-03: article HTML lives in metadata.bodyHtml (no length cap). */
+  metadata?: Record<string, unknown>;
   downloadCount?: number;
   publishedAt?: string;
   createdAt: string;
@@ -91,6 +93,13 @@ export function ResourceManager({
   const [uploading, setUploading] = React.useState(false);
   const fileUrlRef = React.useRef<HTMLInputElement>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const bodyEditorRef = React.useRef<HTMLDivElement>(null);
+
+  // CMS-03: minimal dependency-free rich-text commands for the article body.
+  const execEditor = (command: string, value?: string) => {
+    bodyEditorRef.current?.focus();
+    document.execCommand(command, false, value);
+  };
 
   const uploadFile = async (file: File) => {
     // Cloud Run rejects request bodies above 32 MB, below the 50 MB storage limit.
@@ -178,6 +187,9 @@ export function ResourceManager({
     const formData = new FormData(e.currentTarget);
     const item = editor.item;
     const tagsRaw = (formData.get("tags") as string) ?? "";
+    // CMS-03: metadata is merged, never replaced, so existing article keys
+    // survive an edit. The rich-text body is stored as HTML with no length cap.
+    const existingMetadata = (item?.metadata ?? {}) as Record<string, unknown>;
     const body: Partial<Resource> = {
       title: formData.get("title") as string,
       slug: ((formData.get("slug") as string) || undefined),
@@ -191,6 +203,12 @@ export function ResourceManager({
       tags: tagsRaw.split(",").map((t) => t.trim()).filter(Boolean),
       seoTitle: (formData.get("seoTitle") as string) || undefined,
       seoDesc: (formData.get("seoDesc") as string) || undefined,
+      metadata: {
+        ...existingMetadata,
+        ...(hideType
+          ? { bodyHtml: bodyEditorRef.current?.innerHTML ?? String(existingMetadata.bodyHtml ?? "") }
+          : {}),
+      },
     };
     saveMutation.mutate({ id: item?.id, body });
   };
@@ -370,7 +388,7 @@ export function ResourceManager({
         <DialogContent className="max-w-2xl glass-panel border-white/10 bg-slate-900/95">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-white">
-              {editor.item ? "Edit Resource" : "Create Resource"}
+              {editor.item ? (hideType ? "Edit Article" : "Edit Resource") : hideType ? "Create Article" : "Create Resource"}
             </DialogTitle>
           </DialogHeader>
           {editor.open && (
@@ -403,6 +421,58 @@ export function ResourceManager({
                 <Label>Description / Excerpt</Label>
                 <Textarea name="description" defaultValue={editor.item?.description ?? ""} rows={4} placeholder="Summary shown on the public site..." className="bg-secondary/40 border-white/10 text-xs text-white leading-relaxed" />
               </div>
+              {hideType && (
+                <div className="space-y-1.5">
+                  <Label>Article body (rich text)</Label>
+                  <div className="rounded-lg border border-white/10 bg-secondary/40">
+                    <div className="flex flex-wrap items-center gap-1 border-b border-white/10 p-1.5">
+                      <Button type="button" size="sm" variant="ghost" className="h-7 w-7 p-0" title="Bold" onClick={() => execEditor("bold")}>
+                        <Bold className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button type="button" size="sm" variant="ghost" className="h-7 w-7 p-0" title="Italic" onClick={() => execEditor("italic")}>
+                        <Italic className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button type="button" size="sm" variant="ghost" className="h-7 w-7 p-0" title="Heading" onClick={() => execEditor("formatBlock", "h2")}>
+                        <Heading2 className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button type="button" size="sm" variant="ghost" className="h-7 w-7 p-0" title="Bullet list" onClick={() => execEditor("insertUnorderedList")}>
+                        <List className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0"
+                        title="Insert link"
+                        onClick={() => {
+                          const url = window.prompt("Link URL (https://...)");
+                          if (url && /^https?:\/\//i.test(url)) execEditor("createLink", url);
+                        }}
+                      >
+                        <Link2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                    <div
+                      ref={bodyEditorRef}
+                      data-testid="article-body"
+                      contentEditable
+                      suppressContentEditableWarning
+                      role="textbox"
+                      aria-multiline="true"
+                      aria-label="Article body"
+                      className="min-h-[180px] max-h-[340px] overflow-y-auto p-3 text-xs text-white leading-relaxed focus:outline-none [&_h2]:text-sm [&_h2]:font-bold [&_a]:text-primary [&_ul]:list-disc [&_ul]:pl-4"
+                      dangerouslySetInnerHTML={{
+                        __html: String(
+                          (editor.item?.metadata as { bodyHtml?: string } | undefined)?.bodyHtml ?? "",
+                        ),
+                      }}
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    Rich text is stored as HTML in the article record — no character limit.
+                  </p>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label>File (upload or paste URL)</Label>

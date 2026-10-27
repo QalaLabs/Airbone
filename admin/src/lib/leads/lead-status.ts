@@ -161,6 +161,42 @@ export const TODAY_FOLLOW_UP_STATUSES: LeadStatus[] = [
   LeadStatus.PROSPECT,
 ];
 
+/**
+ * CRM-08 — one shared definition of a pending follow-up, used by both the
+ * dashboard card and the analytics report so the two can never diverge.
+ *
+ * A lead is pending when it carries the explicit FOLLOW_UP status, or when its
+ * nextFollowUp is due on/before the end of the reporting day and it is still in
+ * an open (non-terminal) status.
+ */
+export const PENDING_FOLLOW_UP_STATUSES: LeadStatus[] = [
+  LeadStatus.NEW,
+  LeadStatus.CONTACTED,
+  LeadStatus.CONNECTED,
+  LeadStatus.CALL_BACK,
+  LeadStatus.INTERESTED,
+  LeadStatus.PROSPECT,
+  LeadStatus.NOT_CONNECTED,
+  LeadStatus.RINGING,
+  LeadStatus.NOT_REACHABLE,
+  LeadStatus.SWITCHED_OFF,
+  LeadStatus.VOICEMAIL,
+  LeadStatus.NOT_CONTACTABLE,
+];
+
+export function pendingFollowUpWhere(endOfDay: Date) {
+  return {
+    OR: [
+      { status: LeadStatus.FOLLOW_UP },
+      {
+        nextFollowUp: { lte: endOfDay },
+        status: { in: PENDING_FOLLOW_UP_STATUSES },
+      },
+    ],
+  };
+}
+
+
 /** "Today's Opportunity Sales" originate from Prospect-stage leads. */
 export const OPPORTUNITY_STATUS: LeadStatus = LeadStatus.PROSPECT;
 

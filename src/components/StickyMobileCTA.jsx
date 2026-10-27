@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { WHATSAPP_HREF, WHATSAPP_DISPLAY, whatsappHref } from '@/lib/whatsapp'
+import { WHATSAPP_HREF, whatsappHref } from '@/lib/whatsapp'
 
 export default function StickyMobileCTA({ onBookDemo }) {
   const handleBook = () => {

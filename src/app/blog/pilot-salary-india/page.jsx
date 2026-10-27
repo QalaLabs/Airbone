@@ -12,8 +12,8 @@ export async function generateMetadata() {
   // Canonical: Admin Resource (PUBLISHED) SEO fields; static fallback when Admin offline.
   const blog = await fetchPublic('/blogs', { slug: 'pilot-salary-india' })
   return {
-    title: blog?.seoTitle ?? 'Pilot Salary in India 2026 - CPL vs ATPL Income Guide | Airborne',
-    description: blog?.seoDesc ?? blog?.description ?? 'Complete pilot salary guide for India in 2026. First Officer vs Captain pay at IndiGo, Air India, Akasa, Vistara. CPL salary expectations, growth timeline, and perks explained.',
+    title: blog?.seoTitle ?? 'Pilot Salary in India 2026 | CPL vs ATPL Guide',
+    description: blog?.seoDesc ?? blog?.description ?? 'Complete pilot salary guide for India in 2026: First Officer vs Captain pay at IndiGo, Air India and Akasa, plus CPL growth timeline.',
     alternates: { canonical: '/blog/pilot-salary-india' },
   }
 }

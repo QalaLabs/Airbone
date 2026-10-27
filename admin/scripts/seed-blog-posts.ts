@@ -1,3 +1,15 @@
+/**
+ * CMS-03: safe, repeatable import of the four hand-built blog posts into
+ * Resource rows (slug, SEO metadata, summary + metadata.bodyHtml).
+ *
+ *   npx tsx scripts/seed-blog-posts.ts                     # dry run
+ *   npx tsx scripts/seed-blog-posts.ts --apply             # insert missing only
+ *   npx tsx scripts/seed-blog-posts.ts --apply --overwrite # replace existing copy
+ *
+ * Existing slugs are skipped unless --overwrite is passed, so the import can
+ * never duplicate a post or silently destroy edited copy. A local, disposable
+ * DATABASE_URL is required; --allow-prod additionally permits NODE_ENV=production.
+ */
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -113,47 +125,124 @@ Additional Allowances:
   },
 ];
 
+const ARGS = new Set(process.argv.slice(2));
+
+function fail(message: string): never {
+  console.error(`\n✖ ${message}\n`);
+  process.exit(1);
+}
+
+/**
+ * CMS-03 requires a repeatable import that can never quietly overwrite the
+ * client's published copy. The schema's `metadata.bodyHtml` is the canonical
+ * article body consumed by /blog/[slug]; `description` is only the summary.
+ */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function toBodyHtml(text: string): string {
+  return text
+    .split(/\n\s*\n/)
+    .map((block) => block.split("\n").map((line) => line.trim()).filter(Boolean))
+    .filter((lines) => lines.length > 0)
+    .map((lines) => `<p>${lines.map(escapeHtml).join("<br />")}</p>`)
+    .join("\n");
+}
+
+function assertWritableTarget(): string {
+  const url = process.env.DATABASE_URL ?? "";
+  if (!/^postgres(ql)?:\/\//i.test(url)) {
+    fail(
+      "DATABASE_URL is not set in the shell environment. Refusing to run: Prisma would\n" +
+        "fall back to admin/.env, which targets production. Pin a disposable test database:\n" +
+        '  $env:DATABASE_URL="postgresql://postgres:postgres@localhost:5433/airbone_test?schema=public"',
+    );
+  }
+  const parsed = new URL(url);
+  const loopback = ["localhost", "127.0.0.1", "::1", "[::1]"].includes(parsed.hostname.toLowerCase());
+  const allowProd = ARGS.has("--allow-prod") && process.env.NODE_ENV === "production";
+  if (!loopback && !allowProd) {
+    fail(
+      `Refusing to write to non-loopback database host "${parsed.hostname}".\n` +
+        "Use a disposable local database, or pass --allow-prod with NODE_ENV=production.",
+    );
+  }
+  return `${parsed.hostname}${parsed.port ? `:${parsed.port}` : ""}${parsed.pathname}`;
+}
+
 async function main() {
+  const apply = ARGS.has("--apply");
+  const overwrite = ARGS.has("--overwrite");
+  const orgSlugArg = process.argv.find((arg) => arg.startsWith("--org="));
+  const orgSlug = orgSlugArg?.slice("--org=".length) || process.env.PUBLIC_ORG_SLUG || "airborne-aviation";
+
+  // Safety interlock runs for dry-run too: even a lookup must never hit an
+  // unidentified/production database by accident.
+  const target = assertWritableTarget();
+  console.log(`Target database: ${target}`);
+
+  console.log(`Mode: ${apply ? (overwrite ? "APPLY (update existing)" : "APPLY (insert missing only)") : "DRY RUN"}`);
+  console.log(`Organization: ${orgSlug}\n`);
+
   const org = await prisma.organization.findFirst({
-    where: { slug: "airborne-aviation" },
+    where: { slug: orgSlug },
     select: { id: true },
   });
+  if (!org) fail(`Organization '${orgSlug}' not found.`);
 
-  if (!org) {
-    console.error("Default org 'airborne-aviation' not found");
-    return;
-  }
+  let created = 0;
+  let updated = 0;
+  let skipped = 0;
 
   for (const post of BLOG_POSTS) {
     const existing = await prisma.resource.findFirst({
       where: { orgId: org.id, slug: post.slug },
+      select: { id: true, status: true },
     });
+    const metadata = {
+      ...post.metadata,
+      body: post.description,
+      bodyHtml: toBodyHtml(post.description),
+    };
+    const values = {
+      title: post.title,
+      seoTitle: post.seoTitle,
+      seoDesc: post.seoDesc,
+      description: post.description,
+      type: post.type,
+      category: post.category,
+      status: post.status,
+      publishedAt: post.publishedAt,
+      metadata,
+    };
 
     if (existing) {
-      await prisma.resource.update({
-        where: { id: existing.id },
-        data: {
-          title: post.title,
-          seoTitle: post.seoTitle,
-          seoDesc: post.seoDesc,
-          description: post.description,
-          type: post.type,
-          category: post.category,
-          status: post.status,
-          publishedAt: post.publishedAt,
-          metadata: post.metadata,
-        },
-      });
-      console.log(`Updated blog post: ${post.slug}`);
-    } else {
-      await prisma.resource.create({
-        data: {
-          orgId: org.id,
-          ...post,
-        },
-      });
-      console.log(`Created blog post: ${post.slug}`);
+      if (!overwrite) {
+        skipped += 1;
+        console.log(`= skip   ${post.slug} (already exists as ${existing.status}; pass --overwrite to replace)`);
+        continue;
+      }
+      updated += 1;
+      console.log(`~ update ${post.slug}`);
+      if (apply) await prisma.resource.update({ where: { id: existing.id }, data: values });
+      continue;
     }
+
+    created += 1;
+    console.log(`+ create ${post.slug}`);
+    if (apply) await prisma.resource.create({ data: { orgId: org.id, slug: post.slug, ...values } });
+  }
+
+  console.log(
+    `\n${apply ? "Applied" : "Would apply"}: ${created} create, ${updated} update, ${skipped} skip.`,
+  );
+  if (!apply) {
+    console.log("No database writes performed. Re-run with --apply after content-owner approval.");
   }
 }
 

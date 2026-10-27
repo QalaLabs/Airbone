@@ -2778,16 +2778,19 @@ html { scroll-behavior: smooth; }
 }
 
 @media (min-width: 768px) {
+  /* FE-17: the bottom Call/WhatsApp/Book bar is a mobile-only affordance.
+     It must never render on desktop, where it used to cover the floating
+     WhatsApp control and reserve 56px of body padding. */
   .sticky-mobile-cta {
-    display: block !important;
+    display: none !important;
   }
 
   body {
-    padding-bottom: 56px !important;
+    padding-bottom: 0 !important;
   }
 
   .whatsapp-float {
-    bottom: calc(52px + 1.25rem) !important;
+    bottom: 1.25rem !important;
   }
 }
 

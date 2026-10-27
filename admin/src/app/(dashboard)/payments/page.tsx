@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useSession } from "next-auth/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Wallet, Search, RotateCcw, ChevronLeft, ChevronRight, Banknote, Undo2, Landmark, Trash2 } from "lucide-react";
+import { Wallet, Search, RotateCcw, ChevronLeft, ChevronRight, Banknote, Undo2, Landmark } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { apiFetch } from "@/lib/api";
 import Link from "next/link";
@@ -14,10 +14,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
-const PAYMENT_STATUSES = ["PENDING", "COMPLETED", "FAILED", "PARTIALLY_REFUNDED", "REFUNDED"];
+const PAYMENT_STATUSES = ["PENDING", "COMPLETED", "FAILED", "PARTIALLY_REFUNDED", "REFUNDED", "VOIDED"];
 const PAYMENT_METHODS = ["CASH", "CARD", "UPI", "BANK_TRANSFER", "CHEQUE", "DD"];
-const FEE_TYPES = ["tuition", "admission", "registration", "exam", "uniform", "other"];
+const FEE_TYPES = ["REGISTRATION", "TUITION", "ADMISSION", "EXAM", "UNIFORM", "HOSTEL", "OTHER"];
 
 interface LedgerPayment {
   id: string;
@@ -32,6 +41,10 @@ interface LedgerPayment {
   refundedAt?: string | null;
   refundedBy?: string | null;
   refunder?: { id: string; name: string } | null;
+  voidedAt?: string | null;
+  voidedBy?: string | null;
+  voidReason?: string | null;
+  voider?: { id: string; name: string } | null;
   paidAt?: string | null;
   createdAt: string;
   admission?: { id: string; applicationNo: string; stage: string } | null;
@@ -49,6 +62,7 @@ function statusClass(status: string) {
   if (status === "FAILED") return "bg-rose-500/20 text-rose-400 border-rose-500/30";
   if (status === "PARTIALLY_REFUNDED") return "bg-blue-500/20 text-blue-400 border-blue-500/30";
   if (status === "REFUNDED") return "bg-sky-500/20 text-sky-400 border-sky-500/30";
+  if (status === "VOIDED") return "bg-zinc-500/20 text-zinc-300 border-zinc-500/40 line-through";
   return "bg-slate-500/20 text-slate-400 border-slate-500/30";
 }
 
@@ -67,6 +81,9 @@ export default function PaymentsLedgerPage() {
   const [dateTo, setDateTo] = React.useState("");
   const [page, setPage] = React.useState(1);
   const [sortDir, setSortDir] = React.useState<"asc" | "desc">("desc");
+  const [voidTarget, setVoidTarget] = React.useState<LedgerPayment | null>(null);
+  const [voidReason, setVoidReason] = React.useState("");
+  const [isVoiding, setIsVoiding] = React.useState(false);
 
   React.useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 300);
@@ -92,11 +109,14 @@ export default function PaymentsLedgerPage() {
     queryFn: () => apiFetch<LedgerPayment[]>(`/payments?${params.toString()}`),
   });
 
-  const netTotal = (payments ?? []).reduce(
+  // CRM-11: voided receipts are audit records, never live money. Excluding them
+  // from both totals keeps the page summary honest.
+  const livePayments = (payments ?? []).filter((p) => p.status !== "VOIDED");
+  const netTotal = livePayments.reduce(
     (s, p) => s + Math.max(0, Number(p.amount ?? 0) - Number(p.refundedAmount ?? 0)),
     0,
   );
-  const grossTotal = (payments ?? []).reduce((s, p) => s + Number(p.amount ?? 0), 0);
+  const grossTotal = livePayments.reduce((s, p) => s + Number(p.amount ?? 0), 0);
 
   const refundPayment = async (paymentId: string, refundAmount: number) => {
     try {
@@ -115,30 +135,31 @@ export default function PaymentsLedgerPage() {
     }
   };
 
-  const voidPayment = async (p: LedgerPayment) => {
-    const label = p.receiptNo ?? p.id;
-    const remaining = Number(p.amount ?? 0) - Number(p.refundedAmount ?? 0);
-    if (remaining <= 0) {
-      toast({ title: "Transaction already fully reversed / voided", variant: "destructive" });
+  const voidPayment = async () => {
+    if (!voidTarget) return;
+    const reason = voidReason.trim();
+    if (reason.length < 3) {
+      toast({ title: "A reason of at least 3 characters is required", variant: "destructive" });
       return;
     }
-    const reason = window.prompt(`Enter mandatory compliance audit reason to VOID transaction ${label} (${money(remaining)}):`);
-    if (!reason?.trim()) {
-      return;
-    }
+    setIsVoiding(true);
     try {
-      await apiFetch(`/payments/${p.id}/refunds`, {
+      await apiFetch(`/payments/${voidTarget.id}/void`, {
         method: "POST",
-        body: JSON.stringify({ amount: remaining, notes: `VOID/REVERSAL: ${reason.trim()}` }),
+        body: JSON.stringify({ reason }),
       });
       queryClient.invalidateQueries({ queryKey: ["payments"] });
-      toast({ title: "Transaction voided and reversed", description: label });
+      toast({ title: "Receipt voided", description: voidTarget.receiptNo ?? voidTarget.id });
+      setVoidTarget(null);
+      setVoidReason("");
     } catch (err) {
       toast({
         title: "Void failed",
         description: err instanceof Error ? err.message : "Unknown error",
         variant: "destructive",
       });
+    } finally {
+      setIsVoiding(false);
     }
   };
 
@@ -313,7 +334,7 @@ export default function PaymentsLedgerPage() {
                     </td>
                     <td className="px-4 py-3">{p.method}</td>
                     <td className="px-4 py-3 text-muted-foreground">{p.feeType ?? "-"}</td>
-                    <td className={cn("px-4 py-3 text-right font-bold", p.status === "REFUNDED" ? "text-muted-foreground line-through" : "text-emerald-400")}>
+                    <td className={cn("px-4 py-3 text-right font-bold", p.status === "REFUNDED" || p.status === "VOIDED" ? "text-muted-foreground line-through" : "text-emerald-400")}>
                       {money(p.amount)}
                     </td>
                     <td className="px-4 py-3 text-right">
@@ -330,6 +351,11 @@ export default function PaymentsLedgerPage() {
                       <span className={cn("inline-block rounded-full border px-2 py-0.5 font-bold", statusClass(p.status))}>
                         {p.status}
                       </span>
+                      {p.status === "VOIDED" && p.voidReason ? (
+                        <span className="mt-1 block max-w-[160px] truncate text-[9px] text-muted-foreground" title={p.voidReason}>
+                          {p.voider?.name ? `${p.voider.name}: ` : ""}{p.voidReason}
+                        </span>
+                      ) : null}
                     </td>
                     <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-1">
@@ -354,13 +380,16 @@ export default function PaymentsLedgerPage() {
                         ) : !isSuperAdmin ? (
                           <span className="text-muted-foreground text-[10px]">—</span>
                         ) : null}
-                        {isSuperAdmin && (
+                        {isSuperAdmin && p.status !== "REFUNDED" && p.status !== "VOIDED" && (
                           <Button
                             variant="ghost"
                             size="sm"
-                            data-testid={`payment-delete-${p.id}`}
+                            data-testid={`payment-void-${p.id}`}
                             className="h-6 px-1.5 text-[10px] text-rose-400 hover:text-rose-300 gap-1"
-                            onClick={() => void voidPayment(p)}
+                            onClick={() => {
+                              setVoidTarget(p);
+                              setVoidReason("");
+                            }}
                           >
                             <RotateCcw className="h-3 w-3" /> Void / Reverse
                           </Button>
@@ -386,6 +415,58 @@ export default function PaymentsLedgerPage() {
           </Button>
         </div>
       </div>
+
+      <Dialog
+        open={voidTarget !== null}
+        onOpenChange={(open) => {
+          if (!open && !isVoiding) {
+            setVoidTarget(null);
+            setVoidReason("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Void receipt {voidTarget?.receiptNo ?? ""}</DialogTitle>
+            <DialogDescription>
+              This reverses {money(voidTarget?.amount)} on the ledger. The receipt is retained as a
+              permanent VOIDED audit record; it cannot be deleted. A reason is mandatory.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="void-reason">Compliance / audit reason</Label>
+            <Textarea
+              id="void-reason"
+              data-testid="void-reason"
+              value={voidReason}
+              onChange={(e) => setVoidReason(e.target.value)}
+              placeholder="e.g. Duplicate receipt RCP-202610-00123 — bank reversal confirmed"
+              rows={3}
+              maxLength={2000}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setVoidTarget(null);
+                setVoidReason("");
+              }}
+              disabled={isVoiding}
+            >
+              Cancel
+            </Button>
+            <Button
+              data-testid="void-confirm"
+              className="bg-rose-600 hover:bg-rose-700"
+              onClick={() => void voidPayment()}
+              disabled={isVoiding || voidReason.trim().length < 3}
+            >
+              {isVoiding ? "Voiding…" : "Void / Reverse"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

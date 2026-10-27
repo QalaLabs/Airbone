@@ -9,6 +9,7 @@ import {
 } from "@/lib/messaging/inbound";
 import { InteraktProvider, maskSecret } from "@/lib/messaging/providers/interakt.provider";
 import { contactCandidates } from "@/lib/messaging/phone";
+import { percentRate } from "@/lib/analytics/rates";
 import {
   getDefaultInboxTemplateVariableNames,
   getInteraktDefaultTemplate,
@@ -771,7 +772,7 @@ export class WhatsAppService {
       engagement: {
         conversationsContacted,
         conversationsReplied,
-        responseRate: conversationsContacted > 0 ? Math.round((conversationsReplied / conversationsContacted) * 100) : null,
+        responseRate: percentRate(conversationsReplied, conversationsContacted),
         optedOutConversations,
       },
       sequences: Array.from(sequences.values()),

@@ -9,6 +9,7 @@ import {
   toggleTemplateSchema,
 } from "@/lib/validations/outreach.schema";
 import { getProvider } from "@/lib/messaging";
+import { computeReplyRate } from "@/lib/analytics/rates";
 import { isAutomationEngineEnabled } from "@/lib/events/dispatch";
 
 // Provider status reflects the actual messaging registry (Section 5 — no fake
@@ -96,7 +97,10 @@ export async function GET() {
     }
 
     const sent = statusBreakdown.SENT ?? 0;
-    const replyRate = sent > 0 && whatsappReplies > 0 ? whatsappReplies / sent : null;
+    // SMS-03: reply rate = WhatsApp replies / delivered messages, clamped to
+    // 100%. A single message can receive several inbound replies, so an
+    // unclamped ratio could exceed 1 (the old UI showed >100%).
+    const replyRate = computeReplyRate(sent, statusBreakdown.DELIVERED ?? 0, whatsappReplies);
 
     return ok({
       templates,

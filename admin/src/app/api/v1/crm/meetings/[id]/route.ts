@@ -41,6 +41,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
       notes: input.notes,
       outcome: input.outcome,
       metadata: input.metadata,
+      complete: input.complete,
     });
 
     return ok(updated);

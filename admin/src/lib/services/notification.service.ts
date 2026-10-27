@@ -35,35 +35,91 @@ interface NotificationDispatchParams {
  * - Returns null when no active template exists (nothing to send).
  * - Returns the final delivery status otherwise.
  */
+export interface NotificationTemplateRecord {
+  id: string;
+  name: string;
+  subject: string | null;
+  body: string;
+}
+
+export interface NotificationDeps {
+  getOrgFlags?: (orgId: string) => Promise<Record<string, unknown> | null>;
+  findTemplate?: (params: {
+    orgId: string;
+    event: NotificationEvent;
+    channel: NotificationChannel;
+    templateName?: string;
+  }) => Promise<NotificationTemplateRecord | null>;
+  dispatchToProvider?: (input: {
+    channel: NotificationChannel;
+    recipient: string;
+    subject: string | null;
+    body: string;
+    templateName?: string;
+    bodyValues?: string[];
+    headerValues?: string[];
+    providerCampaignId?: string;
+    metadata?: Record<string, string>;
+  }) => Promise<{ status: DeliveryStatus; errorMsg?: string; externalId?: string }>;
+  createLog?: (data: any) => Promise<{ id: string }>;
+  updateLog?: (id: string, data: any) => Promise<void>;
+  reserveOutbound?: typeof WhatsAppService.reserveOutboundSend;
+  finalizeOutbound?: typeof WhatsAppService.finalizeOutboundSend;
+  persistOutbound?: typeof WhatsAppService.persistOutbound;
+}
+
+export function resolveProviderTemplateName(
+  channel: NotificationChannel,
+  explicitTemplateName?: string,
+  displayTemplateName?: string,
+): string | undefined {
+  return channel === "WHATSAPP"
+    ? explicitTemplateName ?? getInteraktDefaultTemplate()
+    : explicitTemplateName ?? displayTemplateName;
+}
+
 export class NotificationService {
-  static async dispatch(params: NotificationDispatchParams): Promise<DeliveryStatus | null> {
+  static async dispatch(
+    params: NotificationDispatchParams,
+    deps?: NotificationDeps,
+  ): Promise<DeliveryStatus | null> {
     try {
       // Master switch: automated WhatsApp sends require an explicit opt-in on
       // the org's feature flags (WhatsApp → Settings). Campaign launches are
       // deliberate admin actions and go through the provider directly.
       if (params.channel === "WHATSAPP") {
-        const org = await prisma.organization.findUnique({
-          where: { id: params.orgId },
-          select: { featureFlags: true },
-        });
-        const flags = org?.featureFlags;
+        let flags: unknown = null;
+        if (deps?.getOrgFlags) {
+          flags = await deps.getOrgFlags(params.orgId);
+        } else {
+          const org = await prisma.organization.findUnique({
+            where: { id: params.orgId },
+            select: { featureFlags: true },
+          });
+          flags = org?.featureFlags;
+        }
         const enabled =
           !!flags && typeof flags === "object" && (flags as Record<string, unknown>).whatsappNotifications === true;
         if (!enabled) return "NOT_CONFIGURED";
       }
 
-      let template = await prisma.notificationTemplate.findFirst({
-        where: {
-          orgId: params.orgId,
-          event: params.event,
-          channel: params.channel,
-          isActive: true,
-        },
-      });
-      if (!template && params.channel === "WHATSAPP" && params.templateName) {
+      let template: NotificationTemplateRecord | null = null;
+      if (deps?.findTemplate) {
+        template = await deps.findTemplate(params);
+      } else {
         template = await prisma.notificationTemplate.findFirst({
-          where: { orgId: params.orgId, channel: "WHATSAPP", isActive: true },
+          where: {
+            orgId: params.orgId,
+            event: params.event,
+            channel: params.channel,
+            isActive: true,
+          },
         });
+        if (!template && params.channel === "WHATSAPP" && params.templateName) {
+          template = await prisma.notificationTemplate.findFirst({
+            where: { orgId: params.orgId, channel: "WHATSAPP", isActive: true },
+          });
+        }
       }
       if (!template) return null;
 
@@ -116,7 +172,8 @@ export class NotificationService {
           },
         });
 
-        const result = await dispatchToProvider({
+        const sendProvider = deps?.dispatchToProvider ?? dispatchToProvider;
+        const result = await sendProvider({
           channel: params.channel,
           recipient: params.recipient,
           subject,
@@ -158,22 +215,22 @@ export class NotificationService {
         return result.status;
       }
 
-      const log = await prisma.notificationLog.create({
-        data: {
-          orgId: params.orgId,
-          templateId: template.id,
-          event: params.event,
-          channel: params.channel,
-          recipient: params.recipient,
-          subject,
-          body,
-          status: "PENDING",
-          entityType: params.entityType,
-          entityId: params.entityId,
-        },
+      const createLog = deps?.createLog ?? ((data: any) => prisma.notificationLog.create({ data }));
+      const log = await createLog({
+        orgId: params.orgId,
+        templateId: template.id,
+        event: params.event,
+        channel: params.channel,
+        recipient: params.recipient,
+        subject,
+        body,
+        status: "PENDING",
+        entityType: params.entityType,
+        entityId: params.entityId,
       });
 
-      const result = await dispatchToProvider({
+      const sendProvider = deps?.dispatchToProvider ?? dispatchToProvider;
+      const result = await sendProvider({
         channel: params.channel,
         recipient: params.recipient,
         subject,
@@ -212,14 +269,12 @@ export class NotificationService {
       }
 
       try {
-        await prisma.notificationLog.update({
-          where: { id: log.id },
-          data: {
-            status: result.status,
-            errorMsg: result.errorMsg ?? null,
-            externalId: result.externalId ?? null,
-            sentAt: result.status === "SENT" ? new Date() : null,
-          },
+        const updateLog = deps?.updateLog ?? ((id: string, data: any) => prisma.notificationLog.update({ where: { id }, data }));
+        await updateLog(log.id, {
+          status: result.status,
+          errorMsg: result.errorMsg ?? null,
+          externalId: result.externalId ?? null,
+          sentAt: result.status === "SENT" ? new Date() : null,
         });
       } catch (updateErr) {
         // Row stays PENDING if the status write fails — that is truthful.
@@ -272,7 +327,7 @@ async function dispatchToProvider(input: {
 
 // ─── Template interpolation ─────────────────────────────────────────────────────
 
-function interpolate(text: string, variables: Record<string, string>): string {
+export function interpolate(text: string, variables: Record<string, string>): string {
   return text.replace(/\{\{\s*(\w+)\s*\}\}/g, (match, key: string) =>
     Object.prototype.hasOwnProperty.call(variables, key) ? variables[key] ?? match : match,
   );

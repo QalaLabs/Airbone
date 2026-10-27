@@ -22,9 +22,11 @@ function mockReq(headers: Record<string, string> = {}): CronReq {
   };
 }
 
-test("only /api/cron/automation skips session middleware", () => {
+test("every CRON_SECRET cron endpoint skips session middleware", () => {
   assert.equal(isCronAutomationPath(CRON_AUTOMATION_PATH), true);
+  assert.equal(isCronAutomationPath("/api/cron/cpl-campaigns"), true);
   assert.equal(shouldRunSessionMiddleware(CRON_AUTOMATION_PATH), false);
+  assert.equal(shouldRunSessionMiddleware("/api/cron/cpl-campaigns"), false);
   assert.equal(shouldRunSessionMiddleware("/api/cron/other"), true);
   assert.equal(shouldRunSessionMiddleware("/api/v1/workflows"), true);
   assert.equal(shouldRunSessionMiddleware("/whatsapp/inbox"), true);

@@ -441,7 +441,7 @@ export default function FinanceCollectionsPage() {
               />
             </div>
             <p className="text-[10px] text-muted-foreground">
-              This note automatically attaches to the candidate's unified audit timeline.
+              This note automatically attaches to the candidate&apos;s unified audit timeline.
             </p>
           </div>
 

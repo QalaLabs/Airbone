@@ -379,6 +379,7 @@ model User {
   reviewedDocuments      Document[]           @relation("DocumentReviewer")
   collectedPayments      PaymentTransaction[] @relation("PaymentCollector")
   refundedPayments       PaymentTransaction[] @relation("PaymentRefunder")
+  voidedPayments         PaymentTransaction[] @relation("PaymentVoider")
   mediaFolders           MediaFolder[]        @relation("MediaFolderCreator")
   uploadedMediaAssets    MediaAsset[]         @relation("MediaAssetUploader")
   createdBlocks          ContentBlock[]       @relation("ContentBlockCreator")
@@ -556,7 +557,11 @@ model Lead {
   whatsappConversations WhatsAppConversation[]
   interaktSyncs         InteraktLeadSync[]
 
-  @@unique([orgId, phone])
+  // CRM-05: phone uniqueness is enforced by the PostgreSQL partial index
+  // `leads_org_id_phone_active` (orgId, phone) WHERE "deletedAt" IS NULL, so a
+  // re-enquiry after a soft delete is allowed. Prisma cannot express partial
+  // unique indexes in the schema, hence the plain lookup index here.
+  @@index([orgId, phone])
   @@index([orgId, status])
   @@index([orgId, status, createdAt(sort: Desc)])
   @@index([orgId, assignedTo, createdAt(sort: Desc)])
@@ -1336,6 +1341,9 @@ enum PaymentStatus {
   FAILED
   REFUNDED
   PARTIALLY_REFUNDED
+  /// CRM-11: reversed receipt. The row is never deleted; it contributes zero to
+  /// gross/net totals and keeps the full audit trail.
+  VOIDED
 }
 
 model PaymentTransaction {
@@ -1362,6 +1370,10 @@ model PaymentTransaction {
   refundedAmount  Decimal       @default(0) @db.Decimal(10, 2)
   refundedAt      DateTime?
   refundedBy      String?       @db.Uuid
+  // CRM-11: void/reversal trail. A VOIDED transaction is never purged.
+  voidedAt        DateTime?
+  voidedBy        String?       @db.Uuid
+  voidReason      String?       @db.Text
   metadata        Json          @default("{}")
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -1372,6 +1384,7 @@ model PaymentTransaction {
   student   Student?     @relation("StudentPayments", fields: [studentId], references: [id], onDelete: SetNull)
   collector User?        @relation("PaymentCollector", fields: [collectedBy], references: [id], onDelete: SetNull)
   refunder  User?        @relation("PaymentRefunder", fields: [refundedBy], references: [id], onDelete: SetNull)
+  voider    User?        @relation("PaymentVoider", fields: [voidedBy], references: [id], onDelete: SetNull)
 
   @@unique([orgId, idempotencyKey])
   @@unique([orgId, receiptNo])

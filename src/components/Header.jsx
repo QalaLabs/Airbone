@@ -40,7 +40,6 @@ export default function Header() {
   const [hoverSubmenu, setHoverSubmenu] = useState(null)
   const [prevPathname, setPrevPathname] = useState(pathname)
   const [links, setLinks] = useState(DEFAULT_LINKS)
-  const [fromCms, setFromCms] = useState(false)
 
   if (pathname !== prevPathname) {
     setPrevPathname(pathname)
@@ -66,7 +65,6 @@ export default function Header() {
             finalLinks.push({ id: 'contact', name: 'Contact', path: '/contact', newTab: false, children: [] })
           }
           setLinks(finalLinks)
-          setFromCms(true)
         }
       })
       .catch(err => console.error('Failed to load header navigation settings:', err))

@@ -2,39 +2,14 @@
 
 import { useRef, useState } from 'react'
 import { motion, useInView } from 'framer-motion'
-
-function getUpcomingBatchDate(customDate) {
-  if (customDate) {
-    const d = new Date(customDate);
-    if (!Number.isNaN(d.getTime())) {
-      const day = d.getDate();
-      const s = day === 1 ? 'st' : day === 2 ? 'nd' : day === 3 ? 'rd' : 'th';
-      return `${day}${s} ${d.toLocaleDateString('en-IN', { month: 'short' })} ${d.getFullYear()}`;
-    }
-  }
-  const now = new Date();
-  const day = now.getDate();
-  const month = now.getMonth();
-  const year = now.getFullYear();
-
-  let targetDate;
-  if (day < 15) {
-    targetDate = new Date(year, month, 15);
-  } else {
-    targetDate = new Date(year, month + 1, 1);
-  }
-
-  const d = targetDate.getDate();
-  const suffix = d === 1 ? 'st' : d === 2 ? 'nd' : d === 3 ? 'rd' : 'th';
-  const monthName = targetDate.toLocaleDateString('en-IN', { month: 'short' });
-  const yr = targetDate.getFullYear();
-  return `${d}${suffix} ${monthName} ${yr}`;
-}
+import { getUpcomingBatchDate } from '@/lib/batchDate'
 
 export default function ProgramCard({ program, index }) {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, amount: 0.2 })
   const [hovered, setHovered] = useState(false)
+  // CMS-08: only a verified batch date is displayed (no heuristic discovery).
+  const nextBatchLabel = program.nextBatchDate || getUpcomingBatchDate(program.batchStartDate)
 
   return (
     <motion.div
@@ -172,6 +147,7 @@ export default function ProgramCard({ program, index }) {
       </div>
 
             {/* Dynamic Upcoming Batch Date (CMS-08) */}
+      {nextBatchLabel ? (
       <div
         style={{
           marginTop: '0.75rem',
@@ -197,8 +173,9 @@ export default function ProgramCard({ program, index }) {
             flexShrink: 0,
           }}
         />
-        <span>Next Batch: {program.nextBatchDate || getUpcomingBatchDate(program.batchStartDate)}</span>
+        <span>Next Batch: {nextBatchLabel}</span>
       </div>
+      ) : null}
 
       {/* Footer */}
       <div

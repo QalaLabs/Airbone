@@ -13,6 +13,12 @@ import { displayCourseFee, courseFeeNumeric } from '@/lib/courseFees'
 import CabinCrewEligibilityQuiz from '@/components/CabinCrewEligibilityQuiz'
 import CabinCrewStarterKitTeaser from '@/components/CabinCrewStarterKitTeaser'
 import CourseVideoTabs from '@/components/CourseVideoTabs'
+import {
+  CABIN_CREW_PATHWAYS,
+  inr,
+  scholarshipLabel,
+  scholarshipPriceLabel,
+} from '@/lib/cabinCrewPricing'
 
 export const revalidate = 60
 
@@ -59,41 +65,7 @@ const CABIN_FAQS = [
   }
 ]
 
-const PATHWAYS = [
-  {
-    num: '1',
-    title: 'Elite Cabin Crew Finishing Batch',
-    duration: '3 Months',
-    classTime: '90 Minutes',
-    best: 'Near-selection candidates needing final polish',
-    regularPrice: '₹54,000',
-    scholarshipText: '100%* (score ≥70%)',
-    scholarshipPrice: '₹0 (for scholarship winners)',
-    focus: ['Final grooming polish', 'Professional presence', 'Service behaviour refinement', 'GD and PI readiness', 'Interview finishing support'],
-  },
-  {
-    num: '2',
-    title: 'Advanced Communication, GD/PI & Personality',
-    duration: '3 Months',
-    classTime: '90 Minutes',
-    best: 'Candidates with communication or confidence gaps',
-    regularPrice: '₹30,000',
-    scholarshipText: '100%* (score ≥70%)',
-    scholarshipPrice: '₹30,000 (for scholarship winners)',
-    focus: ['Spoken communication improvement', 'GD practice', 'PI preparation', 'Personality development', 'Confidence building'],
-  },
-  {
-    num: '3',
-    title: 'Basic Communication & Global Hospitality',
-    duration: '6 Months',
-    classTime: '90 Minutes',
-    best: 'Beginners needing complete foundation',
-    regularPrice: '₹30,000',
-    scholarshipText: '100%* (score ≥70%)',
-    scholarshipPrice: '₹54,000 (for scholarship winners)',
-    focus: ['Communication foundation', 'Hospitality standards', 'Grooming basics', 'Professional readiness', 'Zero-to-selection journey'],
-  },
-]
+const PATHWAYS = CABIN_CREW_PATHWAYS
 
 const CURRICULUM = [
   { module: 'Aviation Fundamentals', content: 'Aviation industry intro, aircraft familiarisation, airport operations, cabin crew responsibilities, airline terminology' },
@@ -241,14 +213,14 @@ export default async function CabinCrewTrainingPage() {
                         <div style={{ background: 'rgba(0, 39, 76, 0.02)', border: '1px solid rgba(0, 39, 76, 0.08)', borderRadius: '6px', padding: '0.85rem 1.25rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.35rem', minWidth: '220px', alignSelf: 'flex-start' }}>
                           <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
                             <span style={{ fontSize: '0.72rem', color: 'rgba(0, 39, 76, 0.55)', textTransform: 'uppercase', fontFamily: 'var(--font-h)', letterSpacing: '0.06em', fontWeight: 700 }}>Regular Price</span>
-                            <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 900, color: 'var(--navy)' }}>{p.regularPrice}</span>
+                            <span style={{ fontFamily: 'var(--font-h)', fontSize: '1.25rem', fontWeight: 900, color: 'var(--navy)' }}>{inr(p.regularFee)}</span>
                           </div>
                           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(219, 36, 30, 0.08)', border: '1px solid rgba(219, 36, 30, 0.25)', borderRadius: '4px', padding: '0.2rem 0.5rem', fontSize: '0.72rem', fontFamily: 'var(--font-h)', color: '#DB241E', fontWeight: 700 }}>
                             <span>Batch 1 Scholarship:</span>
-                            <span style={{ fontWeight: 800 }}>{p.scholarshipText}</span>
+                            <span style={{ fontWeight: 800 }}>{scholarshipLabel(p)}</span>
                           </div>
                           <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#16a34a', fontFamily: 'var(--font-h)', letterSpacing: '0.02em', marginTop: '0.1rem' }}>
-                            {p.scholarshipPrice}
+                            {scholarshipPriceLabel(p)}
                           </div>
                         </div>
                       </div>

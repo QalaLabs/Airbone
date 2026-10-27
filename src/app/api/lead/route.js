@@ -20,6 +20,7 @@ const SOURCE_SLUG = {
 
 function resolveSource(raw = '') {
   const key = raw.toLowerCase()
+  if (key === 'webinar' || key.includes('webinar')) return 'webinar'
   if (key.startsWith('resource gate')) return 'brochure_download'
   if (key.startsWith('course')) return 'course_page'
   return SOURCE_SLUG[key] ?? 'homepage_cta'
@@ -117,6 +118,9 @@ export async function POST(req) {
     const email = typeof payload.email === 'string' ? payload.email.trim() : ''
     const pincode = typeof payload.pincode === 'string' ? payload.pincode.trim() : ''
     const course = typeof payload.course === 'string' ? payload.course.trim() : ''
+    const isWebinar = rawSource.toLowerCase() === 'webinar' || rawSource.toLowerCase().includes('webinar') || (Array.isArray(payload.tags) && payload.tags.includes('webinar'))
+    const rawPersona = typeof payload.persona === 'string' ? payload.persona.trim().toLowerCase() : ''
+    const persona = rawPersona === 'parent' ? 'Parent' : rawPersona === 'student' ? 'Student' : ''
 
     // Prevent script injection payloads across all fields
     if (
@@ -177,12 +181,39 @@ export async function POST(req) {
       }
     }
 
+    // PIN code is mandatory on every active enquiry form (FE-14). Validate it
+    // server-side so a client-side bypass cannot create an incomplete lead.
+    if (!isWebinar && !/^\d{4,6}$/.test(pincode)) {
+      console.error(JSON.stringify({
+        correlationId,
+        event: 'lead_validation_failed',
+        reason: 'invalid_pincode',
+        timestamp: new Date().toISOString(),
+        leadSource: rawSource,
+      }))
+      return NextResponse.json({ error: 'A valid PIN code is required.' }, { status: 400 })
+    }
+
+    // Persona is optional at the API boundary (older integrations omit it) but
+    // when supplied it must be one of the approved values.
+    if (rawPersona && !persona) {
+      console.error(JSON.stringify({
+        correlationId,
+        event: 'lead_validation_failed',
+        reason: 'invalid_persona',
+        timestamp: new Date().toISOString(),
+        leadSource: rawSource,
+      }))
+      return NextResponse.json({ error: 'Please select Student or Parent.' }, { status: 400 })
+    }
+
     leadData = {
       name,
       phone,
       email,
       pincode,
       course,
+      persona: persona || 'Student',
       source: rawSource,
       utmSource: typeof payload.utm_source === 'string' ? payload.utm_source.trim() : undefined,
       utmMedium: typeof payload.utm_medium === 'string' ? payload.utm_medium.trim() : undefined,
@@ -264,6 +295,7 @@ export async function POST(req) {
         phone: leadData.phone,
         email: leadData.email || undefined,
         pincode: leadData.pincode || undefined,
+        persona: leadData.persona,
         courseInterest: leadData.course || undefined,
         source: resolveSource(leadData.source),
         leadUuid: leadData.leadUuid,
@@ -276,6 +308,8 @@ export async function POST(req) {
         landingPage: leadData.landingPage,
         tags: leadData.tags,
         eligibility: leadData.eligibility,
+        customFields: payload.customFields || undefined,
+        message: payload.message || undefined,
       }),
       signal: controller.signal,
     })

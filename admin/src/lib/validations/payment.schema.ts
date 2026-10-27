@@ -32,12 +32,12 @@ export const createPaymentSchema = z.object({
 });
 
 export const updatePaymentSchema = z.object({
-  // REFUNDED / PARTIALLY_REFUNDED must be reached via the refund endpoint only,
-  // which keeps refundedAmount / refundedAt / refundedBy consistent.
+  // REFUNDED / PARTIALLY_REFUNDED / VOIDED must be reached via their dedicated
+  // endpoints, which keep the refund/void audit fields consistent.
   status: z
     .nativeEnum(PaymentStatus)
-    .refine((s) => s !== "REFUNDED" && s !== "PARTIALLY_REFUNDED", {
-      message: "Refund statuses must be set through the refund endpoint",
+    .refine((s) => s !== "REFUNDED" && s !== "PARTIALLY_REFUNDED" && s !== "VOIDED", {
+      message: "Refund and void statuses must be set through their dedicated endpoints",
     })
     .optional(),
   referenceNo: z.string().max(255).optional(),
@@ -72,7 +72,14 @@ export const refundPaymentSchema = z.object({
   notes: z.string().max(2000).optional(),
 });
 
+// CRM-11: a void is a full reversal of a receipt with a mandatory reason. The
+// row is retained (status VOIDED) so the ledger and audit trail stay complete.
+export const voidPaymentSchema = z.object({
+  reason: z.string().trim().min(3).max(2000),
+});
+
 export type CreatePaymentInput = z.infer<typeof createPaymentSchema>;
 export type UpdatePaymentInput = z.infer<typeof updatePaymentSchema>;
 export type RefundPaymentInput = z.infer<typeof refundPaymentSchema>;
+export type VoidPaymentInput = z.infer<typeof voidPaymentSchema>;
 export type PaymentFilters = z.infer<typeof paymentFiltersSchema>;

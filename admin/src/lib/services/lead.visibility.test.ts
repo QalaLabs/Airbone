@@ -28,7 +28,10 @@ test("Lead Visibility and Date Cutoff Regression Tests", async (t) => {
 
   await t.test("5. Newest leads appear first", async () => {
     await LeadRepository.findMany("org-1", { page: 1, limit: 20, sortBy: "createdAt", sortDir: "desc" });
-    assert.deepEqual(lastOrderBy, { createdAt: "desc" });
+    // CRM-07: the requested sort is primary; `id` is only a deterministic
+    // tiebreaker so offset pagination cannot duplicate/skip rows that share a
+    // timestamp. The visible ordering (newest first) is unchanged.
+    assert.deepEqual(lastOrderBy, [{ createdAt: "desc" }, { id: "desc" }]);
   });
 
   await t.test("6. Pagination does not exclude newer records", async () => {

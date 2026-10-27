@@ -39,15 +39,30 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/parents-webinar',
+        destination: '/webinar',
+        permanent: true,
+      },
+      {
         source: '/:path*',
         has: [{ type: 'host', value: 'www.airborneaviation.academy' }],
         destination: 'https://www.airborneaviation.in/:path*',
         permanent: true,
       },
       {
+        source: '/parents-webinar',
+        destination: '/webinar',
+        permanent: true,
+      },
+      {
         source: '/:path*',
         has: [{ type: 'host', value: 'airborneaviation.in' }],
         destination: 'https://www.airborneaviation.in/:path*',
+        permanent: true,
+      },
+      {
+        source: '/parents-webinar',
+        destination: '/webinar',
         permanent: true,
       },
       {

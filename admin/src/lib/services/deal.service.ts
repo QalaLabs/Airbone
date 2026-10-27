@@ -182,6 +182,22 @@ export class DealService {
   }
 
   static async create(ctx: RequestContext, input: CreateDealInput) {
+    // CRM-03: one active deal per lead per course. Re-submitting the same course
+    // is a conflict; a different course is allowed to open Deal #2.
+    const duplicate = await DealRepository.findActiveByLeadAndCourse(
+      ctx.orgId,
+      input.leadId,
+      input.courseId ?? null,
+      input.title,
+    );
+    if (duplicate) {
+      throw new ConflictError(
+        input.courseId
+          ? "An active deal for this lead and course already exists"
+          : "A deal for this lead already exists",
+      );
+    }
+
     let deal: Awaited<ReturnType<typeof DealRepository.create>>;
     try {
       deal = await DealRepository.create(ctx.orgId, {
