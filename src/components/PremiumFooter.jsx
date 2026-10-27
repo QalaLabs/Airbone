@@ -28,7 +28,7 @@ const PROGRAMS = [
   { label: 'Cadet Preparation',      href: '/courses/cadet-preparation' },
   { label: 'Airline Preparation',   href: '/courses/airline-preparation' },
   { label: 'GD & PI Course',           href: '/courses/gd-pi' },
-  { label: 'CASS Compass Adapt',    href: '/courses/cas-compass-adapt' },
+  { label: 'cut-e, COMPASS & ADAPT Prep',    href: '/courses/cas-compass-adapt' },
   { label: 'ATPL Ground School',       href: '/courses/atpl' },
   { label: 'Airbus A320 Simulator FBS',       href: '/courses/a320-simulator' },
   { label: "Securing Your Child's Future in Aviation", href: '/courses/securing-your-childs-future-in-aviation' },
@@ -126,10 +126,10 @@ export default function PremiumFooter({ onBookDemo }) {
         <div className="pf-inner">
           <div className="pf-trust-grid">
             {[
-              { stat: 'Since', label: '2009' },
-              { stat: '15+',    label: 'Years Experience' },
-              { stat: 'DGCA',   label: 'Focused Training' },
-              { stat: '25',     label: 'Max Batch Size' },
+              { stat: '17 Years', label: '· Since 2009' },
+              { stat: 'CPL',   label: '& ATPL Theory' },
+              { stat: 'DGCA-Compliant', label: 'Training' },
+              { stat: '25 Per Class', label: '(Navigation 50)' },
             ].map((t, i) => (
               <div key={i} className="pf-trust-item">
                 <div className="pf-trust-stat">{t.stat}</div>
