@@ -157,7 +157,7 @@ export default function CMSPage() {
   const router = useRouter();
   
   // Tabs: pagescms, pages, preview, payload, nav, gallery, news
-  const [activeTab, setActiveTab] = React.useState("pagescms");
+  const [activeTab, setActiveTab] = React.useState("pages");
   
   // Payload CMS Studio state
   const [payloadView, setPayloadView] = React.useState<"admin" | "preview">("admin");
@@ -322,11 +322,11 @@ export default function CMSPage() {
       {/* Tabs Navigation */}
       <div className="flex border-b border-white/10 gap-2 overflow-x-auto pb-1">
         {[
+          { id: "pages", label: "Core Web Pages", icon: Globe, badge: "Production" },
+          { id: "builder", label: "Airborne Studio", icon: LayoutTemplate, badge: "Visual Builder" },
           { id: "pagescms", label: "Pages CMS (Git)", icon: GitBranch, badge: "Modular" },
-          { id: "builder", label: "Airborne Studio", icon: LayoutTemplate, badge: "Visual" },
           { id: "preview", label: "Website Live Preview", icon: Eye, badge: "Interactive" },
           { id: "payload", label: "Payload CMS Studio", icon: Sparkles, badge: "Engine" },
-          { id: "pages", label: "Core Web Pages", icon: Globe },
           { id: "nav", label: "Navigation Menus", icon: Menu },
           { id: "gallery", label: "Public Media Gallery", icon: ImageIcon },
           { id: "news", label: "News & Bulletins", icon: Megaphone },

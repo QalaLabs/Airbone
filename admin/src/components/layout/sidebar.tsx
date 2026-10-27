@@ -86,8 +86,8 @@ const NAV_GROUPS: {
   {
     label: "Website & CMS",
     items: [
-      { href: "/cms", icon: Globe, label: "Website CMS" },
-      { href: "/cms/builder", icon: LayoutTemplate, label: "Visual Builder" },
+      { href: "/cms/builder", icon: LayoutTemplate, label: "Airborne Studio" },
+      { href: "/cms", icon: Globe, label: "Website CMS & Content Hub" },
       { href: "/courses", icon: BookOpen, label: "Course Manager" },
       { href: "/resources", icon: FileText, label: "Resources" },
       { href: "/testimonials", icon: Star, label: "Testimonials", badge: true },
