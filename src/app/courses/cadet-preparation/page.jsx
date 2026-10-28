@@ -9,7 +9,6 @@ import CourseReviews from '@/components/CourseReviews'
 import JsonLd from '@/components/JsonLd'
 import { buildCoursePageGraph } from '@/lib/schema'
 import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
-import CourseVideoTabs from '@/components/CourseVideoTabs'
 
 export const metadata = {
   title: 'Cadet Pilot Program Prep IndiGo, Air India, Akasa | Airborne',
@@ -442,9 +441,6 @@ export default function CadetPreparationPage() {
                 ))}
               </div>
             </div>
-
-            {/* YouTube Shorts & Playlists */}
-            <CourseVideoTabs slug="cadet-preparation" courseName="Cadet Pilot Program Preparation" />
 
           </div>
 

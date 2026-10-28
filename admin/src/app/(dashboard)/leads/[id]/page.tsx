@@ -21,6 +21,7 @@ import { toISTInput, fromISTInput } from "@/lib/time/ist";
 import { statusLabel } from "@/lib/leads/lead-status";
 import { LEAD_SOURCE_OPTIONS, leadSourceLabel } from "@/lib/leads/lead-source";
 import { CALL_DISPOSITIONS, CALL_DISPOSITION_LABELS } from "@/lib/leads/dispositions";
+import { CANONICAL_COURSES } from "@/lib/courses/canonical-courses";
 import { roleCan } from "@/lib/utils/permissions";
 import { toast } from "@/components/ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -1794,12 +1795,21 @@ export default function LeadDetailPage() {
             </div>
             <div className="space-y-1.5 sm:col-span-2">
               <Label className="text-xs text-muted-foreground">Course Interest</Label>
-              <Input
+              <select
                 value={editProfileForm.courseInterest}
                 onChange={(e) => setEditProfileForm((prev) => ({ ...prev, courseInterest: e.target.value }))}
-                className="bg-secondary/40 border-white/10"
-                placeholder="e.g. Commercial Pilot License (CPL)"
-              />
+                className="w-full h-9 rounded-md bg-secondary/40 border border-white/10 px-3 text-sm font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              >
+                <option value="" className="bg-slate-900">Select Course Program...</option>
+                {CANONICAL_COURSES.map((c) => (
+                  <option key={c} value={c} className="bg-slate-900">{c}</option>
+                ))}
+                {editProfileForm.courseInterest && !CANONICAL_COURSES.includes(editProfileForm.courseInterest as any) && (
+                  <option value={editProfileForm.courseInterest} className="bg-slate-900">
+                    {editProfileForm.courseInterest} (Current)
+                  </option>
+                )}
+              </select>
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">City</Label>

@@ -29,6 +29,7 @@ import { bulkAssignLeads } from "@/lib/crm/deals";
 import { formatDate } from "@/lib/utils";
 import { isActiveStatus, INITIAL_LEAD_STATUSES, statusLabel } from "@/lib/leads/lead-status";
 import { LEAD_SOURCE_OPTIONS, leadSourceLabel } from "@/lib/leads/lead-source";
+import { CANONICAL_COURSES } from "@/lib/courses/canonical-courses";
 import { roleCan } from "@/lib/utils/permissions";
 import type { LeadStatus } from "@prisma/client";
 import { toast } from "@/components/ui/use-toast";
@@ -799,7 +800,16 @@ export default function LeadsPage() {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="courseInterest" className="text-xs font-bold text-muted-foreground">Course Interest</Label>
-                <Input id="courseInterest" placeholder="e.g. DGCA CPL Ground School" className="bg-secondary/40 border-white/10 text-sm font-semibold" {...register("courseInterest")} />
+                <select
+                  id="courseInterest"
+                  className="w-full h-9 rounded-md bg-secondary/40 border border-white/10 px-3 text-sm font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                  {...register("courseInterest")}
+                >
+                  <option value="" className="bg-slate-900">Select Course Program...</option>
+                  {CANONICAL_COURSES.map((c) => (
+                    <option key={c} value={c} className="bg-slate-900">{c}</option>
+                  ))}
+                </select>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="pincode" className="text-xs font-bold text-muted-foreground">Location Pincode</Label>

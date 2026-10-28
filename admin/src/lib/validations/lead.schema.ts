@@ -4,6 +4,7 @@ import { MEETING_MODES, isMeetingMode } from "@/lib/crm/meeting-mode";
 import { INITIAL_LEAD_STATUSES, isInitialLeadStatus } from "@/lib/leads/lead-status";
 import { CALL_DISPOSITIONS } from "@/lib/leads/dispositions";
 import { parseISTWallClock } from "@/lib/analytics/date-range";
+import { normalizeCourseInterest } from "@/lib/courses/canonical-courses";
 
 export const createLeadSchema = z.object({
   name: z.string().min(2).max(255),
@@ -14,7 +15,11 @@ export const createLeadSchema = z.object({
   pincode: z.string().max(10).optional(),
   googleId: z.string().max(255).optional(),
   manualAmount: z.number().nonnegative().optional(),
-  courseInterest: z.string().max(255).optional(),
+  courseInterest: z
+    .string()
+    .max(255)
+    .optional()
+    .transform((val) => (val ? normalizeCourseInterest(val) ?? val : val)),
   source: z.nativeEnum(LeadSource).default("DIRECT"),
   assignedTo: z.string().uuid().optional(),
   campusId: z.string().uuid().optional(),
