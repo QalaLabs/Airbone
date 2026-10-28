@@ -237,21 +237,32 @@ export function HeroLayers() {
 export function StatReveal({ value, label, prefix = '', suffix = '', decimals = 0, style = {} }) {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, amount: 0.5 })
-  const mv = useMotionValue(0)
+  const isNumeric = typeof value === 'number'
+  const mv = useMotionValue(isNumeric ? value : 0)
   const spring = useSpring(mv, { duration: 1600, bounce: 0 })
-  const finalStatic = prefix + (typeof value === 'number' ? (value >= 1000 ? value.toLocaleString('en-IN') : value.toFixed(decimals)) : value) + suffix
+  const finalStatic = prefix + (isNumeric ? (value >= 1000 ? value.toLocaleString('en-IN') : value.toFixed(decimals)) : value) + suffix
   const [display, setDisplay] = useState(finalStatic)
+  const [hasAnimated, setHasAnimated] = useState(false)
 
   useEffect(() => {
-    if (inView) mv.set(value)
-  }, [inView, mv, value])
+    if (inView && !hasAnimated && isNumeric) {
+      setDisplay(finalStatic)
+      if (typeof mv.jump === 'function') {
+        mv.jump(value)
+      } else {
+        mv.set(value)
+      }
+      setHasAnimated(true)
+    }
+  }, [inView, mv, value, hasAnimated, isNumeric, finalStatic])
 
   useEffect(() => {
     return spring.on('change', (v) => {
+      if (!hasAnimated) return
       const formatted = v >= 1000 ? Math.round(v).toLocaleString('en-IN') : v.toFixed(decimals)
       setDisplay(prefix + formatted + suffix)
     })
-  }, [spring, prefix, suffix, decimals])
+  }, [spring, prefix, suffix, decimals, hasAnimated])
 
   return (
     <div ref={ref} style={style}>

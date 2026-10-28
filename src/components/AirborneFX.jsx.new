@@ -1,0 +1,76 @@
+/**
+ * AirborneFX.jsx
+ * Premium UI effect components ported from source design.
+ * Zero backend dependencies — pure UI layer.
+ *
+ * Components exported:
+ *   RouteProgress   — aircraft scroll-progress bar at top
+ *   CockpitHUD      — bottom-left flight instrument panel
+ *   AmbientRadial   — mouse-following ambient glow
+ *   HeroLayers      — grain + cloud drift + vignette for hero
+ *   StatReveal      — animated counting stat block
+ *   AirlineMarquee  — dual-row scrolling airline names
+ *   JourneyMap      — interactive SVG flight-route map
+ *   SuccessMosaic   — pilot wall mosaic grid
+ *   Magnetic        — cursor-following magnetic wrapper
+ */
+
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
+import {
+  motion,
+  useInView,
+  useMotionValue,
+  useScroll,
+  useSpring,
+  useTransform,
+} from 'framer-motion'
+
+/* =====================================================================
+ * RouteProgress — Aircraft glyph traces scroll progress at top of page
+ * ===================================================================*/
+export function RouteProgress() {
+  const { scrollYProgress } = useScroll()
+  const x = useTransform(scrollYProgress, [0, 1], ['0%', '100%'])
+  const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 24, mass: 0.4 })
+
+  return (
+    <div
+      className="route-progress-bar"
+      aria-hidden
+      style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 60, pointerEvents: 'none', height: '3px' }}
+    >
+      {/* Dashed route line */}
+      <div
+        style={{
+          position: 'absolute', inset: 0, opacity: 0.3,
+          backgroundImage: 'repeating-linear-gradient(90deg, rgba(0,39,76,0.6) 0 8px, transparent 8px 16px)',
+        }}
+      />
+      {/* Traced fill */}
+      <motion.div
+        style={{
+          scaleX, transformOrigin: '0% 50%',
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(90deg, var(--red), var(--gold), var(--red))',
+        }}
+      />
+      {/* Plane glyph */}
+      <motion.div
+        style={{ position: 'absolute', top: '50%', translateY: '-50%', left: x, translateX: '-50%' }}
+      >
+        <div style={{ position: 'relative', marginTop: '-1px' }}>
+          <span style={{
+            position: 'absolute', inset: '-8px', borderRadius: '50%',
+            background: 'rgba(219,36,30,0.4)', filter: 'blur(6px)',
+          }} />
+          {/* SVG plane icon */}
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="#fff" style={{ position: 'relative', filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.8))', transform: 'rotate(90deg)' }}>
+            <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+          </svg>
+        </div>
+      </motion.div>
+    </div>
+  )
+}

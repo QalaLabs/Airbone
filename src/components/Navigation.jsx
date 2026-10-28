@@ -72,7 +72,7 @@ export default function Navigation({ sceneIndex, progress, onDemo }) {
         </ul>
 
         {/* Phone — per brand book, always shown */}
-        <span className="nav-phone" aria-label="Call us">+91 9953 777 320</span>
+        <a href="tel:+919953777320" className="nav-phone" aria-label="Call us at +91 99537 77320">+91 99537 77320</a>
 
         {/* CTA */}
         <button className="nav-cta" onClick={onDemo} aria-label="Book a free demo class">

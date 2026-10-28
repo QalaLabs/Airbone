@@ -125,19 +125,24 @@ function useCounter(rawValue, active) {
   const str    = String(rawValue)
   const num    = parseInt(str.replace(/\D/g, ''))
   const suffix = str.replace(/\d/g, '')
-  const [display, setDisplay] = useState(num || 0)
+  const [display, setDisplay] = useState(isNaN(num) ? rawValue : (num || 0))
+  const [hasAnimated, setHasAnimated] = useState(false)
   useEffect(() => {
-    if (!active || isNaN(num)) return
+    if (!active || isNaN(num) || hasAnimated) return
     let raf
     const t0 = performance.now(), dur = 2000
     const tick = now => {
       const t = Math.min((now - t0) / dur, 1)
       setDisplay(Math.round(num * (1 - Math.pow(1 - t, 3))))
-      if (t < 1) raf = requestAnimationFrame(tick)
+      if (t < 1) {
+        raf = requestAnimationFrame(tick)
+      } else {
+        setHasAnimated(true)
+      }
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [active, num])
+  }, [active, num, hasAnimated])
   return isNaN(num) ? rawValue : `${display}${suffix}`
 }
 
