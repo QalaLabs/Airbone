@@ -1,0 +1,292 @@
+[
+  {
+    "Category": "CRM & Lead Management",
+    "Item / Topic": "Lead List Latency & Sorting",
+    "Simple Explanation (What Was Reported / Needed)": "Sorting and filtering leads has high loading latency",
+    "Priority": "High",
+    "Status": "Open",
+    "Codebase Component / Module": "CRM Leads Table & Query Service",
+    "Target Files / Paths": "admin/src/app/(dashboard)/leads/page.tsx; admin/src/lib/services/lead.service.ts; admin/src/app/api/v1/leads/route.ts",
+    "Action / Fix Required": "Add database indexes on status and created_at; optimize Prisma pagination to avoid slow queries."
+  },
+  {
+    "Category": "CRM & Lead Management",
+    "Item / Topic": "Active Leads Filter View",
+    "Simple Explanation (What Was Reported / Needed)": "Counselors need a default view showing only active leads instead of cluttering with inactive/closed leads",
+    "Priority": "High",
+    "Status": "Open",
+    "Codebase Component / Module": "CRM Leads Table Filter",
+    "Target Files / Paths": "admin/src/app/(dashboard)/leads/page.tsx; admin/src/lib/services/lead.service.ts",
+    "Action / Fix Required": "Set default status filter to active states (NEW CONTACTED ENGAGED) and exclude terminal states."
+  },
+  {
+    "Category": "CRM & Lead Management",
+    "Item / Topic": "Follow-up Timezone Alignment",
+    "Simple Explanation (What Was Reported / Needed)": "Follow-up date and time pickers display UTC instead of Indian Standard Time",
+    "Priority": "High",
+    "Status": "Open",
+    "Codebase Component / Module": "CRM Follow-up Scheduler",
+    "Target Files / Paths": "admin/src/app/(dashboard)/leads/[id]/page.tsx; admin/src/lib/utils.ts; admin/src/app/api/v1/leads/[id]/follow-up/route.ts",
+    "Action / Fix Required": "Enforce Asia/Kolkata (IST) timezone conversion using date-fns-tz in UI and API payloads."
+  },
+  {
+    "Category": "CRM & Lead Management",
+    "Item / Topic": "Structured Lead Loss Reasons",
+    "Simple Explanation (What Was Reported / Needed)": "Need specific dropdown tags for lost leads (Job Seeker and Not Interested - Reason Not Shared) without requiring mandatory text notes",
+    "Priority": "High",
+    "Status": "Open",
+    "Codebase Component / Module": "CRM Lead Status & Activity Log",
+    "Target Files / Paths": "admin/src/lib/validations/lead.schema.ts; admin/src/app/api/v1/leads/[id]/activities/route.ts",
+    "Action / Fix Required": "Update lostReason enum in Zod schema; make notes optional when status is LOST; show calendar/note popup on Connected/Not Connected."
+  },
+  {
+    "Category": "CRM & Lead Management",
+    "Item / Topic": "Lead Detail Header Layout",
+    "Simple Explanation (What Was Reported / Needed)": "Student contact details should be beside the name in the top header; add 3 distinct timeline buttons",
+    "Priority": "Medium",
+    "Status": "Closed",
+    "Codebase Component / Module": "CRM Lead Detail Header",
+    "Target Files / Paths": "admin/src/app/(dashboard)/leads/[id]/page.tsx; admin/src/components/crm/lead-header.tsx",
+    "Action / Fix Required": "Move contact details into header bar; provide dedicated buttons for Timeline Scoring and Manual Entry."
+  },
+  {
+    "Category": "CRM & Lead Management",
+    "Item / Topic": "Lead Quick Navigation Arrows",
+    "Simple Explanation (What Was Reported / Needed)": "Counselors need previous/next arrows on the lead details page to flip through leads quickly",
+    "Priority": "Medium",
+    "Status": "Open",
+    "Codebase Component / Module": "CRM Lead Detail Navigation",
+    "Target Files / Paths": "admin/src/app/(dashboard)/leads/[id]/page.tsx; admin/src/app/api/v1/leads/route.ts",
+    "Action / Fix Required": "Add previous/next pagination cursor buttons to navigate adjacent leads in current filter."
+  },
+  {
+    "Category": "CRM & Lead Management",
+    "Item / Topic": "Role-Based Assignment Permissions",
+    "Simple Explanation (What Was Reported / Needed)": "Lead assignment should only be accessible to Admin SuperAdmin and Manager",
+    "Priority": "Medium",
+    "Status": "Open",
+    "Codebase Component / Module": "CRM Access Control",
+    "Target Files / Paths": "admin/src/lib/utils/permissions.ts; admin/src/app/api/v1/leads/[id]/assign/route.ts",
+    "Action / Fix Required": "Enforce role verification middleware so basic sales agents cannot reassign leads."
+  },
+  {
+    "Category": "Deals & Pipeline Architecture",
+    "Item / Topic": "Deals vs Admission Funnel Architecture",
+    "Simple Explanation (What Was Reported / Needed)": "No dedicated Opportunity/Deal schema existed; need clarity on whether admission funnel or separate Deals model is used",
+    "Priority": "High",
+    "Status": "Resolved",
+    "Codebase Component / Module": "CRM Deals / Admissions Schema",
+    "Target Files / Paths": "admin/prisma/schema.prisma; admin/src/app/api/v1/crm/deals/route.ts; admin/src/lib/crm/deals.ts",
+    "Action / Fix Required": "Documented existing native admission funnel mapping and structured deal metrics; align schema if dedicated opportunity model is needed."
+  },
+  {
+    "Category": "Deals & Pipeline Architecture",
+    "Item / Topic": "Prospect Visibility in Deals Pipeline",
+    "Simple Explanation (What Was Reported / Needed)": "Leads marked as Prospect should appear in Deals with agreed course batch and fee details plus a revert option",
+    "Priority": "High",
+    "Status": "In Progress",
+    "Codebase Component / Module": "CRM Deals Pipeline & Conversion",
+    "Target Files / Paths": "admin/src/app/(dashboard)/crm/deals/page.tsx; admin/src/app/api/v1/crm/deals/route.ts; admin/src/lib/validations/lead.schema.ts",
+    "Action / Fix Required": "Add course batch and decided fee fields to the prospect conversion modal; add a revert action to push deal back to lead stage."
+  },
+  {
+    "Category": "Admissions & Application Dossier",
+    "Item / Topic": "Immediate Dossier Opening on WON",
+    "Simple Explanation (What Was Reported / Needed)": "Marking a lead as WON should immediately transition to and open the new Admission Application Dossier",
+    "Priority": "High",
+    "Status": "Open",
+    "Codebase Component / Module": "CRM Conversion & Admissions Router",
+    "Target Files / Paths": "admin/src/app/(dashboard)/leads/[id]/page.tsx; admin/src/app/api/v1/leads/[id]/convert/route.ts; admin/src/app/(dashboard)/admissions/[id]/page.tsx",
+    "Action / Fix Required": "On successful WON conversion API response redirect router immediately to /admissions/[id]."
+  },
+  {
+    "Category": "Admissions & Application Dossier",
+    "Item / Topic": "Remaining Balance Column in Dossier",
+    "Simple Explanation (What Was Reported / Needed)": "Add a dedicated column on the left side of remaining balance to track pending student dues",
+    "Priority": "High",
+    "Status": "Open",
+    "Codebase Component / Module": "Admissions Dossier Table",
+    "Target Files / Paths": "admin/src/app/(dashboard)/admissions/page.tsx; admin/src/app/(dashboard)/admissions/[id]/page.tsx; admin/src/app/api/v1/admissions/[id]/route.ts",
+    "Action / Fix Required": "Add remaining balance column and calculation (total_fee minus paid_amount) to dossier UI."
+  },
+  {
+    "Category": "Admissions & Application Dossier",
+    "Item / Topic": "Remove Online Payment Option in Inquiry",
+    "Simple Explanation (What Was Reported / Needed)": "Remove online payment from the dropdown selector inside the application dossier enquiry",
+    "Priority": "Medium",
+    "Status": "Closed",
+    "Codebase Component / Module": "Admissions Payment Dropdown",
+    "Target Files / Paths": "admin/src/app/(dashboard)/admissions/[id]/page.tsx; admin/src/lib/validations/admission.schema.ts",
+    "Action / Fix Required": "Remove online payment option from payment method select menu; keep bank transfer and cash/cheque."
+  },
+  {
+    "Category": "Admissions & Application Dossier",
+    "Item / Topic": "Connect Batch with Admission Dossier",
+    "Simple Explanation (What Was Reported / Needed)": "Ensure student admission dossier links directly to their active training batch",
+    "Priority": "High",
+    "Status": "Resolved",
+    "Codebase Component / Module": "Admissions & LMS Integration",
+    "Target Files / Paths": "admin/prisma/schema.prisma; admin/src/app/api/v1/admissions/[id]/route.ts; admin/src/app/(dashboard)/admissions/[id]/page.tsx",
+    "Action / Fix Required": "Link batchId in Admission record to LMS Batch entity for automated enrollment synchronization."
+  },
+  {
+    "Category": "Fees & Financial Ledger",
+    "Item / Topic": "Fees Ledger Failure",
+    "Simple Explanation (What Was Reported / Needed)": "Fees ledger module encountered errors loading student payment histories",
+    "Priority": "High",
+    "Status": "Resolved",
+    "Codebase Component / Module": "Fee Plans & Payments Service",
+    "Target Files / Paths": "admin/src/app/api/v1/payments/route.ts; admin/src/app/api/v1/fee-plans/route.ts; admin/src/lib/services/payment.service.ts",
+    "Action / Fix Required": "Fix payment calculation service and handle null values on transaction ledger records."
+  },
+  {
+    "Category": "Fees & Financial Ledger",
+    "Item / Topic": "Percentage-Based Fee Structure Mapping",
+    "Simple Explanation (What Was Reported / Needed)": "Fees module needs 3-4 options for adding percentage-based installment structures",
+    "Priority": "Medium",
+    "Status": "Closed",
+    "Codebase Component / Module": "Fee Plans Module",
+    "Target Files / Paths": "admin/src/app/(dashboard)/settings/fee-plans/page.tsx; admin/src/app/api/v1/fee-plans/route.ts; admin/src/lib/services/fee-plan.service.ts",
+    "Action / Fix Required": "Add percentage installment breakdown generator to fee plan creation forms."
+  },
+  {
+    "Category": "Student & User Management",
+    "Item / Topic": "Student Profile Edit Validation Error",
+    "Simple Explanation (What Was Reported / Needed)": "Editing student profiles from dashboard fails with request validation error",
+    "Priority": "High",
+    "Status": "Open",
+    "Codebase Component / Module": "Student Profile Validation",
+    "Target Files / Paths": "admin/src/app/(dashboard)/students/[id]/page.tsx; admin/src/lib/validations/student.schema.ts; admin/src/app/api/v1/students/[id]/route.ts",
+    "Action / Fix Required": "Fix Zod validation schema mismatch for student edit payload (handling optional guardian and address fields)."
+  },
+  {
+    "Category": "Integrations & Automation",
+    "Item / Topic": "Facebook Lead Ads Integration",
+    "Simple Explanation (What Was Reported / Needed)": "Inquiries submitted on Facebook Lead Ads are not configured/syncing into CRM",
+    "Priority": "High",
+    "Status": "Open",
+    "Codebase Component / Module": "Social Lead Webhook Integration",
+    "Target Files / Paths": "admin/src/app/(dashboard)/crm/integrations/facebook/callback/page.tsx; admin/src/app/api/v1/crm/integrations/route.ts; admin/src/app/api/public/leads/route.ts",
+    "Action / Fix Required": "Configure Meta webhook verify token page access token and automated lead parser in public lead endpoint."
+  },
+  {
+    "Category": "Integrations & Automation",
+    "Item / Topic": "Interakt WhatsApp Template Rejection",
+    "Simple Explanation (What Was Reported / Needed)": "WhatsApp automation fails with 400 Bad Request: No approved template found with name 'New Lead WhatsApp Welcome'",
+    "Priority": "High",
+    "Status": "Closed",
+    "Codebase Component / Module": "WhatsApp Automation Service",
+    "Target Files / Paths": "admin/src/lib/events/functions/lead.functions.ts; admin/src/app/api/inngest/route.ts",
+    "Action / Fix Required": "Sync template name on Interakt dashboard; update template identifier and language code in lead welcome function."
+  },
+  {
+    "Category": "Website UI & Navigation",
+    "Item / Topic": "Ctrl+K Modal Toggle Exit",
+    "Simple Explanation (What Was Reported / Needed)": "Pressing Ctrl+K opens the command palette but pressing it again fails to close it",
+    "Priority": "Medium",
+    "Status": "Closed",
+    "Codebase Component / Module": "Global Command Palette",
+    "Target Files / Paths": "admin/src/components/layout/command-palette.tsx",
+    "Action / Fix Required": "Update keyboard event listener to toggle state (setOpen(prev => !prev)) rather than setting true."
+  },
+  {
+    "Category": "Website UI & Navigation",
+    "Item / Topic": "Explore Courses Button Mobile Overlap",
+    "Simple Explanation (What Was Reported / Needed)": "On mobile screens (especially iPhone) Explore Courses overlaps with Enroll Now on first fold",
+    "Priority": "Medium",
+    "Status": "Open",
+    "Codebase Component / Module": "Public Landing Page Hero",
+    "Target Files / Paths": "admin/src/components/cms/public-page-renderer.tsx; admin/src/app/globals.css",
+    "Action / Fix Required": "Adjust responsive flex-wrap margin and z-index on hero CTA button container for mobile breakpoints."
+  },
+  {
+    "Category": "Website UI & Navigation",
+    "Item / Topic": "Mobile Text Overlap & Font Contrast",
+    "Simple Explanation (What Was Reported / Needed)": "Text lines regarding airline uniforms overlap on small screens and About Us 2009-2013 has low background contrast",
+    "Priority": "Medium",
+    "Status": "Open",
+    "Codebase Component / Module": "CMS Block Renderer & Styles",
+    "Target Files / Paths": "admin/src/components/cms/block-renderer.tsx; admin/src/app/globals.css",
+    "Action / Fix Required": "Add minimum line-height and responsive padding; adjust background/text contrast ratio on historical timeline blocks."
+  },
+  {
+    "Category": "Website UI & Navigation",
+    "Item / Topic": "Airborne Advantage Vertical Swipe",
+    "Simple Explanation (What Was Reported / Needed)": "Change horizontal carousel on Airborne Advantage to a vertical single-screen swipe with red indicator",
+    "Priority": "Medium",
+    "Status": "Open",
+    "Codebase Component / Module": "Carousel & Feature Slider",
+    "Target Files / Paths": "admin/src/components/cms/block-renderer.tsx",
+    "Action / Fix Required": "Configure Swiper/Embla carousel to vertical orientation with pagination dot styling in primary red."
+  },
+  {
+    "Category": "Course Catalog & Pricing",
+    "Item / Topic": "Standardized Course Order (1-9)",
+    "Simple Explanation (What Was Reported / Needed)": "Catalog must follow strict sequence: 1. DGCA CPL Ground 2. CPL 3. Cadet Pilot 4. Airline Prep 5. GDPI 6. Compass/Adapt 7. ATPL Ground 8. A320 Simulator FBS 9. Cabin Crew",
+    "Priority": "Medium",
+    "Status": "Open",
+    "Codebase Component / Module": "Course Repository & Navigation",
+    "Target Files / Paths": "admin/src/app/api/public/courses/route.ts; admin/src/components/cms/nav-menu-editor.tsx; admin/prisma/seed_courses.ts",
+    "Action / Fix Required": "Add explicit sortOrder field to courses and order public query and menu links accordingly."
+  },
+  {
+    "Category": "Course Catalog & Pricing",
+    "Item / Topic": "DGCA Terminology Standardization",
+    "Simple Explanation (What Was Reported / Needed)": "Change 'DGCA Approved' to 'DGCA Complied' sitewide except for certified Flying Training Organizations",
+    "Priority": "Medium",
+    "Status": "Closed",
+    "Codebase Component / Module": "Public Website Copy & Course Schema",
+    "Target Files / Paths": "admin/src/lib/repositories/course.repository.ts; admin/prisma/seed_courses.ts",
+    "Action / Fix Required": "Global string update across public templates and database seeds replacing DGCA Approved with DGCA Complied."
+  },
+  {
+    "Category": "Course Catalog & Pricing",
+    "Item / Topic": "Remove Multi-Engine & Add PPL",
+    "Simple Explanation (What Was Reported / Needed)": "Remove Multi-Engine Rating Aviation English and Flight Dispatcher; retain Private Pilot License (PPL)",
+    "Priority": "Medium",
+    "Status": "Open",
+    "Codebase Component / Module": "Course Management & DB",
+    "Target Files / Paths": "admin/src/lib/repositories/course.repository.ts; admin/prisma/seed_courses.ts",
+    "Action / Fix Required": "Unpublish/delete Multi-Engine and obsolete course records; ensure PPL course is active."
+  },
+  {
+    "Category": "Course Catalog & Pricing",
+    "Item / Topic": "Course Pricing & Fee Corrections",
+    "Simple Explanation (What Was Reported / Needed)": "Update fees: Cabin Crew 54k (was 59k); Conversion Flying 5-10 Lakhs (was 5-15L); Airline Prep 1.25L (was 1.5L); GD&PI 30k",
+    "Priority": "Medium",
+    "Status": "Open",
+    "Codebase Component / Module": "Course Fees & Seed Data",
+    "Target Files / Paths": "admin/prisma/seed_courses.ts; admin/scripts/fix-course-fees-prod.mjs; admin/src/app/api/v1/courses/[id]/route.ts",
+    "Action / Fix Required": "Update tuition fee values in database and CMS pricing tables."
+  },
+  {
+    "Category": "Content & Careers",
+    "Item / Topic": "Pilot Job Portal Broken Links",
+    "Simple Explanation (What Was Reported / Needed)": "Job portal recruitment page has broken image links and route errors",
+    "Priority": "Low",
+    "Status": "Closed",
+    "Codebase Component / Module": "Job Portal CMS",
+    "Target Files / Paths": "admin/src/app/(dashboard)/jobs/page.tsx; admin/src/app/api/public/jobs/route.ts; admin/src/lib/storage/supabase.ts",
+    "Action / Fix Required": "Fix static image asset paths and ensure public job listing route handles image fallbacks cleanly."
+  },
+  {
+    "Category": "Content & Careers",
+    "Item / Topic": "Data Compliance Contact Info",
+    "Simple Explanation (What Was Reported / Needed)": "Add Data Compliance Manager contact on policy pages: Deepak Aggarwal (7303017062 data@airborneaviation.in)",
+    "Priority": "Low",
+    "Status": "Closed",
+    "Codebase Component / Module": "Policy Pages & Site Settings",
+    "Target Files / Paths": "admin/src/app/api/public/settings/route.ts; admin/src/components/cms/block-renderer.tsx",
+    "Action / Fix Required": "Embed compliance contact block in footer policy terms and privacy pages."
+  },
+  {
+    "Category": "Content & Careers",
+    "Item / Topic": "Lead Magnet Question Bank & E-Books",
+    "Simple Explanation (What Was Reported / Needed)": "Add DGCA question bank and CPL training guides as lead magnets to capture prospective student contacts",
+    "Priority": "Low",
+    "Status": "Open",
+    "Codebase Component / Module": "Resources & Download Tracking",
+    "Target Files / Paths": "admin/src/app/api/public/resources/route.ts; admin/src/app/api/public/resource-download/route.ts",
+    "Action / Fix Required": "Add resource download forms requiring name email and phone before providing PDF download links."
+  }
+]
