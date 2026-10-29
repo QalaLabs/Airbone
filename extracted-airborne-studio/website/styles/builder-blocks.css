@@ -1,0 +1,46 @@
+/* ==============================================================================
+   Airborne Studio — Visual Website Builder Consumer Styles
+   ============================================================================== */
+
+:root {
+  --builder-primary: #2563EB;
+  --builder-primary-hover: #1D4ED8;
+  --builder-navy: #0F172A;
+  --builder-paper: #F8FAFC;
+  --builder-accent: #DB241E;
+  --builder-gold: #D97706;
+}
+
+/* Base block container transitions */
+.builder-page-flow section {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Embedded responsive iframe containers */
+.builder-video-wrap {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background-color: #000;
+}
+
+.builder-video-wrap iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Card hover lifts */
+.builder-card-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.builder-card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+}

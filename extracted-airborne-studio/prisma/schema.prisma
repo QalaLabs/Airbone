@@ -1,0 +1,223 @@
+// ==============================================================================
+// Airborne Studio — Visual Website Builder Database Schema (Prisma)
+// ==============================================================================
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ─── ENUMS ───────────────────────────────────────────────────────────────────
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  SCHEDULED
+  ARCHIVED
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  CAMPUS_MANAGER
+  ADMISSIONS_COUNSELOR
+  INSTRUCTOR
+  STUDENT
+}
+
+// ─── MULTI-TENANCY CORE (Optional / Standard) ────────────────────────────────
+
+model Organization {
+  id            String         @id @default(uuid()) @db.Uuid
+  name          String         @db.VarChar(255)
+  slug          String         @unique @db.VarChar(100)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  pages         Page[]         @relation("OrgPages")
+  contentBlocks ContentBlock[] @relation("OrgContentBlocks")
+  mediaAssets   MediaAsset[]   @relation("OrgMediaAssets")
+  users         User[]
+
+  @@map("organizations")
+}
+
+model User {
+  id               String        @id @default(uuid()) @db.Uuid
+  orgId            String        @db.Uuid
+  name             String        @db.VarChar(255)
+  email            String        @unique @db.VarChar(255)
+  role             UserRole      @default(ADMIN)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  org              Organization  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  createdPages     Page[]        @relation("PageCreator")
+  publishedPages   Page[]        @relation("PagePublisher")
+  pageVersions     PageVersion[] @relation("PageVersionCreator")
+  contentBlocks    ContentBlock[] @relation("ContentBlockCreator")
+  mediaAssets      MediaAsset[]  @relation("MediaAssetUploader")
+
+  @@index([orgId, email])
+  @@map("users")
+}
+
+// ─── VISUAL BUILDER CORE: PAGES & SECTIONS ───────────────────────────────────
+
+model Page {
+  id          String        @id @default(uuid()) @db.Uuid
+  orgId       String        @db.Uuid
+  title       String        @db.VarChar(255)
+  slug        String        @db.VarChar(255)
+  description String?       @db.Text
+  status      ContentStatus @default(DRAFT)
+  publishedAt DateTime?
+  scheduledAt DateTime?
+  publishedBy String?       @db.Uuid
+  seoTitle    String?       @db.VarChar(255)
+  seoDesc     String?       @db.VarChar(500)
+  seoKeywords String[]
+  ogImage     String?       @db.Text
+  metadata    Json          @default("{}") // Stores studioDraft: { sections: [...] }
+  version     Int           @default(1)
+  createdBy   String?       @db.Uuid
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  org         Organization  @relation("OrgPages", fields: [orgId], references: [id], onDelete: Cascade)
+  creator     User?         @relation("PageCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  publisher   User?         @relation("PagePublisher", fields: [publishedBy], references: [id], onDelete: SetNull)
+  sections    PageSection[]
+  versions    PageVersion[]
+
+  @@unique([orgId, slug])
+  @@index([orgId, status])
+  @@index([orgId, createdAt(sort: Desc)])
+  @@map("pages")
+}
+
+model PageSection {
+  id        String   @id @default(uuid()) @db.Uuid
+  orgId     String   @db.Uuid
+  pageId    String   @db.Uuid
+  name      String?  @db.VarChar(255)
+  order     Int      @default(0)
+  isVisible Boolean  @default(true)
+  settings  Json     @default("{}") // background, padding, maxWidth
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  page      Page        @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  blocks    PageBlock[]
+
+  @@index([pageId, order])
+  @@map("page_sections")
+}
+
+model PageBlock {
+  id          String       @id @default(uuid()) @db.Uuid
+  orgId       String       @db.Uuid
+  sectionId   String       @db.Uuid
+  blockTypeId String       @db.Uuid
+  order       Int          @default(0)
+  props       Json         @default("{}")
+  isVisible   Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  section     PageSection  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  blockType   ContentBlock @relation(fields: [blockTypeId], references: [id])
+
+  @@index([sectionId, order])
+  @@map("page_blocks")
+}
+
+model ContentBlock {
+  id           String      @id @default(uuid()) @db.Uuid
+  orgId        String      @db.Uuid
+  type         String      @db.VarChar(100) // "hero", "features", "faq", "stats", etc.
+  name         String      @db.VarChar(255)
+  description  String?     @db.Text
+  schema       Json        @default("{}")
+  defaultProps Json        @default("{}")
+  category     String?     @db.VarChar(100)
+  isGlobal     Boolean     @default(false)
+  createdBy    String?     @db.Uuid
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  org          Organization @relation("OrgContentBlocks", fields: [orgId], references: [id], onDelete: Cascade)
+  creator      User?        @relation("ContentBlockCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  pageBlocks   PageBlock[]
+
+  @@unique([orgId, type])
+  @@index([orgId, category])
+  @@map("content_blocks")
+}
+
+// ─── IMMUTABLE VERSION HISTORY & AUDIT ────────────────────────────────────────
+
+model PageVersion {
+  id          String        @id @default(uuid()) @db.Uuid
+  orgId       String        @db.Uuid
+  pageId      String        @db.Uuid
+  version     Int
+  title       String        @db.VarChar(255)
+  snapshot    Json          // Complete layout snapshot with all sections and blocks
+  status      ContentStatus
+  publishedAt DateTime?
+  notes       String?       @db.Text
+  createdBy   String?       @db.Uuid
+  createdAt   DateTime      @default(now())
+
+  page        Page          @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  creator     User?         @relation("PageVersionCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@unique([pageId, version])
+  @@index([pageId, createdAt(sort: Desc)])
+  @@map("page_versions")
+}
+
+// ─── MEDIA ASSETS (Optional / Integrated with Builder) ─────────────────────────
+
+model MediaAsset {
+  id           String       @id @default(uuid()) @db.Uuid
+  orgId        String       @db.Uuid
+  name         String       @db.VarChar(255)
+  originalName String?      @db.VarChar(255)
+  mimeType     String       @db.VarChar(100)
+  sizeBytes    Int?
+  fileUrl      String       @db.Text
+  isActive     Boolean      @default(true)
+  uploadedBy   String?      @db.Uuid
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  org          Organization @relation("OrgMediaAssets", fields: [orgId], references: [id], onDelete: Cascade)
+  uploader     User?        @relation("MediaAssetUploader", fields: [uploadedBy], references: [id], onDelete: SetNull)
+  usages       MediaUsage[]
+
+  @@index([orgId, isActive])
+  @@index([orgId, createdAt(sort: Desc)])
+  @@map("media_assets")
+}
+
+model MediaUsage {
+  id         String     @id @default(uuid()) @db.Uuid
+  orgId      String     @db.Uuid
+  assetId    String     @db.Uuid
+  entityType String     @db.VarChar(100) // "page", "block"
+  entityId   String     @db.VarChar(255)
+  fieldName  String?    @db.VarChar(100)
+  createdAt  DateTime   @default(now())
+
+  asset      MediaAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@unique([assetId, entityType, entityId, fieldName])
+  @@index([assetId])
+  @@map("media_usages")
+}
