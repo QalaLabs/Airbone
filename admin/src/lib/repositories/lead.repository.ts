@@ -137,7 +137,13 @@ const LEAD_LIST_SELECT = {
   campus: { select: { id: true, name: true, city: true } },
   admissions: {
     where: { stage: { notIn: ["CANCELLED", "DROPPED"] } },
-    select: { id: true },
+    select: { id: true, applicationNo: true, stage: true },
+    orderBy: { createdAt: "desc" },
+    take: 1,
+  },
+  activities: {
+    where: { activityType: "MEETING" },
+    select: { id: true, activityType: true, metadata: true, dueAt: true, completedAt: true, title: true },
     orderBy: { createdAt: "desc" },
     take: 1,
   },

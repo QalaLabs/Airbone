@@ -84,16 +84,16 @@ export function VisualCanvas({
 }: VisualCanvasProps) {
   const sections = (page.sections || []).filter((s: any) => previewMode ? s.isVisible !== false : true);
 
-  // Device frame styles
+  // Device frame styles with natural height, no clipping
   const frameWidthClass = {
-    desktop: "w-full",
-    tablet: "w-[768px] mx-auto shadow-2xl rounded-2xl border-4 border-slate-700/80 my-6 bg-white overflow-hidden",
-    mobile: "w-[375px] mx-auto shadow-2xl rounded-3xl border-8 border-slate-800 my-6 bg-white overflow-hidden",
+    desktop: "w-full max-w-6xl mx-auto shadow-2xl rounded-xl bg-white overflow-visible transition-all duration-300",
+    tablet: "w-[768px] mx-auto shadow-2xl rounded-2xl border-4 border-slate-700/80 my-6 bg-white overflow-visible transition-all duration-300",
+    mobile: "w-[375px] mx-auto shadow-2xl rounded-3xl border-8 border-slate-800 my-6 bg-white overflow-visible transition-all duration-300",
   }[device];
 
   return (
-    <div className="flex-1 overflow-y-auto bg-slate-950/90 p-4 md:p-8 flex flex-col items-center min-h-full">
-      <div className={`transition-all duration-300 bg-white text-slate-900 shadow-xl ${frameWidthClass}`}>
+    <div className="flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden bg-slate-950/90 p-4 md:p-8 flex flex-col items-center w-full">
+      <div className={`text-slate-900 ${frameWidthClass}`}>
         {/* Canvas Header / Page Title Banner (optional preview banner) */}
         {!previewMode && (
           <div className="bg-slate-100 border-b border-slate-200 px-6 py-2.5 flex items-center justify-between text-xs text-slate-600 font-medium">
@@ -167,6 +167,7 @@ export function VisualCanvas({
 
               {/* Section Outline Container */}
               <section
+                id={`canvas-sec-${section.id}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   onSelectSection(section.id);
@@ -662,6 +663,129 @@ function CanvasBlockRender({ type, props }: { type: string; props: any }) {
           </div>
         </div>
       );
+
+    case "mentor_card":
+      return (
+        <div className="py-4">
+          <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-[#001f3f] to-[#001529] text-white border border-[#D8A027]/30 shadow-xl space-y-3">
+            {props.heading && (
+              <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#D8A027]">
+                {props.heading}
+              </span>
+            )}
+            <h3 className="text-xl sm:text-2xl font-black uppercase text-white leading-tight">
+              {props.subheading || props.name || props.instructorName || "Airline Pilot Mentorship"}
+            </h3>
+            {(props.instructorName || props.name) && (
+              <div className="pt-2 flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-[#D8A027]/20 border border-[#D8A027]/40 flex items-center justify-center font-bold text-[#D8A027] text-sm">
+                  ✈
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-white">{props.instructorName || props.name}</h4>
+                  <p className="text-xs text-[#D8A027]">{props.role || "Chief Flight Instructor"}</p>
+                </div>
+              </div>
+            )}
+            {props.experience && (
+              <p className="text-xs text-white/70 font-semibold">{props.experience}</p>
+            )}
+            {props.bio && (
+              <p className="text-xs text-white/80 leading-relaxed pt-1">{props.bio}</p>
+            )}
+          </div>
+        </div>
+      );
+
+    case "campus_walkthrough": {
+      const features = Array.isArray(props.features) ? props.features : [];
+      return (
+        <div className="py-4 space-y-4">
+          <div className="text-center space-y-1">
+            <h3 className="text-xl sm:text-2xl font-black uppercase text-inherit">
+              {props.title || "Modern Training Academy"}
+            </h3>
+            {props.subtitle && <p className="text-xs opacity-75">{props.subtitle}</p>}
+          </div>
+          {features.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto">
+              {features.map((feat: any, idx: number) => (
+                <div key={idx} className="flex items-center gap-2 p-3 rounded-lg border border-black/10 bg-white/60 shadow-sm text-xs font-semibold">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                  <span>{typeof feat === "string" ? feat : feat.title || JSON.stringify(feat)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    case "pricing_table": {
+      const includes = Array.isArray(props.includes) ? props.includes : [];
+      return (
+        <div className="py-4 max-w-lg mx-auto">
+          <div className="p-6 rounded-2xl border-2 border-red-500/30 bg-white shadow-xl space-y-4">
+            <div className="text-center space-y-1">
+              <span className="text-[10px] font-black uppercase tracking-wider text-[#DB241E] bg-red-50 px-2.5 py-0.5 rounded">
+                Official Tuition
+              </span>
+              <h3 className="text-lg font-black uppercase text-slate-900">{props.courseName || "Program Fee"}</h3>
+            </div>
+            <div className="flex items-center justify-center gap-3 py-2 border-y border-slate-100">
+              {props.regularFee && <span className="text-sm line-through text-slate-400 font-bold">{props.regularFee}</span>}
+              <span className="text-2xl font-black text-[#DB241E]">{props.scholarshipFee || props.regularFee || "₹50,000"}</span>
+            </div>
+            {props.batchStarts && (
+              <p className="text-xs text-center text-slate-600 font-semibold">Batch: {props.batchStarts}</p>
+            )}
+            {includes.length > 0 && (
+              <ul className="space-y-1.5 text-xs text-slate-600 pt-2">
+                {includes.map((inc: any, i: number) => (
+                  <li key={i} className="flex items-center gap-2">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-[#DB241E] shrink-0" />
+                    <span>{typeof inc === "string" ? inc : inc.title}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    case "two_column":
+      return (
+        <div className="py-4 grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="p-5 rounded-xl border border-black/10 bg-white/50 shadow-sm space-y-2">
+            <h4 className="text-base font-bold uppercase text-inherit">{props.leftHeading || "Feature One"}</h4>
+            <p className="text-xs opacity-75 leading-relaxed">{props.leftBody || "Content copy for column 1."}</p>
+          </div>
+          <div className="p-5 rounded-xl border border-black/10 bg-white/50 shadow-sm space-y-2">
+            <h4 className="text-base font-bold uppercase text-inherit">{props.rightHeading || "Feature Two"}</h4>
+            <p className="text-xs opacity-75 leading-relaxed">{props.rightBody || "Content copy for column 2."}</p>
+          </div>
+        </div>
+      );
+
+    case "three_column": {
+      const cards = Array.isArray(props.cards) ? props.cards : [];
+      return (
+        <div className="py-4 space-y-4">
+          {props.heading && (
+            <h3 className="text-xl sm:text-2xl font-black uppercase text-inherit text-center">{props.heading}</h3>
+          )}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {cards.map((cd: any, idx: number) => (
+              <div key={idx} className="p-5 rounded-xl border border-black/10 bg-white/60 shadow-sm space-y-2">
+                <h4 className="text-sm font-bold uppercase text-inherit">{cd.title}</h4>
+                <p className="text-xs opacity-75 leading-relaxed">{cd.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
 
     default:
       return (

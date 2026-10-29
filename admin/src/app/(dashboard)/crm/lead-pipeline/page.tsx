@@ -10,6 +10,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  useDroppable,
   type DragStartEvent,
   type DragEndEvent,
 } from "@dnd-kit/core";
@@ -194,7 +195,7 @@ function getMeetingSummary(lead: LeadRecord): { title: string; mode: string; dat
   const meeting = (lead.activities ?? []).find((a) => a.activityType === "MEETING");
   if (!meeting) return null;
   const mode = readMeetingMode(meeting.metadata);
-  const modeLabel = mode ? MEETING_MODE_LABELS[mode] : "Meeting";
+  const modeLabel = (mode && MEETING_MODE_LABELS[mode]) ? MEETING_MODE_LABELS[mode] : "Meeting";
   return {
     title: meeting.title || modeLabel,
     mode: modeLabel,
@@ -279,7 +280,7 @@ function LeadPipelineCard({
       {/* Meeting info badge if present */}
       {meetingInfo && (
         <div className="flex items-center gap-1.5 text-[10px] font-semibold text-purple-300 bg-purple-500/10 border border-purple-500/20 rounded-md px-2 py-1">
-          {meetingInfo.mode.includes("Online") ? (
+          {meetingInfo.mode?.includes("Online") ? (
             <Video className="h-3 w-3 text-purple-400 shrink-0" />
           ) : (
             <MapPin className="h-3 w-3 text-purple-400 shrink-0" />
@@ -294,9 +295,13 @@ function LeadPipelineCard({
         <div className="flex items-center justify-between text-[10px] font-bold text-teal-300 bg-teal-500/10 border border-teal-500/20 rounded-md px-2 py-1">
           <span className="flex items-center gap-1">
             <ShieldCheck className="h-3 w-3 text-teal-400" />
-            {admission.applicationNo}
+            {admission.applicationNo ?? "Admission"}
           </span>
-          <span className="text-[9px] text-teal-400/80 uppercase">{admission.stage.replace(/_/g, " ")}</span>
+          {admission.stage && (
+            <span className="text-[9px] text-teal-400/80 uppercase">
+              {String(admission.stage).replace(/_/g, " ")}
+            </span>
+          )}
         </div>
       )}
 
@@ -355,7 +360,7 @@ function PipelineColumn({
   canDelete?: boolean;
   onDelete?: (lead: LeadRecord) => void;
 }) {
-  const { setNodeRef } = useSortable({ id: column.id });
+  const { setNodeRef } = useDroppable({ id: column.id });
 
   return (
     <div className="flex flex-col min-w-[310px] max-w-[310px] shrink-0">
@@ -402,10 +407,15 @@ export default function LeadPipelinePage() {
   const [deleteTarget, setDeleteTarget] = React.useState<LeadRecord | null>(null);
   const [deleting, setDeleting] = React.useState(false);
 
+  const [mounted, setMounted] = React.useState(false);
   const [leads, setLeads] = React.useState<LeadRecord[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [search, setSearch] = React.useState("");
   const [activeId, setActiveId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleDeleteLead = async () => {
     if (!deleteTarget) return;
@@ -459,13 +469,15 @@ export default function LeadPipelinePage() {
 
   const fetchLeads = React.useCallback(async () => {
     try {
-      // CRM-07: the pipeline must show every open lead. The API caps a page at
-      // 100 rows, so walk pages until a short page is returned (hard-capped to
-      // avoid an unbounded loop if the server misbehaves).
-      const collected = await collectAllPages<LeadRecord>((page, limit) =>
-        apiFetch<LeadRecord[]>(
-          `/leads?limit=${limit}&page=${page}&sortBy=updatedAt&sortDir=desc`,
-        ),
+      // CRM-07: the pipeline must show every open active lead. The API caps a page at
+      // 100 rows, so walk pages until a short page is returned (bounded to 10 pages).
+      const collected = await collectAllPages<LeadRecord>(
+        (page, limit) =>
+          apiFetch<LeadRecord[]>(
+            `/leads?limit=${limit}&page=${page}&isActive=true&sortBy=updatedAt&sortDir=desc`,
+          ),
+        100,
+        10,
       );
       const seen = new Set<string>();
       const deduped = collected.filter((lead) => {
@@ -741,7 +753,7 @@ export default function LeadPipelinePage() {
         </div>
       </div>
 
-      {loading ? (
+      {!mounted || loading ? (
         <div className="flex gap-5 overflow-x-auto pb-6">
           {COLUMNS.map((col) => (
             <div key={col.id} className="min-w-[310px] space-y-3">
