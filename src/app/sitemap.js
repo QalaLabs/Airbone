@@ -2,6 +2,9 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { execSync } from 'node:child_process'
 import { fetchPublic } from '@/lib/adminApi'
+import { mergeBlogPosts } from '@/lib/cms/blogCatalog.js'
+
+export const revalidate = 60
 
 const STATIC_COURSE_SLUGS = [
   'commercial-pilot-license-cpl',
@@ -121,9 +124,12 @@ export default async function sitemap() {
   }))
 
   let dynamicCourseRoutes = []
-  let blogRoutes = FALLBACK_BLOG_SLUGS.map((slug) => ({
-    url: `${baseUrl}/blog/${slug}`,
-    lastModified: getRouteLastMod(`src/app/blog/${slug}/page.jsx`),
+  let blogRoutes = mergeBlogPosts([]).map((post) => ({
+    url: `${baseUrl}/blog/${post.slug}`,
+    lastModified: getRouteLastMod(
+      `src/app/blog/${post.slug}/page.jsx`,
+      post.updatedAt || post.publishedAt || getGitOrFileDate('src/app/blog/[slug]/page.jsx')
+    ),
     changeFrequency: 'monthly',
     priority: 0.7,
   }))
@@ -131,7 +137,7 @@ export default async function sitemap() {
   try {
     const [courses, blogs] = await Promise.all([
       fetchPublic('/courses', { limit: 100 }),
-      fetchPublic('/blogs', { limit: 100 }),
+      fetchPublic('/blogs', { limit: 200 }),
     ])
 
     if (Array.isArray(courses)) {
@@ -160,34 +166,18 @@ export default async function sitemap() {
         }))
     }
 
-    if (Array.isArray(blogs)) {
-      const seen = new Set()
-      blogRoutes = blogs
-        .map((blog) => ({
-          slug: blog.slug ?? blog.id,
-          publishedAt: blog.publishedAt,
-        }))
-        .filter(({ slug }) => slug && !seen.has(slug) && seen.add(slug))
-        .map(({ slug, publishedAt }) => ({
-          url: `${baseUrl}/blog/${slug}`,
-          lastModified: getRouteLastMod(
-            `src/app/blog/${slug}/page.jsx`,
-            publishedAt || getGitOrFileDate('src/app/blog/[slug]/page.jsx')
-          ),
-          changeFrequency: 'monthly',
-          priority: 0.7,
-        }))
-      if (blogRoutes.length === 0) {
-        blogRoutes = FALLBACK_BLOG_SLUGS.map((slug) => ({
-          url: `${baseUrl}/blog/${slug}`,
-          lastModified: getRouteLastMod(`src/app/blog/${slug}/page.jsx`),
-          changeFrequency: 'monthly',
-          priority: 0.7,
-        }))
-      }
-    }
+    const allBlogs = mergeBlogPosts(Array.isArray(blogs) ? blogs : [])
+    blogRoutes = allBlogs.map((post) => ({
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified: getRouteLastMod(
+        `src/app/blog/${post.slug}/page.jsx`,
+        post.updatedAt || post.publishedAt || getGitOrFileDate('src/app/blog/[slug]/page.jsx')
+      ),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    }))
   } catch {
-    // Admin API unavailable — sitemap generates with static routes only
+    // Admin API unavailable — sitemap generates with static and fallback blog routes
   }
 
   return [...staticRoutes, ...staticCourseRoutes, ...dynamicCourseRoutes, ...blogRoutes]

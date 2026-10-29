@@ -3,8 +3,10 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import Breadcrumb from '@/components/Breadcrumb'
 import JsonLd from '@/components/JsonLd'
+import BlogCategoryFilter from '@/components/cms/BlogCategoryFilter'
 import { buildBlogIndexGraph } from '@/lib/schema'
 import { fetchPublic } from '@/lib/adminApi'
+import { mergeBlogPosts, CATEGORIES } from '@/lib/cms/blogCatalog.js'
 import { DEFAULT_COURSE_REVIEWS, PARENT_TESTIMONIALS } from '@/components/CourseReviews'
 
 export const metadata = {
@@ -17,42 +19,13 @@ export const revalidate = 60
 
 const blogIndexGraph = buildBlogIndexGraph()
 
-/* OFFLINE-ONLY fallback — mirrors the pre-Section-6 blog list exactly.
-   Admin Resource records (DOCUMENT / category=blog, PUBLISHED) are the
-   canonical blog catalog (BD-4: no separate Blog model). */
-const LEGACY_POSTS = [
-  {
-    slug: 'how-to-become-pilot-india',
-    title: 'How to Become a Pilot in India After Class 12',
-    excerpt: 'Step-by-step roadmap from Class 12 to CPL - medicals, ground school, flying hours, and airline entry.',
-  },
-  {
-    slug: 'pilot-training-cost-india',
-    title: 'Pilot Training Cost in India - Full Breakdown',
-    excerpt: 'Transparent cost ranges for ground school, flying training, medicals, and exams.',
-  },
-  {
-    slug: 'dgca-ground-school-guide',
-    title: 'DGCA Ground School Guide',
-    excerpt: 'What DGCA CPL subjects cover, how long ground school takes, and how to prepare for first-attempt passes.',
-  },
-  {
-    slug: 'pilot-salary-india',
-    title: 'Pilot Salary in India',
-    excerpt: 'Cadet to commander compensation bands across major Indian carriers.',
-  },
-]
+export default async function BlogIndexPage({ searchParams }) {
+  const resolvedParams = await searchParams
+  const initialCategory = resolvedParams?.category || 'All'
 
-export default async function BlogIndexPage() {
-  // Canonical: Admin PUBLISHED blog Resources (title/description). Fallback: legacy list.
+  // Fetch published CMS blogs from Admin API and merge with legacy articles
   const apiBlogs = await fetchPublic('/blogs', { limit: 100 })
-  const posts = Array.isArray(apiBlogs) && apiBlogs.length > 0
-    ? apiBlogs.map((b) => ({
-        slug: b.slug,
-        title: b.title,
-        excerpt: b.description || 'Read the full guide.',
-      }))
-    : LEGACY_POSTS
+  const posts = mergeBlogPosts(Array.isArray(apiBlogs) ? apiBlogs : [])
 
   // Canonical: Admin APPROVED testimonials; curated set only when the API is unavailable/empty.
   const apiReviews = await fetchPublic('/testimonials', { limit: 6 })
@@ -78,33 +51,15 @@ export default async function BlogIndexPage() {
             Aviation <em style={{ color: 'var(--gold)', fontStyle: 'normal' }}>Blog</em>
           </h1>
           <p style={{ marginTop: '1rem', color: 'rgba(33,33,33,0.65)', maxWidth: '40rem', lineHeight: 1.7 }}>
-            Practical guides for aspirants and parents - written from Dwarka training floor experience.
+            Practical guides for aspirants and parents — written from Dwarka training floor experience.
           </p>
 
-          <div style={{ display: 'grid', gap: '1.25rem', marginTop: '3rem' }}>
-            {posts.map((post) => (
-              <Link
-                key={post.slug}
-                href={`/blog/${post.slug}`}
-                style={{
-                  display: 'block',
-                  background: '#fff',
-                  border: '1px solid rgba(0,39,76,0.08)',
-                  borderRadius: '4px',
-                  padding: '1.5rem 1.75rem',
-                  textDecoration: 'none',
-                  boxShadow: '0 4px 20px rgba(0,39,76,0.04)',
-                }}
-              >
-                <h2 style={{ margin: 0, fontFamily: 'var(--font-h)', fontSize: '1.15rem', color: 'var(--navy)', fontWeight: 800 }}>
-                  {post.title}
-                </h2>
-                <p style={{ margin: '0.65rem 0 0', color: 'rgba(33,33,33,0.6)', fontSize: '0.92rem', lineHeight: 1.6 }}>
-                  {post.excerpt}
-                </p>
-              </Link>
-            ))}
-          </div>
+          {/* Interactive Category Filter Pills and Unified Article Grid */}
+          <BlogCategoryFilter
+            categories={CATEGORIES}
+            initialCategory={initialCategory}
+            posts={posts}
+          />
 
           <section style={{ marginTop: '4rem' }} aria-labelledby="reviews-heading">
             <h2 id="reviews-heading" style={{ fontFamily: 'var(--font-h)', fontSize: '1.35rem', fontWeight: 800, color: 'var(--navy)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>

@@ -42,6 +42,7 @@
   "exclude": [
     "node_modules",
     "admin",
+    "extracted-airborne-studio",
     "dist",
     "scratch",
     "scripts",

@@ -29,6 +29,7 @@ import {
   ChevronDown,
   Trash2,
   Clock,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +57,8 @@ import {
 } from "./component-registry";
 import { VisualCanvas } from "./visual-canvas";
 import { RightInspector } from "./right-inspector";
+import { ContentMode } from "./content-mode";
+import { CANONICAL_PAGES } from "@/lib/cms/canonical-pages";
 import type { PageModel, PageStatus, PageVersionModel } from "@/types";
 
 interface AirborneStudioProps {
@@ -102,11 +105,15 @@ export function AirborneStudio({ pageId }: AirborneStudioProps) {
     future: [],
   });
 
+  const [viewMode, setViewMode] = React.useState<"visual" | "content">("visual");
   const [saving, setSaving] = React.useState(false);
   const [isDirty, setIsDirty] = React.useState(false);
   const [device, setDevice] = React.useState<"desktop" | "tablet" | "mobile">("desktop");
   const [previewMode, setPreviewMode] = React.useState(false);
-  const [leftTab, setLeftTab] = React.useState<"widgets" | "layers">("widgets");
+  const [leftTab, setLeftTab] = React.useState<"pages" | "widgets" | "layers" | "content">("pages");
+  const [pageSearch, setPageSearch] = React.useState("");
+  const [pageFilterStatus, setPageFilterStatus] = React.useState<string>("ALL");
+  const [topDropdownSearch, setTopDropdownSearch] = React.useState("");
   const [componentCategory, setComponentCategory] = React.useState<string>("all");
   const [componentSearch, setComponentSearch] = React.useState("");
   const [publishDialogOpen, setPublishDialogOpen] = React.useState(false);
@@ -121,16 +128,127 @@ export function AirborneStudio({ pageId }: AirborneStudioProps) {
     | null
   >(null);
 
-  // Initialize present from server page
+  // Filtered pages for the Pages Navigator
+  const filteredPages = React.useMemo(() => {
+    return allPages.filter((p: any) => {
+      const matchSearch =
+        !pageSearch ||
+        p.title.toLowerCase().includes(pageSearch.toLowerCase()) ||
+        p.slug.toLowerCase().includes(pageSearch.toLowerCase());
+      const matchStatus = pageFilterStatus === "ALL" || p.status === pageFilterStatus;
+      return matchSearch && matchStatus;
+    });
+  }, [allPages, pageSearch, pageFilterStatus]);
+
+  // Initialize present from server page and ensure full section/block editability
   React.useEffect(() => {
-    if (initialPage && !history.present) {
+    if (initialPage && (!history.present || history.present.id !== initialPage.id)) {
+      const cloned = structuredClone(initialPage);
+      const draftSections = (cloned.metadata as Record<string, any>)?.studioDraft?.sections;
+
+      if (Array.isArray(draftSections) && draftSections.length > 0) {
+        cloned.sections = draftSections;
+      } else if (cloned.sections && cloned.sections.length > 2) {
+        // Normalize relational sections & blocks so type and props are directly accessible and editable
+        cloned.sections = cloned.sections.map((s: any, sIdx: number) => ({
+          id: s.id || `sec-${sIdx + 1}`,
+          name: s.name || `Section ${sIdx + 1}`,
+          order: s.order ?? sIdx,
+          isVisible: s.isVisible !== false,
+          settings: s.settings || { background: "white", padding: "normal", maxWidth: "standard" },
+          blocks: (s.blocks || []).map((b: any, bIdx: number) => ({
+            id: b.id || `blk-${sIdx + 1}-${bIdx + 1}`,
+            type: b.type || b.blockType?.type || "text",
+            order: b.order ?? bIdx,
+            props: b.props || {},
+            isVisible: b.isVisible !== false,
+            style: b.style || {},
+          })),
+        }));
+      } else {
+        // Check if there is a canonical template matching this slug
+        const canonical = CANONICAL_PAGES.find((c) => c.slug === cloned.slug);
+        if (canonical) {
+          cloned.sections = canonical.sections.map((sec, sIdx) => ({
+            id: `sec-${cloned.slug}-${sIdx + 1}`,
+            name: sec.name,
+            order: sIdx,
+            isVisible: true,
+            settings: sec.settings || { background: "white", padding: "normal", maxWidth: "standard" },
+            blocks: sec.blocks.map((b, bIdx) => ({
+              id: `blk-${cloned.slug}-${sIdx + 1}-${bIdx + 1}`,
+              type: b.type,
+              blockTypeId: b.type,
+              order: bIdx,
+              props: b.props,
+              isVisible: true,
+            })),
+          })) as any;
+        } else if (cloned.sections && cloned.sections.length > 0) {
+          cloned.sections = cloned.sections.map((s: any, sIdx: number) => ({
+            id: s.id || `sec-${sIdx + 1}`,
+            name: s.name || `Section ${sIdx + 1}`,
+            order: s.order ?? sIdx,
+            isVisible: s.isVisible !== false,
+            settings: s.settings || { background: "white", padding: "normal", maxWidth: "standard" },
+            blocks: (s.blocks || []).map((b: any, bIdx: number) => ({
+              id: b.id || `blk-${sIdx + 1}-${bIdx + 1}`,
+              type: b.type || b.blockType?.type || "text",
+              order: b.order ?? bIdx,
+              props: b.props || {},
+              isVisible: b.isVisible !== false,
+              style: b.style || {},
+            })),
+          }));
+        } else {
+          // Default editable starter section
+          cloned.sections = [
+            {
+              id: `sec-${cloned.id}-1`,
+              name: "Hero Section",
+              order: 0,
+              isVisible: true,
+              settings: { background: "navy", padding: "spacious", maxWidth: "standard" },
+              blocks: [
+                {
+                  id: `blk-${cloned.id}-1`,
+                  type: "hero",
+                  order: 0,
+                  isVisible: true,
+                  props: {
+                    badge: "✈️ WELCOME TO AIRBORNE",
+                    heading: cloned.title || "Inspiring Aviation Excellence",
+                    subheading: cloned.description || "Start designing this page with Airborne Studio components.",
+                    ctaText: "Get Started",
+                    ctaLink: "#contact",
+                  },
+                },
+              ],
+            },
+          ] as any;
+        }
+      }
+
       setHistory({
         past: [],
-        present: structuredClone(initialPage),
+        present: cloned,
         future: [],
       });
+      setIsDirty(false);
+      setSelection(null);
     }
   }, [initialPage, history.present]);
+
+  const handleLocateSection = React.useCallback((sectionId: string) => {
+    setViewMode("visual");
+    setSelection({ type: "section", sectionId });
+    setTimeout(() => {
+      const el = document.getElementById(`canvas-sec-${sectionId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 120);
+  }, []);
 
   const page = history.present;
 
@@ -565,7 +683,7 @@ export function AirborneStudio({ pageId }: AirborneStudioProps) {
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="flex items-center gap-2 max-w-[260px] text-left hover:bg-white/5 p-1 rounded-md transition-colors"
+                className="flex items-center gap-2 max-w-[280px] text-left hover:bg-white/5 p-1.5 rounded-md transition-colors border border-transparent hover:border-white/10"
               >
                 <div className="truncate">
                   <div className="flex items-center gap-1.5">
@@ -586,20 +704,65 @@ export function AirborneStudio({ pageId }: AirborneStudioProps) {
                 <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-64 glass-panel border-white/10 bg-slate-900/95 text-white">
-              <div className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                Switch Page
+            <DropdownMenuContent align="start" className="w-80 glass-panel border-white/10 bg-slate-900/95 text-white max-h-[460px] overflow-y-auto">
+              <div className="p-2 border-b border-white/10 space-y-2 sticky top-0 bg-slate-900/95 z-10">
+                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <span>Switch Page ({allPages.length})</span>
+                  <Link href="/cms/builder" className="text-primary hover:underline flex items-center gap-1">
+                    <Plus className="h-2.5 w-2.5" /> All Hub
+                  </Link>
+                </div>
+                <div className="relative">
+                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                  <Input
+                    placeholder="Search pages..."
+                    value={topDropdownSearch}
+                    onChange={(e) => setTopDropdownSearch(e.target.value)}
+                    className="h-7 text-xs pl-7 bg-secondary/40 border-white/10 text-white placeholder:text-muted-foreground"
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                  />
+                </div>
               </div>
-              {allPages.slice(0, 10).map((p: any) => (
-                <DropdownMenuItem
-                  key={p.id}
-                  onClick={() => router.push(`/cms/builder/${p.id}`)}
-                  className="flex items-center justify-between text-xs cursor-pointer hover:bg-white/10"
-                >
-                  <span className="truncate">{p.title}</span>
-                  <span className="text-[10px] text-muted-foreground">v{p.version}</span>
-                </DropdownMenuItem>
-              ))}
+              <div className="p-1 space-y-0.5">
+                {allPages
+                  .filter((p: any) =>
+                    !topDropdownSearch ||
+                    p.title.toLowerCase().includes(topDropdownSearch.toLowerCase()) ||
+                    p.slug.toLowerCase().includes(topDropdownSearch.toLowerCase())
+                  )
+                  .map((p: any) => {
+                    const isCurrent = p.id === page.id;
+                    return (
+                      <DropdownMenuItem
+                        key={p.id}
+                        onClick={() => {
+                          if (!isCurrent) router.push(`/cms/builder/${p.id}`);
+                        }}
+                        className={`flex items-center justify-between text-xs cursor-pointer p-2 rounded-md ${
+                          isCurrent ? "bg-primary/20 text-white font-bold" : "hover:bg-white/10 text-slate-300"
+                        }`}
+                      >
+                        <div className="truncate pr-2">
+                          <div className="truncate">{p.title}</div>
+                          <div className="text-[10px] text-muted-foreground font-mono">/{p.slug}</div>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span
+                            className={`text-[9px] font-bold px-1 rounded ${
+                              p.status === "PUBLISHED"
+                                ? "text-emerald-400 bg-emerald-500/10"
+                                : "text-amber-400 bg-amber-500/10"
+                            }`}
+                          >
+                            {p.status}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground">v{p.version}</span>
+                        </div>
+                      </DropdownMenuItem>
+                    );
+                  })}
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -671,6 +834,36 @@ export function AirborneStudio({ pageId }: AirborneStudioProps) {
               title="Mobile (375px)"
             >
               <Smartphone className="h-3.5 w-3.5" />
+            </button>
+          </div>
+
+          {/* View Mode Switcher: Visual Canvas vs Content Mode */}
+          <div className="flex items-center bg-white/5 rounded-lg border border-white/10 p-0.5">
+            <button
+              type="button"
+              onClick={() => setViewMode("visual")}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition-colors ${
+                viewMode === "visual"
+                  ? "bg-primary text-white shadow-sm"
+                  : "text-muted-foreground hover:text-white"
+              }`}
+              title="Visual drag-and-drop page editor"
+            >
+              <Eye className="h-3.5 w-3.5" />
+              <span className="hidden md:inline">Visual Canvas</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("content")}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition-colors ${
+                viewMode === "content"
+                  ? "bg-primary text-white shadow-sm"
+                  : "text-muted-foreground hover:text-white"
+              }`}
+              title="Universal full-page structured text editor"
+            >
+              <FileText className="h-3.5 w-3.5" />
+              <span className="hidden md:inline">Content Mode</span>
             </button>
           </div>
 
@@ -774,30 +967,183 @@ export function AirborneStudio({ pageId }: AirborneStudioProps) {
         {!previewMode && (
           <aside className="w-72 shrink-0 border-r border-white/10 bg-slate-900/95 flex flex-col h-full overflow-hidden text-white">
             {/* Mode switch tabs */}
-            <div className="grid grid-cols-2 p-2 border-b border-white/10 bg-slate-950/40 gap-1">
+            <div className="grid grid-cols-4 p-2 border-b border-white/10 bg-slate-950/40 gap-1">
               <button
                 type="button"
-                onClick={() => setLeftTab("widgets")}
-                className={`py-1.5 text-xs font-bold rounded-md flex items-center justify-center gap-1.5 transition-colors ${
-                  leftTab === "widgets" ? "bg-primary text-white" : "text-muted-foreground hover:text-white"
+                onClick={() => {
+                  setLeftTab("pages");
+                  setViewMode("visual");
+                }}
+                className={`py-1.5 text-[10px] font-bold rounded-md flex items-center justify-center gap-1 transition-colors ${
+                  leftTab === "pages" ? "bg-primary text-white" : "text-muted-foreground hover:text-white"
                 }`}
+                title="All Website Pages"
               >
-                <Sparkles className="h-3.5 w-3.5" />
-                Components
+                <Globe className="h-3 w-3" />
+                Pages
               </button>
               <button
                 type="button"
-                onClick={() => setLeftTab("layers")}
-                className={`py-1.5 text-xs font-bold rounded-md flex items-center justify-center gap-1.5 transition-colors ${
-                  leftTab === "layers" ? "bg-primary text-white" : "text-muted-foreground hover:text-white"
+                onClick={() => {
+                  setLeftTab("widgets");
+                  setViewMode("visual");
+                }}
+                className={`py-1.5 text-[10px] font-bold rounded-md flex items-center justify-center gap-1 transition-colors ${
+                  leftTab === "widgets" && viewMode === "visual" ? "bg-primary text-white" : "text-muted-foreground hover:text-white"
                 }`}
+                title="Component Blocks"
               >
-                <Layers className="h-3.5 w-3.5" />
-                Structure
+                <Sparkles className="h-3 w-3" />
+                Widgets
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLeftTab("layers");
+                  setViewMode("visual");
+                }}
+                className={`py-1.5 text-[10px] font-bold rounded-md flex items-center justify-center gap-1 transition-colors ${
+                  leftTab === "layers" && viewMode === "visual" ? "bg-primary text-white" : "text-muted-foreground hover:text-white"
+                }`}
+                title="Section Layers"
+              >
+                <Layers className="h-3 w-3" />
+                Layers
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLeftTab("content");
+                  setViewMode("content");
+                }}
+                className={`py-1.5 text-[10px] font-bold rounded-md flex items-center justify-center gap-1 transition-colors ${
+                  viewMode === "content" ? "bg-primary text-white" : "text-muted-foreground hover:text-white"
+                }`}
+                title="Content Outline"
+              >
+                <FileText className="h-3 w-3" />
+                Content
               </button>
             </div>
 
-            {leftTab === "widgets" ? (
+            {leftTab === "pages" ? (
+              /* ─── ALL PAGES NAVIGATOR ─── */
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <div className="p-3 border-b border-white/10 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">
+                      All Pages ({allPages.length})
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => router.push("/cms/builder")}
+                      className="flex items-center gap-1 text-[11px] font-bold text-primary hover:text-primary/80"
+                      title="Open Pages Hub / Create Page"
+                    >
+                      <Plus className="h-3 w-3" /> New
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      placeholder="Search pages..."
+                      value={pageSearch}
+                      onChange={(e) => setPageSearch(e.target.value)}
+                      className="pl-8 bg-secondary/40 border-white/10 text-xs h-8 text-white placeholder:text-muted-foreground"
+                    />
+                    {pageSearch && (
+                      <button
+                        type="button"
+                        onClick={() => setPageSearch("")}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-white px-1"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 pt-0.5">
+                    {["ALL", "PUBLISHED", "DRAFT"].map((st) => (
+                      <button
+                        key={st}
+                        type="button"
+                        onClick={() => setPageFilterStatus(st)}
+                        className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase transition-colors ${
+                          pageFilterStatus === st
+                            ? "bg-white/20 text-white"
+                            : "text-muted-foreground hover:text-white hover:bg-white/5"
+                        }`}
+                      >
+                        {st}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Pages List */}
+                <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
+                  {filteredPages.map((p: any) => {
+                    const isCurrent = p.id === page.id;
+                    return (
+                      <div
+                        key={p.id}
+                        onClick={() => {
+                          if (!isCurrent) {
+                            router.push(`/cms/builder/${p.id}`);
+                          }
+                        }}
+                        className={`group flex items-start gap-2.5 p-2.5 rounded-lg border text-left cursor-pointer transition-all ${
+                          isCurrent
+                            ? "bg-primary/20 border-primary shadow-sm text-white"
+                            : "bg-secondary/20 border-white/5 hover:border-white/15 hover:bg-secondary/40 text-slate-300"
+                        }`}
+                      >
+                        <div
+                          className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded ${
+                            isCurrent ? "bg-primary text-white" : "bg-white/5 text-muted-foreground group-hover:text-white"
+                          }`}
+                        >
+                          <FileText className="h-3.5 w-3.5" />
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-1">
+                            <span className={`text-xs font-bold truncate ${isCurrent ? "text-white" : "text-slate-200"}`}>
+                              {p.title}
+                            </span>
+                            {isCurrent && (
+                              <span className="h-2 w-2 rounded-full bg-emerald-400 shrink-0 animate-pulse" title="Active Page" />
+                            )}
+                          </div>
+                          <p className="text-[10px] text-muted-foreground font-mono truncate mt-0.5">
+                            /{p.slug}
+                          </p>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <Badge
+                              variant="outline"
+                              className={`text-[9px] px-1.5 py-0 h-3.5 border-none font-bold ${
+                                p.status === "PUBLISHED"
+                                  ? "bg-emerald-500/20 text-emerald-400"
+                                  : "bg-amber-500/20 text-amber-400"
+                              }`}
+                            >
+                              {p.status}
+                            </Badge>
+                            <span className="text-[9px] text-muted-foreground">v{p.version}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {filteredPages.length === 0 && (
+                    <div className="p-6 text-center text-xs text-muted-foreground">
+                      No pages matching "{pageSearch}"
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : leftTab === "widgets" ? (
+              /* ─── COMPONENT WIDGETS PALETTE ─── */
               <div className="flex-1 flex flex-col overflow-hidden">
                 {/* Search */}
                 <div className="p-3 border-b border-white/10">
@@ -840,7 +1186,6 @@ export function AirborneStudio({ pageId }: AirborneStudioProps) {
                           key={comp.type}
                           type="button"
                           onClick={() => {
-                            // If a section is selected, insert there; otherwise into last section or create section
                             if (selection?.type === "section") {
                               handleAddBlock(selection.sectionId, comp.type);
                             } else if (page.sections && page.sections.length > 0) {
@@ -866,7 +1211,7 @@ export function AirborneStudio({ pageId }: AirborneStudioProps) {
                 </div>
               </div>
             ) : (
-              /* STRUCTURE / LAYERS TREE */
+              /* ─── STRUCTURE / LAYERS TREE ─── */
               <div className="flex-1 overflow-y-auto p-3 space-y-2">
                 <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1">
                   Page Sections ({page.sections?.length || 0})
@@ -900,7 +1245,7 @@ export function AirborneStudio({ pageId }: AirborneStudioProps) {
                                 isBlkSelected ? "bg-primary text-white" : "text-muted-foreground hover:text-white"
                               }`}
                             >
-                              <span className="truncate">{blk.blockType?.name || blk.blockType?.type || "Block"}</span>
+                              <span className="truncate">{blk.blockType?.name || blk.blockType?.type || blk.type || "Block"}</span>
                               <Button
                                 type="button"
                                 variant="ghost"
@@ -935,40 +1280,56 @@ export function AirborneStudio({ pageId }: AirborneStudioProps) {
           </aside>
         )}
 
-        {/* CENTER VISUAL CANVAS */}
-        <VisualCanvas
-          page={page}
-          device={device}
-          selection={selection}
-          onSelectBlock={(sectionId, blockId) => setSelection({ type: "block", sectionId, blockId })}
-          onSelectSection={(sectionId) => setSelection({ type: "section", sectionId })}
-          onAddSection={handleAddSection}
-          onMoveSection={handleMoveSection}
-          onDuplicateSection={handleDuplicateSection}
-          onDeleteSection={handleDeleteSection}
-          onAddBlock={handleAddBlock}
-          onMoveBlock={handleMoveBlock}
-          onDuplicateBlock={handleDuplicateBlock}
-          onDeleteBlock={handleDeleteBlock}
-          previewMode={previewMode}
-        />
-
-        {/* RIGHT INSPECTOR PANEL */}
-        {!previewMode && (
-          <RightInspector
-            selection={selection}
+        {/* CENTER WORKSPACE: VISUAL CANVAS OR CONTENT MODE */}
+        {viewMode === "content" ? (
+          <ContentMode
             page={page}
             onUpdateBlockProps={handleUpdateBlockProps}
-            onUpdateBlockStyle={handleUpdateBlockStyle}
-            onUpdateBlockResponsive={handleUpdateBlockResponsive}
             onUpdateSection={handleUpdateSection}
             onUpdatePageMeta={handleUpdatePageMeta}
-            onDuplicateBlock={handleDuplicateBlock}
-            onDeleteBlock={handleDeleteBlock}
-            onDuplicateSection={handleDuplicateSection}
-            onDeleteSection={handleDeleteSection}
-            onClose={() => setSelection(null)}
+            onLocateSection={handleLocateSection}
+            onSelectBlock={(secId, blkId) => {
+              setViewMode("visual");
+              setSelection({ type: "block", sectionId: secId, blockId: blkId });
+            }}
           />
+        ) : (
+          <>
+            <VisualCanvas
+              page={page}
+              device={device}
+              selection={selection}
+              onSelectBlock={(sectionId, blockId) => setSelection({ type: "block", sectionId, blockId })}
+              onSelectSection={(sectionId) => setSelection({ type: "section", sectionId })}
+              onAddSection={handleAddSection}
+              onMoveSection={handleMoveSection}
+              onDuplicateSection={handleDuplicateSection}
+              onDeleteSection={handleDeleteSection}
+              onAddBlock={handleAddBlock}
+              onMoveBlock={handleMoveBlock}
+              onDuplicateBlock={handleDuplicateBlock}
+              onDeleteBlock={handleDeleteBlock}
+              previewMode={previewMode}
+            />
+
+            {/* RIGHT INSPECTOR PANEL */}
+            {!previewMode && (
+              <RightInspector
+                selection={selection}
+                page={page}
+                onUpdateBlockProps={handleUpdateBlockProps}
+                onUpdateBlockStyle={handleUpdateBlockStyle}
+                onUpdateBlockResponsive={handleUpdateBlockResponsive}
+                onUpdateSection={handleUpdateSection}
+                onUpdatePageMeta={handleUpdatePageMeta}
+                onDuplicateBlock={handleDuplicateBlock}
+                onDeleteBlock={handleDeleteBlock}
+                onDuplicateSection={handleDuplicateSection}
+                onDeleteSection={handleDeleteSection}
+                onClose={() => setSelection(null)}
+              />
+            )}
+          </>
         )}
       </div>
 

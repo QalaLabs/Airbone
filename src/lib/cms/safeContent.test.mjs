@@ -97,6 +97,52 @@ test('decodeEntities handles named, numeric and invalid code points', () => {
   assert.equal(decodeEntities('&unknown;'), '&unknown;')
 })
 
+test('parseRichText parses HTML tables with semantic tags and safe attributes', () => {
+  const html = `<table><caption>Course Fee Comparison</caption><thead><tr><th scope="col" align="left">Course</th><th scope="col" align="right">Duration</th></tr></thead><tbody><tr><td align="left">CPL Ground School</td><td align="right">4 Months</td></tr><tr><td colspan="2">Comprehensive Package</td></tr></tbody><tfoot><tr><td>Total</td><td align="right">Contact for fee</td></tr></tfoot></table>`
+  const nodes = parseRichText(html)
+  assert.equal(nodes[0].tag, 'table')
+  assert.deepEqual(tags(nodes), ['table', 'caption', 'thead', 'tr', 'th', 'th', 'tbody', 'tr', 'td', 'td', 'tr', 'td', 'tfoot', 'tr', 'td', 'td'])
+  
+  const thead = nodes[0].children.find((n) => n.tag === 'thead')
+  const th = thead.children[0].children[0]
+  assert.equal(th.scope, 'col')
+  assert.equal(th.align, 'left')
+
+  const tbody = nodes[0].children.find((n) => n.tag === 'tbody')
+  const colspanTd = tbody.children[1].children[0]
+  assert.equal(colspanTd.colSpan, 2)
+})
+
+test('parseRichText sanitizes dangerous table markup and event handlers', () => {
+  const html = `<table onclick="alert(1)"><tr><th onmouseover="alert('x')">Header</th><td><script>alert(1)</script>Safe Cell</td><td><a href="javascript:alert(1)">bad link</a></td></tr></table>`
+  const nodes = parseRichText(html)
+  assert.equal(nodes[0].tag, 'table')
+  assert.equal(nodes[0].onclick, undefined)
+  const tr = nodes[0].children.find((n) => n.tag === 'tr')
+  const td1 = tr.children.find((n) => n.tag === 'td')
+  assert.equal(text([td1]), 'Safe Cell')
+  const badLink = tr.children[2].children[0]
+  assert.equal(badLink.href, undefined)
+})
+
+test('parseRichText handles in-article images and links correctly', () => {
+  const html = `<figure><img src="https://airborneaviation.in/images/fleet.webp" alt="Fleet of Diamond DA40" title="Airborne Fleet" onerror="alert(1)" /><figcaption>Diamond DA40 Aircraft</figcaption></figure><p>Visit <a href="/courses">Courses</a> and <a href="https://external.org">External</a>.</p>`
+  const nodes = parseRichText(html)
+  const figure = nodes[0]
+  assert.equal(figure.tag, 'figure')
+  const img = figure.children.find((n) => n.tag === 'img')
+  assert.equal(img.src, 'https://airborneaviation.in/images/fleet.webp')
+  assert.equal(img.alt, 'Fleet of Diamond DA40')
+  assert.equal(img.title, 'Airborne Fleet')
+  assert.equal(img.onerror, undefined)
+
+  const p = nodes[1]
+  const internalLink = p.children.find((n) => n.tag === 'a' && n.href === '/courses')
+  const externalLink = p.children.find((n) => n.tag === 'a' && n.href === 'https://external.org')
+  assert.equal(internalLink.newTab, false)
+  assert.equal(externalLink.newTab, true)
+})
+
 test('normalizeNavItems keeps visible safe items, targets and one submenu level', () => {
   const items = normalizeNavItems([
     { id: '1', label: 'Courses', url: '/courses', target: '_self', isVisible: true, children: [

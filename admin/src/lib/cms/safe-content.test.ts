@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { parseRichText, safeHref, safeMediaSrc, videoEmbedUrl, type RichNode } from "./safe-content";
+import { parseRichText, safeHref, safeMediaSrc, videoEmbedUrl, sanitizeHtml, type RichNode } from "./safe-content";
 import { updateNavMenuItemsSchema } from "@/lib/validations/nav.schema";
 
 const text = (nodes: RichNode[]): string => nodes.map((n) => (n.t === "text" ? n.v : text(n.children))).join("");
@@ -39,4 +39,31 @@ test("nav menu items reject script-capable URLs and keep target/submenus", () =>
       `child ${url}`,
     );
   }
+});
+
+test("admin sanitizeHtml preserves tables, headings, and drops script tags", () => {
+  const dirty = `
+    <h2>Overview</h2>
+    <script>alert("hack")</script>
+    <p onclick="steal()">Check our <a href="javascript:void(0)">table</a> below:</p>
+    <table>
+      <thead>
+        <tr><th>Course</th><th>Hours</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>CPL</td><td>200 hrs</td></tr>
+      </tbody>
+    </table>
+  `;
+  const clean = sanitizeHtml(dirty);
+  assert.ok(clean.includes("<h2>Overview</h2>"));
+  assert.ok(!clean.includes("<script>"));
+  assert.ok(!clean.includes('alert("hack")'));
+  assert.ok(!clean.includes("onclick="));
+  assert.ok(!clean.includes("javascript:"));
+  assert.ok(clean.includes("<table>"));
+  assert.ok(clean.includes("<thead>"));
+  assert.ok(clean.includes("<tr><th>Course</th><th>Hours</th></tr>"));
+  assert.ok(clean.includes("<tbody>"));
+  assert.ok(clean.includes("<tr><td>CPL</td><td>200 hrs</td></tr>"));
 });

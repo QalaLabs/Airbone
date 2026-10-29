@@ -38,6 +38,26 @@ test("revalidation posts the deduped resources with the shared secret", async ()
   assert.deepEqual(JSON.parse(String(seen!.init.body)), { resources: ["testimonials", "pages"] });
 });
 
+test("revalidation posts specific paths and slug when provided", async () => {
+  let seen: { url: string; init: RequestInit } | null = null;
+  const fake = (async (url: string, init: RequestInit) => {
+    seen = { url, init };
+    return new Response("{}", { status: 200 });
+  }) as unknown as typeof fetch;
+  assert.deepEqual(
+    await revalidateWebsite(["resources"], fake, ENV, {
+      slug: "pilot-training-cost-india",
+      paths: ["/blog", "/blog/pilot-training-cost-india", "/sitemap.xml"],
+    }),
+    { status: "ok" },
+  );
+  assert.deepEqual(JSON.parse(String(seen!.init.body)), {
+    resources: ["resources"],
+    paths: ["/blog", "/blog/pilot-training-cost-india", "/sitemap.xml"],
+    slug: "pilot-training-cost-india",
+  });
+});
+
 test("syncWebsiteContent reports ok / skipped / failed in words the admin UI can show", async () => {
   const calls: unknown[] = [];
   const okFetch = (async (_url: string, init: RequestInit) => {

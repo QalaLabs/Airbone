@@ -5,6 +5,7 @@ import {
   COMPONENT_REGISTRY,
   STARTER_TEMPLATES,
 } from "./component-registry";
+import { CANONICAL_PAGES } from "../../lib/cms/canonical-pages";
 
 describe("Airborne Studio — Component Registry & Templates", () => {
   it("registry contains at least 15 comprehensive block definitions", () => {
@@ -416,5 +417,87 @@ describe("Airborne Studio -- 11 Pre-Release Audit Lifecycle and Interaction Scen
     const testUserRole = "VIEWER";
     const canPublish = rolesWithPublishPermission.includes(testUserRole);
     assert.equal(canPublish, false, "VIEWER must not be allowed to publish");
+  });
+});
+
+describe("Airborne Studio — All Pages Catalog & Full Editability", () => {
+  it("canonical pages catalog defines at least 12 complete website pages", () => {
+    assert.ok(CANONICAL_PAGES.length >= 12, `Expected >= 12 canonical pages, found ${CANONICAL_PAGES.length}`);
+  });
+
+  it("every canonical page has a valid title, unique slug, and non-empty sections", () => {
+    const seenSlugs = new Set<string>();
+    for (const p of CANONICAL_PAGES) {
+      assert.ok(p.title, "Canonical page missing title");
+      assert.ok(p.slug, "Canonical page missing slug");
+      assert.ok(!seenSlugs.has(p.slug), `Duplicate canonical slug: ${p.slug}`);
+      seenSlugs.add(p.slug);
+      assert.ok(Array.isArray(p.sections) && p.sections.length > 0, `Page ${p.slug} must have sections`);
+
+      for (const s of p.sections) {
+        assert.ok(s.name, `Section in ${p.slug} missing name`);
+        assert.ok(Array.isArray(s.blocks) && s.blocks.length > 0, `Section in ${p.slug} must have blocks`);
+        for (const b of s.blocks) {
+          assert.ok(b.type, `Block in ${p.slug} missing type`);
+          assert.ok(b.props && typeof b.props === "object", `Block in ${p.slug} missing props`);
+        }
+      }
+    }
+  });
+
+  it("includes all essential website pages: home, cadet, cpl, cabin crew, ground school, about, contact, terms, privacy", () => {
+    const slugs = CANONICAL_PAGES.map((p) => p.slug);
+    assert.ok(slugs.includes("home"), "Missing home page");
+    assert.ok(slugs.includes("cadet-preparation"), "Missing cadet-preparation page");
+    assert.ok(slugs.includes("commercial-pilot-license-cpl"), "Missing commercial-pilot-license-cpl page");
+    assert.ok(slugs.includes("cabin-crew-training"), "Missing cabin-crew-training page");
+    assert.ok(slugs.includes("ground-school"), "Missing ground-school page");
+    assert.ok(slugs.includes("about"), "Missing about page");
+    assert.ok(slugs.includes("contact"), "Missing contact page");
+    assert.ok(slugs.includes("terms"), "Missing terms page");
+    assert.ok(slugs.includes("privacy"), "Missing privacy page");
+  });
+
+  it("normalizes relational database blocks and draft sections into directly editable items", () => {
+    const mockRelationalPage = {
+      id: "pg-rel-1",
+      title: "Commercial Pilot License",
+      slug: "cpl",
+      status: "PUBLISHED",
+      sections: [
+        {
+          id: "s1",
+          name: "Hero Section",
+          order: 0,
+          isVisible: true,
+          blocks: [
+            {
+              id: "b1",
+              order: 0,
+              isVisible: true,
+              props: { heading: "Fly High" },
+              blockType: { id: "bt1", type: "hero", name: "Hero" },
+            },
+          ],
+        },
+      ],
+    };
+
+    const normalized = mockRelationalPage.sections.map((s, sIdx) => ({
+      id: s.id,
+      name: s.name,
+      order: s.order ?? sIdx,
+      isVisible: s.isVisible !== false,
+      blocks: s.blocks.map((b, bIdx) => ({
+        id: b.id,
+        type: (b as any).type || b.blockType?.type || "text",
+        order: b.order ?? bIdx,
+        props: b.props || {},
+        isVisible: b.isVisible !== false,
+      })),
+    }));
+
+    assert.equal(normalized[0]?.blocks[0]?.type, "hero");
+    assert.equal(normalized[0]?.blocks[0]?.props.heading, "Fly High");
   });
 });

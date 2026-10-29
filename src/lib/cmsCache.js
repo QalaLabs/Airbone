@@ -41,6 +41,33 @@ export function tagsToRevalidate(body) {
   return [...tags]
 }
 
+/** Determine absolute website paths to invalidate (e.g. /blog, /blog/[slug], /sitemap.xml). */
+export function pathsToRevalidate(body) {
+  const paths = new Set()
+  const requested = Array.isArray(body?.paths) ? body.paths : []
+  for (const p of requested) {
+    if (typeof p === 'string' && p.startsWith('/') && !p.startsWith('//') && !p.includes('..')) {
+      paths.add(p)
+    }
+  }
+  if (body?.slug && typeof body.slug === 'string') {
+    const slug = body.slug.trim().toLowerCase()
+    if (/^[a-z0-9-]+$/.test(slug)) {
+      paths.add(`/blog/${slug}`)
+    }
+  }
+  const resources = Array.isArray(body?.resources) ? body.resources : []
+  if (resources.includes('blogs') || resources.includes('resources')) {
+    paths.add('/blog')
+    paths.add('/sitemap.xml')
+  }
+  if (resources.includes('courses')) {
+    paths.add('/courses')
+    paths.add('/sitemap.xml')
+  }
+  return [...paths]
+}
+
 /** Constant-time comparison of the shared revalidation secret. */
 export function secretMatches(given, expected) {
   if (typeof given !== 'string' || typeof expected !== 'string' || !expected) return false

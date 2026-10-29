@@ -24,6 +24,9 @@ This package contains the complete, self-contained extraction of Airborne Studio
 ## 🚀 Core Features
 
 - **WYSIWYG Visual Canvas**: Drag-and-drop & click-to-edit canvas with live hover actions, inline section insertion, block moving up/down, duplicating, and deletion.
+- **Embedded Pages Navigator**: Built-in `[ Pages | Widgets | Layers | Content ]` sidebar navigation allowing editors to browse, search, filter, and switch between all website pages in 1 click without leaving the studio.
+- **Searchable Page Dropdown Switcher**: Top toolbar fast switcher with real-time fuzzy search across all registered and canonical website pages.
+- **Canonical Pages Auto-Hydration**: Out-of-the-box catalog of 13+ pre-populated, fully editable website pages (Home, Cadet Program, CPL, Cabin Crew, Ground School, Simulator, Aptitude, Flight Training, About, Contact, Terms, Privacy, Refund Policy).
 - **Multi-Device Responsive Frame Switcher**: One-click preview toggle between **Desktop (100%)**, **Tablet (768px frame)**, and **Mobile (375px phone frame)**.
 - **Undo / Redo History State Machine**: Deep-cloned immutable history stack (up to 40 steps) with keyboard shortcuts (`Cmd+Z`, `Cmd+Shift+Z` / `Ctrl+Y`).
 - **4-Tab Inspector (Right Panel)**:
@@ -68,6 +71,7 @@ extracted-airborne-studio/
 │   │   │   ├── airborne-studio.tsx              # Main Visual Studio Workspace
 │   │   │   ├── visual-canvas.tsx                # WYSIWYG Canvas with Device Viewports
 │   │   │   ├── right-inspector.tsx              # 4-Tab Inspector (Content, Style, Responsive, JSON)
+│   │   │   ├── content-mode.tsx                 # Structured Content Outline Editor
 │   │   │   ├── component-registry.ts            # 16+ Component Definitions, Categories, Starter Templates
 │   │   │   ├── media-picker-modal.tsx           # Media Library & Upload Modal
 │   │   │   └── airborne-studio.test.ts          # 11 Lifecycle Scenario Tests
@@ -77,6 +81,7 @@ extracted-airborne-studio/
 │   │   ├── api.ts                               # Unified apiFetch client
 │   │   ├── utils.ts                             # cn() utility helper
 │   │   ├── cms/safe-content.ts                  # Safe HTML & Rich Text parser
+│   │   ├── cms/canonical-pages.ts               # Pre-configured 13+ Website Pages Catalog
 │   │   ├── middleware/context.ts                # RequestContext & Session resolver
 │   │   ├── middleware/permissions.ts            # RBAC guard helper
 │   │   ├── services/page.service.ts             # Full business logic & lifecycle hooks

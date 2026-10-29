@@ -4,6 +4,7 @@ import { guard } from "@/lib/middleware/permissions";
 import { getRequestContext } from "@/lib/middleware/context";
 import { ok, handleError } from "@/lib/utils/response";
 import { publishResourceSchema } from "@/lib/validations/resource.schema";
+import { syncWebsiteContent } from "@/lib/website/revalidate";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -14,7 +15,15 @@ export async function POST(req: NextRequest, { params }: Params) {
     guard(ctx.user, "publish", "resources");
     const body = await req.json() as unknown;
     const input = publishResourceSchema.parse(body);
-    return ok(await ResourceService.publish(ctx, id, input));
+    const result = await ResourceService.publish(ctx, id, input);
+
+    // Immediate on-demand website cache and path purge
+    await syncWebsiteContent("resource", ctx.requestId, fetch, process.env, {
+      slug: result.slug,
+      paths: ["/blog", `/blog/${result.slug}`, "/sitemap.xml"],
+    });
+
+    return ok(result);
   } catch (err) {
     return handleError(err);
   }

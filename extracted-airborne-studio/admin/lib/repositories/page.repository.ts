@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/client";
 import type { Prisma, ContentStatus } from "@prisma/client";
+import { CANONICAL_PAGES } from "@/lib/cms/canonical-pages";
 import type {
   CreatePageInput,
   UpdatePageInput,
@@ -88,7 +89,51 @@ const VERSION_SELECT = {
 // ─── Page Repository ──────────────────────────────────────────────────────────
 
 export class PageRepository {
+  static async ensureCanonicalPages(orgId: string, createdBy?: string) {
+    for (const def of CANONICAL_PAGES) {
+      try {
+        const exists = await prisma.page.findFirst({
+          where: { orgId, slug: def.slug },
+          select: { id: true },
+        });
+        if (!exists) {
+          await prisma.page.create({
+            data: {
+              orgId,
+              createdBy: createdBy || null,
+              title: def.title,
+              slug: def.slug,
+              description: def.description,
+              status: "PUBLISHED",
+              seoTitle: def.seoTitle,
+              seoDesc: def.seoDesc,
+              seoKeywords: def.seoKeywords || [],
+              ogImage: def.ogImage,
+              metadata: {
+                studioDraft: {
+                  sections: def.sections,
+                  lastSavedAt: new Date().toISOString(),
+                },
+              },
+            },
+          });
+        }
+      } catch (err) {
+        console.error(`Failed to ensure canonical page [${def.slug}]:`, err);
+      }
+    }
+  }
+
   static async findMany(orgId: string, filters: PageFilters) {
+    try {
+      const count = await prisma.page.count({ where: { orgId } });
+      if (count < CANONICAL_PAGES.length && !filters.search) {
+        await this.ensureCanonicalPages(orgId);
+      }
+    } catch {
+      // In case DB is not available in mock/testing
+    }
+
     const where: Prisma.PageWhereInput = {
       orgId,
       ...(filters.status && { status: filters.status }),

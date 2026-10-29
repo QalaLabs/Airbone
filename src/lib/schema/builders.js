@@ -1,4 +1,4 @@
-﻿import { absUrl, ADDRESS, ORG } from './constants.js'
+import { absUrl, ADDRESS, ORG } from './constants.js'
 import { id } from './ids.js'
 
 /**
@@ -235,7 +235,31 @@ export function buildArticleEntity({
   datePublished,
   dateModified,
   imagePath,
+  author,
 }) {
+  const authorNode = author && typeof author === 'object' && author.name
+    ? {
+        '@type': 'Person',
+        name: author.name,
+        jobTitle: author.role || author.jobTitle || 'Co-founder',
+        worksFor: { '@id': id.org() },
+      }
+    : typeof author === 'string' && author.includes('Deepak')
+      ? {
+          '@type': 'Person',
+          name: 'Deepak Aggarwal',
+          jobTitle: 'Co-founder & Business Head',
+          worksFor: { '@id': id.org() },
+        }
+      : typeof author === 'string' && author.trim() && !author.includes('Navrang')
+        ? {
+            '@type': 'Person',
+            name: author.trim(),
+            jobTitle: 'Author',
+            worksFor: { '@id': id.org() },
+          }
+        : { '@id': id.founder() }
+
   const article = {
     '@type': 'Article',
     '@id': id.article(path),
@@ -243,7 +267,7 @@ export function buildArticleEntity({
     description: sanitizeSchemaText(description),
     url: absUrl(path),
     mainEntityOfPage: { '@id': id.webpage(path) },
-    author: { '@id': id.founder() },
+    author: authorNode,
     publisher: { '@id': id.org() },
     datePublished,
     dateModified: dateModified || datePublished,

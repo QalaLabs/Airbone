@@ -33,7 +33,15 @@ export function safeMediaSrc(value) {
 }
 
 export function isExternalHref(href) {
-  return /^https?:\/\//i.test(href ?? '')
+  if (!href) return false
+  if (href.startsWith('/') || href.startsWith('#')) return false
+  try {
+    const url = new URL(href)
+    const host = url.hostname.toLowerCase().replace(/^www\./, '')
+    return host !== 'airborneaviation.in' && host !== 'localhost' && !host.endsWith('.run.app')
+  } catch {
+    return false
+  }
 }
 
 /** YouTube / Vimeo watch, shorts, and playlist URL -> embed URL on the provider's own host, else null. */
@@ -72,7 +80,11 @@ export function videoEmbedUrl(src) {
 
 // ─── Rich text ───────────────────────────────────────────────────────────────
 
-const ALLOWED = new Set(['p', 'br', 'strong', 'b', 'em', 'i', 'u', 's', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'a', 'hr', 'span', 'div'])
+const ALLOWED = new Set([
+  'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's', 'ul', 'ol', 'li',
+  'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'a', 'hr', 'span', 'div',
+  'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption', 'img', 'figure', 'figcaption',
+])
 const RENAME = { h1: 'h2', h5: 'h4', h6: 'h4' }
 const VOID = new Set(['br', 'hr', 'img', 'input', 'meta', 'link', 'source', 'wbr', 'area', 'base', 'col', 'embed', 'param', 'track'])
 const DROP_WITH_CONTENT = new Set(['script', 'style', 'iframe', 'object', 'embed', 'noscript', 'template', 'svg', 'math', 'textarea', 'title', 'select', 'frameset', 'frame', 'applet', 'head'])
@@ -143,8 +155,27 @@ export function parseRichText(html) {
     if (tag === 'a') {
       const attrs = readAttrs(rawAttrs ?? '')
       const href = safeHref(attrs.href)
-      if (href) node.href = href
-      if (href && attrs.target === '_blank') node.newTab = true
+      if (href) {
+        node.href = href
+        node.newTab = isExternalHref(href) || attrs.target === '_blank'
+      }
+    } else if (tag === 'th' || tag === 'td') {
+      const attrs = readAttrs(rawAttrs ?? '')
+      if (attrs.colspan && /^\d+$/.test(attrs.colspan)) node.colSpan = parseInt(attrs.colspan, 10)
+      if (attrs.rowspan && /^\d+$/.test(attrs.rowspan)) node.rowSpan = parseInt(attrs.rowspan, 10)
+      if (attrs.align && ['left', 'center', 'right', 'justify'].includes(attrs.align.toLowerCase())) {
+        node.align = attrs.align.toLowerCase()
+      }
+      if (attrs.scope && ['col', 'row', 'colgroup', 'rowgroup'].includes(attrs.scope.toLowerCase())) {
+        node.scope = attrs.scope.toLowerCase()
+      }
+    } else if (tag === 'img') {
+      const attrs = readAttrs(rawAttrs ?? '')
+      const src = safeMediaSrc(attrs.src)
+      if (!src) continue
+      node.src = src
+      node.alt = attrs.alt || ''
+      if (attrs.title) node.title = attrs.title
     }
     top.children.push(node)
     if (!VOID.has(tag) && !whole.endsWith('/>') && stack.length < MAX_DEPTH) stack.push(node)

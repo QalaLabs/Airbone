@@ -45,9 +45,26 @@ export function videoEmbedUrl(src: unknown): string | null {
 
 export type RichNode =
   | { t: "text"; v: string }
-  | { t: "el"; tag: string; children: RichNode[]; href?: string; newTab?: boolean };
+  | {
+      t: "el";
+      tag: string;
+      children: RichNode[];
+      href?: string;
+      newTab?: boolean;
+      src?: string;
+      alt?: string;
+      title?: string;
+      colSpan?: number;
+      rowSpan?: number;
+      align?: string;
+      scope?: string;
+    };
 
-const ALLOWED = new Set(["p", "br", "strong", "b", "em", "i", "u", "s", "ul", "ol", "li", "h2", "h3", "h4", "blockquote", "code", "pre", "a", "hr", "span", "div"]);
+const ALLOWED = new Set([
+  "p", "br", "strong", "b", "em", "i", "u", "s", "ul", "ol", "li",
+  "h2", "h3", "h4", "blockquote", "code", "pre", "a", "hr", "span", "div",
+  "table", "thead", "tbody", "tfoot", "tr", "th", "td", "caption", "img", "figure", "figcaption",
+]);
 const RENAME: Record<string, string> = { h1: "h2", h5: "h4", h6: "h4" };
 const VOID = new Set(["br", "hr", "img", "input", "meta", "link", "source", "wbr", "area", "base", "col", "embed", "param", "track"]);
 const DROP_WITH_CONTENT = new Set(["script", "style", "iframe", "object", "embed", "noscript", "template", "svg", "math", "textarea", "title", "select", "frameset", "frame", "applet", "head"]);
@@ -115,9 +132,78 @@ export function parseRichText(html: unknown): RichNode[] {
       const href = safeHref(attrs.href);
       if (href) node.href = href;
       if (href && attrs.target === "_blank") node.newTab = true;
+    } else if (tag === "th" || tag === "td") {
+      const attrs = readAttrs(rawAttrs ?? "");
+      if (attrs.colspan && /^\d+$/.test(attrs.colspan)) node.colSpan = parseInt(attrs.colspan, 10);
+      if (attrs.rowspan && /^\d+$/.test(attrs.rowspan)) node.rowSpan = parseInt(attrs.rowspan, 10);
+      if (attrs.align && ["left", "center", "right", "justify"].includes(attrs.align.toLowerCase())) {
+        node.align = attrs.align.toLowerCase();
+      }
+      if (attrs.scope && ["col", "row", "colgroup", "rowgroup"].includes(attrs.scope.toLowerCase())) {
+        node.scope = attrs.scope.toLowerCase();
+      }
+    } else if (tag === "img") {
+      const attrs = readAttrs(rawAttrs ?? "");
+      const src = safeMediaSrc(attrs.src);
+      if (!src) continue;
+      node.src = src;
+      node.alt = attrs.alt || "";
+      if (attrs.title) node.title = attrs.title;
     }
     top.children.push(node);
     if (!VOID.has(tag) && !whole.endsWith("/>") && stack.length < MAX_DEPTH) stack.push(node);
   }
   return root.children;
+}
+
+function escapeHtmlText(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+export function serializeRichNodes(nodes: RichNode[]): string {
+  return nodes
+    .map((node) => {
+      if (node.t === "text") {
+        return escapeHtmlText(node.v);
+      }
+      const tag = node.tag;
+      const attrs: string[] = [];
+      if (node.href) {
+        attrs.push(`href="${escapeHtmlText(node.href)}"`);
+        if (node.newTab) {
+          attrs.push('target="_blank" rel="noopener noreferrer"');
+        }
+      }
+      if (node.src) {
+        attrs.push(`src="${escapeHtmlText(node.src)}"`);
+      }
+      if (node.alt !== undefined) {
+        attrs.push(`alt="${escapeHtmlText(node.alt)}"`);
+      }
+      if (node.title) {
+        attrs.push(`title="${escapeHtmlText(node.title)}"`);
+      }
+      if (node.colSpan) attrs.push(`colspan="${node.colSpan}"`);
+      if (node.rowSpan) attrs.push(`rowspan="${node.rowSpan}"`);
+      if (node.align) attrs.push(`align="${escapeHtmlText(node.align)}"`);
+      if (node.scope) attrs.push(`scope="${escapeHtmlText(node.scope)}"`);
+
+      const attrStr = attrs.length > 0 ? " " + attrs.join(" ") : "";
+      if (VOID.has(tag)) {
+        return `<${tag}${attrStr} />`;
+      }
+      return `<${tag}${attrStr}>${serializeRichNodes(node.children)}</${tag}>`;
+    })
+    .join("");
+}
+
+export function sanitizeHtml(html: unknown): string {
+  if (typeof html !== "string" || !html.trim()) return "";
+  const nodes = parseRichText(html);
+  return serializeRichNodes(nodes);
 }

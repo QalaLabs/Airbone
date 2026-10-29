@@ -279,14 +279,21 @@ export function buildArticlePageGraph({
   faqs,
   imagePath,
   breadcrumbs,
+  author,
 }) {
   const crumbs =
     breadcrumbs ||
-    [
-      { name: 'Home', path: '/' },
-      { name: 'Resources', path: '/resources' },
-      { name: headline, path },
-    ]
+    (path?.startsWith('/blog')
+      ? [
+          { name: 'Home', path: '/' },
+          { name: 'Blog', path: '/blog' },
+          { name: headline, path },
+        ]
+      : [
+          { name: 'Home', path: '/' },
+          { name: 'Resources', path: '/resources' },
+          { name: headline, path },
+        ])
 
   return asGraph([
     ...coreEntities(),
@@ -297,6 +304,7 @@ export function buildArticlePageGraph({
       datePublished,
       dateModified,
       imagePath,
+      author,
     }),
     buildWebPage({
       path,
@@ -306,7 +314,7 @@ export function buildArticlePageGraph({
       mainEntity: id.article(path),
     }),
     buildBreadcrumbList(crumbs, path),
-    buildFaqPage(faqs, path),
+    faqs && faqs.length ? buildFaqPage(faqs, path) : null,
     imagePath ? buildPrimaryImage(imagePath, headline) : null,
   ])
 }

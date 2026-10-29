@@ -6,15 +6,21 @@ const SECRET = 'unit-test-revalidate-secret'
 
 function call(body, { header = SECRET, secret = SECRET, raw } = {}) {
   const purged = []
+  const purgedPaths = []
   const req = new Request('http://site.test/api/revalidate', {
     method: 'POST',
     headers: { 'content-type': 'application/json', ...(header === null ? {} : { 'x-revalidate-secret': header }) },
     body: raw ?? JSON.stringify(body),
   })
-  return handleRevalidateRequest(req, { secret, revalidate: (t) => purged.push(t) }).then(async (res) => ({
+  return handleRevalidateRequest(req, {
+    secret,
+    revalidate: (t) => purged.push(t),
+    revalidatePath: (p) => purgedPaths.push(p),
+  }).then(async (res) => ({
     status: res.status,
     body: await res.json(),
     purged,
+    purgedPaths,
   }))
 }
 
@@ -22,6 +28,22 @@ test('correct secret + allowed tag purges exactly that tag', async () => {
   const r = await call({ resources: ['testimonials'] })
   assert.equal(r.status, 200)
   assert.deepEqual(r.purged, ['cms:testimonials'])
+})
+
+test('blogs resource purges cms:blogs tag and relevant paths /blog and /sitemap.xml', async () => {
+  const r = await call({ resources: ['blogs'], slug: 'pilot-training-india-flying-hours' })
+  assert.equal(r.status, 200)
+  assert.deepEqual(r.purged, ['cms:blogs'])
+  assert.ok(r.purgedPaths.includes('/blog'))
+  assert.ok(r.purgedPaths.includes('/sitemap.xml'))
+  assert.ok(r.purgedPaths.includes('/blog/pilot-training-india-flying-hours'))
+})
+
+test('explicit paths are purged when authorized', async () => {
+  const r = await call({ paths: ['/blog', '/courses'] })
+  assert.equal(r.status, 200)
+  assert.ok(r.purgedPaths.includes('/blog'))
+  assert.ok(r.purgedPaths.includes('/courses'))
 })
 
 test('pages and settings tags are allow-listed for CMS pages and navigation', async () => {

@@ -37,6 +37,11 @@ export function websiteRevalidateConfig(env: Record<string, string | undefined> 
 
 export type RevalidateResult = { status: "skipped" | "ok" | "failed"; detail?: string };
 
+export interface RevalidateOptions {
+  paths?: string[];
+  slug?: string;
+}
+
 /**
  * Ask the public website to purge cached CMS content. A no-op when the website
  * endpoint is not configured; failures are logged and never thrown, because the
@@ -46,14 +51,19 @@ export async function revalidateWebsite(
   resources: WebsiteResource[],
   fetchImpl: typeof fetch = fetch,
   env: Record<string, string | undefined> = process.env,
+  options?: RevalidateOptions,
 ): Promise<RevalidateResult> {
   const config = websiteRevalidateConfig(env);
-  if (!config || resources.length === 0) return { status: "skipped" };
+  if (!config || (resources.length === 0 && (!options?.paths || options.paths.length === 0))) return { status: "skipped" };
   try {
     const res = await fetchImpl(config.url, {
       method: "POST",
       headers: { "content-type": "application/json", "x-revalidate-secret": config.secret },
-      body: JSON.stringify({ resources: [...new Set(resources)] }),
+      body: JSON.stringify({
+        resources: [...new Set(resources)],
+        paths: options?.paths ? [...new Set(options.paths)] : undefined,
+        slug: options?.slug ?? undefined,
+      }),
       cache: "no-store",
       signal: AbortSignal.timeout(5000),
     });
@@ -96,14 +106,15 @@ export async function syncWebsiteContent(
   requestId?: string,
   fetchImpl: typeof fetch = fetch,
   env: Record<string, string | undefined> = process.env,
+  options?: RevalidateOptions,
 ): Promise<WebsiteSync> {
   const resources = websiteResourcesFor(entityType);
-  if (resources.length === 0) return { status: "skipped", message: "Not shown on the website." };
+  if (resources.length === 0 && (!options?.paths || options.paths.length === 0)) return { status: "skipped", message: "Not shown on the website." };
   if (!websiteRevalidateConfig(env)) {
     return { status: "skipped", message: "Instant website refresh is not configured; the website updates within 60 seconds." };
   }
   if (requestId) claim(requestId, resources, Date.now());
-  const result = await revalidateWebsite(resources, fetchImpl, env);
+  const result = await revalidateWebsite(resources, fetchImpl, env, options);
   if (result.status === "ok") return { status: "ok", message: "The public website was refreshed." };
   // Let the after-response hook retry once.
   if (requestId) release(requestId, resources);
@@ -116,11 +127,11 @@ export async function syncWebsiteContent(
  * tests) it falls back to the next tick. Resources an explicit sync claimed in
  * the same request are skipped; a failed explicit sync releases its claim.
  */
-export function scheduleWebsiteRevalidation(entityType: string, requestId?: string): void {
+export function scheduleWebsiteRevalidation(entityType: string, requestId?: string, options?: RevalidateOptions): void {
   if (websiteResourcesFor(entityType).length === 0 || !websiteRevalidateConfig()) return;
   const run = async () => {
     const pending = websiteResourcesFor(entityType).filter((r) => !requestId || !syncedInRequest.has(`${requestId}|${r}`));
-    if (pending.length > 0) await revalidateWebsite(pending);
+    if (pending.length > 0) await revalidateWebsite(pending, fetch, process.env, options);
   };
   try {
     after(run);
