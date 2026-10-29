@@ -499,6 +499,164 @@ export const STARTER_TEMPLATES = [
     ],
   },
   {
+    id: "home_page",
+    name: "Airborne Aviation Homepage",
+    description: "Complete full-length homepage layout with Hero, Boarding strip, Airline marquee, Advantage grid, Mentor spotlight, Campus walkthrough, FAQs, and CTA.",
+    badge: "Master Home",
+    sections: [
+      {
+        name: "Hero Section",
+        settings: { background: "navy", padding: "spacious", maxWidth: "full" },
+        blocks: [
+          {
+            type: "hero",
+            props: {
+              badge: "✈️ INDIA'S PREMIER GROUND SCHOOL",
+              heading: "From Classroom To Cockpit",
+              subheading: "Founder-led DGCA-compliant ground school since 2009 for CPL & ATPL. Mentor-led training under Capt. Navrang Singh - clearing exams, building careers, restarting dreams.",
+              ctaText: "Enrol Now",
+              ctaLink: "#contact",
+              secondaryCtaText: "Explore Courses",
+              secondaryCtaLink: "/courses",
+            },
+          },
+        ],
+      },
+      {
+        name: "Boarding Strip Stats",
+        settings: { background: "white", padding: "compact" },
+        blocks: [
+          {
+            type: "stats",
+            props: {
+              items: [
+                { value: "Since 2009", label: "DGCA-Compliant ground school" },
+                { value: "5/5", label: "DGCA papers cleared in 3 months" },
+                { value: "2,500+", label: "Students Mentored" },
+                { value: "98%", label: "First-Attempt DGCA Pass Rate" },
+              ],
+            },
+          },
+        ],
+      },
+      {
+        name: "Airline Partner Marquee",
+        settings: { background: "light", padding: "compact" },
+        blocks: [
+          {
+            type: "airline_logos",
+            props: {
+              heading: "Airlines Flying With Airborne Cadets & Alumni",
+              airlines: [
+                { name: "IndiGo", code: "6E" },
+                { name: "Air India", code: "AI" },
+                { name: "Akasa Air", code: "QP" },
+                { name: "SpiceJet", code: "SG" },
+                { name: "Air India Express", code: "IX" },
+              ],
+            },
+          },
+        ],
+      },
+      {
+        name: "The Airborne Advantage",
+        settings: { background: "white", padding: "normal" },
+        blocks: [
+          {
+            type: "features",
+            props: {
+              title: "The Airborne Advantage",
+              subtitle: "Why India's future airline commanders choose Airborne Aviation",
+              items: [
+                { icon: "🧑‍✈️", title: "Founder-Led Instruction", description: "All 5 DGCA papers taught directly by Capt. Navrang - no junior staff on core subjects." },
+                { icon: "🛫", title: "A320 Procedure Trainer", description: "Cockpit familiarisation before flight school so you walk in confident." },
+                { icon: "🎯", title: "1-on-1 Mentorship", description: "Individual doubt-solving sessions with Capt. Navrang until the concept is clear." },
+                { icon: "👨‍👩‍👧", title: "Parent Counseling", description: "Clear roadmap on flight training costs, medicals, and airline hiring timelines." },
+              ],
+            },
+          },
+        ],
+      },
+      {
+        name: "Founder & Mentor Spotlight",
+        settings: { background: "navy", padding: "normal" },
+        blocks: [
+          {
+            type: "mentor_card",
+            props: {
+              heading: "Meet Chief Ground Instructor",
+              subheading: "Capt. Navrang Singh",
+              instructorName: "Capt. Navrang Singh",
+              role: "Chief Flying Instructor & Founder",
+              experience: "37+ Years Flight Operations",
+              bio: "Capt. Navrang Singh strips DGCA syllabi down to first principles. Air Regulations, Technical General, Navigation, Meteorology, RTR - taught the way you'll actually use them in the cockpit.",
+            },
+          },
+        ],
+      },
+      {
+        name: "Dwarka Campus Walkthrough",
+        settings: { background: "white", padding: "normal" },
+        blocks: [
+          {
+            type: "campus_walkthrough",
+            props: {
+              title: "Modern Ground Training Facility in Dwarka",
+              subtitle: "Ramphal Chowk, Sector 9, Dwarka, New Delhi · Less than 1 km from Palam and Sector 9 Metro Stations.",
+              features: [
+                "Air-conditioned smart lecture rooms",
+                "Airbus A320 procedural trainer",
+                "Comprehensive DGCA exam question bank",
+                "Free 90-minute demo class with Capt. Navrang",
+              ],
+            },
+          },
+        ],
+      },
+      {
+        name: "Frequently Asked Questions",
+        settings: { background: "light", padding: "normal" },
+        blocks: [
+          {
+            type: "faq",
+            props: {
+              title: "Frequently Asked Questions",
+              items: [
+                {
+                  question: "What are the eligibility requirements for CPL Ground School?",
+                  answer: "Candidates must have cleared 10+2 with Physics and Mathematics (or equivalent NIOS certification) and be at least 17 years old to begin ground training.",
+                },
+                {
+                  question: "Is Airborne Aviation an FTO or a Ground School?",
+                  answer: "Airborne is a specialist DGCA ground school and airline cadet preparation academy. We guide flight training placements with top partner flying clubs in India and abroad.",
+                },
+                {
+                  question: "Which medical certificate is required before enrolling?",
+                  answer: "You can start ground school with a DGCA Class 2 Medical certificate. Class 1 Medical is required prior to starting flight training.",
+                },
+              ],
+            },
+          },
+        ],
+      },
+      {
+        name: "Visit Academy CTA",
+        settings: { background: "navy", padding: "normal" },
+        blocks: [
+          {
+            type: "cta_banner",
+            props: {
+              title: "Visit Our Dwarka Center & Sit In On A Class",
+              description: "Meet Capt. Navrang Singh in person. Free 90-minute demo class with zero commitment.",
+              buttonText: "Book Free Counseling Session",
+              buttonLink: "#contact",
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
     id: "lead_magnet_page",
     name: "Lead Generation & Starter Kit",
     description: "High-converting funnel page with gated PDF download and WhatsApp quick enquiry.",

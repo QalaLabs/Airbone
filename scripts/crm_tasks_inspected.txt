@@ -1,0 +1,204 @@
+=== CRM-01 | Priority: P0 | Status: To-Do ===
+Title: Facebook Lead Ads Webhook Integration
+Specification:
+Implement Facebook Graph API webhook endpoint matching Google Ads pattern; ingest and persist utm_campaign, adset_name, and ad_name on each lead (handles 65% of all inbound leads). Target: CRM/src/app/api/webhooks/facebook-lead/route.ts, lead.service.ts.
+
+Acceptance Criteria:
+Posting FB lead test payload returns 200, creates lead record, and maps ad parameters.
+
+Client Ref: Part 1 (Item 1)
+
+------------------------------------------------------------
+
+=== CRM-02 | Priority: P0 | Status: To-Do ===
+Title: Phone Deduplication by Last 10 Digits
+Specification:
+Normalize phone inputs to last 10 digits; flag duplicate leads automatically across CSV bulk import, website forms, and ad webhooks. Target: CRM/src/lib/services/lead.service.ts, lead.schema.ts.
+
+Acceptance Criteria:
+Importing or submitting duplicate 10-digit phone sets isDuplicate=true and links duplicate ID.
+
+Client Ref: Part 1 (Item 4)
+
+------------------------------------------------------------
+
+=== CRM-03 | Priority: P0 | Status: To-Do ===
+Title: Decouple 1:1 Lead-to-Deal Constraint (1:N Deals)
+Specification:
+In CRM/prisma/schema.prisma, drop @@unique([orgId, leadId]) on Deal and add @@index([orgId, leadId]). Refactor ensureDealForLead to support active deal per course. Target: schema.prisma, deal.service.ts.
+
+Acceptance Criteria:
+Existing student can open Deal #2 for a second course without resetting Deal #1.
+
+Client Ref: New Architectural Blueprint
+
+------------------------------------------------------------
+
+=== CRM-04 | Priority: P0 | Status: To-Do ===
+Title: Decouple Call Dispositions from Commercial Stages
+Specification:
+Add lastDisposition (RINGING, SWITCHED_OFF, BUSY, etc.) and dispositionAt to Lead. Ensure logging a call updates disposition and timeline, but leaves commercial stage (PROSPECT, INTERESTED) untouched. Target: schema.prisma, lead.service.ts.
+
+Acceptance Criteria:
+Logging an unanswered call does not remove a lead from the active sales pipeline stage.
+
+Client Ref: New Architectural Blueprint
+
+------------------------------------------------------------
+
+=== CRM-05 | Priority: P0 | Status: To-Do ===
+Title: Universal Soft-Delete / Recycle Bin Architecture
+Specification:
+Add deletedAt and deletedBy to Leads, Admissions, and Students. Replace @@unique([orgId, phone]) with PostgreSQL partial index CREATE UNIQUE INDEX leads_org_id_phone_active ON leads (org_id, phone) WHERE deleted_at IS NULL;. Build Admin Recycle Bin view. Target: schema.prisma, CRM/src/app/(dashboard)/settings/recycle-bin/page.tsx.
+
+Acceptance Criteria:
+Leads/students moved to Recycle Bin can be restored; phone numbers don't conflict on re-inquiry.
+
+Client Ref: New Request 5
+
+------------------------------------------------------------
+
+=== CRM-06 | Priority: P0 | Status: To-Do ===
+Title: Dedicated Fee Collections Page (/finance/collections)
+Specification:
+Build two-table collections view: "Fees Due This Month" and "Overdue Fees". Display Student, Admission Date, Course Fees, Pending Amount, Due Date, Remarks. Remarks sync to unified timeline. Format all currency (₹30,000). Target: CRM/src/app/(dashboard)/finance/collections/page.tsx.
+
+Acceptance Criteria:
+Page renders accurate receivables; remarks update student timeline; currency formatted.
+
+Client Ref: Part 2 (Item 11) & New Request 1
+
+------------------------------------------------------------
+
+=== CRM-07 | Priority: P1 | Status: To-Do ===
+Title: Full Kanban Pipeline Mapping
+Specification:
+Map all active lead statuses (Ringing, Connected, Not Contactable, Callback) into explicit columns on /crm/lead-pipeline so all 284 open leads are visible. Target: CRM/src/app/(dashboard)/crm/lead-pipeline/page.tsx.
+
+Acceptance Criteria:
+Kanban board displays all 284 active leads across logical stages.
+
+Client Ref: Part 2 (Item 6)
+
+------------------------------------------------------------
+
+=== CRM-08 | Priority: P1 | Status: To-Do ===
+Title: Dashboard vs Analytics Metric Unification
+Specification:
+Standardize SQL calculation definitions between Dashboard and Analytics for "Pending vs Today's Follow-ups", "Monthly Leads", and "Admissions Count". Target: CRM/src/lib/analytics/report.service.ts, CRM/src/app/(dashboard)/page.tsx.
+
+Acceptance Criteria:
+Dashboard cards and Analytics report display identical numbers for identical timeframes.
+
+Client Ref: Part 2 (Item 7)
+
+------------------------------------------------------------
+
+=== CRM-09 | Priority: P1 | Status: To-Do ===
+Title: Course Interest Dropdown Normalization
+Specification:
+Convert free-text courseInterest into an enum/dropdown fed directly from Course Manager. Run migration script to map existing 15+ legacy variants ("CPL", "CPL Ground School", etc.) into canonical course IDs. Target: lead.schema.ts, scripts/migrate-course-interest.ts.
+
+Acceptance Criteria:
+Lead form shows course dropdown; legacy database records normalized.
+
+Client Ref: Part 2 (Item 9)
+
+------------------------------------------------------------
+
+=== CRM-10 | Priority: P1 | Status: To-Do ===
+Title: Mandatory UTM & Landing Page Capture
+Specification:
+Capture and persist utm_source, utm_medium, utm_campaign, utm_content, utm_term, and landingPage across all website forms, API intake, and webhooks. Target: src/components/LeadForm.jsx, CRM/src/app/api/v1/leads/route.ts.
+
+Acceptance Criteria:
+New inbound leads show complete UTM tracking and source landing page URL.
+
+Client Ref: Part 2 (Item 10)
+
+------------------------------------------------------------
+
+=== CRM-11 | Priority: P1 | Status: To-Do ===
+Title: Payment Ledger Reversal / Void & Audit Log
+Specification:
+Replace "Delete" button on completed receipts with a "Void / Reverse" modal that creates a negative offsetting transaction and logs user audit trail. Add "REGISTRATION" to Fee Type filter. Target: CRM/src/app/(dashboard)/payments/page.tsx, payment.service.ts.
+
+Acceptance Criteria:
+Completed receipts cannot be purged; voiding creates audit trail; filter includes Registration.
+
+Client Ref: Part 2 (Item 11)
+
+------------------------------------------------------------
+
+=== CRM-12 | Priority: P1 | Status: To-Do ===
+Title: Online Payment Gateway (Razorpay) Integration
+Specification:
+Wire Razorpay payment gateway integration to generate dynamic payment links with fee item breakdown, enabling the "Pay" button. Target: CRM/src/lib/payments/razorpay.service.ts, CRM/src/app/api/v1/payments/link/route.ts.
+
+Acceptance Criteria:
+Clicking "Pay" generates Razorpay checkout link; webhook updates ledger upon success.
+
+Client Ref: Part 2 (Item 12)
+
+------------------------------------------------------------
+
+=== CRM-13 | Priority: P2 | Status: To-Do ===
+Title: Mandatory Meeting Fields on Completion
+Specification:
+In the Meetings module, require meetingMode (Online / Campus Visit), duration, and outcome when marking a meeting status as COMPLETED. Target: CRM/src/app/(dashboard)/meetings/page.tsx, meeting.schema.ts.
+
+Acceptance Criteria:
+Counselor cannot mark meeting completed without selecting mode and outcome.
+
+Client Ref: Part 2 (Item 13)
+
+------------------------------------------------------------
+
+=== CRM-14 | Priority: P0 | Status: Verified ===
+Title: IST-Safe Follow-up Serialization (5.5h Fix)
+Specification:
+Implemented toISTInput() and fromISTInput() (+330 min) in lead detail to fix UTC round-trip drift. Target: CRM/src/app/(dashboard)/leads/[id]/page.tsx.
+
+Acceptance Criteria:
+Follow-up time remains rock-solid in IST after save and refresh.
+
+Client Ref: CSAT / Section Remediation (I7)
+
+------------------------------------------------------------
+
+=== CRM-15 | Priority: P1 | Status: Verified ===
+Title: Contact Info Under Name & Prev/Next Chevrons
+Specification:
+Rendered formatted phone and email directly under lead name; added Next/Previous lead chevrons. Target: CRM/src/app/(dashboard)/leads/[id]/page.tsx.
+
+Acceptance Criteria:
+Counselor can navigate sequentially through lead list without returning to table.
+
+Client Ref: CSAT / Section Remediation (H1, I5)
+
+------------------------------------------------------------
+
+=== CRM-16 | Priority: P1 | Status: Verified ===
+Title: Deals to Admission Dossier Auto-Redirect
+Specification:
+Advancing deal to ENROLLED automatically creates/links student record and redirects to /admissions?id=.... Target: CRM/src/app/(dashboard)/crm/deals/page.tsx.
+
+Acceptance Criteria:
+Deal conversion creates admission dossier and opens it instantly.
+
+Client Ref: CSAT / Section Remediation (G2)
+
+------------------------------------------------------------
+
+=== CRM-17 | Priority: P1 | Status: Verified ===
+Title: Date/Time Range Filter & CSV Report Export
+Specification:
+Added IST date/time range picker with dynamic metric recalculation and one-click CSV download. Target: CRM/src/app/(dashboard)/crm/analytics/page.tsx.
+
+Acceptance Criteria:
+Playwright E2E passing (csat.spec.mjs); exports clean CSV report.
+
+Client Ref: CSAT / Section Remediation
+
+------------------------------------------------------------
+

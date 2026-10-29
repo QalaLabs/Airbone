@@ -22,6 +22,7 @@ import Honeypot from '@/components/Honeypot'
 import { HONEYPOT_FIELD, readHoneypot } from '@/utils/honeypot'
 import { WHATSAPP_HREF } from '@/lib/whatsapp'
 import { CANONICAL_COURSE_OPTIONS } from '@/lib/publicCourses'
+import { DEFAULT_HOME_CONTENT, resolveHomeContent } from '@/lib/cms/homeContent'
 
 // Premium FX components — pure UI, no backend dependencies
 import {
@@ -321,13 +322,17 @@ function RevealLine({ children, delay = 0 }) {
   )
 }
 
-function HeroChapter({ onBook }) {
+function HeroChapter({ onBook, content }) {
+  const hero = content?.hero || DEFAULT_HOME_CONTENT.hero
   const ref = useRef(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
   const yBg = useTransform(scrollYProgress, [0, 1], ['0%', '22%'])
   const scale = useTransform(scrollYProgress, [0, 1], [1, 1.03])
   const fade = useTransform(scrollYProgress, [0, 0.75], [1, 0])
   const textY = useTransform(scrollYProgress, [0, 1], ['0%', '-18%'])
+
+  const headlineAccent = hero.headlineAccent || 'Cockpit'
+  const secondLineBase = (hero.headlineLine2 || 'To Cockpit').replace(headlineAccent, '').trim()
 
   return (
     <section
@@ -375,13 +380,13 @@ function HeroChapter({ onBook }) {
           className="hero-eyebrow"
         >
           <span className="hero-eyebrow-rule" aria-hidden />
-          <span>Airborne Aviation · Dwarka, Delhi · Est. 2009</span>
+          <span>{hero.eyebrow}</span>
         </motion.div>
 
         <h1 className="hero-headline">
-          <RevealLine delay={0.2}>From Classroom</RevealLine>
+          <RevealLine delay={0.2}>{hero.headlineLine1}</RevealLine>
           <RevealLine delay={0.4}>
-            To <span className="hero-headline-accent">Cockpit</span>
+            {secondLineBase ? `${secondLineBase} ` : ''}<span className="hero-headline-accent">{headlineAccent}</span>
           </RevealLine>
         </h1>
 
@@ -391,7 +396,7 @@ function HeroChapter({ onBook }) {
           transition={{ delay: 0.55, duration: 0.7 }}
           className="hero-tagline"
         >
-          Ab India Bharega Udaan
+          {hero.tagline}
         </motion.p>
 
         <motion.div
@@ -401,8 +406,7 @@ function HeroChapter({ onBook }) {
           className="hero-footer-wrapper"
         >
           <p className="hero-support">
-            Founder-led DGCA-compliant ground school since 2009 for CPL &amp; ATPL. Mentor-led training under
-            Capt. Navrang Singh - clearing exams, building careers, restarting dreams.
+            {hero.support}
           </p>
 
           <div className="hero-btn-container">
@@ -413,14 +417,14 @@ function HeroChapter({ onBook }) {
                 className="reserve-seat-btn"
                 aria-label="Enrol now at Airborne Aviation"
               >
-                Enrol Now
+                {hero.primaryCta}
                 <span className="reserve-seat-arrow" aria-hidden>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
                 </span>
               </button>
             </Magnetic>
             <a href="/courses" className="hero-secondary-cta">
-              Explore Courses
+              {hero.secondaryCta}
             </a>
           </div>
         </motion.div>
@@ -444,8 +448,8 @@ function HeroChapter({ onBook }) {
 /* ─────────────────────────────────────
    BOARDING STRIP - Animated stats below hero
 ───────────────────────────────────── */
-function BoardingStrip() {
-  const stats = [
+function BoardingStrip({ content }) {
+  const stats = content?.stats || [
     { value: 2009, prefix: 'Since ', label: 'DGCA-Compliant ground school' },
     { value: 5, suffix: '/5', label: 'DGCA papers cleared in 3 months' },
     { value: 2500, suffix: '+', label: 'Students sent to the cockpit' },
@@ -482,7 +486,8 @@ function BoardingStrip() {
 /* ─────────────────────────────────────
    FOUNDER - Dark navy, stat grid
 ───────────────────────────────────── */
-function FounderSection() {
+function FounderSection({ content }) {
+  const mentor = content?.mentor || DEFAULT_HOME_CONTENT.mentor
   return (
     <section id="founder" style={{ position: 'relative', padding: 'clamp(2.5rem,5vw,4.5rem) clamp(1.5rem,5vw,4rem)', background: 'var(--paper)', color: 'var(--ink)', overflow: 'hidden' }}>
       {/* Ambient background glow */}
@@ -499,12 +504,12 @@ function FounderSection() {
       <div className="responsive-grid-founder container-xl" style={{ position: 'relative' }}>
         {/* Left: Text content */}
         <div>
-          <div className="chapter-num" style={{ color: 'var(--gold)', marginBottom: '1.5rem' }}>The Mentor</div>
+          <div className="chapter-num" style={{ color: 'var(--gold)', marginBottom: '1.5rem' }}>{mentor.heading || 'The Mentor'}</div>
           <h2 className="display-xl" style={{ fontSize: 'clamp(2.2rem,5vw,4.5rem)', color: 'var(--navy)' }}>
             Capt. Navrang <span style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--gold)' }}>Singh.</span>
           </h2>
           <p style={{ marginTop: '1.5rem', color: 'rgba(33,33,33,0.75)', fontSize: '0.9375rem', lineHeight: 1.7, maxWidth: '28rem', fontFamily: 'var(--font-b)' }}>
-            Capt. Navrang Singh strips DGCA syllabi down to first principles. Air Regulations, Technical General, Navigation, Meteorology, RTR - taught the way you'll actually use them in the cockpit.
+            {mentor.bio || "Capt. Navrang Singh strips DGCA syllabi down to first principles. Air Regulations, Technical General, Navigation, Meteorology, RTR - taught the way you'll actually use them in the cockpit."}
           </p>
 
           <div style={{ marginTop: '2.5rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'rgba(0,39,76,0.08)', maxWidth: '28rem', width: '100%' }}>
@@ -2537,6 +2542,22 @@ function CoursesCounsellingCall({ onBook }) {
 export default function HomePage() {
   const [bookingOpen, setBookingOpen] = useState(false)
   const [bookingCourse, setBookingCourse] = useState(null)
+  const [cmsContent, setCmsContent] = useState(DEFAULT_HOME_CONTENT)
+
+  useEffect(() => {
+    let active = true
+    fetch('/api/public-proxy/pages?slug=home')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!active || !data) return
+        const resolved = resolveHomeContent(data)
+        setCmsContent(resolved)
+      })
+      .catch(() => {})
+    return () => {
+      active = false
+    }
+  }, [])
   
   useEffect(() => {
     document.body.classList.add('is-homepage')
@@ -2645,10 +2666,10 @@ export default function HomePage() {
       {/* Page sections */}
       <main>
         {/* Hero */}
-        <HeroChapter onBook={openBooking} />
+        <HeroChapter onBook={openBooking} content={cmsContent} />
 
         {/* Stats strip */}
-        <BoardingStrip />
+        <BoardingStrip content={cmsContent} />
 
         {/* Airline partner marquee */}
         <div className="desktop-only-block">
@@ -2672,7 +2693,7 @@ export default function HomePage() {
         <PilotCareerOutlook />
 
         {/* Founder */}
-        <FounderSection />
+        <FounderSection content={cmsContent} />
 
         {/* Pilot wall mosaic */}
         <SuccessMosaic image="/footage/pilot-portrait.jpg" />

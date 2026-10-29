@@ -1,0 +1,132 @@
+=== CMS-01 | Priority: P0 | Status: To-Do ===
+Title: Wire Payload CMS as Native Headless CMS
+Specification:
+Embed Payload CMS (payloadcms/payload) into the monorepo. Create collections for Courses, Articles, Alumni, Media, and Navigation. Wire website frontend to fetch from Payload REST/GraphQL API. Target: payload.config.ts, src/lib/payload.js.
+
+Acceptance Criteria:
+Website content (blogs, courses, menus, media) managed dynamically via Payload admin panel.
+
+Client Ref: Part 2 (Item 14) & New Request 2
+
+------------------------------------------------------------
+
+=== CMS-02 | Priority: P0 | Status: To-Do ===
+Title: Course Manager Crash on "View Details"
+Specification:
+Fix TypeError: Cannot read properties of undefined (reading 'map') in courses/page-60eebd0a94534814.js by adding optional chaining (course?.modules?.map(...)) and empty fallback arrays. Target: CRM/src/app/(dashboard)/courses/[id]/page.tsx.
+
+Acceptance Criteria:
+Clicking "View Details" on any course renders course overview without JS runtime crash.
+
+Client Ref: Part 1 (Item 2)
+
+------------------------------------------------------------
+
+=== CMS-03 | Priority: P0 | Status: To-Do ===
+Title: Blog Engine Overhaul & Hardcoded Post Migration
+Specification:
+Add Rich-Text HTML editor (Slate/Lexical); add SEO title and description fields; remove 5,000 character limit; fix thumbnail save bug; fix button labels ("Create Article" / "Views"). Migrate the 4 hardcoded website blog posts into CRM/Payload. Target: CRM/src/app/(dashboard)/blog/page.tsx, src/app/blog/page.jsx.
+
+Acceptance Criteria:
+Form saves rich-text articles with images; 4 website blogs editable from admin dashboard.
+
+Client Ref: Part 1 (Item 3)
+
+------------------------------------------------------------
+
+=== CMS-04 | Priority: P0 | Status: To-Do ===
+Title: Host Cabin Crew Starter Kit PDF Locally
+Specification:
+Host provided cabin-crew-starter-kit.pdf under /public/assets/downloads/cabin-crew-starter-kit.pdf so download URL remains static and internally hosted. Target: Airbone/public/assets/downloads/cabin-crew-starter-kit.pdf.
+
+Acceptance Criteria:
+Navigating to /assets/downloads/cabin-crew-starter-kit.pdf returns HTTP 200 with PDF payload.
+
+Client Ref: Cabin Crew Email Feedback
+
+------------------------------------------------------------
+
+=== CMS-05 | Priority: P1 | Status: To-Do ===
+Title: Website & CRM Course Slug Synchronization
+Specification:
+Align 12 website course pages with CRM courses; harmonize slug URLs (e.g., /courses/commercial-pilot-license-cpl vs /cpl-ground-classes) and wire dynamic syllabus tabs. Target: src/lib/schema/courseRegistry.js, CRM/src/lib/services/course.service.ts.
+
+Acceptance Criteria:
+Course details edited in CRM update the public website course page automatically.
+
+Client Ref: Part 2 (Item 14)
+
+------------------------------------------------------------
+
+=== CMS-06 | Priority: P1 | Status: To-Do ===
+Title: Jobs Guidance Track Card Template
+Specification:
+For guidance tracks, suppress "Now hiring", salary range, and employment type badges; render "Apply on Official Airline Careers" CTA linking to official URL. Target: src/app/jobs/JobsClient.jsx.
+
+Acceptance Criteria:
+Non-hiring guidance tracks display clean advice layout with external airline career links.
+
+Client Ref: Part 3 (Item 21)
+
+------------------------------------------------------------
+
+=== CMS-07 | Priority: P2 | Status: To-Do ===
+Title: Resources Download Intro Copy Update
+Specification:
+Replace bot warning with: "Enter your name and phone to download free guides". Target: src/app/resources/page.jsx.
+
+Acceptance Criteria:
+Resources page renders user-friendly lead-generation copy.
+
+Client Ref: Part 5 (Item 35)
+
+------------------------------------------------------------
+
+=== CMS-08 | Priority: P2 | Status: To-Do ===
+Title: Next Batch Start Dates on Course Pages
+Specification:
+Fetch and display next upcoming batch start date dynamically from CRM course batches on course pages. Target: src/app/courses/*/page.jsx.
+
+Acceptance Criteria:
+Course hero shows live "Next Batch: [Date]" linked to CRM batch data.
+
+Client Ref: Part 6 (Item 38)
+
+------------------------------------------------------------
+
+=== CMS-09 | Priority: P1 | Status: Verified ===
+Title: Bulk Job CSV Import with Validation
+Specification:
+Implemented CSV upload with client-side preview, validation error feedback, duplicate check, and dry-run testing. Target: CRM/src/app/(dashboard)/jobs/page.tsx.
+
+Acceptance Criteria:
+Verified via Playwright E2E (csat.spec.mjs).
+
+Client Ref: CSAT
+
+------------------------------------------------------------
+
+=== CMS-10 | Priority: P1 | Status: Verified ===
+Title: External Job Scraper Webhook API
+Specification:
+Created secure provider-agnostic ingestion endpoint (/api/webhooks/jobs-ingest) secured by revocable API keys. Target: CRM/src/app/api/webhooks/jobs-ingest/route.ts.
+
+Acceptance Criteria:
+Verified via Playwright E2E (csat.spec.mjs).
+
+Client Ref: CSAT
+
+------------------------------------------------------------
+
+=== CMS-11 | Priority: P2 | Status: Verified ===
+Title: Airline Partner Logo Rendering
+Specification:
+Circular logo rendering with fallback airplane icon (✈). Target: src/app/jobs/JobsClient.jsx.
+
+Acceptance Criteria:
+Verified across job cards.
+
+Client Ref: CSAT
+
+------------------------------------------------------------
+

@@ -9,6 +9,7 @@ import CourseReviews from '@/components/CourseReviews'
 import JsonLd from '@/components/JsonLd'
 import { buildCoursePageGraph } from '@/lib/schema'
 import { COURSE_SCHEMA } from '@/lib/schema/courseRegistry'
+import { loadHybridPage } from '@/lib/cms/hybridContent'
 
 export const metadata = {
   title: 'Cadet Pilot Program Prep IndiGo, Air India, Akasa | Airborne',
@@ -87,7 +88,19 @@ const CADET_SELECTIONS = [
   },
 ]
 
-export default function CadetPreparationPage() {
+export default async function CadetPreparationPage() {
+  const hybrid = await loadHybridPage('cadet-preparation').catch(() => null)
+  const sections = hybrid?.sections || []
+  const heroSec = sections.find((s) => s.blocks?.some((b) => b.type === 'hero' || b.blockType?.type === 'hero') || s._template === 'hero' || s.name?.toLowerCase().includes('hero'))
+  const heroProps = heroSec?.blocks?.find((b) => b.type === 'hero' || b.blockType?.type === 'hero')?.props || heroSec || {}
+
+  const mentorSec = sections.find((s) => s.blocks?.some((b) => b.type === 'mentor_card' || b.blockType?.type === 'mentor_card') || s._template === 'mentor_card' || s.name?.toLowerCase().includes('mentor'))
+  const mentorProps = mentorSec?.blocks?.find((b) => b.type === 'mentor_card' || b.blockType?.type === 'mentor_card')?.props || mentorSec || {}
+
+  const heroTagline = heroProps.heading || 'A DIRECT ROUTE TO THE AIRLINE COCKPIT'
+  const mentorHeading = mentorProps.heading || 'LEARN FROM AIRLINE PILOTS'
+  const mentorSubheading = mentorProps.subheading || 'WHY SETTLE FOR AN ORDINARY INSTRUCTOR WHEN AN AIRLINE PILOT CAN PREPARE YOU?'
+
   return (
     <>
       <JsonLd data={coursePageGraph} />
@@ -115,7 +128,7 @@ export default function CadetPreparationPage() {
             {/* 1 · HERO — TAGLINE + INTRO ENDING CHANGED */}
             <div>
               <div style={{ display: 'inline-block', background: 'rgba(219,36,30,0.1)', border: '1px solid rgba(219,36,30,0.3)', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '0.85rem', fontFamily: 'var(--font-h)', fontWeight: 700, letterSpacing: '0.08em', color: '#DB241E', textTransform: 'uppercase', marginBottom: '1rem' }}>
-                A DIRECT ROUTE TO THE AIRLINE COCKPIT
+                {heroTagline}
               </div>
               <span className="badge" style={{ borderColor: 'var(--red)', background: 'rgba(219,36,30,0.06)', color: 'var(--red)', boxShadow: 'none' }}>
                 📍 Dwarka, Delhi · ₹50,000
@@ -229,7 +242,7 @@ export default function CadetPreparationPage() {
                     marginBottom: '0.6rem',
                   }}
                 >
-                  LEARN FROM AIRLINE PILOTS
+                  {mentorHeading}
                 </div>
                 <h3
                   style={{
@@ -243,7 +256,7 @@ export default function CadetPreparationPage() {
                     margin: '0 0 0.85rem',
                   }}
                 >
-                  WHY SETTLE FOR AN ORDINARY INSTRUCTOR WHEN AN AIRLINE PILOT CAN PREPARE YOU?
+                  {mentorSubheading}
                 </h3>
                 <p
                   style={{

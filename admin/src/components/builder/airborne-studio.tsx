@@ -29,6 +29,7 @@ import {
   ChevronDown,
   Trash2,
   Clock,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +57,7 @@ import {
 } from "./component-registry";
 import { VisualCanvas } from "./visual-canvas";
 import { RightInspector } from "./right-inspector";
+import { ContentMode } from "./content-mode";
 import type { PageModel, PageStatus, PageVersionModel } from "@/types";
 
 interface AirborneStudioProps {
@@ -102,11 +104,12 @@ export function AirborneStudio({ pageId }: AirborneStudioProps) {
     future: [],
   });
 
+  const [viewMode, setViewMode] = React.useState<"visual" | "content">("visual");
   const [saving, setSaving] = React.useState(false);
   const [isDirty, setIsDirty] = React.useState(false);
   const [device, setDevice] = React.useState<"desktop" | "tablet" | "mobile">("desktop");
   const [previewMode, setPreviewMode] = React.useState(false);
-  const [leftTab, setLeftTab] = React.useState<"widgets" | "layers">("widgets");
+  const [leftTab, setLeftTab] = React.useState<"widgets" | "layers" | "content">("widgets");
   const [componentCategory, setComponentCategory] = React.useState<string>("all");
   const [componentSearch, setComponentSearch] = React.useState("");
   const [publishDialogOpen, setPublishDialogOpen] = React.useState(false);
@@ -124,13 +127,72 @@ export function AirborneStudio({ pageId }: AirborneStudioProps) {
   // Initialize present from server page
   React.useEffect(() => {
     if (initialPage && !history.present) {
+      const cloned = structuredClone(initialPage);
+      const draftSections = (cloned.metadata as Record<string, any>)?.studioDraft?.sections;
+
+      if (Array.isArray(draftSections) && draftSections.length > 0) {
+        cloned.sections = draftSections;
+      } else if (!cloned.sections || cloned.sections.length <= 2) {
+        // Hydrate from canonical template if page has incomplete/stub sections
+        if (cloned.slug === "home") {
+          const homeTmpl = STARTER_TEMPLATES.find((t) => t.id === "home_page");
+          if (homeTmpl) {
+            cloned.sections = homeTmpl.sections.map((sec, sIdx) => ({
+              id: `sec-home-${sIdx + 1}`,
+              name: sec.name,
+              order: sIdx,
+              isVisible: true,
+              settings: sec.settings,
+              blocks: sec.blocks.map((b, bIdx) => ({
+                id: `blk-home-${sIdx + 1}-${bIdx + 1}`,
+                type: b.type,
+                blockTypeId: b.type,
+                order: bIdx,
+                props: b.props,
+                isVisible: true,
+              })),
+            })) as any;
+          }
+        } else if (cloned.slug === "cadet-preparation") {
+          const cadetTmpl = STARTER_TEMPLATES.find((t) => t.id === "cadet_page");
+          if (cadetTmpl) {
+            cloned.sections = cadetTmpl.sections.map((sec, sIdx) => ({
+              id: `sec-cadet-${sIdx + 1}`,
+              name: sec.name,
+              order: sIdx,
+              isVisible: true,
+              settings: sec.settings,
+              blocks: sec.blocks.map((b, bIdx) => ({
+                id: `blk-cadet-${sIdx + 1}-${bIdx + 1}`,
+                type: b.type,
+                blockTypeId: b.type,
+                order: bIdx,
+                props: b.props,
+                isVisible: true,
+              })),
+            })) as any;
+          }
+        }
+      }
+
       setHistory({
         past: [],
-        present: structuredClone(initialPage),
+        present: cloned,
         future: [],
       });
     }
   }, [initialPage, history.present]);
+
+  const handleLocateSection = React.useCallback((sectionId: string) => {
+    setViewMode("visual");
+    setSelection({ type: "section", sectionId });
+    setTimeout(() => {
+      const el = document.getElementById(`canvas-sec-${sectionId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 120);
+  }, []);
 
   const page = history.present;
 
@@ -674,6 +736,36 @@ export function AirborneStudio({ pageId }: AirborneStudioProps) {
             </button>
           </div>
 
+          {/* View Mode Switcher: Visual Canvas vs Content Mode */}
+          <div className="flex items-center bg-white/5 rounded-lg border border-white/10 p-0.5">
+            <button
+              type="button"
+              onClick={() => setViewMode("visual")}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition-colors ${
+                viewMode === "visual"
+                  ? "bg-primary text-white shadow-sm"
+                  : "text-muted-foreground hover:text-white"
+              }`}
+              title="Visual drag-and-drop page editor"
+            >
+              <Eye className="h-3.5 w-3.5" />
+              <span className="hidden md:inline">Visual Canvas</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("content")}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition-colors ${
+                viewMode === "content"
+                  ? "bg-primary text-white shadow-sm"
+                  : "text-muted-foreground hover:text-white"
+              }`}
+              title="Universal full-page structured text editor"
+            >
+              <FileText className="h-3.5 w-3.5" />
+              <span className="hidden md:inline">Content Mode</span>
+            </button>
+          </div>
+
           {/* Preview Toggle */}
           <button
             type="button"
@@ -774,26 +866,45 @@ export function AirborneStudio({ pageId }: AirborneStudioProps) {
         {!previewMode && (
           <aside className="w-72 shrink-0 border-r border-white/10 bg-slate-900/95 flex flex-col h-full overflow-hidden text-white">
             {/* Mode switch tabs */}
-            <div className="grid grid-cols-2 p-2 border-b border-white/10 bg-slate-950/40 gap-1">
+            <div className="grid grid-cols-3 p-2 border-b border-white/10 bg-slate-950/40 gap-1">
               <button
                 type="button"
-                onClick={() => setLeftTab("widgets")}
-                className={`py-1.5 text-xs font-bold rounded-md flex items-center justify-center gap-1.5 transition-colors ${
-                  leftTab === "widgets" ? "bg-primary text-white" : "text-muted-foreground hover:text-white"
+                onClick={() => {
+                  setLeftTab("widgets");
+                  setViewMode("visual");
+                }}
+                className={`py-1.5 text-[11px] font-bold rounded-md flex items-center justify-center gap-1 transition-colors ${
+                  leftTab === "widgets" && viewMode === "visual" ? "bg-primary text-white" : "text-muted-foreground hover:text-white"
                 }`}
               >
-                <Sparkles className="h-3.5 w-3.5" />
-                Components
+                <Sparkles className="h-3 w-3" />
+                Widgets
               </button>
               <button
                 type="button"
-                onClick={() => setLeftTab("layers")}
-                className={`py-1.5 text-xs font-bold rounded-md flex items-center justify-center gap-1.5 transition-colors ${
-                  leftTab === "layers" ? "bg-primary text-white" : "text-muted-foreground hover:text-white"
+                onClick={() => {
+                  setLeftTab("layers");
+                  setViewMode("visual");
+                }}
+                className={`py-1.5 text-[11px] font-bold rounded-md flex items-center justify-center gap-1 transition-colors ${
+                  leftTab === "layers" && viewMode === "visual" ? "bg-primary text-white" : "text-muted-foreground hover:text-white"
                 }`}
               >
-                <Layers className="h-3.5 w-3.5" />
-                Structure
+                <Layers className="h-3 w-3" />
+                Layers
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLeftTab("content");
+                  setViewMode("content");
+                }}
+                className={`py-1.5 text-[11px] font-bold rounded-md flex items-center justify-center gap-1 transition-colors ${
+                  viewMode === "content" ? "bg-primary text-white" : "text-muted-foreground hover:text-white"
+                }`}
+              >
+                <FileText className="h-3 w-3" />
+                Content
               </button>
             </div>
 
@@ -935,40 +1046,56 @@ export function AirborneStudio({ pageId }: AirborneStudioProps) {
           </aside>
         )}
 
-        {/* CENTER VISUAL CANVAS */}
-        <VisualCanvas
-          page={page}
-          device={device}
-          selection={selection}
-          onSelectBlock={(sectionId, blockId) => setSelection({ type: "block", sectionId, blockId })}
-          onSelectSection={(sectionId) => setSelection({ type: "section", sectionId })}
-          onAddSection={handleAddSection}
-          onMoveSection={handleMoveSection}
-          onDuplicateSection={handleDuplicateSection}
-          onDeleteSection={handleDeleteSection}
-          onAddBlock={handleAddBlock}
-          onMoveBlock={handleMoveBlock}
-          onDuplicateBlock={handleDuplicateBlock}
-          onDeleteBlock={handleDeleteBlock}
-          previewMode={previewMode}
-        />
-
-        {/* RIGHT INSPECTOR PANEL */}
-        {!previewMode && (
-          <RightInspector
-            selection={selection}
+        {/* CENTER WORKSPACE: VISUAL CANVAS OR CONTENT MODE */}
+        {viewMode === "content" ? (
+          <ContentMode
             page={page}
             onUpdateBlockProps={handleUpdateBlockProps}
-            onUpdateBlockStyle={handleUpdateBlockStyle}
-            onUpdateBlockResponsive={handleUpdateBlockResponsive}
             onUpdateSection={handleUpdateSection}
             onUpdatePageMeta={handleUpdatePageMeta}
-            onDuplicateBlock={handleDuplicateBlock}
-            onDeleteBlock={handleDeleteBlock}
-            onDuplicateSection={handleDuplicateSection}
-            onDeleteSection={handleDeleteSection}
-            onClose={() => setSelection(null)}
+            onLocateSection={handleLocateSection}
+            onSelectBlock={(secId, blkId) => {
+              setViewMode("visual");
+              setSelection({ type: "block", sectionId: secId, blockId: blkId });
+            }}
           />
+        ) : (
+          <>
+            <VisualCanvas
+              page={page}
+              device={device}
+              selection={selection}
+              onSelectBlock={(sectionId, blockId) => setSelection({ type: "block", sectionId, blockId })}
+              onSelectSection={(sectionId) => setSelection({ type: "section", sectionId })}
+              onAddSection={handleAddSection}
+              onMoveSection={handleMoveSection}
+              onDuplicateSection={handleDuplicateSection}
+              onDeleteSection={handleDeleteSection}
+              onAddBlock={handleAddBlock}
+              onMoveBlock={handleMoveBlock}
+              onDuplicateBlock={handleDuplicateBlock}
+              onDeleteBlock={handleDeleteBlock}
+              previewMode={previewMode}
+            />
+
+            {/* RIGHT INSPECTOR PANEL */}
+            {!previewMode && (
+              <RightInspector
+                selection={selection}
+                page={page}
+                onUpdateBlockProps={handleUpdateBlockProps}
+                onUpdateBlockStyle={handleUpdateBlockStyle}
+                onUpdateBlockResponsive={handleUpdateBlockResponsive}
+                onUpdateSection={handleUpdateSection}
+                onUpdatePageMeta={handleUpdatePageMeta}
+                onDuplicateBlock={handleDuplicateBlock}
+                onDeleteBlock={handleDeleteBlock}
+                onDuplicateSection={handleDuplicateSection}
+                onDeleteSection={handleDeleteSection}
+                onClose={() => setSelection(null)}
+              />
+            )}
+          </>
         )}
       </div>
 
