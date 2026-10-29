@@ -10,15 +10,18 @@ import { ok, handleError } from "@/lib/utils/response";
 import { ValidationError } from "@/lib/utils/errors";
 
 const agentCallSchema = z.object({
+  action: z.enum(["call_now", "retry", "toggle_auto_calling", "set_do_not_call"]).optional().default("call_now"),
   objective: z.string().max(2000).optional(),
   customInstructions: z.string().max(2000).optional(),
+  enabled: z.boolean().optional(),
+  doNotCall: z.boolean().optional(),
 });
 
 type Params = { params: Promise<{ id: string }> };
 
 /**
  * GET /api/v1/leads/[id]/agent-call
- * Returns agent calling readiness & recent voice activities for this lead.
+ * Returns automated calling status, telemetry, history, and active calling jobs for this lead.
  */
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
@@ -26,33 +29,75 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const { id } = await params;
     guard(ctx.user, "read", "leads");
 
-    const lead = await LeadService.getById(ctx, id);
+    const leadRecord = await LeadService.getById(ctx, id);
     const condition = getCounselorCondition(ctx.user);
-    guardRecord(ctx.user, "read", "leads", lead as unknown as Record<string, unknown>, condition);
+    guardRecord(ctx.user, "read", "leads", leadRecord as unknown as Record<string, unknown>, condition);
+
+    const lead = await prisma.lead.findUnique({
+      where: { id: leadRecord.id },
+    });
+    if (!lead) {
+      throw new ValidationError([{ path: ["lead"], message: "Lead not found" }]);
+    }
 
     // Fetch call activities for this lead
-    const callActivities = await prisma.leadActivity.findMany({
-      where: {
-        leadId: lead.id,
-        orgId: ctx.orgId,
-        activityType: "CALL",
-      },
-      orderBy: { createdAt: "desc" },
-      take: 10,
-    });
+    const [callActivities, callingJobs, activeCallsCount] = await Promise.all([
+      prisma.leadActivity.findMany({
+        where: {
+          leadId: lead.id,
+          orgId: ctx.orgId,
+          activityType: "CALL",
+        },
+        orderBy: { createdAt: "desc" },
+        take: 15,
+      }),
+      prisma.callingJob.findMany({
+        where: {
+          leadId: lead.id,
+          orgId: ctx.orgId,
+        },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      }),
+      AutoCallingService.getActiveCallsCount(ctx.orgId),
+    ]);
 
     const voiceAssistantUrl =
       process.env.VOICE_ASSISTANT_URL || "https://airborne-voice-assistant-368523757732.asia-south1.run.app";
-
-    const activeCallsCount = await AutoCallingService.getActiveCallsCount(ctx.orgId);
 
     return ok({
       leadId: lead.id,
       phone: lead.phone,
       hasPhone: !!lead.phone,
+      autoCallingEnabled: lead.autoCallingEnabled !== false,
+      doNotCall: lead.doNotCall === true,
+      latestCallStatus: lead.latestCallStatus || (callingJobs[0]?.status ?? null),
+      latestCallOutcome: lead.latestCallOutcome || (callingJobs[0]?.callOutcome ?? null),
+      lastCallAt: lead.lastCallAt || (callingJobs[0]?.callCompletedAt ?? null),
+      lastCallDuration: lead.lastCallDuration ?? (callingJobs[0]?.durationSecs ?? null),
+      callAttemptCount: lead.callAttemptCount || callingJobs.length,
+      lastCallSummary: lead.lastCallSummary || (callingJobs[0]?.summary ?? null),
       voiceAssistantConfigured: !!voiceAssistantUrl,
       activeCallsCount,
       maxConcurrentCalls: AutoCallingService.MAX_CONCURRENT_CALLS,
+      callingJobs: callingJobs.map((j) => ({
+        id: j.id,
+        status: j.status,
+        attemptCount: j.attemptCount,
+        providerCallId: j.providerCallId,
+        scheduledAt: j.scheduledAt,
+        callStartedAt: j.callStartedAt,
+        callAnsweredAt: j.callAnsweredAt,
+        callCompletedAt: j.callCompletedAt,
+        initiationLatencyMs: j.initiationLatencyMs,
+        durationSecs: j.durationSecs,
+        callOutcome: j.callOutcome,
+        recordingUrl: j.recordingUrl,
+        transcript: j.transcript,
+        summary: j.summary,
+        lastErrorMessage: j.lastErrorMessage,
+        createdAt: j.createdAt,
+      })),
       recentCalls: callActivities.map((a) => ({
         id: a.id,
         title: a.title,
@@ -69,7 +114,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
 /**
  * POST /api/v1/leads/[id]/agent-call
- * Initiates an outbound call from the AI Voice Assistant to the lead's phone number.
+ * Executes actions: call_now, retry, toggle_auto_calling, or set_do_not_call.
  */
 export async function POST(req: NextRequest, { params }: Params) {
   try {
@@ -77,15 +122,106 @@ export async function POST(req: NextRequest, { params }: Params) {
     const { id } = await params;
     guard(ctx.user, "write", "leads");
 
-    const lead = await LeadService.getById(ctx, id);
+    const leadRecord = await LeadService.getById(ctx, id);
     const condition = getCounselorCondition(ctx.user);
-    guardRecord(ctx.user, "write", "leads", lead as unknown as Record<string, unknown>, condition);
+    guardRecord(ctx.user, "write", "leads", leadRecord as unknown as Record<string, unknown>, condition);
 
+    const lead = await prisma.lead.findUnique({
+      where: { id: leadRecord.id },
+    });
+    if (!lead) {
+      throw new ValidationError([{ path: ["lead"], message: "Lead not found" }]);
+    }
+
+    const body = (await req.json().catch(() => ({}))) as unknown;
+    const parsed = agentCallSchema.parse(body ?? {});
+
+    // Action 1: Toggle Auto Calling for this lead
+    if (parsed.action === "toggle_auto_calling") {
+      const newEnabled = parsed.enabled ?? !lead.autoCallingEnabled;
+      await prisma.lead.update({
+        where: { id: lead.id },
+        data: { autoCallingEnabled: newEnabled, lastActivityAt: new Date() },
+      });
+
+      await prisma.leadActivity.create({
+        data: {
+          leadId: lead.id,
+          orgId: ctx.orgId,
+          performedBy: ctx.user.id,
+          activityType: "NOTE",
+          title: newEnabled ? "Automated Calling Enabled" : "Automated Calling Disabled",
+          notes: `Automated calling setting updated to ${newEnabled ? "ENABLED" : "DISABLED"} by ${ctx.user.name}.`,
+          outcome: "RECORDED",
+        },
+      });
+
+      return ok({
+        success: true,
+        message: `Automated calling ${newEnabled ? "enabled" : "disabled"} for this lead.`,
+        autoCallingEnabled: newEnabled,
+      });
+    }
+
+    // Action 2: Set Do-Not-Call (DND)
+    if (parsed.action === "set_do_not_call") {
+      const newDnd = parsed.doNotCall ?? true;
+      await prisma.lead.update({
+        where: { id: lead.id },
+        data: {
+          doNotCall: newDnd,
+          lastActivityAt: new Date(),
+        },
+      });
+
+      // If marked DND, cancel all pending/queued calling jobs immediately
+      if (newDnd) {
+        await prisma.callingJob.updateMany({
+          where: {
+            leadId: lead.id,
+            orgId: ctx.orgId,
+            status: { in: ["QUEUED", "RETRY_SCHEDULED"] },
+          },
+          data: {
+            status: "CANCELLED",
+            skipReason: "marked_do_not_call",
+          },
+        });
+      }
+
+      await prisma.leadActivity.create({
+        data: {
+          leadId: lead.id,
+          orgId: ctx.orgId,
+          performedBy: ctx.user.id,
+          activityType: "NOTE",
+          title: newDnd ? "Marked as Do Not Call (DND)" : "Removed from Do Not Call (DND)",
+          notes: newDnd
+            ? `Lead marked as DND by ${ctx.user.name}. All automated calling cancelled.`
+            : `DND status cleared by ${ctx.user.name}.`,
+          outcome: "RECORDED",
+        },
+      });
+
+      return ok({
+        success: true,
+        message: newDnd ? "Lead marked as Do-Not-Call. Automated calls cancelled." : "DND status removed.",
+        doNotCall: newDnd,
+      });
+    }
+
+    // Action 3: Call Now or Retry
     if (!lead.phone) {
       throw new ValidationError([{ path: ["phone"], message: "Lead does not have a phone number" }]);
     }
 
-    // Strict concurrency check: max 2 active calls permitted simultaneously
+    if (lead.doNotCall) {
+      throw new ValidationError([
+        { path: ["do_not_call"], message: "Lead is marked as Do-Not-Call (DND). Unmark DND before calling." },
+      ]);
+    }
+
+    // Strict concurrency check
     const activeCalls = await AutoCallingService.getActiveCallsCount(ctx.orgId);
     if (activeCalls >= AutoCallingService.MAX_CONCURRENT_CALLS) {
       throw new ValidationError([
@@ -96,111 +232,21 @@ export async function POST(req: NextRequest, { params }: Params) {
       ]);
     }
 
-    const body = (await req.json().catch(() => ({}))) as unknown;
-    const parsed = agentCallSchema.parse(body ?? {});
+    const targetPhone = AutoCallingService.normalizePhone(lead.phone);
+    const attemptNumber = (lead.callAttemptCount || 0) + 1;
 
-    const voiceAssistantUrl =
-      process.env.VOICE_ASSISTANT_URL || "https://airborne-voice-assistant-368523757732.asia-south1.run.app";
-    const apiKey =
-      process.env.VOICE_ASSISTANT_API_KEY ||
-      process.env.API_SHARED_SECRET ||
-      "AbvgRHR33ZOCqBb2tLsslaCL69qc3UJvC4FDGFl9t2A";
+    const dispatchResult = await AutoCallingService.dispatchCall(ctx.orgId, lead, targetPhone, {
+      attemptNumber,
+      customNotes: parsed.objective
+        ? `Manual AI Agent Call initiated by ${ctx.user.name}. Objective: ${parsed.objective}`
+        : `Manual AI Agent Call initiated by counsellor ${ctx.user.name}.`,
+    });
 
-    // Format phone to E.164-compatible format for Indian carrier (+91...)
-    let targetPhone = lead.phone.replace(/[\s-]/g, "");
-    if (!targetPhone.startsWith("+")) {
-      const digitsOnly = targetPhone.replace(/\D/g, "");
-      if (digitsOnly.length === 10) {
-        targetPhone = `+91${digitsOnly}`;
-      } else if (digitsOnly.length === 12 && digitsOnly.startsWith("91")) {
-        targetPhone = `+${digitsOnly}`;
-      } else {
-        targetPhone = `+${digitsOnly}`;
-      }
-    }
-
-    const callPayload = {
-      phone: targetPhone,
-      name: lead.name || "Candidate",
-      course_interest: lead.courseInterest || "Commercial Pilot License (CPL)",
-      city: lead.city || undefined,
-      notes: parsed.objective || parsed.customInstructions || undefined,
-      call_objective: parsed.objective || "Lead qualification and counseling booking",
-      custom_instructions: parsed.customInstructions || undefined,
-      source: "CRM_AGENT_DISPATCH",
-    };
-
-    let dispatchResult: Record<string, unknown> = {};
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-    try {
-      const response = await fetch(`${voiceAssistantUrl.replace(/\/$/, "")}/api/calls/dispatch`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-API-Key": apiKey,
-        },
-        body: JSON.stringify(callPayload),
-        signal: controller.signal,
-      });
-
-      const resData = (await response.json().catch(() => ({}))) as Record<string, unknown>;
-
-      if (!response.ok) {
-        const errorMsg =
-          (typeof resData?.message === "string" && resData.message) ||
-          (typeof resData?.error === "string" && resData.error) ||
-          (typeof resData?.detail === "string" && resData.detail) ||
-          `Voice assistant dispatch failed (${response.status})`;
-        throw new Error(errorMsg);
-      }
-
-      dispatchResult = resData;
-    } catch (err: unknown) {
-      const error = err as Error;
-      if (error.name === "AbortError") {
-        throw new ValidationError([
-          { path: ["voice_assistant"], message: "Call dispatch timed out connecting to Voice Assistant." },
-        ]);
-      }
+    if (dispatchResult.status === "failed") {
       throw new ValidationError([
-        { path: ["voice_assistant"], message: error.message || "Failed to trigger AI agent call" },
+        { path: ["voice_assistant"], message: dispatchResult.error || "Failed to trigger AI agent call" },
       ]);
-    } finally {
-      clearTimeout(timeoutId);
     }
-
-    // Persist call initiation in CRM timeline as active (completedAt: null)
-    const activity = await prisma.leadActivity.create({
-      data: {
-        leadId: lead.id,
-        orgId: ctx.orgId,
-        performedBy: ctx.user.id,
-        activityType: "CALL",
-        title: "AI Voice Agent Call In Progress",
-        notes: `Outbound AI agent call dispatched to ${targetPhone} by counsellor ${ctx.user.name}.${
-          parsed.objective ? ` Objective: ${parsed.objective}` : ""
-        }`,
-        outcome: "IN_PROGRESS",
-        completedAt: null, // Active call until carrier completion webhook
-        metadata: {
-          phone: targetPhone,
-          provider: dispatchResult?.provider || "telecmi",
-          requestId: dispatchResult?.request_id || null,
-          greeting: dispatchResult?.greeting || null,
-          dispatchedBy: ctx.user.name,
-          dispatchedById: ctx.user.id,
-          dispatchedAt: new Date().toISOString(),
-          objective: parsed.objective || null,
-        },
-      },
-    });
-
-    await prisma.lead.update({
-      where: { id: lead.id },
-      data: { lastActivityAt: new Date() },
-    });
 
     await AuditService.write({
       orgId: ctx.orgId,
@@ -210,8 +256,9 @@ export async function POST(req: NextRequest, { params }: Params) {
       entityId: lead.id,
       newValue: {
         phone: targetPhone,
-        activityId: activity.id,
-        provider: dispatchResult?.provider,
+        activityId: dispatchResult.activityId,
+        jobId: dispatchResult.jobId,
+        status: dispatchResult.status,
       },
       ipAddress: ctx.ipAddress,
       userAgent: ctx.userAgent,
@@ -221,7 +268,8 @@ export async function POST(req: NextRequest, { params }: Params) {
       success: true,
       message: `AI Voice Agent call initiated to ${targetPhone}.`,
       dispatch: dispatchResult,
-      activityId: activity.id,
+      activityId: dispatchResult.activityId,
+      jobId: dispatchResult.jobId,
     });
   } catch (err) {
     return handleError(err);

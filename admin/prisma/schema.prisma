@@ -84,6 +84,19 @@ enum LeadSource {
   PNS_CALL
 }
 
+enum CallingJobStatus {
+  QUEUED
+  PROCESSING
+  INITIATED
+  RINGING
+  ANSWERED
+  COMPLETED
+  FAILED
+  RETRY_SCHEDULED
+  SKIPPED
+  CANCELLED
+}
+
 enum ActivityType {
   CALL
   EMAIL
@@ -267,6 +280,7 @@ model Organization {
   interaktLeadSyncs      InteraktLeadSync[]
   interaktAutomations    InteraktAutomation[]
   integrationKeys        IntegrationKey[]        @relation("OrgIntegrationKeys")
+  callingJobs            CallingJob[]
 
   @@index([slug])
   @@index([isActive])
@@ -556,6 +570,17 @@ model Lead {
   student               Student?               @relation("LeadStudent")
   whatsappConversations WhatsAppConversation[]
   interaktSyncs         InteraktLeadSync[]
+  latestCallStatus      String?                 @db.VarChar(50)
+  latestCallOutcome     String?                 @db.VarChar(50)
+  lastCallAt            DateTime?
+  lastCallDuration      Int?
+  callAttemptCount      Int                     @default(0)
+  nextCallAt            DateTime?
+  doNotCall             Boolean                 @default(false)
+  lastCallSummary       String?                 @db.Text
+  telecmiConversationId String?                 @db.VarChar(100)
+  autoCallingEnabled    Boolean                 @default(true)
+  callingJobs           CallingJob[]
 
   // CRM-05: phone uniqueness is enforced by the PostgreSQL partial index
   // `leads_org_id_phone_active` (orgId, phone) WHERE "deletedAt" IS NULL, so a
@@ -2504,4 +2529,63 @@ model FallbackLead {
   status     String   @default("pending")
 
   @@map("fallback_leads")
+}
+
+
+// ─── CALLING JOBS (AI VOICE ASSISTANT / TELECMI) ────────────────────────────
+
+model CallingJob {
+  id                    String           @id @default(uuid()) @db.Uuid
+  orgId                 String           @db.Uuid
+  leadId                String           @db.Uuid
+  provider              String           @default("telecmi") @db.VarChar(50)
+  status                CallingJobStatus @default(QUEUED)
+  phone                 String           @db.VarChar(50)
+  leadName              String?          @db.VarChar(255)
+  courseInterest        String?          @db.VarChar(255)
+  scheduledAt           DateTime         @default(now())
+  attemptCount          Int              @default(0)
+  maxAttempts           Int              @default(3)
+  nextAttemptAt         DateTime?
+  lockedAt              DateTime?
+  lockedBy              String?          @db.VarChar(100)
+  lastErrorCode         String?          @db.VarChar(100)
+  lastErrorMessage      String?          @db.Text
+  providerCallId        String?          @db.VarChar(100)
+  idempotencyKey        String           @db.VarChar(255)
+  skipReason            String?          @db.VarChar(100)
+
+  // Timing metrics
+  leadCreatedAt         DateTime?
+  jobCreatedAt          DateTime         @default(now())
+  jobStartedAt          DateTime?
+  providerRequestAt     DateTime?
+  providerAcceptedAt    DateTime?
+  callStartedAt         DateTime?
+  callAnsweredAt        DateTime?
+  callCompletedAt       DateTime?
+  initiationLatencyMs   Int?
+
+  // Call outcome
+  durationSecs          Int?
+  callOutcome           String?          @db.VarChar(50)
+  recordingUrl          String?          @db.Text
+  transcript            String?          @db.Text
+  summary               String?          @db.Text
+  requiresHumanFollowup Boolean          @default(false)
+  callbackRequestedAt   DateTime?
+
+  metadata              Json             @default("{}")
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  lead Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, idempotencyKey])
+  @@index([orgId, status, scheduledAt])
+  @@index([leadId])
+  @@index([providerCallId])
+  @@index([status, nextAttemptAt])
+  @@map("calling_jobs")
 }

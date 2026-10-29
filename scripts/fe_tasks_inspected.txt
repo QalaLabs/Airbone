@@ -1,0 +1,360 @@
+=== FE-01 | Priority: P0 | Status: To-Do ===
+Title: Sitewide DGCA Standardization to "DGCA-compliant"
+Specification:
+Replace all 33 instances of "DGCA Complied", "Complied", "approved", "certified", and "recognised" with "DGCA-compliant" (hyphenated). Target: src/app/**, src/components/**, metadata configs.
+
+Acceptance Criteria:
+Zero instances of banned words in codebase grep; "DGCA-compliant" renders on all pages.
+
+Client Ref: Part 3 (Item 15) & Exact Wording Email
+
+------------------------------------------------------------
+
+=== FE-02 | Priority: P0 | Status: To-Do ===
+Title: Homepage Meta Title & Social Tags Update
+Specification:
+Set page title, og:title, and twitter:title to "DGCA-Compliant Pilot Training in Delhi | Airborne Aviation". Target: src/app/page.jsx or root layout metadata.
+
+Acceptance Criteria:
+Browser tab and social scrapers reflect the exact new title string.
+
+Client Ref: Exact Wording Email (Item 1)
+
+------------------------------------------------------------
+
+=== FE-03 | Priority: P0 | Status: To-Do ===
+Title: Homepage Meta Description Update
+Specification:
+Set description, og:description, and twitter:description to "DGCA-compliant CPL & ATPL ground school in Dwarka, New Delhi, since 2009.". Target: src/app/page.jsx.
+
+Acceptance Criteria:
+Page source contains updated description meta tags.
+
+Client Ref: Exact Wording Email (Item 2)
+
+------------------------------------------------------------
+
+=== FE-04 | Priority: P0 | Status: To-Do ===
+Title: Homepage Stats Strip DGCA Copy
+Specification:
+In the stats banner, change label from "DGCA Complied" to "DGCA-Compliant". Target: src/components/StatsStrip.jsx / src/app/page.jsx.
+
+Acceptance Criteria:
+Visual verification on homepage desktop and mobile.
+
+Client Ref: Exact Wording Email (Item 3)
+
+------------------------------------------------------------
+
+=== FE-05 | Priority: P0 | Status: To-Do ===
+Title: Footer Compliance Copy Update
+Specification:
+In the global footer, change "DGCA Ground Standards Complied" to "DGCA-Compliant Ground Training". Target: src/components/PremiumFooter.jsx.
+
+Acceptance Criteria:
+Global footer renders the exact text sitewide.
+
+Client Ref: Exact Wording Email (Item 4)
+
+------------------------------------------------------------
+
+=== FE-06 | Priority: P0 | Status: To-Do ===
+Title: Google Search Console Instant Re-indexing
+Specification:
+In Google Search Console, submit URL inspection for https://www.airborneaviation.in/ and click "Request Indexing" immediately after deployment.
+
+Acceptance Criteria:
+Request submitted successfully; Google recrawl initiated.
+
+Client Ref: Part 4 (Item 28) & Exact Wording Email
+
+------------------------------------------------------------
+
+=== FE-07 | Priority: P0 | Status: To-Do ===
+Title: Cabin Crew Reviews to Gated Starter Kit Lead Magnet
+Specification:
+On /courses/cabin-crew-training, remove the "Student & Parent Reviews" section (Arjun Mehta, Sneha Reddy, Capt. Nipun Singh). Replace with a "Download: Cabin Crew Starter Kit" teaser block. Target: src/app/courses/cabin-crew-training/page.jsx.
+
+Acceptance Criteria:
+No pilot testimonials appear on cabin crew page; Starter Kit block renders.
+
+Client Ref: Cabin Crew Email Feedback
+
+------------------------------------------------------------
+
+=== FE-08 | Priority: P0 | Status: To-Do ===
+Title: Wire Cabin Crew Starter Kit Gated Download
+Specification:
+Gate the Starter Kit download behind the modal form (Name, Phone, Email mandatory). Upon submit, trigger direct client-side PDF download from /assets/downloads/cabin-crew-starter-kit.pdf and push lead to CRM. Target: src/components/Modal.jsx, src/lib/api.js.
+
+Acceptance Criteria:
+Form submit downloads the PDF immediately and registers lead in CRM with tag starter_kit_download.
+
+Client Ref: Cabin Crew Email Feedback
+
+------------------------------------------------------------
+
+=== FE-09 | Priority: P1 | Status: To-Do ===
+Title: Homepage Statistics & Placement Chart Removal
+Specification:
+Remove "Airborne Aviation supplies approximately 10% of new pilot placements (1,500 active pilots)" text and indicative placement chart. Replace with "2,500+ students trained since 2009". Target: src/app/page.jsx.
+
+Acceptance Criteria:
+Chart removed; updated statistic rendered clearly.
+
+Client Ref: Part 3 (Item 16)
+
+------------------------------------------------------------
+
+=== FE-10 | Priority: P1 | Status: To-Do ===
+Title: "Our Alumni Fly With" & Remove Vistara
+Specification:
+Retitle "Where our cockpits are" to "Our alumni fly with". Remove Vistara logo/airline (merged with Air India). Prepare grid for client's 6-8 named alumni. Target: src/components/AlumniSection.jsx.
+
+Acceptance Criteria:
+Section heading updated; Vistara removed.
+
+Client Ref: Part 3 (Item 17)
+
+------------------------------------------------------------
+
+=== FE-11 | Priority: P1 | Status: To-Do ===
+Title: Experience Phrasing to "since 2009"
+Specification:
+Replace all instances of "fifteen years", "15+ Years teaching", "15+ Yrs", "over 15 years", "15+ years of flight instruction" with "since 2009". Target: Homepage, /about, /courses/ground-school.
+
+Acceptance Criteria:
+Grep reveals zero "15+ years" marketing claims; all state "since 2009".
+
+Client Ref: Part 3 (Item 18)
+
+------------------------------------------------------------
+
+=== FE-12 | Priority: P1 | Status: To-Do ===
+Title: Tone Softening on Headlines
+Specification:
+Replace "India's most disciplined DGCA ground school" and "India's most experienced CPL ground school instructor" with "Founder-led DGCA-compliant ground school since 2009". Target: src/app/page.jsx, src/app/courses/ground-school/page.jsx.
+
+Acceptance Criteria:
+Headlines updated across hero and course intros.
+
+Client Ref: Part 3 (Item 20)
+
+------------------------------------------------------------
+
+=== FE-13 | Priority: P1 | Status: To-Do ===
+Title: CPL Fee Range Harmonization
+Specification:
+Harmonize CPL fees across all 5 varying references once single range is confirmed by client; ensure the itemized fee breakdown table sums up to the exact displayed total. Target: src/app/courses/commercial-pilot-license-cpl/page.jsx.
+
+Acceptance Criteria:
+Single consistent CPL cost shown sitewide; breakdown table math is 100% accurate.
+
+Client Ref: Part 3 (Item 19)
+
+------------------------------------------------------------
+
+=== FE-14 | Priority: P1 | Status: To-Do ===
+Title: Enquiry Form Field Updates
+Specification:
+On all lead forms: make Email optional, make PIN code mandatory, keep Course dropdown, add "I am a: Student / Parent" selector. Target: src/components/LeadForm.jsx, src/components/Modal.jsx.
+
+Acceptance Criteria:
+Form submits with empty email; blocks without PIN code; passes student/parent tag to CRM.
+
+Client Ref: Part 5 (Item 29)
+
+------------------------------------------------------------
+
+=== FE-15 | Priority: P1 | Status: To-Do ===
+Title: Mid-Page Counseling Form & Scroll Reduction
+Specification:
+Add a compact "Book a free counselling call" form/button directly below the courses section on the homepage; reduce scroll-animated container heights to cut screen count. Target: src/app/page.jsx.
+
+Acceptance Criteria:
+Direct form available mid-page; overall page scroll length reduced significantly.
+
+Client Ref: Part 5 (Item 30)
+
+------------------------------------------------------------
+
+=== FE-16 | Priority: P1 | Status: To-Do ===
+Title: Header Menu Links & Desktop Phone
+Specification:
+Add "Contact" and "Blog" to header navigation; display phone number +91 99537 77320 as a clickable tel: link in desktop header. Target: src/components/Header.jsx.
+
+Acceptance Criteria:
+Links visible in navbar; desktop phone visible and clickable.
+
+Client Ref: Part 5 (Item 31)
+
+------------------------------------------------------------
+
+=== FE-17 | Priority: P1 | Status: To-Do ===
+Title: Floating Bottom Bar Mobile Only
+Specification:
+Hide the bottom Call/WhatsApp/Book Demo sticky bar on screens >= 768px (desktop) so it no longer obscures the green floating WhatsApp widget. Target: src/components/BottomStickyBar.jsx / src/index.css.
+
+Acceptance Criteria:
+Sticky bar visible on mobile only; desktop floating button unobstructed.
+
+Client Ref: Part 5 (Item 32)
+
+------------------------------------------------------------
+
+=== FE-18 | Priority: P2 | Status: To-Do ===
+Title: Hero Top Spacing on Short Screens
+Specification:
+Add top padding/margin min-h calculation for viewports < 700px height so the fixed/floating navbar does not overlap the hero heading. Target: src/app/page.jsx.
+
+Acceptance Criteria:
+Headline fully legible on laptop screens with short viewport heights.
+
+Client Ref: Part 5 (Item 34)
+
+------------------------------------------------------------
+
+=== FE-19 | Priority: P1 | Status: To-Do ===
+Title: Canonical URL on /courses
+Specification:
+Change canonical tag on /courses from https://www.airborneaviation.in/ to https://www.airborneaviation.in/courses. Target: src/app/courses/page.jsx.
+
+Acceptance Criteria:
+<link rel="canonical" href="https://www.airborneaviation.in/courses" /> in HTML source.
+
+Client Ref: Part 4 (Item 22)
+
+------------------------------------------------------------
+
+=== FE-20 | Priority: P1 | Status: To-Do ===
+Title: Static Server-Side Counter Numbers
+Specification:
+In SSR HTML, render final static numbers (2,500+, 100%) inside counter DOM nodes instead of 0+ / 0% so search engine crawlers index accurate metrics. Target: src/components/AnimatedCounter.jsx.
+
+Acceptance Criteria:
+Viewing raw page source without JS reveals real numbers.
+
+Client Ref: Part 4 (Item 23)
+
+------------------------------------------------------------
+
+=== FE-21 | Priority: P1 | Status: To-Do ===
+Title: Schema.org JSON-LD Updates
+Specification:
+List both co-founders (Capt. Navrang Singh and Deepak Aggarwal) under Organization founder; add descriptions to the 9 homepage Course schemas; add image URL to Blog Article schema. Target: src/lib/schema/*.js.
+
+Acceptance Criteria:
+Rich Results Test passes with both founders and valid Course/Article schema.
+
+Client Ref: Part 4 (Item 24)
+
+------------------------------------------------------------
+
+=== FE-22 | Priority: P2 | Status: To-Do ===
+Title: SEO Title & Description Character Trimming
+Specification:
+Trim page titles over 60 chars (e.g. CPL is 84, Airline Prep is 88) and meta descriptions over 160 chars (6 pages). Target: src/app/courses/*/page.jsx.
+
+Acceptance Criteria:
+All titles <= 60 chars; all descriptions <= 160 chars.
+
+Client Ref: Part 4 (Item 25)
+
+------------------------------------------------------------
+
+=== FE-23 | Priority: P2 | Status: To-Do ===
+Title: Dynamic sitemap.xml Last-Modified Dates
+Specification:
+Replace static "2 Oct" lastmod dates in sitemap.xml with dynamic build/git commit dates per route. Target: src/app/sitemap.js.
+
+Acceptance Criteria:
+sitemap.xml outputs accurate ISO dates per page URL.
+
+Client Ref: Part 4 (Item 26)
+
+------------------------------------------------------------
+
+=== FE-24 | Priority: P1 | Status: To-Do ===
+Title: Defer Meta Pixel & Clarity Scripts
+Specification:
+Defer injection of Meta Pixel and Microsoft Clarity scripts until after window.onload or idle hydration. Target: src/app/layout.jsx.
+
+Acceptance Criteria:
+Initial JS bundle reduced by ~1 MB; PageSpeed load time drops under 3.5s.
+
+Client Ref: Part 4 (Item 27)
+
+------------------------------------------------------------
+
+=== FE-25 | Priority: P2 | Status: To-Do ===
+Title: YouTube Shorts & Playlists Embeds
+Specification:
+Embed responsive YouTube Shorts/playlists in course detail tabs once video links are provided by client. Target: src/app/courses/*.
+
+Acceptance Criteria:
+Video carousels render smoothly on mobile and desktop without layout shifts.
+
+Client Ref: Part 6 (Item 36)
+
+------------------------------------------------------------
+
+=== FE-26 | Priority: P2 | Status: To-Do ===
+Title: Google Reviews & Rating Widget
+Specification:
+Embed Google star rating (4.9/5) and 3 recent verified Google reviews near enquiry forms. Target: src/components/GoogleReviewsWidget.jsx.
+
+Acceptance Criteria:
+Google badge and review snippets render cleanly near forms.
+
+Client Ref: Part 6 (Item 37)
+
+------------------------------------------------------------
+
+=== FE-27 | Priority: P1 | Status: Verified ===
+Title: Canonical Course Sequence (1–11)
+Specification:
+Aligned course order across Homepage, /courses, footer, and modals. Target: ProgramGrid.jsx, page.jsx.
+
+Acceptance Criteria:
+All pages show identical 1–11 sequence.
+
+Client Ref: Phase 1 / CSAT
+
+------------------------------------------------------------
+
+=== FE-28 | Priority: P1 | Status: Verified ===
+Title: Cabin Crew Pathway Pricing (₹54k / ₹30k)
+Specification:
+Updated pathway cards with ₹54,000 / ₹30,000 and Batch 1 Scholarship text. Target: src/app/courses/cabin-crew-training/page.jsx.
+
+Acceptance Criteria:
+Visual verification of fee cards and scholarship discounts.
+
+Client Ref: Phase 1 / CSAT
+
+------------------------------------------------------------
+
+=== FE-29 | Priority: P1 | Status: Verified ===
+Title: Commander's Pathway Contrast Fix
+Specification:
+Changed .timeline-title to #00274C navy on light background (14.2:1 contrast). Target: src/index.css.
+
+Acceptance Criteria:
+Text clearly visible on /about.
+
+Client Ref: Phase 1 / CSAT
+
+------------------------------------------------------------
+
+=== FE-30 | Priority: P2 | Status: Verified ===
+Title: Advantage Section Flex & Mobile Scroll
+Specification:
+Fixed inner card min-height: 2.5rem and mobile flex wrapping. Target: src/app/page.jsx.
+
+Acceptance Criteria:
+Cards align uniformly across desktop, tablet, and mobile.
+
+Client Ref: Phase 1 / CSAT
+
+------------------------------------------------------------
+

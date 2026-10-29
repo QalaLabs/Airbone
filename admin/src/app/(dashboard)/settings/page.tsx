@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { WhatsAppAutomationCard } from "@/components/settings/whatsapp-automation-card";
+import { VoiceCallingAutomationCard } from "@/components/settings/voice-calling-automation-card";
+import { PhoneCall } from "lucide-react";
 
 const STORED_ONLY_NOTE =
   "Application intake and maintenance mode are enforced by the running application (public routes + intake gate). Force Debug Logs and webhook destinations are stored organization settings that are not yet consumed by any endpoint.";
@@ -86,6 +88,7 @@ export default function SettingsPage() {
           { id: "globals", label: "Global Settings & Toggles", icon: Globe },
           { id: "webhooks", label: "Webhook URLs Configuration", icon: Link2 },
           { id: "whatsapp", label: "WhatsApp Automation", icon: MessageCircle },
+          { id: "calling", label: "AI Voice Calling", icon: PhoneCall },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -196,6 +199,12 @@ export default function SettingsPage() {
         {activeTab === "whatsapp" && (
           <motion.div key="whatsapp" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-6">
             <WhatsAppAutomationCard />
+          </motion.div>
+        )}
+
+        {activeTab === "calling" && (
+          <motion.div key="calling" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-6">
+            <VoiceCallingAutomationCard />
           </motion.div>
         )}
       </AnimatePresence>
