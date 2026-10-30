@@ -17,6 +17,7 @@ import { isHoneypotTripped } from "@/lib/utils/honeypot";
 import { evaluateEligibility, type EvaluatedEligibility } from "@/lib/courses/eligibility";
 import { getCourseEligibility } from "@/lib/services/course-eligibility.service";
 import { contactCandidates, normalizePhone } from "@/lib/messaging/phone";
+import { LeadAssignmentService } from "@/lib/services/lead-assignment.service";
 
 const SOURCE_MAP: Record<string, LeadSource> = {
   homepage_cta: "HOMEPAGE_CTA",
@@ -490,6 +491,12 @@ export async function POST(req: NextRequest) {
       leadId: lead.id,
       timestamp: new Date().toISOString(),
     }));
+
+    // Auto-assign counselor (authoritative centralized engine: Cadet -> Shivangi, CPL -> Round Robin)
+    await LeadAssignmentService.autoAssign(
+      { orgId: org.id, ipAddress: ip },
+      { id: lead.id, courseInterest, source: leadSource }
+    );
 
     // Durable audit/activity owned by the sync path (Inngest-independent).
     // Public submission — no authenticated user, so actor is null and the

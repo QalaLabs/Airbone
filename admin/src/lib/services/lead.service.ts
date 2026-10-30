@@ -1,4 +1,5 @@
 import { LeadRepository } from "@/lib/repositories/lead.repository";
+import { LeadAssignmentService } from "./lead-assignment.service";
 import { emitEvent } from "@/lib/events/inngest";
 import { emitLeadCreated } from "@/lib/automation/emit-lead-created";
 import { prisma } from "@/lib/db/client";
@@ -343,11 +344,30 @@ export class LeadService {
 
     // Leads are born NEW; a chosen initial status goes through the normal status
     // change path so it gets the same STATUS_CHANGE activity, audit and events.
+    // Auto-assign counselor based on course/program type (centralized backend assignment).
+    await LeadAssignmentService.autoAssign(
+      {
+        orgId: ctx.orgId,
+        userId: ctx.user.id,
+        userName: ctx.user.name,
+        requestId: ctx.requestId,
+        ipAddress: ctx.ipAddress,
+      },
+      {
+        id: lead.id,
+        courseInterest: lead.courseInterest,
+        source: lead.source,
+        assignedTo: data.assignedTo,
+      }
+    );
+
     if (initialStatus && initialStatus !== "NEW") {
-      return (await this.update(ctx, lead.id, { status: initialStatus })) ?? lead;
+      const updated = await this.update(ctx, lead.id, { status: initialStatus });
+      if (updated) return updated;
     }
 
-    return lead;
+    const reloaded = await LeadRepository.findById(ctx.orgId, lead.id);
+    return (reloaded ?? lead) as typeof lead;
   }
 
   static async update(ctx: RequestContext, id: string, input: UpdateLeadInput) {

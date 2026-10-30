@@ -12,7 +12,7 @@ export async function generateMetadata({ params }) {
   const { tag } = await params
   const cleanTag = decodeURIComponent(tag || '').toLowerCase().replace(/[^a-z0-9-]/g, '')
   return {
-    title: `${cleanTag.toUpperCase()} Aviation Guides & Articles | Airborne Aviation`,
+    title: `${cleanTag.toUpperCase()} Guides | Airborne Aviation`,
     description: `Browse all articles, guides and study resources tagged with ${cleanTag} from Airborne Aviation Academy.`,
     alternates: { canonical: `/blog/tag/${cleanTag}` },
   }

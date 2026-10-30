@@ -89,3 +89,4 @@ yarn.lock
 # Playwright
 test-results/
 playwright-report/
+backup/

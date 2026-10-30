@@ -139,10 +139,16 @@ async function main() {
       campusId: campusDelhi.id,
     },
     {
-      email: "placement@airborne.academy",
-      name: "Vikram Singh",
-      role: "PLACEMENT_MANAGER" as const,
-      campusId: campusMumbai.id,
+      email: "shivangi@airborne.academy",
+      name: "Shivangi",
+      role: "ADMISSIONS_COUNSELOR" as const,
+      campusId: campusDelhi.id,
+    },
+    {
+      email: "piyush@airborne.academy",
+      name: "Piyush",
+      role: "ADMISSIONS_COUNSELOR" as const,
+      campusId: campusDelhi.id,
     },
     {
       email: "support@airborne.academy",

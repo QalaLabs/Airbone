@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import type { PrismaClient, Prisma, LeadSource, LeadStatus } from "@prisma/client";
 import type { EmitLeadCreatedInput } from "@/lib/automation/emit-lead-created";
 import { contactCandidates } from "@/lib/messaging/phone";
+import { LeadAssignmentService } from "@/lib/services/lead-assignment.service";
 
 // ─── Meta/Facebook Lead Ads webhook contract ─────────────────────────────────
 // GET (subscription verification): ?hub.mode=subscribe&hub.verify_token=...&hub.challenge=...
@@ -473,6 +474,11 @@ export async function processMetaLeadGen(params: {
 
   // ── Audit + activity feed + canonical lead.created (real leads only) ───────
   if (!isTest) {
+    await LeadAssignmentService.autoAssign(
+      { orgId, ipAddress: IP_ADDRESS },
+      { id: lead.id, courseInterest, source: SOURCE }
+    );
+
     await deps.writeAudit({
       orgId,
       action: "lead.created",
