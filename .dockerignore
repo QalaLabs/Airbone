@@ -9,5 +9,6 @@ playwright
 test-results
 admin
 scratch
+backup
 *.html
 *.pdf
