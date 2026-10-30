@@ -3,7 +3,8 @@ FROM node:20-slim AS deps
 WORKDIR /app
 
 # Prisma needs OpenSSL at generate/query time; Debian slim images don't ship it.
-RUN apt-get update && apt-get install -y --no-install-recommends openssl \
+RUN printf 'Acquire::Retries "5";\nAcquire::http::Timeout "30";\n' > /etc/apt/apt.conf.d/99retries \
+  && apt-get update && apt-get install -y --no-install-recommends openssl \
   && rm -rf /var/lib/apt/lists/*
 
 # postinstall runs `prisma generate` — prisma CLI is a devDependency, so keep
@@ -21,7 +22,8 @@ WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # OpenSSL for `prisma generate` in this stage too.
-RUN apt-get update && apt-get install -y --no-install-recommends openssl \
+RUN printf 'Acquire::Retries "5";\nAcquire::http::Timeout "30";\n' > /etc/apt/apt.conf.d/99retries \
+  && apt-get update && apt-get install -y --no-install-recommends openssl \
   && rm -rf /var/lib/apt/lists/*
 
 # Public API key consumed by next.config-independent code and INNGEST event
@@ -68,7 +70,8 @@ COPY --from=build /app/prisma/migrations ./prisma/migrations
 COPY --from=build /app/node_modules ./node_modules
 
 # OpenSSL for the Prisma query engine + `prisma migrate deploy` at startup.
-RUN apt-get update && apt-get install -y --no-install-recommends openssl \
+RUN printf 'Acquire::Retries "5";\nAcquire::http::Timeout "30";\n' > /etc/apt/apt.conf.d/99retries \
+  && apt-get update && apt-get install -y --no-install-recommends openssl \
   && rm -rf /var/lib/apt/lists/* \
   && groupadd --system --gid 1001 nodejs \
   && useradd --system --uid 1001 nextjs \
