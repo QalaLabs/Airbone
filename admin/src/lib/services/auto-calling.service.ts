@@ -676,6 +676,9 @@ export class AutoCallingService {
             metadata: {
               ...(inProgressActivity.metadata as Record<string, unknown>),
               recordingUrl: recordingUrl || "",
+              recording_url: recordingUrl || "",
+              record_url: recordingUrl || "",
+              gcs_recording_url: recordingUrl || "",
               transcript: transcript || "",
               durationSeconds: duration,
               classification: classification || "",
@@ -696,6 +699,9 @@ export class AutoCallingService {
             durationMins,
             metadata: {
               recordingUrl: recordingUrl || "",
+              recording_url: recordingUrl || "",
+              record_url: recordingUrl || "",
+              gcs_recording_url: recordingUrl || "",
               transcript: transcript || "",
               durationSeconds: duration,
               classification: classification || "",

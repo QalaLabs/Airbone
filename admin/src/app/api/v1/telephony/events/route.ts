@@ -40,11 +40,23 @@ export async function POST(req: NextRequest) {
 
     const payload = {
       providerCallId: typeof body.providerCallId === "string" ? body.providerCallId : (typeof body.request_id === "string" ? body.request_id : undefined),
-      phone: typeof body.phone === "string" ? body.phone : (typeof body.to === "string" ? body.to : (typeof body.from === "string" ? body.from : undefined)),
+      phone:
+        (typeof body.phone === "string" && body.phone) ||
+        (typeof body.callerPhone === "string" && body.callerPhone) ||
+        (typeof body.caller_phone === "string" && body.caller_phone) ||
+        (String(body.direction || "").toLowerCase() === "outbound"
+          ? (typeof body.to === "string" ? body.to : (typeof body.from === "string" ? body.from : undefined))
+          : (typeof body.from === "string" ? body.from : (typeof body.to === "string" ? body.to : undefined))),
       status: String(body.status || body.event || "completed"),
       direction: String(body.direction || "outbound"),
       duration: typeof body.duration === "number" ? body.duration : (typeof body.billsec === "number" ? body.billsec : Number(body.duration || 0)),
-      recordingUrl: typeof body.recordingUrl === "string" ? body.recordingUrl : (typeof body.record_url === "string" ? body.record_url : undefined),
+      recordingUrl:
+        (typeof body.recordingUrl === "string" && body.recordingUrl) ||
+        (typeof body.recording_url === "string" && body.recording_url) ||
+        (typeof body.record_url === "string" && body.record_url) ||
+        (typeof body.file_url === "string" && body.file_url) ||
+        (typeof body.gcs_recording_url === "string" && body.gcs_recording_url) ||
+        undefined,
       transcript: typeof body.transcript === "string" ? body.transcript : undefined,
       summary: typeof body.summary === "string" ? body.summary : undefined,
       classification: typeof body.classification === "string" ? body.classification : undefined,
