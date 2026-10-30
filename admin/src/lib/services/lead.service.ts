@@ -1209,7 +1209,8 @@ export class LeadService {
       throw new ValidationError([{ message: "Cannot convert a lost lead" }]);
     }
 
-    // Check if there is an existing valid admission to route to, even if the lead is already WON.
+    // Check if there is an existing valid (non-cancelled/dropped) admission to
+    // route to, even if the lead is already WON.
     const earlyExisting = await prisma.admission.findFirst({
       where: { leadId, orgId: ctx.orgId },
       orderBy: { createdAt: "desc" },
@@ -1218,10 +1219,14 @@ export class LeadService {
       return { admission: earlyExisting, created: false };
     }
 
+    // If the lead is WON/CONVERTED but all previous admissions were CANCELLED or
+    // DROPPED (or none exist at all), allow re-conversion by resetting the lead
+    // status to INTERESTED so the conversion path below can proceed cleanly.
     if (LOCKED_LEAD_STATUSES.includes(lead.status as LeadStatus)) {
-      throw new ValidationError([
-        { message: "Lead is already converted/enrolled but no active admission was found." },
-      ]);
+      await prisma.lead.update({
+        where: { id: leadId },
+        data: { status: "INTERESTED" },
+      });
     }
 
     // The lead must be a Prospect with an open Deal to convert; this is the
