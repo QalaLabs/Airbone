@@ -127,8 +127,15 @@ export function LeadVoiceCallCard({ leadId }: { leadId: string }) {
   const isDnd = data.doNotCall;
 
   const latestJob = data.callingJobs[0];
-  const recording = latestJob?.recordingUrl || data.recentCalls.find((c) => c.metadata?.recording_url)?.metadata?.recording_url;
-  const transcript = latestJob?.transcript || data.recentCalls.find((c) => c.metadata?.transcript)?.metadata?.transcript;
+  const getRecordingUrl = (meta: any) =>
+    meta?.recording_url || meta?.recordingUrl || meta?.record_url || meta?.gcs_recording_url || null;
+  const recording =
+    latestJob?.recordingUrl ||
+    data.recentCalls.map((c) => getRecordingUrl(c.metadata)).find(Boolean) ||
+    null;
+  const transcript =
+    latestJob?.transcript ||
+    data.recentCalls.find((c) => c.metadata?.transcript)?.metadata?.transcript;
   const summary = data.lastCallSummary || latestJob?.summary;
 
   const latencySeconds = latestJob?.initiationLatencyMs ? (latestJob.initiationLatencyMs / 1000).toFixed(1) : null;
