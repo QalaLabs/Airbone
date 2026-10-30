@@ -13,6 +13,34 @@ export class ResendProvider implements MessageProvider {
     return Boolean(process.env.RESEND_API_KEY && process.env.RESEND_API_KEY.trim().length > 0);
   }
 
+  async checkHealth(): Promise<{ ok: boolean; live: boolean; error?: string }> {
+    const apiKey = process.env.RESEND_API_KEY?.trim();
+    if (!apiKey) {
+      return { ok: false, live: false, error: "RESEND_API_KEY is not configured" };
+    }
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8_000);
+    try {
+      const res = await fetch("https://api.resend.com/api-keys", {
+        headers: { Authorization: `Bearer ${apiKey}` },
+        signal: controller.signal,
+      });
+      return {
+        ok: res.ok,
+        live: res.ok,
+        error: res.ok ? undefined : `Resend returned HTTP ${res.status}`,
+      };
+    } catch (err) {
+      return {
+        ok: false,
+        live: false,
+        error: err instanceof Error ? err.message : String(err),
+      };
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   async send(input: SendMessageInput): Promise<SendResult> {
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey || apiKey.trim().length === 0) {

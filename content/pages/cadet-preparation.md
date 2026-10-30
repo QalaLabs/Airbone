@@ -20,7 +20,7 @@ sections:
       - value: "37+"
         label: "Years Experience"
       - value: "100%"
-        label: "DGCA Aligned"
+        label: "DGCA-compliant"
 
   - _template: airline_logos
     heading: "Our Cadets Fly With Top Indian Carriers"

@@ -1,7 +1,7 @@
 ---
 title: "Airborne Aviation Academy Homepage"
 slug: "home"
-description: "DGCA-aligned aviation training academy in Dwarka, New Delhi. Offers CPL and ATPL ground school, cadet preparation, cabin crew training, and A320 simulator familiarisation."
+description: "DGCA-compliant aviation training academy in Dwarka, New Delhi. Offers CPL and ATPL ground school, cadet preparation, cabin crew training, and A320 simulator familiarisation."
 seoTitle: "DGCA-Compliant Pilot Training in Delhi | Airborne Aviation"
 seoDesc: "DGCA-compliant CPL & ATPL ground school in Dwarka, New Delhi, since 2009. CPL ground classes, airline cadet preparation, A320 simulator familiarisation."
 seoKeywords: ["pilot training delhi", "dgca ground school", "cpl classes dwarka", "cadet pilot preparation"]

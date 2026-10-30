@@ -9,6 +9,7 @@ import JsonLd from '@/components/JsonLd'
 import { buildHomeGraph } from '@/lib/schema'
 import JourneyFlightPath from '@/components/JourneyFlightPath'
 import GoogleReviewsSection from '@/components/GoogleReviewsSection'
+import GoogleReviewsWidget from '@/components/GoogleReviewsWidget'
 import { GlowCard } from '@/components/ui/spotlight-card'
 import PremiumFooter from '@/components/PremiumFooter'
 import GlobalRouteMap from '@/components/GlobalRouteMap'
@@ -67,7 +68,7 @@ function FloatingNav({ onBook }) {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  const links = [
+  const DEFAULT_LINKS = [
     { label: 'Courses', href: '/courses' },
     { label: 'Mentor', href: '#founder' },
     { label: 'Stories', href: '#stories' },
@@ -75,6 +76,28 @@ function FloatingNav({ onBook }) {
     { label: 'Blog', href: '/blog' },
     { label: 'Contact', href: '/contact' },
   ]
+  const [links, setLinks] = useState(DEFAULT_LINKS)
+
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/public-proxy/settings')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((payload) => {
+        if (cancelled || !payload?.data?.navMenus) return
+        const headerMenu = payload.data.navMenus.find(
+          (m) => m.location === 'header' || m.location === 'primary' || m.location === 'main'
+        )
+        if (headerMenu && Array.isArray(headerMenu.items) && headerMenu.items.length > 0) {
+          const mapped = headerMenu.items.map((item) => ({
+            label: item.name || item.label || 'Link',
+            href: item.path || item.href || '/',
+          }))
+          if (mapped.length > 0) setLinks(mapped)
+        }
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [])
 
   return (
     <>
@@ -940,6 +963,10 @@ function FinalCTA() {
               onMouseEnter={e => e.target.style.color = '#fff'}
               onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.55)'}
             >+91 9953 777 320</a>
+          </div>
+
+          <div style={{ maxWidth: '42rem', marginTop: '1.5rem' }}>
+            <GoogleReviewsWidget dark={false} compact={true} />
           </div>
         </motion.div>
       </div>
@@ -2279,7 +2306,7 @@ function CoursesCounsellingCall({ onBook }) {
               textTransform: 'uppercase',
               marginBottom: '0.75rem',
             }}>
-              <span>✦</span> Free Academic Counselling
+              <span>✦</span> Book a Free Counselling Call
             </div>
             <h3 style={{
               fontFamily: 'var(--font-h)',
@@ -2291,7 +2318,7 @@ function CoursesCounsellingCall({ onBook }) {
               lineHeight: 1.15,
               marginBottom: '0.6rem',
             }}>
-              Unsure which program fits your background?
+              Book a Free Counselling Call with Senior Instructors
             </h3>
             <p style={{
               fontSize: '0.85rem',
@@ -2301,7 +2328,7 @@ function CoursesCounsellingCall({ onBook }) {
               margin: '0 0 1.25rem',
               maxWidth: '32rem',
             }}>
-              Speak with our senior flight training counselors. Get clear, unbiased advice on DGCA Class 2 medicals, batch timing, pilot career outlook, and flying school selection.
+              Speak directly with our senior flight training counselors. Get clear, unbiased advice on DGCA Class 2 medicals, batch timing, pilot career outlook, and flying school selection.
             </p>
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
               <a href="tel:+919953777320" style={{ color: '#FFFFFF', textDecoration: 'none', fontSize: '0.78rem', fontFamily: 'var(--font-h)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -2311,6 +2338,10 @@ function CoursesCounsellingCall({ onBook }) {
               <a href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer" style={{ color: '#25D366', textDecoration: 'none', fontSize: '0.78rem', fontFamily: 'var(--font-h)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
                 💬 Chat on WhatsApp
               </a>
+            </div>
+
+            <div style={{ marginTop: '1.25rem' }}>
+              <GoogleReviewsWidget dark={true} compact={true} />
             </div>
           </div>
 
@@ -2620,39 +2651,39 @@ export default function HomePage() {
       {/* Override scroll-animated container heights & handle low viewport heights */}
       <style dangerouslySetInnerHTML={{ __html: `
         #journey-flight-path {
-          height: 380vh !important;
+          height: 180vh !important;
         }
         @media (max-width: 768px) {
           #journey-flight-path {
-            height: 300vh !important;
+            height: 140vh !important;
           }
         }
 
         /* Viewports < 700px height: top padding/margin and min-h calculation to prevent navbar overlapping hero heading */
         @media (max-height: 700px) {
           #top.hero-section {
-            min-height: max(680px, calc(100svh + 85px)) !important;
+            min-height: max(680px, 100svh) !important;
             height: auto !important;
           }
           .hero-content-container {
-            padding-top: calc(88px + env(safe-area-inset-top, 0px)) !important;
-            padding-bottom: clamp(1.5rem, 4vh, 2.75rem) !important;
-            justify-content: flex-end !important;
-            min-height: max(680px, calc(100svh + 85px)) !important;
+            padding-top: max(112px, calc(96px + env(safe-area-inset-top, 0px))) !important;
+            padding-bottom: clamp(1.25rem, 3vh, 2rem) !important;
+            justify-content: flex-start !important;
+            min-height: max(680px, 100svh) !important;
           }
           .hero-eyebrow {
-            margin-top: calc(82px + env(safe-area-inset-top, 0px)) !important;
-            margin-bottom: 0.5rem !important;
+            margin-top: 0.5rem !important;
+            margin-bottom: 0.4rem !important;
           }
           .hero-headline {
             margin-top: 0.25rem !important;
-            line-height: 1.02 !important;
+            line-height: 1.05 !important;
           }
           .hero-tagline {
-            margin-top: 0.5rem !important;
+            margin-top: 0.4rem !important;
           }
           .hero-footer-wrapper {
-            margin-top: 0.75rem !important;
+            margin-top: 0.5rem !important;
           }
           .hero-scroll-cue {
             display: none !important;

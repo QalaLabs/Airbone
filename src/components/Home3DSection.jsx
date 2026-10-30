@@ -343,6 +343,30 @@ function Act5Overlay({ visible, actProgress }) {
 }
 
 function Act6Overlay({ visible }) {
+  const DEFAULT_ALUMNI = [
+    { name: 'Ruzal Dhral', details: 'IndiGo Cadet Program', text: 'Cleared all 5 DGCA exams in his first attempt within 3 months of class.' },
+    { name: 'Capt. Nipun Singh', details: 'Air India First Officer', text: 'Restarted pilot career at age 36. Guided from ground school to cockpit command.' },
+    { name: 'Capt. Himanish Sagwal', details: 'Emirates First Officer', text: 'Mastered navigation & meteorology concepts. Now flying wide-body long-haul fleets.' }
+  ]
+  const [alumni, setAlumni] = useState(DEFAULT_ALUMNI)
+
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/public-proxy/placements?limit=6')
+      .then(res => res.ok ? res.json() : null)
+      .then(body => {
+        if (cancelled || !Array.isArray(body?.data) || body.data.length === 0) return
+        const mapped = body.data.map(p => ({
+          name: p.student?.name || 'Airborne Alumni',
+          details: p.hiringPartner?.name ? `${p.hiringPartner.name} · ${p.jobTitle}` : p.jobTitle,
+          text: p.notes || `Placed as ${p.jobTitle} with ${p.hiringPartner?.name || 'major carrier'}. Batch of ${p.batchYear || 'Airborne'}.`,
+        }))
+        if (mapped.length > 0) setAlumni(mapped.slice(0, 3))
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [])
+
   return (
     <div className={`act-overlay ${!visible ? 'hidden' : ''}`} aria-hidden={!visible}>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 var(--margin) 2rem' }}>
@@ -366,11 +390,7 @@ function Act6Overlay({ visible }) {
         
         {/* Alumni Highlights */}
         <div className="alumni-highlights-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', width: '100%', maxWidth: '900px', pointerEvents: 'all' }}>
-          {[
-            { name: 'Ruzal Dhral', details: 'IndiGo Cadet Program', text: 'Cleared all 5 DGCA exams in his first attempt within 3 months of class.' },
-            { name: 'Capt. Nipun Singh', details: 'Air India First Officer', text: 'Restarted pilot career at age 36. Guided from ground school to cockpit command.' },
-            { name: 'Capt. Himanish Sagwal', details: 'Emirates First Officer', text: 'Mastered navigation & meteorology concepts. Now flying wide-body long-haul fleets.' }
-          ].map(h => (
+          {alumni.map(h => (
             <div key={h.name} style={{ background: 'rgba(0,15,30,0.6)', border: '1px solid rgba(255,255,255,0.1)', padding: '1.2rem', borderRadius: '1px', backdropFilter: 'blur(8px)' }}>
               <div style={{ fontFamily: 'var(--font-h)', fontWeight: 800, fontSize: '0.85rem', color: 'var(--white)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>{h.name}</div>
               <div style={{ fontFamily: 'var(--font-h)', fontWeight: 700, fontSize: '0.58rem', color: 'var(--gold)', letterSpacing: '0.15em', textTransform: 'uppercase', margin: '0.2rem 0 0.6rem 0' }}>{h.details}</div>
@@ -394,7 +414,7 @@ function Act7Overlay({ visible, onDemo, onApply }) {
             <em style={{ color: 'var(--red)' }}>Takeoff?</em>
           </h2>
           <p className="ov-body" style={{ marginTop: '1.25rem' }}>
-            Join India's most trusted DGCA CPL ground school. Batch seats are
+            Join India's leading DGCA-compliant ground school. Batch seats are
             strictly limited to 25 students. Your airline career starts with one step.
           </p>
           <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem', pointerEvents: 'all' }}>

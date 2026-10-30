@@ -15,7 +15,7 @@ export const ORG = {
   foundingDate: '2009',
   priceRange: '₹₹₹',
   description:
-    'DGCA-aligned aviation training academy in Dwarka, New Delhi. Offers CPL and ATPL ground school, cadet preparation, cabin crew training, and A320 simulator familiarisation. Founded in 2009; led by Capt. Navrang Singh.',
+    'DGCA-compliant aviation training academy in Dwarka, New Delhi. Offers CPL and ATPL ground school, cadet preparation, cabin crew training, and A320 simulator familiarisation. Founded in 2009; led by Capt. Navrang Singh.',
   logoPath: '/logo-primary.png',
   imagePath: '/campus/og_image.jpg',
   knowsAbout: [

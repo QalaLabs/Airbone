@@ -11,7 +11,7 @@ export const COURSE_SCHEMA = {
     slug: 'ground-school',
     name: 'DGCA-compliant Ground School',
     description:
-      'DGCA-aligned ground school in Dwarka, Delhi covering CPL and ATPL theory subjects, taught with concept-focused instruction by Capt. Navrang Singh. Duration typically 3–6 months. Batches capped at 25 students.',
+      'DGCA-compliant ground school in Dwarka, Delhi covering CPL and ATPL theory subjects, taught with concept-focused instruction by Capt. Navrang Singh. Duration typically 3–6 months. Batches capped at 25 students.',
     path: '/courses/ground-school',
     price: '270000',
     duration: 'P3M',
@@ -50,7 +50,7 @@ export const COURSE_SCHEMA = {
     slug: 'commercial-pilot-license-cpl',
     name: 'DGCA-compliant CPL Ground School',
     description:
-      'DGCA CPL theory preparation: Air Navigation, Meteorology, Air Regulations, Technical General, Technical Specific, and RTR. DGCA-aligned training by Capt. Navrang Singh at Airborne Aviation Academy, Dwarka.',
+      'DGCA CPL theory preparation: Air Navigation, Meteorology, Air Regulations, Technical General, Technical Specific, and RTR. DGCA-compliant training by Capt. Navrang Singh at Airborne Aviation Academy, Dwarka.',
     path: '/courses/commercial-pilot-license-cpl',
     price: '270000',
     duration: 'P3M',

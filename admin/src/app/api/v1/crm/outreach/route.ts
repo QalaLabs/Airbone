@@ -12,23 +12,62 @@ import { getProvider } from "@/lib/messaging";
 import { computeReplyRate } from "@/lib/analytics/rates";
 import { isAutomationEngineEnabled } from "@/lib/events/dispatch";
 
-// Provider status reflects the actual messaging registry (Section 5 — no fake
-// configuration). `configured` = a transport exists and reports credentials;
-// `verified` = a live provider round-trip succeeded (only Interakt exposes a
-// live test today). A key in env is NOT enough to claim "connected".
-function providerState(key: "email" | "sms" | "whatsapp") {
+// Provider status reflects live messaging transport checks.
+// `configured` = transport exists and reports required credentials;
+// `verified` = a live provider round-trip / handshake succeeded.
+// A channel is NEVER marked verified without a successful live check.
+async function providerState(key: "email" | "sms" | "whatsapp") {
   const p = getProvider(key === "email" ? "EMAIL" : key === "sms" ? "SMS" : "WHATSAPP");
   const isConfigured = p.isConfigured();
   const configuredNow = isConfigured && p.name !== "noop";
-  const verified = configuredNow;
+
+  if (!configuredNow) {
+    let missingNote = `${key} transport is not configured for this environment.`;
+    if (key === "sms") {
+      missingNote = "SMS provider is not configured. Missing SMS_PROVIDER (e.g. twilio, fast2sms, msg91) and provider credentials in environment variables.";
+    } else if (key === "email") {
+      missingNote = "Email provider is not configured. Missing SMTP_HOST, SMTP_USER, SMTP_PASS (or RESEND_API_KEY).";
+    } else if (key === "whatsapp") {
+      missingNote = "WhatsApp provider is not configured. Missing INTERAKT_API_KEY (or WHATSAPP_PROVIDER=interakt).";
+    }
+    return {
+      provider: p.name,
+      configured: false,
+      verified: false,
+      status: "not_configured" as const,
+      note: missingNote,
+    };
+  }
+
+  // Provider is configured: perform live verification check
+  let verified = false;
+  let note = "";
+  try {
+    const healthProvider = p as unknown as { checkHealth?: () => Promise<{ ok: boolean; live: boolean; error?: string }> };
+    if (typeof healthProvider.checkHealth === "function") {
+      const health = await healthProvider.checkHealth();
+      verified = Boolean(health.ok && health.live);
+      if (verified) {
+        note = `${key.toUpperCase()} provider (${p.name}) verified and operational via live check.`;
+      } else {
+        note = `${key.toUpperCase()} provider (${p.name}) live verification failed: ${health.error || "connection check failed"}`;
+      }
+    } else {
+      verified = false;
+      note = `${key.toUpperCase()} provider (${p.name}) is configured but does not support automated live verification.`;
+    }
+  } catch (err) {
+    verified = false;
+    const msg = err instanceof Error ? err.message : String(err);
+    note = `${key.toUpperCase()} provider (${p.name}) live verification threw error: ${msg}`;
+  }
+
   return {
     provider: p.name,
     configured: configuredNow,
     verified,
-    status: verified ? "connected" : configuredNow ? "configured_not_verified" : "not_configured",
-    note: verified
-      ? `${key.toUpperCase()} provider (${p.name}) is operational and verified.`
-      : `${key} transport is not configured for this environment.`,
+    status: verified ? ("connected" as const) : ("configured_not_verified" as const),
+    note,
   };
 }
 
@@ -79,15 +118,17 @@ export async function GET() {
         where: { orgId: ctx.orgId },
         _count: { _all: true },
       }),
-      // Real reply tracking: WhatsApp inbound replies persisted as WHATSAPP
-      // activities by ingestInboundMessage. Emails have no read/reply tracking
-      // yet — those rates are reported as null (never fake zeros).
-      prisma.leadActivity.count({
+      // Real reply tracking: Count unique replied leads so multiple replies from a
+      // single contact never inflate the reply rate above 100%.
+      prisma.leadActivity.findMany({
         where: {
           orgId: ctx.orgId,
           activityType: "WHATSAPP",
           title: { startsWith: "WhatsApp reply" },
+          leadId: { not: null },
         },
+        select: { leadId: true },
+        distinct: ["leadId"],
       }),
     ]);
 
@@ -96,11 +137,16 @@ export async function GET() {
       statusBreakdown[String(row.status).toUpperCase()] = row._count._all;
     }
 
+    const uniqueReplies = whatsappReplies.length;
     const sent = statusBreakdown.SENT ?? 0;
-    // SMS-03: reply rate = WhatsApp replies / delivered messages, clamped to
-    // 100%. A single message can receive several inbound replies, so an
-    // unclamped ratio could exceed 1 (the old UI showed >100%).
-    const replyRate = computeReplyRate(sent, statusBreakdown.DELIVERED ?? 0, whatsappReplies);
+    // Reply rate divides unique replies by total eligible delivered outbound messages, clamped to <= 100%.
+    const replyRate = computeReplyRate(sent, statusBreakdown.DELIVERED ?? 0, uniqueReplies);
+
+    const [emailProvider, smsProvider, whatsappProvider] = await Promise.all([
+      providerState("email"),
+      providerState("sms"),
+      providerState("whatsapp"),
+    ]);
 
     return ok({
       templates,
@@ -111,16 +157,16 @@ export async function GET() {
         sent,
         failed: statusBreakdown.FAILED ?? 0,
         pending: statusBreakdown.PENDING ?? 0,
-        whatsappReplies,
+        whatsappReplies: uniqueReplies,
         // Honest rates: null means "not measurable with persisted data" —
         // never a fabricated 0.
         emailOpenRate: null,
         replyRate,
       },
       providers: {
-        email: providerState("email"),
-        sms: providerState("sms"),
-        whatsapp: providerState("whatsapp"),
+        email: emailProvider,
+        sms: smsProvider,
+        whatsapp: whatsappProvider,
       },
       dispatchEngine: {
         automationEnabled: isAutomationEngineEnabled(),

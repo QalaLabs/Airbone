@@ -2405,28 +2405,46 @@ html { scroll-behavior: smooth; }
   }
 }
 
-/* Hero Mobile Height — keep cinematic without forcing overflow */
+/* Hero Mobile & Short Viewport Spacing — prevent floating nav overlap on short screens */
 @media (max-width: 768px) {
   #top.hero-section {
-    height: 100svh !important;
-    min-height: 560px !important;
-    max-height: none;
+    min-height: 580px;
+    height: auto !important;
+  }
+}
+
+@media (max-height: 700px) {
+  #top.hero-section {
+    min-height: max(680px, 100svh) !important;
+    height: auto !important;
+  }
+  .hero-content-container {
+    padding-top: max(112px, calc(96px + env(safe-area-inset-top, 0px))) !important;
+    padding-bottom: 2rem !important;
+    justify-content: flex-start !important;
+  }
+  .hero-eyebrow {
+    margin-top: 0.5rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+  .hero-headline {
+    margin-top: 0.25rem !important;
+    line-height: 1.05 !important;
+  }
+  .hero-tagline {
+    margin-top: 0.5rem !important;
+  }
+  .hero-footer-wrapper {
+    margin-top: 0.75rem !important;
+  }
+  .hero-scroll-cue {
+    display: none !important;
   }
 }
 
 @media (max-width: 390px) {
   #top.hero-section {
-    min-height: 520px !important;
-  }
-}
-
-@media (max-height: 640px) and (max-width: 900px) {
-  #top.hero-section {
-    min-height: 100svh !important;
-    height: 100svh !important;
-  }
-  .hero-scroll-cue {
-    display: none;
+    min-height: 540px;
   }
 }
 

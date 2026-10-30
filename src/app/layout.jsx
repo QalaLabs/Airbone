@@ -105,49 +105,78 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             gtag('config', '${GA4_ID}');
           `}
         </Script>
-        {/* Meta Pixel Code - deferred until after window.onload or idle hydration */}
+        {/* Tracking Stubs - prevent errors if tracking calls happen before deferred scripts load */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.fbq = window.fbq || function() {
+                if (window.fbq.callMethod) {
+                  window.fbq.callMethod.apply(window.fbq, arguments);
+                } else {
+                  (window.fbq.queue = window.fbq.queue || []).push(arguments);
+                }
+              };
+              if (!window._fbq) window._fbq = window.fbq;
+              window.fbq.push = window.fbq;
+              window.fbq.loaded = false;
+              window.fbq.version = '2.0';
+              window.fbq.queue = window.fbq.queue || [];
+
+              window.clarity = window.clarity || function() {
+                (window.clarity.q = window.clarity.q || []).push(arguments);
+              };
+            `,
+          }}
+        />
+        {/* Meta Pixel Code - deferred until after window.onload and browser idle */}
         <Script id="meta-pixel" strategy="lazyOnload">
           {`
             function initMetaPixel() {
-              if (window.fbq) return;
+              if (window.__metaPixelInitialized) return;
+              window.__metaPixelInitialized = true;
               !function(f,b,e,v,n,t,s)
-              {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+              {if(f.fbq && f.fbq.loaded)return;n=f.fbq=function(){n.callMethod?
               n.callMethod.apply(n,arguments):n.queue.push(arguments)};
               if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-              n.queue=[];t=b.createElement(e);t.async=!0;
+              n.queue=n.queue||[];t=b.createElement(e);t.async=!0;
               t.src=v;s=b.getElementsByTagName(e)[0];
               s.parentNode.insertBefore(t,s)}(window, document,'script',
               'https://connect.facebook.net/en_US/fbevents.js');
               fbq('init', '${META_PIXEL_ID}');
               fbq('track', 'PageView');
             }
-            if (document.readyState === 'complete') {
-              (window.requestIdleCallback || window.setTimeout)(initMetaPixel, 1);
-            } else {
-              window.addEventListener('load', function() {
-                (window.requestIdleCallback || window.setTimeout)(initMetaPixel, 1);
-              });
+            if (typeof window !== 'undefined') {
+              if (document.readyState === 'complete') {
+                (window.requestIdleCallback || window.setTimeout)(initMetaPixel, 200);
+              } else {
+                window.addEventListener('load', function() {
+                  (window.requestIdleCallback || window.setTimeout)(initMetaPixel, 200);
+                }, { once: true });
+              }
             }
           `}
         </Script>
         {/* End Meta Pixel Code */}
-        {/* Microsoft Clarity - deferred until after window.onload or idle hydration */}
+        {/* Microsoft Clarity - deferred until after window.onload and browser idle */}
         <Script id="microsoft-clarity" strategy="lazyOnload">
           {`
             function initClarity() {
-              if (window.clarity) return;
+              if (window.__clarityInitialized) return;
+              window.__clarityInitialized = true;
               (function(c,l,a,r,i,t,y){
                 c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
                 t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
                 y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
               })(window, document, "clarity", "script", "${CLARITY_ID}");
             }
-            if (document.readyState === 'complete') {
-              (window.requestIdleCallback || window.setTimeout)(initClarity, 1);
-            } else {
-              window.addEventListener('load', function() {
-                (window.requestIdleCallback || window.setTimeout)(initClarity, 1);
-              });
+            if (typeof window !== 'undefined') {
+              if (document.readyState === 'complete') {
+                (window.requestIdleCallback || window.setTimeout)(initClarity, 250);
+              } else {
+                window.addEventListener('load', function() {
+                  (window.requestIdleCallback || window.setTimeout)(initClarity, 250);
+                }, { once: true });
+              }
             }
           `}
         </Script>

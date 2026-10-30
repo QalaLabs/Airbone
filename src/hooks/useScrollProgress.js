@@ -101,10 +101,12 @@ export function useLoader(delay = 3000) {
  * Hook that returns a counter that counts up when element is in view
  */
 export function useCountUp(target, duration = 2000, trigger = true) {
-  const [count, setCount] = useState(0)
+  // SSR & initial render: must render target number so HTML has real value when JS disabled
+  const [count, setCount] = useState(target)
+  const [hasAnimated, setHasAnimated] = useState(false)
   
   useEffect(() => {
-    if (!trigger) return
+    if (!trigger || hasAnimated) return
     
     let start = 0
     const increment = target / (duration / 16)
@@ -113,6 +115,7 @@ export function useCountUp(target, duration = 2000, trigger = true) {
       start += increment
       if (start >= target) {
         setCount(target)
+        setHasAnimated(true)
         clearInterval(timer)
       } else {
         setCount(Math.floor(start))
@@ -120,7 +123,7 @@ export function useCountUp(target, duration = 2000, trigger = true) {
     }, 16)
     
     return () => clearInterval(timer)
-  }, [target, duration, trigger])
+  }, [target, duration, trigger, hasAnimated])
   
   return count
 }

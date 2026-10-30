@@ -56,6 +56,8 @@ async function findExistingLead(
 ): Promise<{ live: ExistingLeadMatch | null; trashed: ExistingLeadMatch | null }> {
   const candidates = contactCandidates(rawPhone);
   if (candidates.length === 0) return { live: null, trashed: null };
+  const digits = normalizePhone(rawPhone);
+  const last10 = digits.length >= 10 ? digits.slice(-10) : null;
   const select = {
     id: true,
     name: true,
@@ -63,14 +65,18 @@ async function findExistingLead(
     courseInterest: true,
     deletedAt: true,
   } as const;
+  const phoneFilter = last10
+    ? { OR: [{ phone: { in: candidates } }, { phone: { endsWith: last10 } }] }
+    : { phone: { in: candidates } };
+
   const [live, trashed] = await Promise.all([
     prisma.lead.findFirst({
-      where: { orgId, phone: { in: candidates }, deletedAt: null },
+      where: { orgId, ...phoneFilter, deletedAt: null },
       select,
       orderBy: { createdAt: "asc" },
     }),
     prisma.lead.findFirst({
-      where: { orgId, phone: { in: candidates }, deletedAt: { not: null } },
+      where: { orgId, ...phoneFilter, deletedAt: { not: null } },
       select,
       orderBy: { deletedAt: "desc" },
     }),

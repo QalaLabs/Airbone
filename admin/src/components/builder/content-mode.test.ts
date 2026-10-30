@@ -305,7 +305,7 @@ describe("Airborne Studio — Universal Text Editing (Content Mode)", () => {
       id: "page-home",
       title: "Airborne Aviation Academy Homepage",
       slug: "home",
-      description: "DGCA-aligned aviation academy in Delhi",
+      description: "DGCA-compliant aviation academy in Delhi",
       seoTitle: "DGCA Ground School Delhi | Airborne",
       seoDesc: "Commercial Pilot Ground School since 2009",
       sections: homeTmpl.sections.map((sec, sIdx) => ({
@@ -346,7 +346,7 @@ describe("Airborne Studio — Universal Text Editing (Content Mode)", () => {
       id: "page-home",
       title: "Airborne Aviation Academy Homepage",
       slug: "home",
-      description: "DGCA-aligned aviation academy in Delhi",
+      description: "DGCA-compliant aviation academy in Delhi",
       seoTitle: "DGCA Ground School Delhi | Airborne",
       seoDesc: "Commercial Pilot Ground School since 2009",
       sections: homeTmpl.sections.map((sec, sIdx) => ({

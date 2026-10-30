@@ -33,7 +33,7 @@ const THREADS: DemoThread[] = [
     phone: "+919823456002",
     unreadCount: 0,
     messages: [
-      { direction: "OUT", body: "Hi Rohan, quick hello from Airborne Aviation. DGCA-aligned ground school, real hangar exposure and small batches — reply here with any question.", hoursAgo: 72 },
+      { direction: "OUT", body: "Hi Rohan, quick hello from Airborne Aviation. DGCA-compliant ground school, real hangar exposure and small batches — reply here with any question.", hoursAgo: 72 },
       { direction: "IN", body: "Can I visit the campus this Saturday?", hoursAgo: 48 },
       { direction: "OUT", body: "Absolutely — Saturday 11 AM works. I have noted your visit, our counsellor will meet you at reception.", hoursAgo: 47 },
     ],

@@ -30,6 +30,38 @@ export class SmtpProvider implements MessageProvider {
     return Boolean(host && user && pass);
   }
 
+  async checkHealth(): Promise<{ ok: boolean; live: boolean; error?: string }> {
+    const { host, port, user, pass, secure } = smtpConfig();
+    if (!host || !user || !pass) {
+      return {
+        ok: false,
+        live: false,
+        error: "SMTP is not configured. Missing SMTP_HOST, SMTP_USER, or SMTP_PASS.",
+      };
+    }
+
+    const transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure,
+      requireTLS: !secure && port === 587,
+      auth: { user, pass },
+      connectionTimeout: 8_000,
+      greetingTimeout: 8_000,
+      socketTimeout: 10_000,
+    });
+
+    try {
+      await transporter.verify();
+      return { ok: true, live: true };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      return { ok: false, live: false, error: `SMTP verification failed: ${msg}` };
+    } finally {
+      transporter.close();
+    }
+  }
+
   async send(input: SendMessageInput): Promise<SendResult> {
     const { host, port, user, pass, from, secure } = smtpConfig();
     if (!host || !user || !pass) {

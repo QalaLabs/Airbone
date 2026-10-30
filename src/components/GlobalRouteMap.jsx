@@ -120,12 +120,13 @@ const DUST = Array.from({ length: 25 }, (_, i) => ({
   dy: ((i % 4) - 1) * 8,
 }))
 
-/* ─── Animated counter hook ─── */
+/* ─── Animated counter hook (renders final static value in SSR HTML) ─── */
 function useCounter(rawValue, active) {
-  const str    = String(rawValue)
-  const num    = parseInt(str.replace(/\D/g, ''))
-  const suffix = str.replace(/\d/g, '')
-  const [display, setDisplay] = useState(isNaN(num) ? rawValue : (num || 0))
+  const str = String(rawValue)
+  const num = parseInt(str.replace(/\D/g, ''))
+  const suffix = str.replace(/[\d,]/g, '')
+  const finalDisplay = str
+  const [display, setDisplay] = useState(finalDisplay)
   const [hasAnimated, setHasAnimated] = useState(false)
   useEffect(() => {
     if (!active || isNaN(num) || hasAnimated) return
@@ -133,17 +134,19 @@ function useCounter(rawValue, active) {
     const t0 = performance.now(), dur = 2000
     const tick = now => {
       const t = Math.min((now - t0) / dur, 1)
-      setDisplay(Math.round(num * (1 - Math.pow(1 - t, 3))))
+      const current = Math.round(num * (1 - Math.pow(1 - t, 3)))
+      setDisplay(current >= 1000 ? `${current.toLocaleString('en-IN')}${suffix}` : `${current}${suffix}`)
       if (t < 1) {
         raf = requestAnimationFrame(tick)
       } else {
+        setDisplay(finalDisplay)
         setHasAnimated(true)
       }
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [active, num, hasAnimated])
-  return isNaN(num) ? rawValue : `${display}${suffix}`
+  }, [active, num, hasAnimated, finalDisplay, suffix])
+  return display
 }
 
 function StatCell({ stat, index, active }) {

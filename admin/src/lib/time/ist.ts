@@ -59,3 +59,10 @@ export function startOfISTMonth(d: Date = new Date()): Date {
   const utcMidnight = Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), 1);
   return new Date(utcMidnight - IST_OFFSET_MIN * 60_000);
 }
+
+/** UTC instant of the last millisecond of the IST calendar month containing `d`. */
+export function endOfISTMonth(d: Date = new Date()): Date {
+  const shifted = new Date(startOfISTMonth(d).getTime() + IST_OFFSET_MIN * 60_000);
+  const nextMonth = Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth() + 1, 1);
+  return new Date(nextMonth - IST_OFFSET_MIN * 60_000 - 1);
+}

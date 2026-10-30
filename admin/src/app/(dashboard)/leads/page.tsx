@@ -105,7 +105,10 @@ export default function LeadsPage() {
   const [deleteTargets, setDeleteTargets] = React.useState<{ id: string; name: string }[]>([]);
   const queryClient = useQueryClient();
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 20 });
-  const [sorting, setSorting] = React.useState<SortingState>([{ id: "createdAt", desc: true }]);
+  // CRM follow-up queue: default to ascending next-follow-up so overdue and
+  // today's calls surface first (PostgreSQL ASC orders NULLs last → leads with
+  // no scheduled follow-up sink to the final group).
+  const [sorting, setSorting] = React.useState<SortingState>([{ id: "nextFollowUp", desc: false }]);
   const [search, setSearch] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState("active");
   const [priorityFilter, setPriorityFilter] = React.useState("all");
@@ -428,7 +431,7 @@ export default function LeadsPage() {
     },
     {
       accessorKey: "nextFollowUp",
-      header: "Follow-up",
+      header: "Next Follow-up",
       cell: ({ row }) => {
         const due = row.original.nextFollowUp;
         if (!due) return <span className="text-xs text-muted-foreground">-</span>;

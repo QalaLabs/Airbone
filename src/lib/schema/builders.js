@@ -9,7 +9,7 @@ export function sanitizeSchemaText(text = '') {
   if (!text) return ''
   return String(text)
     .replace(/\b100%\s*(first[- ]attempt\s+)?(DGCA\s+)?(exam\s+)?pass\s*rate\b/gi, 'strong DGCA exam preparation focus')
-    .replace(/\bIndia'?s?\s+most\s+trusted\b/gi, 'DGCA-aligned')
+    .replace(/\bIndia'?s?\s+most\s+trusted\b/gi, 'DGCA-compliant')
     .replace(/\b(No\.?\s*1|number\s+one|#1)\b/gi, '')
     .replace(/\b(highest|largest|best)\s+in\s+Delhi\s*NCR\b/gi, 'in Delhi NCR')
     .replace(/\s{2,}/g, ' ')

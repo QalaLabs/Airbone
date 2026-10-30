@@ -153,9 +153,9 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Valid name is required (max 100 characters).' }, { status: 400 })
     }
 
-    // Phone validation: digits only (allowing optional leading +), length validation (7-15 digits)
-    const phoneRegex = /^\+?[0-9]{7,15}$/
-    if (!phone || !phoneRegex.test(phone)) {
+    // Phone validation & normalization: strip spaces, hyphens, and non-digits
+    const phoneDigits = phone ? phone.replace(/\D+/g, '') : ''
+    if (!phoneDigits || phoneDigits.length < 7 || phoneDigits.length > 15) {
       console.error(JSON.stringify({
         correlationId,
         event: 'lead_validation_failed',
@@ -165,6 +165,8 @@ export async function POST(req) {
       }))
       return NextResponse.json({ error: 'Valid phone number is required.' }, { status: 400 })
     }
+    // Normalize phone to last 10 digits when 10 or more digits provided
+    const normalizedPhone = phoneDigits.length >= 10 ? phoneDigits.slice(-10) : phoneDigits
 
     // Email validation: RFC compliant validation if provided
     if (email) {
@@ -209,7 +211,7 @@ export async function POST(req) {
 
     leadData = {
       name,
-      phone,
+      phone: normalizedPhone,
       email,
       pincode,
       course,

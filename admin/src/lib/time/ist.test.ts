@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { endOfISTDay, formatInIST, fromISTInput, startOfISTDay, toISTInput } from "./ist";
+import { endOfISTDay, endOfISTMonth, formatInIST, fromISTInput, startOfISTDay, startOfISTMonth, toISTInput } from "./ist";
 
 test("startOfISTDay: 'today' begins at 00:00 IST (18:30 UTC previous day)", () => {
   // 01:00 IST on 28 Sep = 19:30 UTC on 27 Sep — still IST day 28 Sep.
@@ -11,6 +11,13 @@ test("startOfISTDay: 'today' begins at 00:00 IST (18:30 UTC previous day)", () =
 
 test("endOfISTDay: last millisecond before the next IST midnight", () => {
   assert.equal(endOfISTDay(new Date("2026-09-28T06:00:00.000Z")).toISOString(), "2026-09-28T18:29:59.999Z");
+});
+
+test("startOfISTMonth / endOfISTMonth: IST calendar month boundaries", () => {
+  // 12:00 IST on 15 Nov 2026 = 06:30 UTC.
+  const mid = new Date("2026-11-15T06:30:00.000Z");
+  assert.equal(startOfISTMonth(mid).toISOString(), "2026-10-31T18:30:00.000Z");
+  assert.equal(endOfISTMonth(mid).toISOString(), "2026-11-30T18:29:59.999Z");
 });
 
 test("toISTInput renders a UTC instant as IST wall-clock (+05:30)", () => {

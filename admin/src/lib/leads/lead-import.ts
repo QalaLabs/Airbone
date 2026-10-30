@@ -34,15 +34,15 @@ export interface ImportRowError {
 }
 
 /**
- * Canonical storage form for imported phones: 10-digit national number for
- * Indian mobiles (strips +91 / 91 / leading 0), digits-only otherwise.
- * Returns null when the value cannot be a phone number.
+ * Canonical storage form for imported phones: 10-digit national number
+ * (last 10 digits for Indian and 10+ digit numbers, stripping country code,
+ * spaces, hyphens, and leading zeros). Returns null when invalid.
  */
-export function canonicalImportPhone(raw: string): string | null {
-  let digits = normalizePhone(raw);
-  if (digits.startsWith("0")) digits = digits.replace(/^0+/, "");
-  if (digits.length === 12 && digits.startsWith("91")) digits = digits.slice(2);
-  if (digits.length < 7 || digits.length > 15) return null;
+export function canonicalImportPhone(raw: string | undefined | null): string | null {
+  if (!raw || typeof raw !== "string") return null;
+  const digits = normalizePhone(raw);
+  if (!digits || digits.length < 7 || digits.length > 15) return null;
+  if (digits.length >= 10) return digits.slice(-10);
   return digits;
 }
 
@@ -136,7 +136,7 @@ export function prepareImportRows(rows: RawImportRow[]): { valid: PreparedImport
       return;
     }
     if (seenPhones.has(phone)) {
-      errors.push({ rowNumber, reason: `Phone ${phone} appears earlier in this file` });
+      errors.push({ rowNumber, reason: `Phone ${phone} appears earlier in this file`, isDuplicate: true });
       return;
     }
 

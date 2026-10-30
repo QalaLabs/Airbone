@@ -218,6 +218,21 @@ export function leadExportOrderBy(
   sortBy: LeadFilters["sortBy"],
   sortDir: LeadFilters["sortDir"],
 ): Prisma.LeadOrderByWithRelationInput[] {
+  return leadOrderBy(sortBy, sortDir);
+}
+
+/**
+ * Canonical list ordering. For the follow-up queue the secondary `id` keeps
+ * equal timestamps deterministic, and `nulls: "last"` guarantees leads without
+ * a scheduled follow-up sink to the final group (never before overdue calls).
+ */
+export function leadOrderBy(
+  sortBy: LeadFilters["sortBy"],
+  sortDir: LeadFilters["sortDir"],
+): Prisma.LeadOrderByWithRelationInput[] {
+  if (sortBy === "nextFollowUp") {
+    return [{ nextFollowUp: { sort: sortDir, nulls: "last" } }, { id: sortDir }];
+  }
   return [{ [sortBy]: sortDir }, { id: sortDir }];
 }
 
@@ -258,7 +273,7 @@ export class LeadRepository {
         select: LEAD_LIST_SELECT,
         // CRM-07: `id` breaks ties so offset pagination never duplicates or
         // skips rows that share the same updatedAt/createdAt timestamp.
-        orderBy: [{ [filters.sortBy]: filters.sortDir }, { id: filters.sortDir }],
+        orderBy: leadOrderBy(filters.sortBy, filters.sortDir),
         skip,
         take: filters.limit,
       }),

@@ -38,7 +38,8 @@ export class LeadImportService {
 
     const ready: (PreparedImportRow & { counselorId: string | null })[] = [];
     for (const row of valid) {
-      const match = contactCandidates(row.phone).find((c) => existingPhones.has(c));
+      const last10 = row.phone.length >= 10 ? row.phone.slice(-10) : row.phone;
+      const match = contactCandidates(row.phone).find((c) => existingPhones.has(c)) || (existingPhones.has(last10) ? last10 : undefined);
       if (match) {
         const existing = existingPhones.get(match)!;
         // CRM-02: report the duplicate AND link the existing canonical lead id.
@@ -144,21 +145,26 @@ export class LeadImportService {
     rows: PreparedImportRow[],
   ): Promise<Map<string, { id: string; trashed: boolean }>> {
     const candidates = [...new Set(rows.flatMap((r) => contactCandidates(r.phone)))];
+    const last10s = [...new Set(rows.map((r) => (r.phone.length >= 10 ? r.phone.slice(-10) : r.phone)))];
     const found = new Map<string, { id: string; trashed: boolean }>();
     for (let i = 0; i < candidates.length; i += 5000) {
       const existing = await prisma.lead.findMany({
-        where: { orgId, phone: { in: candidates.slice(i, i + 5000) } },
+        where: {
+          orgId,
+          OR: [
+            { phone: { in: candidates.slice(i, i + 5000) } },
+            ...last10s.map((l10) => ({ phone: { endsWith: l10 } })),
+          ],
+        },
         select: { id: true, phone: true, deletedAt: true },
       });
       for (const l of existing) {
+        const l10 = l.phone.length >= 10 ? l.phone.slice(-10) : l.phone;
         const previous = found.get(l.phone);
-        // CRM-02/CRM-05: the same phone can exist more than once when a live
-        // lead and a Recycle Bin row share it (the partial unique index only
-        // covers live rows). Always report the live lead as the duplicate
-        // target; never point a CSV row at a trashed record when a live one
-        // exists.
         if (!previous || (previous.trashed && l.deletedAt === null)) {
-          found.set(l.phone, { id: l.id, trashed: l.deletedAt !== null });
+          const entry = { id: l.id, trashed: l.deletedAt !== null };
+          found.set(l.phone, entry);
+          found.set(l10, entry);
         }
       }
     }

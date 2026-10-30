@@ -67,3 +67,46 @@ test("prepareImportRows maps header aliases, validates, and rejects in-file dupl
   assert.deepEqual(errors.map((e) => e.rowNumber), [3, 4, 5, 6]);
   assert.match(errors[0]!.reason, /earlier in this file/);
 });
+
+test("canonicalImportPhone normalizes last 10 digits across country codes, spaces, and hyphens", () => {
+  // Variations of the same number must resolve to the identical last 10 digits
+  const expected = "9876543210";
+  assert.equal(canonicalImportPhone("9876543210"), expected);
+  assert.equal(canonicalImportPhone("+91 98765 43210"), expected);
+  assert.equal(canonicalImportPhone("+91-98765-43210"), expected);
+  assert.equal(canonicalImportPhone("098765 43210"), expected);
+  assert.equal(canonicalImportPhone("+919876543210"), expected);
+  assert.equal(canonicalImportPhone("91 9876543210"), expected);
+
+  // Missing or invalid phones handled safely without throwing
+  assert.equal(canonicalImportPhone(""), null);
+  assert.equal(canonicalImportPhone("   "), null);
+  assert.equal(canonicalImportPhone(undefined as any), null);
+  assert.equal(canonicalImportPhone(null as any), null);
+  assert.equal(canonicalImportPhone("invalid-phone"), null);
+  assert.equal(canonicalImportPhone("12345"), null); // too short (< 7 digits)
+  assert.equal(canonicalImportPhone("12345678901234567"), null); // too long (> 15 digits)
+});
+
+test("duplicate detection flags matching leads with last 10 digits across format variations", () => {
+  const { valid, errors } = prepareImportRows([
+    { "Full Name": "Priya Sharma", "Phone": "+91 98111 22333" },
+    { "Full Name": "Priya Duplicate Space", "Phone": "98111 22333" },
+    { "Full Name": "Priya Duplicate Hyphen", "Phone": "+91-98111-22333" },
+    { "Full Name": "Priya Duplicate LeadingZero", "Phone": "09811122333" },
+    { "Full Name": "New Lead Unique", "Phone": "+91 98222 33444" },
+  ]);
+
+  assert.equal(valid.length, 2);
+  assert.equal(valid[0]?.phone, "9811122333");
+  assert.equal(valid[1]?.phone, "9822233444");
+
+  // Rows 3, 4, 5 duplicate row 2
+  assert.equal(errors.length, 3);
+  assert.equal(errors[0]?.rowNumber, 3);
+  assert.equal(errors[0]?.isDuplicate, true);
+  assert.equal(errors[1]?.rowNumber, 4);
+  assert.equal(errors[1]?.isDuplicate, true);
+  assert.equal(errors[2]?.rowNumber, 5);
+  assert.equal(errors[2]?.isDuplicate, true);
+});

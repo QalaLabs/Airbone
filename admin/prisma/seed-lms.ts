@@ -140,7 +140,7 @@ async function main() {
         slug: courseSlug,
         title: "DGCA Ground School - Navigation Fundamentals",
         description:
-          "A comprehensive DGCA-aligned ground school course covering Air Navigation, Meteorology, Air Law and ATC procedures. Designed for CPL and PPL aspirants preparing for DGCA written examinations.",
+          "A comprehensive DGCA-compliant ground school course covering Air Navigation, Meteorology, Air Law and ATC procedures. Designed for CPL and PPL aspirants preparing for DGCA written examinations.",
         isPublished: true,
         status: "PUBLISHED",
       },

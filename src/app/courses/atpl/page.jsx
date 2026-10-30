@@ -13,16 +13,16 @@ import CourseVideoTabs from '@/components/CourseVideoTabs'
 
 export const metadata = {
   title: 'ATPL Ground School India | All Subjects | Airborne Aviation',
-  description: 'ATPL ground school in Delhi by Airborne Aviation Academy. Complete airline transport pilot license exam prep - all subjects, DGCA-aligned. Enrol now.',
+  description: 'ATPL ground school in Delhi by Airborne Aviation Academy. Complete airline transport pilot license exam prep - all subjects, DGCA-compliant. Enrol now.',
   alternates: { canonical: '/courses/atpl' },
   openGraph: {
     title: 'ATPL Ground School India | All Subjects | Airborne Aviation',
-    description: 'ATPL ground school in Delhi by Airborne Aviation Academy. Complete airline transport pilot license exam prep - all subjects, DGCA-aligned. Enrol now.',
+    description: 'ATPL ground school in Delhi by Airborne Aviation Academy. Complete airline transport pilot license exam prep - all subjects, DGCA-compliant. Enrol now.',
     url: 'https://www.airborneaviation.in/courses/atpl',
   },
   twitter: {
     title: 'ATPL Ground School India | All Subjects | Airborne Aviation',
-    description: 'ATPL ground school in Delhi by Airborne Aviation Academy. Complete airline transport pilot license exam prep - all subjects, DGCA-aligned. Enrol now.',
+    description: 'ATPL ground school in Delhi by Airborne Aviation Academy. Complete airline transport pilot license exam prep - all subjects, DGCA-compliant. Enrol now.',
   },
 }
 

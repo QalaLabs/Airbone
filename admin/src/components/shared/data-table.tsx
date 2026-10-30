@@ -79,19 +79,34 @@ export function DataTable<TData, TValue>({
                 {headerGroup.headers.map((header) => {
                   const canSort = header.column.getCanSort();
                   const sorted = header.column.getIsSorted();
+                  const label = typeof header.column.columnDef.header === "string" ? header.column.columnDef.header : "column";
                   return (
-                    <TableHead key={header.id} style={{ width: header.getSize() !== 150 ? header.getSize() : undefined }}>
-                      {header.isPlaceholder ? null : (
-                        <div
-                          className={cn("flex items-center gap-1.5", canSort && "cursor-pointer select-none hover:text-foreground")}
-                          onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
+                    <TableHead
+                      key={header.id}
+                      style={{ width: header.getSize() !== 150 ? header.getSize() : undefined }}
+                      aria-sort={canSort ? (sorted === "asc" ? "ascending" : sorted === "desc" ? "descending" : "none") : undefined}
+                    >
+                      {header.isPlaceholder ? null : canSort ? (
+                        <button
+                          type="button"
+                          className="flex items-center gap-1.5 cursor-pointer select-none hover:text-foreground w-full text-left"
+                          onClick={header.column.getToggleSortingHandler()}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              header.column.toggleSorting();
+                            }
+                          }}
+                          title={`Sort by ${label}`}
                         >
                           {flexRender(header.column.columnDef.header, header.getContext())}
-                          {canSort && (
-                            sorted === "asc" ? <ArrowUp className="h-3.5 w-3.5" /> :
-                            sorted === "desc" ? <ArrowDown className="h-3.5 w-3.5" /> :
-                            <ArrowUpDown className="h-3.5 w-3.5 opacity-40" />
-                          )}
+                          {sorted === "asc" ? <ArrowUp className="h-3.5 w-3.5" /> :
+                          sorted === "desc" ? <ArrowDown className="h-3.5 w-3.5" /> :
+                          <ArrowUpDown className="h-3.5 w-3.5 opacity-40" />}
+                        </button>
+                      ) : (
+                        <div className="flex items-center gap-1.5">
+                          {flexRender(header.column.columnDef.header, header.getContext())}
                         </div>
                       )}
                     </TableHead>

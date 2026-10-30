@@ -182,7 +182,7 @@ async function main() {
         ...touch(
           2,
           3,
-          "Hi {{leadName}}, quick hello from Airborne Aviation. Why students choose us: DGCA-aligned ground school, real hangar exposure and small batches with personal attention. Reply here and we will answer any question.",
+          "Hi {{leadName}}, quick hello from Airborne Aviation. Why students choose us: DGCA-compliant ground school, real hangar exposure and small batches with personal attention. Reply here and we will answer any question.",
         ),
         ...touch(
           2,

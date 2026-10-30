@@ -3,8 +3,8 @@ import { test, expect, json } from './helpers.mjs'
 // The 11 website courses are created in the disposable test DB by
 // admin/scripts/lms-course-sync.mjs --apply (see e2e/scripts/start-admin.mjs).
 const WEBSITE_COURSES = [
-  ['ground-school', 'DGCA Complied Ground School'],
-  ['commercial-pilot-license-cpl', 'DGCA Complied CPL Ground School'],
+  ['ground-school', 'DGCA-compliant Ground School'],
+  ['commercial-pilot-license-cpl', 'DGCA-compliant CPL Ground School'],
   ['atpl', 'ATPL Ground School'],
   ['cabin-crew-training', 'Cabin Crew Training'],
   ['cadet-preparation', 'Cadet Pilot Program Preparation'],
@@ -86,7 +86,7 @@ test('create batch in the UI: frequency, time and date fields with validation, t
   await page.goto('/lms/batches')
   await page.getByRole('button', { name: 'New batch' }).click()
   const dialog = page.getByRole('dialog')
-  await dialog.locator('select').first().selectOption({ label: 'DGCA Complied CPL Ground School' })
+  await dialog.locator('select').first().selectOption({ label: 'DGCA-compliant CPL Ground School' })
   const name = `${PREFIX} CPL Morning ${Date.now()}`
   await dialog.getByPlaceholder('Batch name').fill(name)
 

@@ -1068,6 +1068,70 @@ export default function LeadDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
+          {/* 1. Manual Addition — first and prominent */}
+          <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-4" data-testid="manual-addition-section">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <h2 className="text-base font-bold text-white flex items-center gap-2">
+                <Plus className="h-4 w-4 text-primary" /> Manual Addition
+              </h2>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {(["NOTE", "CALL", "EMAIL", "WHATSAPP", "SMS", "MEETING", "TASK"] as const).map((t) => (
+                <Button key={t} size="sm" variant="outline" className="border-white/10 text-[10px] font-bold" onClick={() => openLog(t)}>
+                  {t}
+                </Button>
+              ))}
+              <Button size="sm" onClick={() => openLog("NOTE")} className="bg-primary text-white text-xs font-bold">
+                <Plus className="h-3.5 w-3.5 mr-1" /> Add activity
+              </Button>
+            </div>
+          </div>
+
+          {/* 2. Next Follow-up scheduler — prominent, below Manual Addition */}
+          <div className="glass-card rounded-2xl p-6 border border-primary/30 space-y-4" data-testid="follow-up-section">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-white border-b border-white/10 pb-3">
+              Next Follow-up
+            </h3>
+            <Input
+              type="datetime-local"
+              value={followUp}
+              onChange={(e) => setFollowUp(e.target.value)}
+              className="bg-secondary/40 border-white/10 text-xs"
+              aria-label="Next follow-up"
+            />
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                className="text-xs font-bold flex-1"
+                onClick={() =>
+                  followUpMutation.mutate(followUp ? fromISTInput(followUp) : null)
+                }
+                disabled={followUpMutation.isPending}
+              >
+                Save
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs font-bold border-white/10"
+                onClick={() => {
+                  setFollowUp("");
+                  followUpMutation.mutate(null);
+                }}
+              >
+                Clear
+              </Button>
+            </div>
+            <Button size="sm" variant="outline" className="w-full border-white/10 text-xs font-bold" onClick={() => openLog("TASK")}>
+              <Plus className="h-3.5 w-3.5 mr-1" /> Schedule task
+            </Button>
+          </div>
+
+          {/* 3. Interakt messaging — below the follow-up scheduler */}
+          <div data-testid="interakt-section">
+            <InteraktSyncCard leadId={id} />
+          </div>
+
           {((lead.tags && (lead.tags.includes("webinar") || lead.tags.includes("parents_webinar"))) || !!lead.customFields?.webinar) && (
             <div className="glass-card rounded-2xl p-6 border border-indigo-500/30 bg-gradient-to-br from-indigo-950/40 via-slate-900/80 to-slate-900/80 backdrop-blur-xl space-y-5">
               <div className="flex flex-wrap items-center justify-between gap-4 border-b border-indigo-500/20 pb-4">
@@ -1313,44 +1377,6 @@ export default function LeadDetailPage() {
 
         <div className="space-y-6">
           <LeadVoiceCallCard leadId={id} />
-          <InteraktSyncCard leadId={id} />
-          <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-4">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-white border-b border-white/10 pb-3">
-              Follow-up
-            </h3>
-            <Input
-              type="datetime-local"
-              value={followUp}
-              onChange={(e) => setFollowUp(e.target.value)}
-              className="bg-secondary/40 border-white/10 text-xs"
-            />
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                className="text-xs font-bold flex-1"
-                onClick={() =>
-                  followUpMutation.mutate(followUp ? fromISTInput(followUp) : null)
-                }
-                disabled={followUpMutation.isPending}
-              >
-                Save
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="text-xs font-bold border-white/10"
-                onClick={() => {
-                  setFollowUp("");
-                  followUpMutation.mutate(null);
-                }}
-              >
-                Clear
-              </Button>
-            </div>
-            <Button size="sm" variant="outline" className="w-full border-white/10 text-xs font-bold" onClick={() => openLog("TASK")}>
-              <Plus className="h-3.5 w-3.5 mr-1" /> Schedule task
-            </Button>
-          </div>
 
           {activeDeal || closedDeal ? (
             <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-4">

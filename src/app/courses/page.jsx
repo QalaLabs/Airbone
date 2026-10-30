@@ -10,7 +10,7 @@ import { resolveCatalogItems } from '@/lib/publicCourses'
 
 export const metadata = {
   title: 'Pilot Training Courses in Delhi | Airborne Aviation',
-  description: 'Browse DGCA-aligned aviation courses at Airborne Aviation Academy, Dwarka Delhi. CPL ground school, ATPL, Cabin Crew & cadet prep. Compare fees.',
+  description: 'Browse DGCA-compliant aviation courses at Airborne Aviation Academy, Dwarka Delhi. CPL ground school, ATPL, Cabin Crew & cadet prep. Compare fees.',
   alternates: { canonical: '/courses' },
 }
 

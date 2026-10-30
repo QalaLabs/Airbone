@@ -28,6 +28,12 @@ export async function GET(req: NextRequest) {
         currency: true,
         joiningDate: true,
         batchYear: true,
+        student: {
+          select: {
+            name: true,
+            avatarUrl: true,
+          },
+        },
         hiringPartner: {
           select: {
             name: true,
