@@ -1057,19 +1057,71 @@ export default function LeadDetailPage() {
           );
         })}
         <div className="flex-1" />
-        <Button
+        {/* <Button
           size="sm"
           className="bg-primary text-white text-xs font-bold h-[38px]"
           onClick={() => openLog("NOTE")}
         >
           <Plus className="h-3.5 w-3.5 mr-1" /> Manual Addition
-        </Button>
+        </Button> */}
       </div>
+      <div className="grid grid-cols-1 gap-6 items-start lg:grid-cols-[3fr_2fr]">
+        {/* Tab panels: left 60% on desktop (order-1) */}
+        <div className="min-w-0 w-full lg:order-1 lg:col-start-1">
+          {activeTab === "timeline" && (
+            <UnifiedTimeline
+              loading={timelineLoading}
+              items={Array.isArray(timeline) ? timeline : []}
+              onAdd={() => openLog("NOTE")}
+              quickActions
+              onQuick={(t) => openLog(t)}
+            />
+          )}
+          {activeTab === "scoring" && (
+            <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-4 h-full">
+              <h2 className="text-base font-bold text-white border-b border-white/10 pb-3 flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" /> Score history
+              </h2>
+              <p className="text-sm text-white font-bold">Current score: {lead.score ?? 0}</p>
+              {!lead.scoreHistory?.length ? (
+                <p className="text-xs text-muted-foreground">No score history yet. Logging activities updates score.</p>
+              ) : (
+                <div className="space-y-2 max-h-[min(70vh,640px)] overflow-y-auto pr-1">
+                  {lead.scoreHistory.map((h) => (
+                    <div
+                      key={h.id}
+                      className="flex flex-col sm:flex-row sm:justify-between gap-1 text-xs p-3 rounded-xl bg-secondary/30 border border-white/5"
+                    >
+                      <span className="text-white font-bold">{h.score}</span>
+                      <span className="text-muted-foreground">{h.reason || "-"}</span>
+                      <span className="text-muted-foreground shrink-0">{formatDateTime(h.createdAt)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          {activeTab === "manual" && (
+            <UnifiedTimeline
+              loading={timelineLoading}
+              items={(Array.isArray(timeline) ? timeline : []).filter(
+                (e) =>
+                  e.kind === "activity" &&
+                  !!e.activityType &&
+                  (ACTIVITY_TYPES as readonly string[]).includes(e.activityType),
+              )}
+              onAdd={() => openLog("NOTE")}
+              quickActions
+              onQuick={(t) => openLog(t)}
+              empty="No manual entries yet — add a note, call, email, WhatsApp, meeting or task."
+            />
+          )}
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+        {/* Follow-up, profile, utilities: right 40% on desktop (order-2) */}
+        <div className="space-y-6 min-w-0 lg:order-2 lg:sticky lg:top-6 self-start overflow-hidden max-w-full">
           {/* 1. Manual Addition — first and prominent */}
-          <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-4" data-testid="manual-addition-section">
+          {/* <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-4" data-testid="manual-addition-section">
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <h2 className="text-base font-bold text-white flex items-center gap-2">
                 <Plus className="h-4 w-4 text-primary" /> Manual Addition
@@ -1085,11 +1137,120 @@ export default function LeadDetailPage() {
                 <Plus className="h-3.5 w-3.5 mr-1" /> Add activity
               </Button>
             </div>
-          </div>
+          </div> */}
+ <div className="glass-card rounded-2xl p-4 border border-white/10 bg-slate-900/50 backdrop-blur-sm space-y-3 overflow-hidden">
+            <div className="flex items-center justify-between gap-2 pb-2 border-b border-white/10">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/15 border border-primary/25">
+                  <User className="h-3.5 w-3.5 text-primary" />
+                </div>
+                <h2 className="text-sm font-bold text-white tracking-tight">Profile</h2>
+              </div>
+              {canEditProfile && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="shrink-0 border-white/10 text-[10px] font-semibold h-7 px-2"
+                  onClick={() => setEditProfileOpen(true)}
+                >
+                  <Pencil className="h-3 w-3 mr-0.5" /> Edit
+                </Button>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-2 min-w-0">
+              <Info label="Email" value={lead.email || "-"} icon={Mail} className="col-span-2" />
+              <Info label="Phone" value={lead.phone} icon={Phone} mono />
+              <Info label="Counselor" value={lead.counselor?.name || "Unassigned"} />
+              <Info label="City" value={lead.city || "-"} />
+              <Info label="Pincode" value={lead.pincode || "-"} />
+              <Info label="Course interest" value={lead.courseInterest || "-"} className="col-span-2" />
+              {lead.customFields?.eligibility?.result ? (
+                <div className="min-w-0 col-span-2" data-testid="lead-eligibility" data-result={lead.customFields.eligibility.result}>
+                  <Info
+                    label="Eligibility pre-check (advisory)"
+                    value={`${ELIGIBILITY_LABEL[lead.customFields.eligibility.result] ?? lead.customFields.eligibility.result}${
+                      lead.customFields.eligibility.course ? ` · ${lead.customFields.eligibility.course}` : ""
+                    }`}
+                  />
+                </div>
+              ) : null}
+              {lead.googleId ? <Info label="Google ID" value={lead.googleId} mono className="col-span-2" /> : null}
+              {lead.manualAmount != null ? (
+                <Info
+                  label="Manual amount"
+                  value={`₹${Number(lead.manualAmount).toLocaleString("en-IN")}`}
+                />
+              ) : null}
+              {lead.lastDisposition ? (
+                <Info
+                  className="col-span-2"
+                  label="Last call disposition"
+                  value={`${
+                    CALL_DISPOSITION_LABELS[lead.lastDisposition as keyof typeof CALL_DISPOSITION_LABELS] ??
+                    lead.lastDisposition
+                  }${lead.dispositionAt ? ` · ${formatDate(lead.dispositionAt)}` : ""}`}
+                />
+              ) : null}
+              <Info
+                className="col-span-2"
+                label="Last activity"
+                value={lead.lastActivityAt ? formatDateTime(lead.lastActivityAt) : "-"}
+              />
+            </div>
 
+            <div className="flex flex-wrap items-end gap-1.5 pt-2 border-t border-white/10">
+              <div className="flex flex-col gap-0.5 min-w-[140px] flex-1">
+                <span className="text-[10px] text-muted-foreground font-semibold">Log call disposition</span>
+                <select
+                  aria-label="Call disposition"
+                  data-testid="call-disposition"
+                  value={disposition}
+                  onChange={(e) => setDisposition(e.target.value as (typeof CALL_DISPOSITIONS)[number])}
+                  className="h-8 rounded-md border border-white/10 bg-secondary/40 px-2 text-[11px] font-semibold text-foreground"
+                >
+                  {CALL_DISPOSITIONS.map((d) => (
+                    <option key={d} value={d} className="bg-slate-900">
+                      {CALL_DISPOSITION_LABELS[d]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 border-white/10 text-[10px] font-bold px-2.5"
+                data-testid="log-disposition"
+                disabled={dispositionMutation.isPending}
+                onClick={() => dispositionMutation.mutate({ disposition })}
+              >
+                {dispositionMutation.isPending ? "..." : "Log call"}
+              </Button>
+            </div>
+
+            <div className="space-y-2 pt-2 border-t border-white/10">
+              <h3 className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Pipeline</h3>
+              <div className="grid grid-cols-2 gap-1.5">
+                {canonicalPipeline.map((st, idx) => {
+                  const isDone = statusIndex >= 0 && idx <= statusIndex;
+                  return (
+                    <div
+                      key={st}
+                      className={`px-1.5 py-1 rounded-lg border text-center ${
+                        isDone
+                          ? "bg-primary/20 border-primary/30 text-white"
+                          : "bg-secondary/30 border-white/5 text-muted-foreground"
+                      }`}
+                    >
+                      <span className="text-[10px] font-bold block">{st.replace(/_/g, " ")}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
           {/* 2. Next Follow-up scheduler — prominent, below Manual Addition */}
-          <div className="glass-card rounded-2xl p-6 border border-primary/30 space-y-4" data-testid="follow-up-section">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-white border-b border-white/10 pb-3">
+          <div className="glass-card rounded-2xl p-5 sm:p-6 border border-primary/25 bg-slate-900/50 backdrop-blur-sm space-y-4 overflow-hidden" data-testid="follow-up-section">
+            <h3 className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/90 border-b border-white/10 pb-3">
               Next Follow-up
             </h3>
             <Input
@@ -1161,7 +1322,7 @@ export default function LeadDetailPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-3 min-w-0">
                 <Info
                   label="Webinar Event Schedule"
                   value={lead.customFields?.webinar?.eventDateTime || "Saturday 31 Oct 2026, 11:00 AM IST · Live online"}
@@ -1219,163 +1380,9 @@ export default function LeadDetailPage() {
               )}
             </div>
           )}
-          <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-6">
-            <h2 className="text-base font-bold text-white flex items-center justify-between border-b border-white/10 pb-3">
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-primary" /> Profile
-              </div>
-              {canEditProfile && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-white/10 text-xs font-semibold h-8"
-                  onClick={() => setEditProfileOpen(true)}
-                >
-                  <Pencil className="h-3.5 w-3.5 mr-1" /> Edit Details
-                </Button>
-              )}
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Info label="Email" value={lead.email || "-"} icon={Mail} />
-              <Info label="Phone" value={lead.phone} icon={Phone} mono />
-              <Info label="Course interest" value={lead.courseInterest || "-"} />
-              {lead.customFields?.eligibility?.result ? (
-                <div data-testid="lead-eligibility" data-result={lead.customFields.eligibility.result}>
-                  <Info
-                    label="Eligibility pre-check (advisory)"
-                    value={`${ELIGIBILITY_LABEL[lead.customFields.eligibility.result] ?? lead.customFields.eligibility.result}${
-                      lead.customFields.eligibility.course ? ` · ${lead.customFields.eligibility.course}` : ""
-                    }`}
-                  />
-                </div>
-              ) : null}
-              <Info label="Counselor" value={lead.counselor?.name || "Unassigned"} />
-              <Info label="City" value={lead.city || "-"} />
-              <Info label="Pincode" value={lead.pincode || "-"} />
-              {lead.googleId ? <Info label="Google ID" value={lead.googleId} mono /> : null}
-              {lead.manualAmount != null ? (
-                <Info
-                  label="Manual amount"
-                  value={`₹${Number(lead.manualAmount).toLocaleString("en-IN")}`}
-                />
-              ) : null}
-              {lead.lastDisposition ? (
-                <Info
-                  label="Last call disposition"
-                  value={`${
-                    CALL_DISPOSITION_LABELS[lead.lastDisposition as keyof typeof CALL_DISPOSITION_LABELS] ??
-                    lead.lastDisposition
-                  }${lead.dispositionAt ? ` · ${formatDate(lead.dispositionAt)}` : ""}`}
-                />
-              ) : null}
-              <Info
-                label="Last activity"
-                value={lead.lastActivityAt ? formatDateTime(lead.lastActivityAt) : "-"}
-              />
-            </div>
+         
 
-            <div className="flex flex-wrap items-end gap-2 pt-2 border-t border-white/10">
-              <div className="flex flex-col gap-1">
-                <span className="text-xs text-muted-foreground font-semibold">Log call disposition</span>
-                <select
-                  aria-label="Call disposition"
-                  data-testid="call-disposition"
-                  value={disposition}
-                  onChange={(e) => setDisposition(e.target.value as (typeof CALL_DISPOSITIONS)[number])}
-                  className="h-9 rounded-lg border border-white/10 bg-secondary/40 px-2 text-xs font-semibold text-foreground"
-                >
-                  {CALL_DISPOSITIONS.map((d) => (
-                    <option key={d} value={d} className="bg-slate-900">
-                      {CALL_DISPOSITION_LABELS[d]}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-9 border-white/10 text-xs font-bold"
-                data-testid="log-disposition"
-                disabled={dispositionMutation.isPending}
-                onClick={() => dispositionMutation.mutate({ disposition })}
-              >
-                {dispositionMutation.isPending ? "Logging..." : "Log call"}
-              </Button>
-              <p className="text-[10px] text-muted-foreground pb-2">
-                Records the contact outcome only — the pipeline stage stays unchanged.
-              </p>
-            </div>
-
-            <div className="space-y-3 pt-2 border-t border-white/10">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Pipeline</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                {canonicalPipeline.map((st, idx) => {
-                  const isDone = statusIndex >= 0 && idx <= statusIndex;
-                  return (
-                    <div
-                      key={st}
-                      className={`p-2 rounded-xl border text-center ${
-                        isDone
-                          ? "bg-primary/20 border-primary/30 text-white"
-                          : "bg-secondary/30 border-white/5 text-muted-foreground"
-                      }`}
-                    >
-                      <span className="text-[10px] font-bold block">{st.replace(/_/g, " ")}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {activeTab === "timeline" && (
-            <UnifiedTimeline
-              loading={timelineLoading}
-              items={Array.isArray(timeline) ? timeline : []}
-              onAdd={() => openLog("NOTE")}
-              quickActions
-              onQuick={(t) => openLog(t)}
-            />
-          )}
-
-          {activeTab === "manual" && (
-            <UnifiedTimeline
-              loading={timelineLoading}
-              items={(Array.isArray(timeline) ? timeline : []).filter(
-                (e) =>
-                  e.kind === "activity" &&
-                  !!e.activityType &&
-                  (ACTIVITY_TYPES as readonly string[]).includes(e.activityType),
-              )}
-              onAdd={() => openLog("NOTE")}
-              quickActions
-              onQuick={(t) => openLog(t)}
-              empty="No manual entries yet — add a note, call, email, WhatsApp, meeting or task."
-            />
-          )}
-
-          {activeTab === "scoring" && (
-            <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-4">
-              <h2 className="text-base font-bold text-white border-b border-white/10 pb-3">Score history</h2>
-              <p className="text-sm text-white font-bold">Current score: {lead.score ?? 0}</p>
-              {!lead.scoreHistory?.length ? (
-                <p className="text-xs text-muted-foreground">No score history yet. Logging activities updates score.</p>
-              ) : (
-                <div className="space-y-2">
-                  {lead.scoreHistory.map((h) => (
-                    <div key={h.id} className="flex justify-between text-xs p-3 rounded-xl bg-secondary/30 border border-white/5">
-                      <span className="text-white font-bold">{h.score}</span>
-                      <span className="text-muted-foreground">{h.reason || "-"}</span>
-                      <span className="text-muted-foreground">{formatDateTime(h.createdAt)}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="space-y-6">
+          <div className="space-y-6 pt-4 border-t border-white/10">
           <LeadVoiceCallCard leadId={id} />
 
           {activeDeal || closedDeal ? (
@@ -1490,6 +1497,7 @@ export default function LeadDetailPage() {
               <span className="text-muted-foreground block font-semibold">Updated</span>
               <span className="text-white font-bold">{formatDateTime(lead.updatedAt)}</span>
             </div>
+          </div>
           </div>
         </div>
       </div>
@@ -1900,18 +1908,27 @@ function Info({
   value,
   icon: Icon,
   mono,
+  className,
 }: {
   label: string;
   value: string;
   icon?: React.ElementType;
   mono?: boolean;
+  className?: string;
 }) {
   return (
-    <div className="p-4 rounded-xl bg-secondary/30 border border-white/5 space-y-1">
-      <span className="text-xs font-semibold text-muted-foreground">{label}</span>
-      <div className={`flex items-center gap-2 text-sm font-bold text-white ${mono ? "font-mono" : ""}`}>
-        {Icon ? <Icon className="h-4 w-4 text-primary" /> : null}
-        {value}
+    <div
+      className={`min-w-0 overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-white/[0.06] via-secondary/15 to-transparent px-2.5 py-2 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] ${className ?? ""}`}
+    >
+      <p className="text-[9px] font-bold uppercase tracking-[0.1em] text-muted-foreground mb-0.5 leading-none">{label}</p>
+      <div className="flex items-start gap-1.5 min-w-0">
+        {Icon ? <Icon className="h-3 w-3 shrink-0 text-primary mt-px" aria-hidden /> : null}
+        <p
+          className={`min-w-0 flex-1 break-words text-xs font-semibold leading-tight text-white ${mono ? "font-mono text-[11px]" : ""}`}
+          title={value}
+        >
+          {value}
+        </p>
       </div>
     </div>
   );

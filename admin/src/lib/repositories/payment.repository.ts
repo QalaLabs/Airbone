@@ -7,8 +7,15 @@ import {
   NET_CONTRIBUTING_STATUSES,
   type PaymentCashflow,
 } from "@/lib/services/fee-calculation.service";
+import {
+  attachFeesDateField,
+  mergeFeesDateIntoMetadata,
+  parseFeesDate,
+} from "@/lib/payments/fees-date";
 
 type Db = Pick<typeof prisma, "paymentTransaction" | "$queryRaw">;
+
+export { parseFeesDate } from "@/lib/payments/fees-date";
 
 const PAYMENT_SELECT = {
   id: true,
@@ -92,21 +99,23 @@ export class PaymentRepository {
       }),
       db.paymentTransaction.count({ where }),
     ]);
-    return { data, total };
+    return { data: data.map(attachFeesDateField), total };
   }
 
   static async findById(orgId: string, id: string, assignedTo?: string) {
-    return prisma.paymentTransaction.findFirst({
+    const row = await prisma.paymentTransaction.findFirst({
       where: { id, orgId, ...(assignedTo !== undefined && paymentCounselorWhere(assignedTo)) },
       select: PAYMENT_SELECT,
     });
+    return row ? attachFeesDateField(row) : null;
   }
 
   static async findByIdempotencyKey(orgId: string, idempotencyKey: string) {
-    return prisma.paymentTransaction.findFirst({
+    const row = await prisma.paymentTransaction.findFirst({
       where: { orgId, idempotencyKey },
       select: PAYMENT_SELECT,
     });
+    return row ? attachFeesDateField(row) : null;
   }
 
   /**
@@ -137,7 +146,10 @@ export class PaymentRepository {
     },
     db: Db = prisma,
   ) {
-    return db.paymentTransaction.create({
+    const feesAt = parseFeesDate(data.feesDate) ?? parseFeesDate(data.paidAt) ?? new Date();
+    const metadata = mergeFeesDateIntoMetadata(data.metadata, feesAt.toISOString());
+
+    const row = await db.paymentTransaction.create({
       data: {
         orgId,
         admissionId,
@@ -155,10 +167,11 @@ export class PaymentRepository {
         status: "COMPLETED",
         notes: data.notes,
         idempotencyKey: data.idempotencyKey,
-        metadata: (data.metadata ?? {}) as Prisma.InputJsonValue,
+        metadata: metadata as Prisma.InputJsonValue,
       },
       select: PAYMENT_SELECT,
     });
+    return attachFeesDateField(row);
   }
 
   static async update(
@@ -167,18 +180,34 @@ export class PaymentRepository {
     data: UpdatePaymentInput,
     db: Db = prisma,
   ) {
-    return db.paymentTransaction.update({
+    const existing = await db.paymentTransaction.findFirst({
+      where: { id, orgId },
+      select: { metadata: true },
+    });
+    const metadata =
+      data.feesDate !== undefined
+        ? mergeFeesDateIntoMetadata(
+            data.metadata ?? existing?.metadata,
+            data.feesDate,
+          )
+        : data.metadata;
+
+    const row = await db.paymentTransaction.update({
       where: { id, orgId },
       data: {
+        ...(data.amount !== undefined && { amount: data.amount }),
+        ...(data.method !== undefined && { method: data.method }),
+        ...(data.feeType !== undefined && { feeType: data.feeType }),
         ...(data.status !== undefined && { status: data.status }),
         ...(data.referenceNo !== undefined && { referenceNo: data.referenceNo }),
         ...(data.paidAt !== undefined && { paidAt: data.paidAt ? new Date(data.paidAt) : null }),
         ...(data.notes !== undefined && { notes: data.notes }),
         ...(data.gatewayTxnId !== undefined && { gatewayTxnId: data.gatewayTxnId }),
-        ...(data.metadata !== undefined && { metadata: data.metadata as Prisma.InputJsonValue }),
+        ...(metadata !== undefined && { metadata: metadata as Prisma.InputJsonValue }),
       },
       select: PAYMENT_SELECT,
     });
+    return attachFeesDateField(row);
   }
 
   /** Apply a refund atomically, preserving the refund accounting trail. */
@@ -202,7 +231,7 @@ export class PaymentRepository {
         status: refund.status,
       },
       select: PAYMENT_SELECT,
-    });
+    }).then(attachFeesDateField);
   }
 
   /** CRM-11: reverse a receipt without deleting the row. */
@@ -221,7 +250,7 @@ export class PaymentRepository {
         voidReason: voided.voidReason,
       },
       select: PAYMENT_SELECT,
-    });
+    }).then(attachFeesDateField);
   }
 
   static async getTotalByAdmission(orgId: string, admissionId: string, db: Db = prisma) {

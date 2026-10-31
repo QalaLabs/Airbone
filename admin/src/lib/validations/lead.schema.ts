@@ -137,6 +137,7 @@ const leadFiltersObject = z.object({
       "source",
       "courseInterest",
       "manualAmount",
+      "counselor",
     ])
     .default("createdAt"),
   sortDir: z.enum(["asc", "desc"]).default("desc"),

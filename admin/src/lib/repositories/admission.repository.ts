@@ -101,6 +101,7 @@ const ADMISSION_DETAIL_SELECT = {
       refundedAmount: true,
       refundedAt: true,
       paidAt: true,
+      metadata: true,
       createdAt: true,
     },
   },

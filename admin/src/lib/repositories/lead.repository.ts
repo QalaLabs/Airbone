@@ -233,6 +233,10 @@ export function leadOrderBy(
   if (sortBy === "nextFollowUp") {
     return [{ nextFollowUp: { sort: sortDir, nulls: "last" } }, { id: sortDir }];
   }
+  if (sortBy === "counselor") {
+    // Relation sort — use `name: sortDir` (SortOrderInput `{ sort, nulls }` is scalar-only).
+    return [{ counselor: { name: sortDir } }, { id: sortDir }];
+  }
   return [{ [sortBy]: sortDir }, { id: sortDir }];
 }
 

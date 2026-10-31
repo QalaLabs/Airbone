@@ -15,6 +15,7 @@ import type {
 } from "@/lib/validations/admission.schema";
 import type { AdmissionStage } from "@prisma/client";
 import type { RequestContext } from "@/types";
+import { attachFeesDateField } from "@/lib/payments/fees-date";
 
 function splitLeadName(name: string): { firstName: string; lastName: string } {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -160,7 +161,11 @@ export class AdmissionService {
   static async getById(ctx: RequestContext, id: string) {
     const admission = await AdmissionRepository.findById(ctx.orgId, id);
     if (!admission) throw new NotFoundError("Admission", id);
-    return admission;
+    if (!admission.payments) return admission;
+    return {
+      ...admission,
+      payments: admission.payments.map((p) => attachFeesDateField(p)),
+    };
   }
 
   static async create(ctx: RequestContext, input: CreateAdmissionInput) {

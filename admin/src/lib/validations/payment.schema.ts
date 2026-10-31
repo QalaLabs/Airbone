@@ -5,6 +5,15 @@ import { PAYMENT_AMOUNT_MAX } from "@/lib/services/fee-calculation.service";
 const twoDecimalPlaces = (v: number) =>
   Math.abs(v * 100 - Math.round(v * 100)) <= 1e-6;
 
+/** Accepts `<input type="date">` (YYYY-MM-DD) or ISO datetime from API clients. */
+export const feesDateField = z
+  .string()
+  .optional()
+  .refine(
+    (s) => !s || /^\d{4}-\d{2}-\d{2}$/.test(s) || !Number.isNaN(Date.parse(s)),
+    { message: "Invalid feesDate" },
+  );
+
 // ONLINE requires a payment gateway, which is not configured.
 // Onboarding a gateway is ouf-of-scope (Phase M); reject the method explicitly.
 const nonOnlineMethod = z
@@ -27,6 +36,7 @@ export const createPaymentSchema = z.object({
   // Client idempotency key (UUID) — double-submit protection for manual receipts.
   idempotencyKey: z.string().min(1).max(255).optional(),
   paidAt: z.string().datetime().optional(),
+  feesDate: feesDateField,
   notes: z.string().max(2000).optional(),
   metadata: z.record(z.unknown()).optional(),
 });
@@ -40,9 +50,20 @@ export const updatePaymentSchema = z.object({
       message: "Refund and void statuses must be set through their dedicated endpoints",
     })
     .optional(),
-  referenceNo: z.string().max(255).optional(),
+  amount: z
+    .number()
+    .positive()
+    .max(PAYMENT_AMOUNT_MAX, `Amount must not exceed ${PAYMENT_AMOUNT_MAX}`)
+    .refine(twoDecimalPlaces, { message: "Amount must not have more than 2 decimal places" })
+    .optional(),
+  method: nonOnlineMethod.optional(),
+  feeType: z.enum(["registration", "tuition", "exam", "hostel", "other"]).optional(),
+  referenceNo: z.string().max(255).optional().nullable(),
   paidAt: z.string().datetime().optional().nullable(),
+  feesDate: feesDateField.nullable(),
   notes: z.string().max(2000).optional(),
+  /** Optional audit note when correcting a mis-keyed receipt. */
+  editReason: z.string().trim().min(3).max(500).optional(),
   gatewayTxnId: z.string().max(255).optional(),
   metadata: z.record(z.unknown()).optional(),
 });

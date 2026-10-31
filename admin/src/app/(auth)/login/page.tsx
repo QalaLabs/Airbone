@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Plane, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,18 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
+
+  React.useEffect(() => {
+    if (status === "authenticated" && session?.user) {
+      const callback = new URLSearchParams(window.location.search).get("callbackUrl");
+      if (callback && callback.startsWith("/")) {
+        router.replace(callback);
+      } else {
+        router.replace(session.user.role === "STUDENT" ? "/portal" : "/");
+      }
+    }
+  }, [status, session, router]);
   const [showPassword, setShowPassword] = React.useState(false);
 
   const {

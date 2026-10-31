@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Search, FolderOpen, Image as ImageIcon, FileText, Film, File, Music,
   ChevronRight, Home, Grid3X3, List, Copy, ExternalLink,
-  Upload, FolderPlus, Pencil, RefreshCw
+  Upload, FolderPlus, Pencil, RefreshCw, Trash2
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -218,6 +218,12 @@ export default function MediaPage() {
     e.stopPropagation();
     navigator.clipboard.writeText(url);
     toast({ title: "URL Copied", description: "Public media URL copied to clipboard." });
+  };
+
+  const handleDeleteAsset = (asset: MediaAsset) => {
+    if (confirm("Are you sure you want to delete this media asset?")) {
+      deleteMutation.mutate(asset.id);
+    }
   };
 
   const openEditDialog = (asset: MediaAsset) => {
@@ -496,29 +502,62 @@ export default function MediaPage() {
 
       {/* Asset Preview Dialog */}
       <Dialog open={!!selectedAsset} onOpenChange={(o) => !o && setSelectedAsset(null)}>
-        <DialogContent className="max-w-4xl glass-panel border-white/10 bg-slate-900/95 p-0 overflow-hidden">
-          <DialogHeader className="p-6 border-b border-white/10 bg-slate-900/80">
-            <div className="flex items-center justify-between">
-              <div>
+        <DialogContent className="fixed inset-0 left-0 top-0 z-[51] flex h-[100dvh] w-full max-w-none translate-x-0 translate-y-0 items-start justify-center overflow-y-auto border-0 bg-transparent p-4 pt-[max(1rem,4dvh)] pb-4 shadow-none sm:rounded-none data-[state=open]:zoom-in-100">
+          <div className="grid w-full max-w-4xl max-h-[min(88dvh,calc(100dvh-2rem))] grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-2xl border border-white/10 bg-slate-900/95 shadow-2xl">
+          <DialogHeader className="shrink-0 space-y-0 p-4 sm:p-6 pr-12 sm:pr-14 border-b border-white/10 bg-slate-900/80">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0 flex-1">
                 <DialogTitle className="text-xl font-bold text-white truncate">{selectedAsset?.name}</DialogTitle>
                 <p className="text-xs text-muted-foreground mt-1">
                   MIME: <span className="font-mono text-primary font-bold">{selectedAsset?.mimeType}</span> • File Size: <span className="text-white font-semibold">{selectedAsset ? formatFileSize(selectedAsset.sizeBytes) : "0 B"}</span>
                 </p>
               </div>
-              <Button size="sm" onClick={(e) => selectedAsset && handleCopyUrl(selectedAsset.fileUrl, e)} className="bg-primary hover:bg-primary/90 text-white text-xs font-bold">
-                <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy CDN URL
-              </Button>
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                {selectedAsset && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    disabled={deleteMutation.isPending}
+                    onClick={() => handleDeleteAsset(selectedAsset)}
+                    className="text-xs font-bold bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                    {deleteMutation.isPending ? "Deleting…" : "Delete Asset"}
+                  </Button>
+                )}
+                <Button size="sm" onClick={(e) => selectedAsset && handleCopyUrl(selectedAsset.fileUrl, e)} className="bg-primary hover:bg-primary/90 text-white text-xs font-bold">
+                  <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy CDN URL
+                </Button>
+              </div>
             </div>
           </DialogHeader>
 
+          <input
+            type="file"
+            ref={replaceInputRef}
+            onChange={onReplaceFile}
+            className="hidden"
+            tabIndex={-1}
+            aria-hidden
+          />
+
           {selectedAsset && (
-            <div className="p-6 flex flex-col items-center justify-center bg-slate-950 min-h-[360px]">
+            <div className="min-h-0 overflow-y-auto overscroll-contain p-4 sm:p-6 bg-slate-950">
               {selectedAsset.mimeType.startsWith("image/") ? (
-                <img src={selectedAsset.fileUrl} alt={selectedAsset.name} className="w-full rounded-xl object-contain max-h-[500px] border border-white/10 shadow-2xl" />
+                <img
+                  src={selectedAsset.fileUrl}
+                  alt={selectedAsset.name}
+                  className="mx-auto block max-h-[calc(88dvh-14rem)] w-auto max-w-full rounded-xl object-contain border border-white/10 shadow-2xl"
+                />
               ) : selectedAsset.mimeType.startsWith("video/") ? (
-                <video src={selectedAsset.fileUrl} controls className="w-full rounded-xl max-h-[500px] border border-white/10 shadow-2xl" />
+                <video
+                  src={selectedAsset.fileUrl}
+                  controls
+                  className="mx-auto block max-h-[calc(88dvh-14rem)] w-auto max-w-full rounded-xl border border-white/10 shadow-2xl"
+                />
               ) : (
-                <div className="text-center py-16">
+                <div className="text-center py-10 sm:py-16">
                   <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                   <p className="text-sm font-bold text-white">No rich preview available for this document type</p>
                 </div>
@@ -526,26 +565,9 @@ export default function MediaPage() {
             </div>
           )}
 
-          <DialogFooter className="p-6 border-t border-white/10 bg-slate-900/80">
+          <div className="shrink-0 flex flex-wrap items-center justify-end gap-2 border-t border-white/10 bg-slate-900/80 p-4 sm:p-6">
             <Button
-              variant="destructive"
-              disabled={deleteMutation.isPending}
-              onClick={() => {
-                if (selectedAsset && confirm("Are you sure you want to delete this media asset?")) {
-                  deleteMutation.mutate(selectedAsset.id);
-                }
-              }}
-              className="text-xs font-bold mr-auto bg-rose-600 hover:bg-rose-700 text-white"
-            >
-              Delete Asset
-            </Button>
-            <input
-              type="file"
-              ref={replaceInputRef}
-              onChange={onReplaceFile}
-              style={{ display: "none" }}
-            />
-            <Button
+              type="button"
               variant="outline"
               disabled={replaceMutation.isPending}
               onClick={() => replaceInputRef.current?.click()}
@@ -556,6 +578,7 @@ export default function MediaPage() {
               {replaceMutation.isPending ? "Replacing…" : "Replace File"}
             </Button>
             <Button
+              type="button"
               variant="outline"
               onClick={() => selectedAsset && openEditDialog(selectedAsset)}
               className="border-white/10 hover:bg-white/5 text-xs font-bold"
@@ -564,7 +587,7 @@ export default function MediaPage() {
               <Pencil className="h-3.5 w-3.5 mr-1.5" />
               Edit Details
             </Button>
-            <Button variant="outline" onClick={() => setSelectedAsset(null)} className="border-white/10 hover:bg-white/5 text-xs font-bold">
+            <Button type="button" variant="outline" onClick={() => setSelectedAsset(null)} className="border-white/10 hover:bg-white/5 text-xs font-bold">
               Close Preview
             </Button>
             <Button asChild className="bg-secondary text-white hover:bg-secondary/80 text-xs font-bold">
@@ -572,7 +595,8 @@ export default function MediaPage() {
                 Open Original Asset <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
               </a>
             </Button>
-          </DialogFooter>
+          </div>
+          </div>
         </DialogContent>
       </Dialog>
 

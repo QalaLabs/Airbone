@@ -12,6 +12,7 @@ export interface PaymentFingerprintInput {
   method: string;
   feeType: string;
   referenceNo?: string | null;
+  feesDate?: string | null;
 }
 
 export function paymentFingerprint(input: PaymentFingerprintInput): string {
@@ -22,6 +23,7 @@ export function paymentFingerprint(input: PaymentFingerprintInput): string {
     input.method,
     input.feeType,
     (input.referenceNo ?? "").trim(),
+    (input.feesDate ?? "").trim(),
   ]);
 }
 

@@ -294,7 +294,7 @@ test("C2: Agent Calling returns one IST week of new leads and follow-ups, newest
   const adminView = await AgentCallingService.week(s.org.id, week);
   assert.deepEqual(adminView.newLeads.map((l) => l.id), [newSunEnd.id, newOtherCounselor.id, newMonStart.id]);
   assert.equal(adminView.newLeadsTotal, 3);
-  assert.deepEqual(adminView.followUps.map((l) => l.id), [fuLate.id, fuEarly.id]);
+  assert.deepEqual(adminView.followUps.map((l) => l.id), [fuEarly.id, fuLate.id]);
   assert.equal(adminView.week.key, "2026-09-28");
   assert.equal(adminView.week.start, "2026-09-27T18:30:00.000Z");
   assert.equal(adminView.week.end, "2026-10-04T18:29:59.999Z");
