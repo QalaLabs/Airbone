@@ -34,6 +34,7 @@ import {
   Upload,
   Printer,
   Trash2,
+  Pencil,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -122,6 +123,7 @@ interface PaymentRow {
   refundedAmount?: number | string | null;
   refundedAt?: string | null;
   paidAt?: string | null;
+  feesDate?: string | null;
   createdAt: string;
 }
 
@@ -214,6 +216,11 @@ function toIsoDate(dateStr: string) {
 function fromIsoDate(iso?: string | null) {
   if (!iso) return "";
   return iso.slice(0, 10);
+}
+
+function todayDateInputValue() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 function paymentStatusClass(status: string) {
@@ -579,8 +586,35 @@ function PaymentsPanel({
   const [method, setMethod] = React.useState<(typeof PAYMENT_METHODS)[number]>("UPI");
   const [feeType, setFeeType] = React.useState<(typeof FEE_TYPES)[number]>("tuition");
   const [referenceNo, setReferenceNo] = React.useState("");
+  const [feesDate, setFeesDate] = React.useState(todayDateInputValue);
   const [feeAmountDraft, setFeeAmountDraft] = React.useState(feeAmount ? String(Number(feeAmount)) : "");
   const [feeDiscountDraft, setFeeDiscountDraft] = React.useState(feeDiscount ? String(Number(feeDiscount)) : "");
+  const [editPayment, setEditPayment] = React.useState<PaymentRow | null>(null);
+  const [editAmount, setEditAmount] = React.useState("");
+  const [editMethod, setEditMethod] = React.useState<(typeof PAYMENT_METHODS)[number]>("UPI");
+  const [editFeeType, setEditFeeType] = React.useState<(typeof FEE_TYPES)[number]>("tuition");
+  const [editReferenceNo, setEditReferenceNo] = React.useState("");
+  const [editFeesDate, setEditFeesDate] = React.useState(todayDateInputValue);
+  const [editReason, setEditReason] = React.useState("");
+
+  const openPaymentEdit = (p: PaymentRow) => {
+    setEditPayment(p);
+    setEditAmount(String(Number(p.amount ?? 0)));
+    setEditMethod((PAYMENT_METHODS.includes(p.method as (typeof PAYMENT_METHODS)[number])
+      ? p.method
+      : "UPI") as (typeof PAYMENT_METHODS)[number]);
+    setEditFeeType((FEE_TYPES.includes((p.feeType ?? "tuition") as (typeof FEE_TYPES)[number])
+      ? (p.feeType ?? "tuition")
+      : "tuition") as (typeof FEE_TYPES)[number]);
+    setEditReferenceNo(p.referenceNo ?? "");
+    setEditFeesDate(fromIsoDate(p.feesDate ?? p.paidAt) || todayDateInputValue());
+    setEditReason("");
+  };
+
+  const closePaymentEdit = () => {
+    setEditPayment(null);
+    setEditReason("");
+  };
 
   const { data: payments, isLoading } = useQuery({
     queryKey: ["admission", admissionId, "payments"],
@@ -603,7 +637,7 @@ function PaymentsPanel({
 
   const createMutation = useMutation({
     mutationFn: () => {
-      const idempotencyKey = submissionKeys.keyFor({ admissionId, amount, method, feeType, referenceNo });
+      const idempotencyKey = submissionKeys.keyFor({ admissionId, amount, method, feeType, referenceNo, feesDate });
       return apiFetch<unknown>(`/admissions/${admissionId}/payments`, {
         method: "POST",
         body: JSON.stringify({
@@ -611,6 +645,7 @@ function PaymentsPanel({
           method,
           feeType,
           referenceNo: referenceNo || undefined,
+          feesDate: feesDate || undefined,
           idempotencyKey,
         }),
       }).then((res) => {
@@ -621,6 +656,7 @@ function PaymentsPanel({
     onSuccess: () => {
       setAmount("");
       setReferenceNo("");
+      setFeesDate(todayDateInputValue());
       invalidatePayments();
       toast({ title: "Payment recorded" });
     },
@@ -639,6 +675,35 @@ function PaymentsPanel({
     },
     onError: (err: Error) => toast({ title: "Refund failed", description: err.message, variant: "destructive" }),
   });
+
+  const editPaymentMutation = useMutation({
+    mutationFn: () => {
+      if (!editPayment) throw new Error("No payment selected");
+      const amount = Number(editAmount);
+      if (!Number.isFinite(amount) || amount <= 0) {
+        throw new Error("Enter a valid amount");
+      }
+      return apiFetch(`/payments/${editPayment.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          amount,
+          method: editMethod,
+          feeType: editFeeType,
+          referenceNo: editReferenceNo.trim() || null,
+          feesDate: editFeesDate || undefined,
+          editReason: editReason.trim() || undefined,
+        }),
+      });
+    },
+    onSuccess: () => {
+      closePaymentEdit();
+      invalidatePayments();
+      toast({ title: "Payment updated" });
+    },
+    onError: (err: Error) => toast({ title: "Update failed", description: err.message, variant: "destructive" }),
+  });
+
+  const paymentEditable = (p: PaymentRow) => p.status !== "VOIDED" && p.status !== "REFUNDED";
 
   const feeEditMutation = useMutation({
     mutationFn: () =>
@@ -814,6 +879,17 @@ function PaymentsPanel({
           <Label className="text-[10px] font-bold text-muted-foreground">Reference</Label>
           <Input value={referenceNo} onChange={(e) => setReferenceNo(e.target.value)} className="h-8 text-xs bg-secondary/40 border-white/10" placeholder="UPI/UTR ref" />
         </div>
+        <div className="space-y-1">
+          <Label className="text-[10px] font-bold text-muted-foreground">Fee date</Label>
+          <Input
+            type="date"
+            data-testid="payment-fees-date"
+            value={feesDate}
+            onChange={(e) => setFeesDate(e.target.value)}
+            className="h-8 text-xs bg-secondary/40 border-white/10"
+            required
+          />
+        </div>
         <div className="col-span-2">
           <Button type="submit" size="sm" className="w-full text-xs font-bold" disabled={createMutation.isPending}>
             {createMutation.isPending ? "Recording…" : "Record payment"}
@@ -835,7 +911,7 @@ function PaymentsPanel({
                 <div className="min-w-0">
                   <p className="font-mono font-bold text-white truncate">{p.receiptNo ?? "-"}</p>
                   <p className="text-[10px] text-muted-foreground">
-                    {p.paidAt ? formatDate(p.paidAt) : "-"} · {p.method}
+                    {(p.feesDate ?? p.paidAt) ? formatDate(p.feesDate ?? p.paidAt!) : "-"} · {p.method}
                     {p.feeType ? ` · ${p.feeType}` : ""}
                   </p>
                   <span className={`inline-block rounded-full border px-1.5 py-0.5 text-[9px] font-bold mt-0.5 ${paymentStatusClass(p.status)}`}>
@@ -847,33 +923,136 @@ function PaymentsPanel({
                   {Number(p.refundedAmount ?? 0) > 0 && (
                     <p className="text-[10px] font-bold text-sky-400">−{money(p.refundedAmount)}</p>
                   )}
-                  {refundable && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 px-1.5 text-[10px] text-sky-400 hover:text-sky-300 gap-1"
-                      disabled={refundMutation.isPending}
-                      onClick={() => {
-                        const amt = window.prompt(`Refund amount (max ₹${remaining.toLocaleString("en-IN")}):`, String(remaining));
-                        if (!amt) return;
-                        const n = Number(amt);
-                        if (!Number.isFinite(n) || n <= 0 || n > remaining) {
-                          toast({ title: "Invalid refund amount", variant: "destructive" });
-                          return;
-                        }
-                        refundMutation.mutate({ paymentId: p.id, refundAmount: n });
-                      }}
-                    >
-                      <RotateCcw className="h-3 w-3" /> Refund
-                    </Button>
-                  )}
+                  <div className="flex items-center justify-end gap-0.5 mt-0.5">
+                    {paymentEditable(p) && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-1.5 text-[10px] text-amber-400 hover:text-amber-300 gap-1"
+                        onClick={() => openPaymentEdit(p)}
+                      >
+                        <Pencil className="h-3 w-3" /> Edit
+                      </Button>
+                    )}
+                    {refundable && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-1.5 text-[10px] text-sky-400 hover:text-sky-300 gap-1"
+                        disabled={refundMutation.isPending}
+                        onClick={() => {
+                          const amt = window.prompt(`Refund amount (max ₹${remaining.toLocaleString("en-IN")}):`, String(remaining));
+                          if (!amt) return;
+                          const n = Number(amt);
+                          if (!Number.isFinite(n) || n <= 0 || n > remaining) {
+                            toast({ title: "Invalid refund amount", variant: "destructive" });
+                            return;
+                          }
+                          refundMutation.mutate({ paymentId: p.id, refundAmount: n });
+                        }}
+                      >
+                        <RotateCcw className="h-3 w-3" /> Refund
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
             );
           })}
         </div>
       )}
+
+      <Dialog open={!!editPayment} onOpenChange={(o) => !o && closePaymentEdit()}>
+        <DialogContent className="max-w-md glass-panel border-white/10 bg-slate-900/95">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-white flex items-center gap-2">
+              <Pencil className="h-5 w-5 text-amber-400" />
+              Edit receipt
+            </DialogTitle>
+            <p className="text-xs text-muted-foreground font-mono">{editPayment?.receiptNo ?? ""}</p>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <div className="space-y-1 col-span-2">
+              <Label className="text-[10px] font-bold text-muted-foreground">Amount (₹)</Label>
+              <Input
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={editAmount}
+                onChange={(e) => setEditAmount(e.target.value)}
+                className="h-9 text-sm bg-secondary/40 border-white/10"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[10px] font-bold text-muted-foreground">Method</Label>
+              <select
+                value={editMethod}
+                onChange={(e) => setEditMethod(e.target.value as (typeof PAYMENT_METHODS)[number])}
+                className="flex h-9 w-full rounded-lg border border-white/10 bg-secondary/60 px-2 text-xs font-bold"
+              >
+                {PAYMENT_METHODS.map((m) => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[10px] font-bold text-muted-foreground">Fee type</Label>
+              <select
+                value={editFeeType}
+                onChange={(e) => setEditFeeType(e.target.value as (typeof FEE_TYPES)[number])}
+                className="flex h-9 w-full rounded-lg border border-white/10 bg-secondary/60 px-2 text-xs font-bold"
+              >
+                {FEE_TYPES.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[10px] font-bold text-muted-foreground">Fee date</Label>
+              <Input
+                type="date"
+                value={editFeesDate}
+                onChange={(e) => setEditFeesDate(e.target.value)}
+                className="h-9 text-xs bg-secondary/40 border-white/10"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[10px] font-bold text-muted-foreground">Reference</Label>
+              <Input
+                value={editReferenceNo}
+                onChange={(e) => setEditReferenceNo(e.target.value)}
+                className="h-9 text-xs bg-secondary/40 border-white/10"
+                placeholder="UPI/UTR ref"
+              />
+            </div>
+            <div className="space-y-1 col-span-2">
+              <Label className="text-[10px] font-bold text-muted-foreground">Reason for correction (optional)</Label>
+              <Textarea
+                value={editReason}
+                onChange={(e) => setEditReason(e.target.value)}
+                rows={2}
+                placeholder="e.g. Extra zero entered by mistake"
+                className="bg-secondary/40 border-white/10 text-xs"
+              />
+            </div>
+          </div>
+          <DialogFooter className="pt-4 border-t border-white/10 gap-2">
+            <Button type="button" variant="outline" className="border-white/10" onClick={closePaymentEdit}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              className="font-bold"
+              disabled={editPaymentMutation.isPending}
+              onClick={() => editPaymentMutation.mutate()}
+            >
+              {editPaymentMutation.isPending ? "Saving…" : "Save changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

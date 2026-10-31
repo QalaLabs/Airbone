@@ -317,6 +317,11 @@ export default function LeadsPage() {
       size: 40,
     },
     {
+      accessorKey: "createdAt",
+      header: "Intake Date",
+      cell: ({ row }) => <span className="text-xs text-muted-foreground">{formatDate(row.original.createdAt)}</span>,
+    },
+    {
       accessorKey: "name",
       header: "Lead Contact",
       cell: ({ row }) => (
@@ -405,27 +410,26 @@ export default function LeadsPage() {
         <span className="text-xs font-semibold text-foreground">{row.original.courseInterest ?? "-"}</span>
       ),
     },
+    // {
+    //   accessorKey: "manualAmount",
+    //   header: "Manual Amount",
+    //   cell: ({ row }) => {
+    //     const amount = row.original.manualAmount;
+    //     const numeric = typeof amount === "string" ? parseFloat(amount) : amount;
+    //     return numeric && numeric > 0 ? (
+    //       <span className="text-xs font-bold text-foreground">₹{numeric.toLocaleString("en-IN")}</span>
+    //     ) : (
+    //       <span className="text-xs text-muted-foreground">-</span>
+    //     );
+    //   },
+    // },
     {
-      accessorKey: "manualAmount",
-      header: "Manual Amount",
-      cell: ({ row }) => {
-        const amount = row.original.manualAmount;
-        const numeric = typeof amount === "string" ? parseFloat(amount) : amount;
-        return numeric && numeric > 0 ? (
-          <span className="text-xs font-bold text-foreground">₹{numeric.toLocaleString("en-IN")}</span>
-        ) : (
-          <span className="text-xs text-muted-foreground">-</span>
-        );
-      },
-    },
-    {
-      accessorKey: "assignedTo",
+      accessorKey: "counselor",
       header: "Assigned Counselor",
-      enableSorting: false,
       cell: ({ row }) => (
         <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
           <UserCheck className="h-3.5 w-3.5 text-emerald-400" />
-          {row.original.assignedTo?.name ?? "Unassigned"}
+          {row.original.counselor?.name ?? row.original.assignedTo?.name ?? "Unassigned"}
         </span>
       ),
     },
@@ -445,12 +449,8 @@ export default function LeadsPage() {
       },
     },
     {
-      accessorKey: "createdAt",
-      header: "Intake Date",
-      cell: ({ row }) => <span className="text-xs text-muted-foreground">{formatDate(row.original.createdAt)}</span>,
-    },
-    {
       id: "actions",
+      header: "Actions",
       size: 50,
       cell: ({ row }) => (
         <DropdownMenu>
@@ -535,20 +535,19 @@ export default function LeadsPage() {
 
       {/* Advanced Filters & Bulk Actions */}
       <div className="glass-card rounded-2xl p-5 border border-white/10 space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3 flex-1 max-w-lg">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search leads by name, email, phone..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 bg-secondary/40 border-white/10 focus:border-primary text-sm font-medium"
-              />
-            </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative w-full min-w-[220px] flex-1 basis-full sm:basis-[min(100%,20rem)] sm:max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            <Input
+              type="search"
+              aria-label="Search leads"
+              placeholder="Search leads by name, email, phone..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 h-9 w-full bg-secondary/40 border-white/10 focus:border-primary text-sm font-medium"
+            />
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-36 bg-secondary/40 border-white/10 text-xs font-semibold">
                 <Filter className="mr-2 h-3.5 w-3.5 text-primary" />
@@ -627,7 +626,6 @@ export default function LeadsPage() {
               <AlertCircle className="h-3.5 w-3.5 mr-1.5" />
               Overdue follow-ups
             </Button>
-          </div>
         </div>
 
         <div className="flex flex-wrap items-end gap-3" aria-label="Created date filter">

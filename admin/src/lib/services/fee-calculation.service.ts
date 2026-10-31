@@ -205,3 +205,22 @@ export function paymentAmountError(
   }
   return null;
 }
+
+/** Validate a corrected receipt amount against admission headroom (fee balance + this payment's prior net). */
+export function paymentAmountEditError(
+  newAmount: number,
+  feeBalance: number | string | null | undefined,
+  previousNetContribution: number,
+  refundedAmount: number | string | null | undefined,
+): string | null {
+  const headroom =
+    feeBalance === null || feeBalance === undefined
+      ? null
+      : fromCents(toCents(feeBalance) + toCents(previousNetContribution));
+  const amountErr = paymentAmountError(newAmount, headroom);
+  if (amountErr) return amountErr;
+  if (toCents(newAmount) < toCents(refundedAmount ?? 0)) {
+    return "Amount cannot be less than the amount already refunded on this receipt";
+  }
+  return null;
+}

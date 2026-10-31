@@ -32,8 +32,9 @@ export interface AgentCallingWeek {
 
 export class AgentCallingService {
   /**
-   * New leads created in the week plus active leads whose follow-up falls in
-   * the week, newest first. `assignedTo` must already be scope-enforced.
+   * New leads created in the week (newest first) plus active leads whose
+   * follow-up falls in the week (oldest follow-up first). `assignedTo` must
+   * already be scope-enforced.
    */
   static async week(orgId: string, week: ISTWeek, assignedTo?: string): Promise<AgentCallingWeek> {
     const base: Prisma.LeadWhereInput = {
@@ -60,7 +61,7 @@ export class AgentCallingService {
       prisma.lead.findMany({
         where: followWhere,
         select: AGENT_CALLING_SELECT,
-        orderBy: [{ nextFollowUp: "desc" }, { id: "desc" }],
+        orderBy: [{ nextFollowUp: "asc" }, { id: "asc" }],
         take: AGENT_CALLING_SECTION_LIMIT,
       }),
       prisma.lead.count({ where: followWhere }),

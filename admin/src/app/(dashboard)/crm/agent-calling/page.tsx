@@ -88,7 +88,7 @@ function CallList({
       </table>
       {total > leads.length && (
         <p className="mt-2 text-[11px] text-muted-foreground">
-          Showing the latest {leads.length} of {total}. Use All Leads filters for the full list.
+          Showing {leads.length} of {total}. Use All Leads filters for the full list.
         </p>
       )}
     </div>
@@ -116,7 +116,7 @@ export default function AgentCallingPage() {
     <div className="space-y-6 pb-12">
       <PageHeader
         title="Agent Calling"
-        description="New leads and scheduled follow-ups to call, one IST week (Monday to Sunday) at a time, newest first."
+        description="New leads (newest first) and follow-ups to call (oldest scheduled first), one IST week at a time."
       />
 
       <div className="flex flex-wrap items-center justify-between gap-3 glass-card rounded-2xl p-4 border border-white/10">

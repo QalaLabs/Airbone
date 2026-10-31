@@ -32,8 +32,8 @@ export function buildAnalyticsScope(user: AnalyticsUser, orgId: string): {
   }
 
   const admissionWhere: Prisma.AdmissionWhereInput = isCounselor
-    ? { orgId, lead: { assignedTo: user.id } }
-    : { orgId };
+    ? { orgId, lead: { assignedTo: user.id, deletedAt: null } }
+    : { orgId, lead: { deletedAt: null } };
 
   const paymentWhere: Prisma.PaymentTransactionWhereInput = isCounselor
     ? { orgId, status: "COMPLETED", admission: { lead: { assignedTo: user.id } } }

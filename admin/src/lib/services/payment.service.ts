@@ -7,8 +7,10 @@ import { prisma } from "@/lib/db/client";
 import {
   deriveIdempotencyKey,
   paymentAmountError,
+  paymentAmountEditError,
   reconcileDerivedFields,
   roundMoney,
+  contributionNet,
   type PaymentCashflow,
 } from "@/lib/services/fee-calculation.service";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/utils/errors";
@@ -21,6 +23,7 @@ import {
 import type { CreatePaymentInput, UpdatePaymentInput, RefundPaymentInput, VoidPaymentInput, PaymentFilters } from "@/lib/validations/payment.schema";
 import type { PaymentStatus } from "@prisma/client";
 import type { RequestContext } from "@/types";
+import { readFeesDateFromMetadata } from "@/lib/payments/fees-date";
 
 function isPrismaP2002(err: unknown): boolean {
   return (
@@ -238,13 +241,68 @@ export class PaymentService {
 
     const existing = await this.getById(ctx, id);
 
+    if (existing.status === "VOIDED") {
+      throw new ValidationError([{ message: "Voided receipts cannot be edited" }]);
+    }
+    if (existing.status === "REFUNDED") {
+      throw new ValidationError([{ message: "Fully refunded receipts cannot be edited" }]);
+    }
+
+    const amountChanging = input.amount !== undefined && Number(input.amount) !== Number(existing.amount);
+
     const updated = await prisma.$transaction(async (tx) => {
+      const [locked] = await tx.$queryRaw<{ id: string }[]>`
+        SELECT "id" FROM "payment_transactions"
+        WHERE "id" = ${id}::uuid AND "orgId" = ${ctx.orgId}::uuid
+        FOR UPDATE
+      `;
+      if (!locked) throw new NotFoundError("Payment", id);
+
+      const row = await tx.paymentTransaction.findFirst({
+        where: { id, orgId: ctx.orgId },
+        select: {
+          id: true,
+          admissionId: true,
+          amount: true,
+          refundedAmount: true,
+          status: true,
+          method: true,
+          feeType: true,
+          referenceNo: true,
+        },
+      });
+      if (!row) throw new NotFoundError("Payment", id);
+
+      if (amountChanging) {
+        await tx.$queryRaw`
+          SELECT "id" FROM "admissions" WHERE "id" = ${row.admissionId}::uuid AND "orgId" = ${ctx.orgId}::uuid FOR UPDATE
+        `;
+        const admission = await tx.admission.findFirst({
+          where: { id: row.admissionId, orgId: ctx.orgId },
+          select: { feeFinal: true, feeBalance: true },
+        });
+        if (!admission) throw new NotFoundError("Admission", row.admissionId);
+
+        const previousNet = contributionNet({
+          amount: row.amount,
+          refundedAmount: row.refundedAmount,
+          status: row.status,
+        });
+        const amountError = paymentAmountEditError(
+          Number(input.amount),
+          admission.feeBalance != null ? Number(admission.feeBalance) : null,
+          previousNet,
+          row.refundedAmount,
+        );
+        if (amountError) {
+          throw new ValidationError([{ message: amountError }]);
+        }
+      }
+
       const payment = await PaymentRepository.update(ctx.orgId, id, input, tx);
 
-      // Any transition (into or out of COMPLETED, into PENDING/FAILED) changes
-      // the net contribution, so always re-derive the admission's cached fields.
-      if (status && status !== existing.status) {
-        await AdmissionRepository.updateFeeBalance(ctx.orgId, existing.admissionId, tx);
+      if (amountChanging || (status !== undefined && status !== existing.status)) {
+        await AdmissionRepository.updateFeeBalance(ctx.orgId, row.admissionId, tx);
       }
 
       await AuditService.write(
@@ -256,8 +314,26 @@ export class PaymentService {
           action: "payment.updated",
           entityType: "payment",
           entityId: id,
-          oldValue: { status: existing.status, refundedAmount: existing.refundedAmount ?? 0 },
-          newValue: { status: status ?? existing.status, referenceNo: input.referenceNo },
+          oldValue: {
+            amount: String(existing.amount),
+            method: existing.method,
+            feeType: existing.feeType,
+            status: existing.status,
+            referenceNo: existing.referenceNo,
+            feesDate: readFeesDateFromMetadata(existing.metadata, existing.paidAt),
+          },
+          newValue: {
+            amount: input.amount !== undefined ? String(input.amount) : String(existing.amount),
+            method: input.method ?? existing.method,
+            feeType: input.feeType ?? existing.feeType,
+            status: status ?? existing.status,
+            referenceNo: input.referenceNo !== undefined ? input.referenceNo : existing.referenceNo,
+            feesDate:
+              input.feesDate !== undefined
+                ? input.feesDate
+                : readFeesDateFromMetadata(existing.metadata, existing.paidAt),
+            editReason: input.editReason,
+          },
         },
         tx,
       );
@@ -320,6 +396,7 @@ export class PaymentService {
             referenceNo: row.referenceNo,
             feeType: row.feeType,
             paidAt: row.paidAt?.toISOString() ?? null,
+            feesDate: readFeesDateFromMetadata(row.metadata, row.paidAt),
             createdAt: row.createdAt.toISOString(),
           },
         },

@@ -4,6 +4,8 @@ import type { SessionUser } from "@/types";
 
 // Edge-safe auth config — no Node.js-only modules (no argon2, no prisma adapter)
 export const authConfig: NextAuthConfig = {
+  trustHost: true,
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "airborne-admin-local-dev-auth-secret-key-32chars",
   session: { strategy: "jwt", maxAge: 8 * 60 * 60 }, // 8 hours
 
   pages: {

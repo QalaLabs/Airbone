@@ -23,6 +23,8 @@ const OPTIONAL_VARS: Record<string, string> = {
   DIRECT_URL: "Prisma direct (non-pooled) URL - required for migrate deploy in CI",
   GEMINI_API_KEY: "Gemini AI study assistant - stub response returned when absent",
   GCS_BUCKET: "Google Cloud Storage bucket (default: airborne-aviation-media-prod)",
+  STORAGE_LOCAL_DIR: "Local filesystem media root (dev/E2E). Auto-enabled in dev when GCS credentials are absent.",
+  STORAGE_DRIVER: "Force storage backend: local | gcs",
   R2_ACCOUNT_ID: "Cloudflare R2 (LEGACY - documents only)",
   R2_ACCESS_KEY_ID: "Cloudflare R2",
   R2_SECRET_ACCESS_KEY: "Cloudflare R2",

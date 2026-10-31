@@ -50,6 +50,15 @@ export default auth((req: NextRequest & { auth?: { user?: { orgId?: string; id?:
     return NextResponse.next();
   }
 
+  // If already logged in and visiting /login, redirect to dashboard
+  if (req.auth?.user && pathname === "/login") {
+    const callback = req.nextUrl.searchParams.get("callbackUrl");
+    if (callback && callback.startsWith("/")) {
+      return NextResponse.redirect(new URL(callback, req.url));
+    }
+    return NextResponse.redirect(new URL("/", req.url));
+  }
+
   // Allow public paths
   if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
     return NextResponse.next();
