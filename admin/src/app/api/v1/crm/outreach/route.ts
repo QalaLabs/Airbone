@@ -125,7 +125,6 @@ export async function GET() {
           orgId: ctx.orgId,
           activityType: "WHATSAPP",
           title: { startsWith: "WhatsApp reply" },
-          leadId: { not: null },
         },
         select: { leadId: true },
         distinct: ["leadId"],

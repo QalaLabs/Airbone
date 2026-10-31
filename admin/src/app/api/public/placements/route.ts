@@ -30,8 +30,8 @@ export async function GET(req: NextRequest) {
         batchYear: true,
         student: {
           select: {
-            name: true,
-            avatarUrl: true,
+            firstName: true,
+            lastName: true,
           },
         },
         hiringPartner: {
@@ -43,7 +43,16 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ data: placements });
+    const formatted = placements.map((p) => ({
+      ...p,
+      student: p.student
+        ? {
+            name: `${p.student.firstName} ${p.student.lastName}`.trim(),
+          }
+        : null,
+    }));
+
+    return NextResponse.json({ data: formatted });
   } catch (err) {
     return handleError(err);
   }
